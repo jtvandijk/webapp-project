@@ -73,8 +73,8 @@ DATABASES = {
         'NAME': 'dbname',
         'USER': 'dbuser',
         'PASSWORD': 'dbpw',
-        'HOST': 'host',
-        'PORT': 'port',
+        'HOST': '',
+        'PORT': '',
     }
 }
 
