@@ -136,6 +136,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # local settings
 try:
     from .local_settings import *
-    print('succeed')
 except ImportError:
     pass
