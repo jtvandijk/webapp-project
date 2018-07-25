@@ -9,7 +9,7 @@ from . import views
 from kde import views as kde_views
 
 urlpatterns = [
-    path('udl_namekde', views.index, name='home'),
+    path('udl-namekde', views.index, name='home'),
     path('admin/', admin.site.urls),
     path('search/', kde_views.search, name='search'),
     path('location/', kde_views.location, name='location'),
