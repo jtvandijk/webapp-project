@@ -1,0 +1,119 @@
+{% extends "index.html" %}
+{% load staticfiles %}
+
+<!-- Search database -->
+{% block search %}
+
+    {% if not qvalid %}
+
+      <p class="card-text text-justify top pt-3">
+      Please type in a surname before hitting submit.
+      </p>
+
+    {% elif db_sur %}
+
+    <!-- Searched for-->
+    <p class="card-text text-justify top pt-3">
+    You searched for <strong>{{ search_sur }}</strong>. We have data available for the following years:
+    <form id="year_search">
+
+      <input type="hidden" name="q" value= "{{ search_sur }}" id="name_search"/>
+      <select class="form-control" name="y" id="year">
+
+        <!-- Available years -->
+        <option disabled>Select a year:</option>
+
+        {% for d in data %}
+        <option>{{ d }}</option>
+        {% endfor %}
+
+      </select>
+    </form>
+    </p>
+    <p class="card-text text-justify top">
+    Loop through the available years automatically:
+    </p>
+    <p class = "card-text text-center top">
+    <label class="switch text-center">
+      <input type="checkbox" id='autoplay'>
+      <span class="slider round"></span>
+    </label>
+    </p>
+
+    <!-- Not available-->
+    {% else %}
+      <p class="card-text text-justify top pt-3">
+      Unfortunately, <strong>{{ search_sur }}</strong> is not in our database.
+      </p>
+    {% endif %}
+
+{% endblock %}
+
+<!-- Produce frequency chart contour map -->
+
+{% block chart %}
+
+<script>
+  // Surname frequency chart
+  var freq = document.getElementById("cardFreq");
+  var fchart = new Chart (freq, {
+  type: 'line',
+  data: {
+    labels: ['1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009',
+     '2010', '2011', '2012','2013','2014','2015','2016','2017'],
+    datasets: [{
+      label: 'Frequency of surname: {{ search_sur }}',
+      data: {{freqs}},
+      borderColor: "#3273d1",
+      backgroundColor: "rgba(0,123,250,0.4)",
+      pointBackgroundColor: "#000000",
+      pointBorderColor: "#000000"
+    }]
+  },
+  options: {
+      legend: {
+          display: false
+          }
+      }
+});
+</script>
+
+{% endblock %}
+
+<!-- Produce location based tonpames list -->
+
+{% block topnames %}
+
+<div id="collapseSearchMax" class="collapse show" aria-labelledby="collapseSearchMax">
+  <div class="card-body p-2" id="locList">
+    {% csrf_token %}
+    <p class="card-text text-justify top">
+    If you would like to see the most frequently occuring surnames at your current location,
+    please click on the button below.
+    </p>
+    <form method="post" id="locTop">
+      <p class="card-text text-center ml-0">
+      {% csrf_token %}
+      <button class="btn btn-primary btn-sm text-center" id= 'share-loc' type='submit'>Use my location</button>
+      <img src="{% static 'load.gif' %}" id='loading-indicator' style='display:none' class="text-center"/>
+      </p>
+    </form>
+    </p>
+  </div>
+</div>
+
+{% endblock %}
+
+<!-- Produce location based diversity chart -->
+
+{% block piediv %}
+
+<div id="collapseArea" class="collapse" aria-labelledby="collapseArea">
+  <div class="card-body p-2">
+    <p id="pieTxt"></p>
+    <canvas id="pieDiv" width="100" height="85">
+    </canvas>
+  </div>
+</div>
+
+{% endblock %}

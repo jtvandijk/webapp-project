@@ -1,0 +1,11 @@
+#django
+*.log
+*.pot
+*.pyc
+__pycache__/
+migrations/
+local_settings.py
+
+#misc
+.Rhistory
+_meta.txt
