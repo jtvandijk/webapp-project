@@ -13,4 +13,5 @@ urlpatterns = [
     path('udl-namekde/admin/', admin.site.urls),
     path('udl-namekde/search/', kde_views.search, name='search'),
     path('udl-namekde/location/', kde_views.location, name='location'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
