@@ -48,21 +48,21 @@ function showPosition(position) {
     })
 };
 
-//list
+//topnames
 function renderLoclist(loclist) {
 
   //render list
-  var ul = document.createElement('ul');
   var locdiv = document.getElementById('locList');
   var container = document.createElement('div');
   var div = document.createElement('div');
   var par = document.createElement('p');
+  var ul = document.createElement('ul');
   var em = document.createElement('em');
   var foot = document.createElement('div');
 
   div.className = "card-body p-2";
   par.className = "card-text text-justify top";
-  par.textContent = "Based on your location, the five most frequently occuring surnames in 2017 in your area are:";
+  par.textContent = "Based on your location, the five most frequently occuring surnames in the area are:";
   foot.className = "card-footer small text-justify text-muted p-2";
   foot.textContent = "Please note that these data are aggregated to LSOA-level for privacy reasons.";
 
@@ -78,29 +78,32 @@ function renderLoclist(loclist) {
   locdiv.replaceWith(container);
 };
 
-//render pie chart
+//alpha value
 function renderPieChart(loclist) {
-  var show = document.getElementById('collapseArea');
+  var alphadiv = document.getElementById('locAlpha');
+  var show = document.getElementById('collapseAlpha');
   var feedb = document.getElementById('collapseFeedback');
-  var piediv = document.getElementById('pieDiv');
-  var pietxt = document.getElementById('pieTxt');
+  var container = document.createElement('div');
+  var div = document.createElement('div');
   var par = document.createElement('p');
+  var alphv = document.createElement('h3');
+  var foot = document.createElement('div');
 
+  div.className = "card-body p-2";
   par.className = "card-text text-justify top";
-  par.textContent = "'Percentage unique' shows the number of unique surnames as a percentage of all individuals at your current location.";
-  pietxt.replaceWith(par);
+  alphav.className = "text-justify";
+  par.textContent = "The value below shows the probability that two individuals chosen at random share the same surname at your location.";
+  alphv.innerHTML = loclist.alpha;
+  foot.className = "card-footer small text-justify text-muted p-2";
+  foot.textContent = "Value represents the Gini–Simpson index";
+
+  div.appendChild(par);
+  div.appendChild(alphv);
+  container.appendChild(div);
+  container.appendChild(foot);
+  alphadiv.replaceWith(container);
+
   show.className = 'collapse show';
   feedb.className = 'collapse show';
 
-  var unique = Math.round((loclist.unique / loclist.total)*100);
-  var total = Math.round(100-unique);
-  var pchart = new Chart(piediv, {
-  type: 'pie',
-  data: {
-    labels: ["Percentage unique"],
-    datasets: [{
-      data: [total, unique],
-      backgroundColor: ["rgb(255, 99, 132)", "rgb(255,205,86)"]
-    }]
-  }
-})};
+};
