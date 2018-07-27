@@ -196,7 +196,31 @@
         </div>
       </div>
 
-      <!-- Feedback-->
+      <!-- Surname unique-->
+      <div class="col-lg-4">
+        <div class="card mb-3">
+          <div class="card-header">
+            <i class="fa fa-fingerprint pr-1"></i> Unique surnames
+            <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseUniq" aria-expanded="false" aria-controls="collapseUniq">
+            <span class="fa fa-align-justify" style="text-decoration: none"></span>
+            </button>
+          </div>
+          {% if not db_sur %}
+          <div id="collapseUniq" class="collapse" aria-labelledby="collapseUniq">
+            <div class="card-body p-2">
+              <canvas id="cardUniq" width="100" height="100">
+              </canvas>
+            </div>
+          </div>
+          {% else %}
+          {% block alpha %}
+          {% endblock %}
+          {% endif %}
+        </div>
+      </div>
+
+    <!-- Feedback-->
+    <div class="row">
       <div class="col-lg-4">
         <div class="card mb-3">
           <div class="card-header">
