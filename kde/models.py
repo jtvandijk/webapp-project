@@ -222,9 +222,10 @@ class LsoaTopnames(models.Model):
     long = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
     lat = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
     topnames = models.TextField(blank=True, null=True)
-    diversity = models.IntegerField(blank=True, null=True)
-    total = models.IntegerField(blank=True, null=True)
+    unique_n = models.IntegerField(blank=True, null=True)
+    total_n = models.IntegerField(blank=True, null=True)
     shape = models.PolygonField(srid=27700)
+    diversity_a = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
 
     class Meta:
         managed = True

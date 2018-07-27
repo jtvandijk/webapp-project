@@ -92,7 +92,7 @@ function renderPieChart(loclist) {
   show.className = 'collapse show';
   feedb.className = 'collapse show';
 
-  var unique = Math.round((loclist.diversity / loclist.total)*100);
+  var unique = Math.round((loclist.unique / loclist.total)*100);
   var total = Math.round(100-unique);
   var pchart = new Chart(piediv, {
   type: 'pie',
