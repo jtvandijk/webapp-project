@@ -79,6 +79,7 @@ def search(request):
         kde_sel = gridc[(gridc['val'] >= level)]
         coord = [[int(x[1]), int(x[0])] for x in (list(zip(kde_sel.x, kde_sel.y)))]
         cs, lbls = dbscan(coord, eps=2000)
+        kde_sel = kde_sel.copy()
         kde_sel['group'] = lbls
 
         #identify for each group concave points
