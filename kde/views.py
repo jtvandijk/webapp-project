@@ -142,11 +142,11 @@ def location(request):
         lsoa = LsoaTopnames.objects.filter(shape__contains=pnt)
         div = {key: value for key, value in lsoa.values()[0].items()}
         tnlist = [str(x).title() for x in div['topnames'][1:-1].split(',')]
-        unique = div['unique_n']
+        diversity = div['diversity']
         total = div['total']
 
         loclist = {'topnames': tnlist,
-                   'unique': unique,
+                   'diversity': diversity,
                    'total': total
                    }
         #return data
