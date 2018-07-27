@@ -142,12 +142,14 @@ def location(request):
         lsoa = LsoaTopnames.objects.filter(shape__contains=pnt)
         div = {key: value for key, value in lsoa.values()[0].items()}
         tnlist = [str(x).title() for x in div['topnames'][1:-1].split(',')]
-        diversity = div['diversity']
+        unique = div['unique_n']
         total = div['total']
+        alpha = div['diversity_a']
 
         loclist = {'topnames': tnlist,
-                   'diversity': diversity,
-                   'total': total
+                   'unique': unique,
+                   'total': total,
+                   'alpha': alpha
                    }
         #return data
         return HttpResponse(json.dumps(loclist), content_type="application/json")
