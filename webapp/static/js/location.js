@@ -117,7 +117,7 @@ function renderUniq(loclist) {
   var container = document.createElement('div');
   var div = document.createElement('div');
   var par = document.createElement('p');
-  var surnames = document.createElement('h2');
+  var surnames = document.createElement('h1');
   var foot = document.createElement('div');
 
   div.className = "card-body p-2";
