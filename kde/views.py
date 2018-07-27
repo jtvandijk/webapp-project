@@ -143,7 +143,7 @@ def location(request):
         div = {key: value for key, value in lsoa.values()[0].items()}
         tnlist = [str(x).title() for x in div['topnames'][1:-1].split(',')]
         unique = div['unique_n']
-        total = div['total']
+        total = div['total_n']
         alpha = div['diversity_a']
 
         loclist = {'topnames': tnlist,
