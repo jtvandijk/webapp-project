@@ -86,13 +86,14 @@ function renderAlpha(loclist) {
   var container = document.createElement('div');
   var div = document.createElement('div');
   var par = document.createElement('p');
-  var alphav = document.createElement('h3');
+  var alphav = document.createElement('h2');
   var foot = document.createElement('div');
 
   div.className = "card-body p-2";
   par.className = "card-text text-justify top";
   par.textContent = "The value below shows the probability that two individuals chosen at random share the same surname at your location.";
-  alphav.className = "text-justify";
+  alphav.className = "text-center";
+  alphav.id = "alphaValue";
   alphav.innerHTML = loclist.alpha;
   foot.className = "card-footer small text-justify text-muted p-2";
   foot.textContent = "Value represents the Gini–Simpson index";
