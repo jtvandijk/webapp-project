@@ -91,10 +91,10 @@ function renderAlpha(loclist) {
   var foot = document.createElement('div');
 
   div.className = "card-body p-2";
-  par.className = "card-text text-justify top";
+  par.className = "card-text text-justify top mb-0";
   par.textContent = "The value below shows the probability that two individuals chosen at random share the same surname at your location.";
-  alphav.className = "text-center";
-  //alphav.style.color = "rgb(189,54,29)";
+  alphav.className = "text-center p-2";
+  alphav.style.color = "rgb(189,54,29)";
   //alphav.innerHTML = loclist.alpha;
   alphav.innerHTML = 0.04244
   stats.className = "card-text text-justify top";
