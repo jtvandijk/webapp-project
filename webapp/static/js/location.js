@@ -65,7 +65,7 @@ function renderLoclist(loclist) {
   par.textContent = "Based on your location, the most frequently occuring surname in the area is:";
   topname.Classname = "text-center p-2";
   topname.style.color = "rgb(96,175,111)";
-  topname.innerHTML = loclist.topname[0];
+  topname.innerHTML = loclist.topnames[0];
   foot.className = "card-footer small text-justify text-muted p-2";
   foot.textContent = "Please note that these data are aggregated to LSOA-level for privacy reasons.";
 
