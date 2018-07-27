@@ -133,11 +133,15 @@ function renderUniq(loclist) {
   div.appendChild(surnames);
   container.appendChild(div);
   container.appendChild(foot);
-  alphadiv.replaceWith(container);
+  uniqdiv .replaceWith(container);
 };
 
 //show all
 function showAll() {
-  var show = document.getElementById('collapseFeedback');
+  var feedb = document.getElementById('collapseFeedback');
+  var alpha = document.getElementById('collapseAlpha');
+  var uniq = document.getElementById('collapseUniq');
   feedb.className = 'collapse show';
+  alpha.className = 'collapse show';
+  uniq.className = 'collapse show';
 }
