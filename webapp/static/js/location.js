@@ -63,7 +63,7 @@ function renderLoclist(loclist) {
   div.className = "card-body p-2";
   par.className = "card-text text-justify top mb-0";
   par.textContent = "Based on your location, the most frequently occuring surname in the area is:";
-  topname.Classname = "text-center p-2";
+  topname.className = "text-center p-2";
   topname.style.color = "rgb(96,175,111)";
   topname.innerHTML = loclist.topnames[0];
   foot.className = "card-footer small text-justify text-muted p-2";
@@ -100,7 +100,7 @@ function renderAlpha(loclist) {
   alphav.className = "text-center p-2";
   alphav.style.color = "rgb(189,54,29)";
   //alphav.innerHTML = loclist.alpha;
-  alphav.innerHTML = 0.04244
+  alphav.innerHTML = 0.04244;
   stats.className = "card-text text-justify top";
   stats.innerHTML = "In addition, there are "+loclist.total+" individuals sharing a total of "+loclist.unique+" unique surnames in the area."
   foot.className = "card-footer small text-justify text-muted p-2";
@@ -115,5 +115,4 @@ function renderAlpha(loclist) {
 
   show.className = 'collapse show';
   feedb.className = 'collapse show';
-
 };
