@@ -56,23 +56,27 @@ function renderLoclist(loclist) {
   var container = document.createElement('div');
   var div = document.createElement('div');
   var par = document.createElement('p');
-  var ul = document.createElement('ul');
-  var em = document.createElement('em');
+  var topname = document.createElement('h1');
+  //var ul = document.createElement('ul');
   var foot = document.createElement('div');
 
   div.className = "card-body p-2";
-  par.className = "card-text text-justify top";
-  par.textContent = "Based on your location, the five most frequently occuring surnames in the area are:";
+  par.className = "card-text text-justify top mb-0";
+  par.textContent = "Based on your location, the most frequently occuring surname in the area is:";
+  topname.Classname = "text-center p-2";
+  topname.style.color = "rgb(96,175,111)";
+  topname.innerHTML = loclist.topname[1];
   foot.className = "card-footer small text-justify text-muted p-2";
   foot.textContent = "Please note that these data are aggregated to LSOA-level for privacy reasons.";
 
-  for (var i = 0; i < loclist.topnames.length; ++i) {
-    var li = document.createElement('li');
-    li.innerHTML = loclist.topnames[i];
-    ul.appendChild(li);
-  }
+  // for (var i = 0; i < loclist.topnames.length; ++i) {
+  //   var li = document.createElement('li');
+  //   li.innerHTML = loclist.topnames[i];
+  //   ul.appendChild(li);
+  // }
   div.appendChild(par);
-  div.appendChild(ul);
+  div.appendChild(topname);
+  // div.appendChild(ul);
   container.appendChild(div);
   container.appendChild(foot);
   locdiv.replaceWith(container);
@@ -100,7 +104,7 @@ function renderAlpha(loclist) {
   stats.className = "card-text text-justify top";
   stats.innerHTML = "In addition, there are "+loclist.total+" individuals sharing a total of "+loclist.unique+" unique surnames in the area."
   foot.className = "card-footer small text-justify text-muted p-2";
-  foot.textContent = "Value represents the Gini–Simpson index";
+  foot.textContent = "Value represents the Gini–Simpson Index.";
 
   div.appendChild(par);
   div.appendChild(alphav);
