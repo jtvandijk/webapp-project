@@ -80,7 +80,6 @@ function renderLoclist(loclist) {
 
 //render pie chart
 function renderPieChart(loclist) {
-  console.log(loclist)
   var show = document.getElementById('collapseArea');
   var feedb = document.getElementById('collapseFeedback');
   var piediv = document.getElementById('pieDiv');
