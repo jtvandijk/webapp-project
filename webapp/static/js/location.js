@@ -43,7 +43,7 @@ function showPosition(position) {
       success: function (loclist) {
         stopLoad();
         renderLoclist(loclist);
-        renderPieChart(loclist);
+        renderAlpha(loclist);
       }
     })
 };
@@ -79,14 +79,14 @@ function renderLoclist(loclist) {
 };
 
 //alpha value
-function renderPieChart(loclist) {
+function renderAlpha(loclist) {
   var alphadiv = document.getElementById('locAlpha');
   var show = document.getElementById('collapseAlpha');
   var feedb = document.getElementById('collapseFeedback');
   var container = document.createElement('div');
   var div = document.createElement('div');
   var par = document.createElement('p');
-  var alphv = document.createElement('h3');
+  var alphav = document.createElement('h3');
   var foot = document.createElement('div');
 
   div.className = "card-body p-2";
