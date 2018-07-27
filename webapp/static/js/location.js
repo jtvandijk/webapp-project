@@ -86,21 +86,25 @@ function renderAlpha(loclist) {
   var container = document.createElement('div');
   var div = document.createElement('div');
   var par = document.createElement('p');
-  var alphav = document.createElement('h2');
+  var alphav = document.createElement('h1');
+  var stats = document.createElement('p');
   var foot = document.createElement('div');
 
   div.className = "card-body p-2";
   par.className = "card-text text-justify top";
   par.textContent = "The value below shows the probability that two individuals chosen at random share the same surname at your location.";
   alphav.className = "text-center";
-  alphav.style.color = "rgb(189,54,29)";
+  //alphav.style.color = "rgb(189,54,29)";
   //alphav.innerHTML = loclist.alpha;
   alphav.innerHTML = 0.04244
+  stats.className = "card-text text-justify top";
+  stats.innerHTML = "In addition, there are "+loclist.total+" individuals sharing a total of "+loclist.unique+" unique surnames in the area."
   foot.className = "card-footer small text-justify text-muted p-2";
   foot.textContent = "Value represents the Gini–Simpson index";
 
   div.appendChild(par);
   div.appendChild(alphav);
+  div.appendChild(stats);
   container.appendChild(div);
   container.appendChild(foot);
   alphadiv.replaceWith(container);
