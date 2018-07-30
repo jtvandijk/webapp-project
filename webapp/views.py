@@ -5,8 +5,9 @@ from kde.models import KdeLookup
 
 def index(request):
 
-    data = KdeLookup.objects.aggregate(Sum('freq2017'))
-    print(data)
+    f2017 = KdeLookup.objects.filter(freq2017__isnull=False=).distinct()
+
+    print(f2017)
 
         # available = {key: value for key, value in data.items() if value != None}
         # years = [str(year[4:]) for year in list(available.keys()) if year.startswith('freq')]

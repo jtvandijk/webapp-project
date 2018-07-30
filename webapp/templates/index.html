@@ -101,11 +101,15 @@
                 </button>
               </div>
               {% if not db_sur %}
-              <div id="collapseFreq" class="collapse" aria-labelledby="collapseFreq">
+              <div id="collapseFreq" class="collapse show" aria-labelledby="collapseFreq">
                 <div class="card-body p-2">
+                  <p class="card-text text-justify top">
+                  Absolute number of unique surnames that are available in our database.
+                  </p>
                   <canvas id="cardFreq" width="100" height="100">
 
                   <!-- Chart JavaScript -->
+                  <script> var freqs = {{ data_freqs }} </script>
                   <script src ="{% static 'js/chart.js' %}"></script>
 
                   </canvas>
