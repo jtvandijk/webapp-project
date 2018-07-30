@@ -139,7 +139,7 @@ function renderLoclist(loclist) {
   var foot = document.createElement('div');
 
   div.className = "card-body p-2";
-  par.className = "card-text text-justify top mb-0";
+  par.className = "card-text text-justify top";
   par.textContent = "Besides the most popular surname, the following surnames are also frequently occuring:";
   foot.className = "card-footer small text-justify text-muted p-2";
   foot.textContent = "Please note that these data are aggregated to LSOA-level for privacy reasons.";
@@ -166,5 +166,5 @@ function showAll() {
   feedb.className = 'collapse show';
   alpha.className = 'collapse show';
   uniq.className = 'collapse show';
-  tplst.className = 'collapse show';
+  toplst.className = 'collapse show';
 }
