@@ -35,11 +35,11 @@
   {% block nav %}
   {% endblock %}
 
-  <!-- Main content-->
+  <!-- Main content -->
   <div class="content-wrapper">
     <div class="container-fluid">
 
-      <!-- About-->
+      <!-- About -->
       <div id="dashboard">
         <div class="card mb-3">
           <div class="card-header">
@@ -59,32 +59,10 @@
         </div>
       </div>
 
-      <!-- Map-->
+      <!-- Row: search, map -->
       <div class="row">
-        <div class="col-lg-8">
-          <div class="card mb-3" >
-            <div class="card-header">
-              <i class="fa fa-map pr-1"></i> Contour map
-              <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseMap" aria-expanded="true" aria-controls="collapseMap">
-              <span class="fa fa-align-justify" style="text-decoration: none"></span>
-              </button>
-            </div>
-            <div id="collapseMap" class="collapse show" aria-labelledby="collapseMap">
-              <div id="kdemap" class="card-body p-2">
-                <canvas id="cardMap" width="100" height="650">
-
-                <!-- KDE JavaScript -->
-                <script src ="{% static 'js/map.js' %}"></script>
-
-                </canvas>
-              </div>
-              <div class="card-footer small text-muted p-2">Background map © OpenStreetMap contributors</div>
-            </div>
-          </div>
-        </div>
+        <!-- Search -->
         <div class="col-lg-4">
-
-          <!-- Search -->
           <div class="card mb-3">
             <div class="card-header">
               <i class= "fa fa-search pr-1"></i> Search for a surname
@@ -113,7 +91,30 @@
             </div>
           </div>
 
-          <!-- Frequency-->
+          <!-- Map -->
+          <div class="col-lg-8">
+            <div class="card mb-3" >
+              <div class="card-header">
+                <i class="fa fa-map pr-1"></i> Contour map
+                <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseMap" aria-expanded="true" aria-controls="collapseMap">
+                <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                </button>
+              </div>
+              <div id="collapseMap" class="collapse show" aria-labelledby="collapseMap">
+                <div id="kdemap" class="card-body p-2">
+                  <canvas id="cardMap" width="100" height="650">
+
+                  <!-- KDE JavaScript -->
+                  <script src ="{% static 'js/map.js' %}"></script>
+
+                  </canvas>
+                </div>
+                <div class="card-footer small text-muted p-2">Background map © OpenStreetMap contributors</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Frequency -->
           <div>
             <div class="card mb-3">
               <div class="card-header">
@@ -147,10 +148,10 @@
       </div>
     </div>
 
-    <!-- Area stats -->
+    <!-- Row: location stats -->
     <div class="row">
 
-      <!-- Popular-->
+      <!-- Popular -->
       <div class="col-lg-4">
         <div class="card mb-3">
           <div class="card-header">
@@ -172,7 +173,7 @@
         </div>
       </div>
 
-      <!-- Surname diversity-->
+      <!-- Surname diversity -->
       <div class="col-lg-4">
         <div class="card mb-3">
           <div class="card-header">
@@ -195,7 +196,7 @@
         </div>
       </div>
 
-      <!-- Surname unique-->
+      <!-- Surname unique -->
       <div class="col-lg-4">
         <div class="card mb-3">
           <div class="card-header">
@@ -219,7 +220,7 @@
       </div>
     </div>
 
-    <!-- Feedback-->
+    <!-- Feedback -->
     <div class="row">
       <div class="col-lg-4">
         <div class="card mb-3">
@@ -285,7 +286,7 @@
   <script src ="{% static 'js/location.js' %}"></script>
   <script src ="{% static 'js/autoplay.js' %}"></script>
 
-  <!-- Bootstrap core JavaScript-->
+  <!-- Bootstrap core JavaScript -->
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
