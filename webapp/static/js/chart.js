@@ -1,6 +1,6 @@
 // Surname frequency chart
 var freq = document.getElementById("cardFreq");
-var test = {{ freqs }};
+var test = searchdir.test;
 console.log(test);
 var fchart = new Chart (freq, {
 type: 'line',
