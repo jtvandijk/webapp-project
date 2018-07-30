@@ -5,7 +5,7 @@ from .models import KdeLookup
 
 def index(request):
 
-    data = KdeLookup.objects.aggregate(Sum('freq2017')()[0]
+    data = KdeLookup.objects.aggregate(Sum('freq2017')())
     print(data)
 
         # available = {key: value for key, value in data.items() if value != None}
