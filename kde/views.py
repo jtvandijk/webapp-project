@@ -138,7 +138,6 @@ def location(request):
         outProj = Proj(init='epsg:27700')
         locprj = list(transform(inProj,outProj, lon,lat))
         pnt = fromstr('POINT(' +str(locprj[0]) + ' ' +str(locprj[1]) + ')', srid=27700)
-
         #spatial query for topnames
         lsoa = LsoaTopnames.objects.filter(shape__contains=pnt)
         div = {key: value for key, value in lsoa.values()[0].items()}
