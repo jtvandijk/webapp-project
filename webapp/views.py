@@ -5,7 +5,7 @@ from kde.models import KdeLookup
 
 def index(request):
 
-    f2017 = KdeLookup.objects.filter(freq2017__isnull=False).distinct()
+    f2017 = KdeLookup.objects.filter(freq2017__isnull=False).distinct().count()
 
     print(f2017)
 
