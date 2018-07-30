@@ -77,7 +77,7 @@ def search(request):
         gridc['id'] = gridc.index
         level = 55
         kde_sel = gridc[(gridc['val'] >= level)]
-        coord = [[int(x[1]), int(x[0])] for x in (list(zip(kde_sel.x, kde_sel.y)))]
+        coord = [[int(x[1]),int(x[0])] for x in (list(zip(kde_sel.x,kde_sel.y)))]
         cs, lbls = dbscan(coord, eps=2000)
         kde_sel = kde_sel.copy()
         kde_sel['group'] = lbls
@@ -103,7 +103,7 @@ def search(request):
         if request.method == 'GET':
 
             #return view
-            return render(request, "search.html", {'search_sur': sclean.title(), 'db_sur': db_sur, 'data': years, 'freqs': freqs, 'year_sel': year_sel, 'qvalid': qvalid, 'contourprj':contourprj})
+            return render(request,"search.html",{'search_sur':sclean.title(),'db_sur':db_sur,'data':years,'freqs':freqs,'year_sel':year_sel,'qvalid':qvalid,'contourprj':contourprj})
 
         #return if search from searhc
         if request.method == 'POST':
@@ -118,13 +118,13 @@ def search(request):
                     'contourprj': contourprj,
                     }
             #return data
-            return HttpResponse(json.dumps(search), content_type="application/json")
+            return HttpResponse(json.dumps(search),content_type="application/json")
 
     #if not in db
     else:
 
         #return emtpy
-        return render(request, "search.html", {'search_sur': search_sur.title(), 'db_sur': db_sur, 'data': years, 'freqs': freqs, 'year_sel': year_sel, 'qvalid': qvalid, 'contourprj':contourprj})
+        return render(request,"search.html",{'search_sur':search_sur.title(),'db_sur':db_sur,'data':years,'freqs':freqs,'year_sel':year_sel,'qvalid':qvalid,'contourprj':contourprj})
 
 def location(request):
 
@@ -153,4 +153,4 @@ def location(request):
                    'alpha': alpha
                    }
         #return data
-        return HttpResponse(json.dumps(loclist), content_type="application/json")
+        return HttpResponse(json.dumps(loclist),content_type="application/json")
