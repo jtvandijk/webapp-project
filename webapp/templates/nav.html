@@ -1,22 +1,22 @@
 {% block nav %}
 {% load staticfiles %}
 
-<!-- Navigation-->
+<!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
-    
-    <!--Nav brand-->
+
+    <!--Nav brand -->
     <a class="navbar-brand" href="#"> Surname Geographies</a>
 
-    <!-- Toggle navigation if hidden-->    
+    <!-- Toggle navigation if hidden -->
     <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    
-    <!-- Navigation elements-->
+
+    <!-- Navigation elements -->
     <div class="collapse navbar-collapse" id="navbarResponsive">
       <ul class="navbar-nav navbar-sidenav" id="navBar">
-        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Home">
-          <a class="nav-link" href="{% url 'home' %}"">
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Home"/>
+          <a class="nav-link" href="{% url 'home' %}">
             <i class="fa fa-fw fa-home"></i>
             <span class="nav-link-text">Home</span>
           </a>
@@ -29,9 +29,6 @@
           <ul class="sidenav-second-level collapse" id="collapseSettings">
             <li>
               <a href="#">Bandwidth selector</a>
-            </li>
-            <li>
-              <a href="#">Year selector</a>
             </li>
           </ul>
         </li>
@@ -47,7 +44,7 @@
             <li><a href="https://esrc.ukri.org/">Economic and Social Research Council</a></li>
           </ul>
         </li>
-      </ul>      
+      </ul>
       <ul class="navbar-nav ml-auto">
         <li class="nav-item">
           <img src="{% static 'ucl_logo_nav.png' %}" height="25" />
@@ -55,5 +52,5 @@
       </ul>
     </div>
   </nav>
-  
+
 {% endblock %}
