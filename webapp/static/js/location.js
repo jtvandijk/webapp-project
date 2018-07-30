@@ -99,8 +99,7 @@ function renderAlpha(loclist) {
   par.textContent = "The value below shows the probability that two individuals chosen at random share the same surname at your location.";
   alphav.className = "text-center p-2";
   alphav.style.color = "rgb(189,54,29)";
-  //alphav.innerHTML = loclist.alpha;
-  alphav.innerHTML = 0.04244;
+  alphav.innerHTML = loclist.alpha;
   foot.className = "card-footer small text-justify text-muted p-2";
   foot.textContent = "Value represents the Gini–Simpson Index.";
 
@@ -127,7 +126,7 @@ function renderUniq(loclist) {
   surnames.style.color = "rgb(96,175,111)";
   surnames.innerHTML = loclist.unique;
   foot.className = "card-footer small text-justify text-muted p-2";
-  foot.textContent = "Number of unique surnames aggregated to the LSOA-level.";
+  foot.textContent = "Please note that these data are aggregated to LSOA-level for privacy reasons.";
 
   div.appendChild(par);
   div.appendChild(surnames);
