@@ -228,7 +228,7 @@
       <div class="col-lg-4">
         <div class="card mb-3">
           <div class="card-header">
-            <i class="fas fa-fingerprint pr-1"></i> Most frequent surnames
+            <i class="fas fa-ellipsis-h pr-1"></i> Most frequent surnames
             <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseTop" aria-expanded="false" aria-controls="collapseTop">
             <span class="fa fa-align-justify" style="text-decoration: none"></span>
             </button>
@@ -256,7 +256,6 @@
             <span class="fa fa-align-justify" style="text-decoration: none"></span>
             </button>
           </div>
-          {% if not db_sur %}
           <div id="collapseFeedback" class="collapse" area-labelledby="collapseFeedback">
             <div class="card-body p-2">
                 <p class="card-text text-justify top">
@@ -269,20 +268,6 @@
                 </p>
             </div>
           </div>
-          {% else %}
-          <div id="collapseFeedback" class="collapse" area-labelledby="collapseFeedback">
-            <div class="card-body p-2">
-                <p class="card-text text-justify top">
-                If you have any questions, concerns or feedback, please do not hesitate to contact us:<br/>
-                </p>
-                <p class="card-text text-center ml-0">
-                <a href="mailto:j.t.vandijk@ucl.ac.uk" class="text-dark"> <i class="fa fa-envelope fa-2x float-center"></i></a>
-                &nbsp;&nbsp;
-                <a href="https://twitter.com/@urbndynamicslab" class="text-dark"> <i class="fa fa-twitter fa-2x"></i></a>
-                </p>
-            </div>
-          </div>
-          {% endif %}
         </div>
       </div>
     </div>
