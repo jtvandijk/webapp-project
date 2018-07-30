@@ -10,7 +10,7 @@ def index(request):
         return getattr(sys.modules[__name__], classname)
 
     def distinct_count(column):
-        coln = str_to_class(column + ('__isnull')))
+        coln = str_to_class(column + ('__isnull'))
         dist_f = KdeLookup.objects.filter(coln=False).distinct().count()
         return(dist_f)
 
