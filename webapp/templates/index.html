@@ -13,7 +13,7 @@
     <title>Urban Dynamics Lab - Surname Geographies of the United Kingdom</title>
 
     <!-- CSS-->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.3/dist/leaflet.css" integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ==" crossorigin="anonymous"/>
     <!-- Custom CSS-->
@@ -104,18 +104,24 @@
               <div id="collapseFreq" class="collapse" aria-labelledby="collapseFreq">
                 <div class="card-body p-2">
                   <canvas id="cardFreq" width="100" height="100">
+
+                  <!-- Chart JavaScript -->
+                  <script src ="{% static 'js/chart.js' %}"></script>
+
                   </canvas>
                 </div>
               </div>
               {% else %}
               <div id="collapseFreq" class="collapse show" aria-labelledby="collapseFreq">
                 <div class="card-body p-2">
-                <p class="card-text text-justify top">
+                  <p class="card-text text-justify top">
                   Absolute number of occurences for your search that is available in our database.
                   </p>
                   <canvas id="cardFreq" width="100" height="70">
-                  {% block chart %}
-                  {% endblock %}
+
+                  <!-- Chart JavaScript -->
+                  <script src ="{% static 'js/chart.js' %}"></script>
+
                   </canvas>
                 </div>
               </div>

@@ -1,6 +1,7 @@
 {% extends "index.html" %}
 {% load staticfiles %}
 
+
 <!-- Search database -->
 {% block search %}
 
@@ -50,39 +51,8 @@
 
 {% endblock %}
 
-<!-- Produce frequency chart contour map -->
-
-{% block chart %}
-
-<script>
-  // Surname frequency chart
-  var freq = document.getElementById("cardFreq");
-  var fchart = new Chart (freq, {
-  type: 'line',
-  data: {
-    labels: ['1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009',
-     '2010', '2011', '2012','2013','2014','2015','2016','2017'],
-    datasets: [{
-      label: 'Frequency of surname: {{ search_sur }}',
-      data: {{freqs}},
-      borderColor: "#3273d1",
-      backgroundColor: "rgba(0,123,250,0.4)",
-      pointBackgroundColor: "#000000",
-      pointBorderColor: "#000000"
-    }]
-  },
-  options: {
-      legend: {
-          display: false
-          }
-      }
-});
-</script>
-
-{% endblock %}
 
 <!-- Produce location based topname -->
-
 {% block topnames %}
 
 <div id="collapseSearchMax" class="collapse show" aria-labelledby="collapseSearchMax">
@@ -105,8 +75,8 @@
 
 {% endblock %}
 
-<!-- Produce diversity alpha -->
 
+<!-- Produce diversity alpha -->
 {% block alpha %}
 
 <div id="collapseAlpha" class="collapse" aria-labelledby="collapseAlpha">
@@ -118,7 +88,6 @@
 
 
 <!-- Produce unique names -->
-
 {% block uniq %}
 
 <div id="collapseUniq" class="collapse" aria-labelledby="collapseUniq">
@@ -130,7 +99,6 @@
 
 
 <!-- Produce list most popular names -->
-
 {% block toplist %}
 
 <div id="collapseTop" class="collapse" aria-labelledby="collapseTop">
