@@ -50,10 +50,9 @@ function showPosition(position) {
     })
 };
 
-//topnames
+//topname
 function renderLoclist(loclist) {
 
-  //render list
   var locdiv = document.getElementById('locList');
   var container = document.createElement('div');
   var div = document.createElement('div');
@@ -63,20 +62,12 @@ function renderLoclist(loclist) {
 
   div.className = "card-body p-2";
   par.className = "card-text text-justify top mb-0";
-  par.textContent = "Based on your location, the most frequently occuring surname in the area is:";
+  par.textContent = "Based on your location, the most popular surname in the area is:";
   topname.className = "text-center p-2";
   topname.style.color = "rgb(77,146,184)";
   topname.innerHTML = loclist.topnames[0];
   foot.className = "card-footer small text-justify text-muted p-2";
   foot.textContent = "Please note that these data are aggregated to LSOA-level for privacy reasons.";
-
-  //var ul = document.createElement('ul');
-  // for (var i = 0; i < loclist.topnames.length; ++i) {
-  //   var li = document.createElement('li');
-  //   li.innerHTML = loclist.topnames[i];
-  //   ul.appendChild(li);
-  // }
-  // div.appendChild(ul);
 
   div.appendChild(par);
   div.appendChild(topname);
@@ -135,12 +126,45 @@ function renderUniq(loclist) {
   uniqdiv .replaceWith(container);
 };
 
+//topnames
+function renderLoclist(loclist) {
+
+  //render list
+  var locdiv = document.getElementById('topNames');
+  var container = document.createElement('div');
+  var div = document.createElement('div');
+  var par = document.createElement('p');
+  var ul = document.createElement('ul');
+  var foot = document.createElement('div');
+
+  div.className = "card-body p-2";
+  par.className = "card-text text-justify top mb-0";
+  par.textContent = "Besides the most popular surname, the following surnames are also frequently occuring:";
+  topname.innerHTML = loclist.topnames[0];
+  foot.className = "card-footer small text-justify text-muted p-2";
+  foot.textContent = "Please note that these data are aggregated to LSOA-level for privacy reasons.";
+
+  for (var i = 1; i < loclist.topnames.length; ++i) {
+    var li = document.createElement('li');
+    li.innerHTML = loclist.topnames[i];
+    ul.appendChild(li);
+  }
+
+  div.appendChild(par);
+  div.appendChild(ul);
+  container.appendChild(div);
+  container.appendChild(foot);
+  locdiv.replaceWith(container);
+};
+
 //show all
 function showAll() {
   var feedb = document.getElementById('collapseFeedback');
   var alpha = document.getElementById('collapseAlpha');
   var uniq = document.getElementById('collapseUniq');
+  var toplst = document.getElementById('collapseTop')
   feedb.className = 'collapse show';
   alpha.className = 'collapse show';
   uniq.className = 'collapse show';
+  tplst.className = 'collapse show';
 }
