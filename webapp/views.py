@@ -14,15 +14,15 @@ def index(request):
         dist_f = KdeLookup.objects.filter(coln=False).distinct().count()
         return(dist_f)
 
-    f2017 = distinct_count('freq2017')
+    data_freqs = []
+    for i in range(1998,2017):
 
-    print(f2017)
+        year = 'freq'+str(i)
+        print(year)
+        freq_y = distinct_count(year)
+        data_freqs.apend(freq_y)
 
-        # available = {key: value for key, value in data.items() if value != None}
-        # years = [str(year[4:]) for year in list(available.keys()) if year.startswith('freq')]
-        #
-        # freq_chart = {key: value for key, value in data.items() if key.startswith('freq')}
-        # freqs = [str(value) for value in freq_chart.values()]
-        # freqs = [0 if x=='None' else int(x) for x in freqs]
+    print(data_freqs)
 
-    return render(request, "index.html")
+
+    return render(request, "index.html", {'data_freqs' = data_freqs})
