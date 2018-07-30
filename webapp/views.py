@@ -17,8 +17,7 @@ def index(request):
     data_freqs = []
     for i in range(1998,2017):
 
-        year = 'freq'+str(i)
-        print(year)
+        year = str_to_class('freq'+str(i))
         freq_y = distinct_count(year)
         data_freqs.apend(freq_y)
 
