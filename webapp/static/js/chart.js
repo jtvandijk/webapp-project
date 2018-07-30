@@ -19,4 +19,4 @@ data: {
           display: false
           }
       }
-});
+};
