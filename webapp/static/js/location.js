@@ -42,16 +42,17 @@ function showPosition(position) {
             },
       success: function (loclist) {
         stopLoad();
-        renderLoclist(loclist);
+        renderTopname(loclist);
         renderAlpha(loclist);
         renderUniq(loclist);
+        renderLoclist(loclist);
         showAll();
       }
     })
 };
 
 //topname
-function renderLoclist(loclist) {
+function renderTopname(loclist) {
 
   var locdiv = document.getElementById('locList');
   var container = document.createElement('div');
@@ -140,7 +141,6 @@ function renderLoclist(loclist) {
   div.className = "card-body p-2";
   par.className = "card-text text-justify top mb-0";
   par.textContent = "Besides the most popular surname, the following surnames are also frequently occuring:";
-  topname.innerHTML = loclist.topnames[0];
   foot.className = "card-footer small text-justify text-muted p-2";
   foot.textContent = "Please note that these data are aggregated to LSOA-level for privacy reasons.";
 
