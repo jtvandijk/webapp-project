@@ -25,4 +25,4 @@ def index(request):
     print(data_freqs)
 
 
-    return render(request, "index.html", {'data_freqs' = data_freqs})
+    return render(request, "index.html", {'data_freqs':data_freqs})
