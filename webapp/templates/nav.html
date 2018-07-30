@@ -2,51 +2,55 @@
 {% load staticfiles %}
 
 <!-- Navigation -->
-<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-      <a class="navbar-brand" href="#">Surname Geographies</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
 
-      <!-- Navigation elements -->
-      <div class="collapse navbar-collapse" id="navbarResponsive">
-        <ul class="navbar-nav navbar-sidenav" id="navBar">
-          <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Home"/>
-            <a class="nav-link" href="{% url 'home' %}">
-              <i class="fa fa-fw fa-home"></i>
-              <span class="nav-link-text">Home</span>
-            </a>
-          </li>
-          <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Settings">
-            <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseSettings" data-parent="#navBar">
-              <i class="fa fa-fw fa-wrench"></i>
-              <span class="nav-link-text">Settings</span>
-            </a>
-            <ul class="sidenav-second-level collapse" id="collapseSettings">
-              <li>
-                <a href="#">Bandwidth selector</a>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-item" data-toggle="tooltip" data-placement="right" title="More information">
-            <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseInfo" data-parent="#navBar">
-              <i class="fa fa-fw fa-link"></i>
-              <span class="nav-link-text">More information</span>
-            </a>
-            <ul class="sidenav-second-level collapse" id="collapseInfo">
-              <li><a href="https://www.ucl.ac.uk/urban-dynamics-lab">Urban Dynamics Lab</a></li>
-              <li><a href="https://www.cdrc.ac.uk/">Consumer Data Research Centre</a></li>
-              <li><a href="https://www.ons.gov.uk/">UK Office for National Statistics</a></li>
-              <li><a href="https://esrc.ukri.org/">Economic and Social Research Council</a></li>
-            </ul>
-          </li>
-        </ul>
-        <ul class="navbar-nav ml-auto">
-          <li class="nav-item">
-            <img src="{% static 'ucl_logo_nav.png' %}" height="25" />
-          </li>
-        </ul>
-      </div>
-    </nav>
+    <!--Nav brand -->
+    <a class="navbar-brand" href="#"> Surname Geographies</a>
+
+    <!-- Toggle navigation if hidden -->
+    <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navigation elements -->
+    <div class="collapse navbar-collapse" id="navbarResponsive">
+      <ul class="navbar-nav navbar-sidenav" id="navBar">
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Home"/>
+          <a class="nav-link" href="{% url 'home' %}">
+            <i class="fa fa-fw fa-home"></i>
+            <span class="nav-link-text">Home</span>
+          </a>
+        </li>
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Settings">
+          <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseSettings" data-parent="#navBar">
+            <i class="fa fa-fw fa-wrench"></i>
+            <span class="nav-link-text">Settings</span>
+          </a>
+          <ul class="sidenav-second-level collapse" id="collapseSettings">
+            <li>
+              <a href="#">Bandwidth selector</a>
+            </li>
+          </ul>
+        </li>
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="More information">
+          <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseInfo" data-parent="#navBar">
+            <i class="fa fa-fw fa-link"></i>
+            <span class="nav-link-text">More information</span>
+          </a>
+          <ul class="sidenav-second-level collapse" id="collapseInfo">
+            <li><a href="https://www.ucl.ac.uk/urban-dynamics-lab">Urban Dynamics Lab</a></li>
+            <li><a href="https://www.cdrc.ac.uk/">Consumer Data Research Centre</a></li>
+            <li><a href="https://www.ons.gov.uk/">UK Office for National Statistics</a></li>
+            <li><a href="https://esrc.ukri.org/">Economic and Social Research Council</a></li>
+          </ul>
+        </li>
+      </ul>
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <img src="{% static 'ucl_logo_nav.png' %}" height="25" />
+        </li>
+      </ul>
+    </div>
+  </nav>
 
 {% endblock %}
