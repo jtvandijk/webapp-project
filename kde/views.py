@@ -102,6 +102,9 @@ def search(request):
         #return if search from home
         if request.method == 'GET':
 
+            print(db_sur)
+
+
             #return view
             return render(request,"search.html",{'search_sur':sclean.title(),'db_sur':db_sur,'data':years,'freqs':freqs,'year_sel':year_sel,'qvalid':qvalid,'contourprj':contourprj})
 
@@ -117,12 +120,15 @@ def search(request):
                     'qvalid': qvalid,
                     'contourprj': contourprj,
                     }
+
+            print(db_sur)
+
             #return data
             return HttpResponse(json.dumps(search),content_type="application/json")
 
     #if not in db
     else:
-
+        print(db_sur)
         #return emtpy
         return render(request,"search.html",{'search_sur':search_sur.title(),'db_sur':db_sur,'data':years,'freqs':freqs,'year_sel':year_sel,'qvalid':qvalid,'contourprj':contourprj})
 
