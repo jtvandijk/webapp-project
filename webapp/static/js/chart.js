@@ -1,5 +1,6 @@
 // Surname frequency chart
 var freq = document.getElementById("cardFreq");
+console.log(freqs)
 var fchart = new Chart (freq, {
 type: 'line',
 data: {
