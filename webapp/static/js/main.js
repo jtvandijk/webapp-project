@@ -15,16 +15,16 @@ $j('#year_search').on('change', function(event){
     change_year(selYear);
 });
 
-// Autoplay
-var autoPlay = document.getElementById("autoplay");
-
-autoPlay.addEventListener( 'change', function() {
-    if(this.checked) {
-        console.log('on');
-    } else {
-        console.log('off');
-    }
-});
+// // Autoplay
+// var autoPlay = document.getElementById("autoplay");
+//
+// autoPlay.addEventListener( 'change', function() {
+//     if(this.checked) {
+//         console.log('on');
+//     } else {
+//         console.log('off');
+//     }
+// });
 
 // Detect autoplay in year
 // $j('#autoplay').on('change', function(event){
