@@ -1,6 +1,6 @@
 // Settings modal
 var modal = document.getElementById('settings');
-var link = document.getElementById('mysettings_modal');
+var link = document.getElementById('settings_modal');
 var span = document.getElementsByClassName("close")[0];
 
 link.onclick = function() {
