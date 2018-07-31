@@ -76,7 +76,7 @@ footer.sticky-footer {
     top: 0;
     margin: 15% auto;
     width: 80%; /* Full width */
-    height: 100%; /* Full height */
+    height: 80%; /* Full height */
     overflow: auto; /* Enable scroll if needed */
 }
 
