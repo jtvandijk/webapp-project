@@ -89,7 +89,7 @@ footer.sticky-footer {
 
 .close:hover,
 .close:focus {
-    color: white;
+    color: white !important;
     text-decoration: none;
     cursor: pointer;
 }
