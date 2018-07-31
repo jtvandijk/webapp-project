@@ -75,7 +75,6 @@ footer.sticky-footer {
     padding-top: 100px; /* Location of the box */
     left: 0;
     top: 0;
-    bottom: 0;
     width: 100%; /* Full width */
     height: 100%; /* Full height */
     overflow: auto; /* Enable scroll if needed */
@@ -85,7 +84,6 @@ footer.sticky-footer {
 
 /* Modal Content */
 .modal-content {
-    padding: 0;
     margin: auto;
     width: 80%;
 }
