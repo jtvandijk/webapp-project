@@ -74,9 +74,9 @@ footer.sticky-footer {
     z-index: 99999; /* Sit on top */
     left: 0;
     top: 0;
-    padding-top: 100px;
-    width: 80%; /* Full width */
-    height: 80%; /* Full height */
+    margin: 15% auto;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
     overflow: auto; /* Enable scroll if needed */
 }
 
