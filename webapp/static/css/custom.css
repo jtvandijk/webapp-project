@@ -84,6 +84,7 @@ footer.sticky-footer {
 
 /* Modal Content */
 .modal-content {
+    padding: 0;
     margin: auto;
     width: 80%;
 }
