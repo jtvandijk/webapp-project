@@ -75,7 +75,7 @@ def search(request):
         #add selected values
         gridc['val'] = val
         gridc['id'] = gridc.index
-        level = 55
+        level = 50
         kde_sel = gridc[(gridc['val'] >= level)]
         coord = [[int(x[1]),int(x[0])] for x in (list(zip(kde_sel.x,kde_sel.y)))]
         cs, lbls = dbscan(coord, eps=2000)
