@@ -57,7 +57,7 @@ body.fixed-nav {
 }
 
 .dropdown-backdrop {
-  position: static;
+  position: relative;
 }
 
 /* Sticky footer */
