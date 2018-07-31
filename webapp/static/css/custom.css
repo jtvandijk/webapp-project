@@ -56,6 +56,10 @@ body.fixed-nav {
   }
 }
 
+.dropdown-backdrop {
+  position: static;
+}
+
 /* Sticky footer */
 footer.sticky-footer {
   position: absolute;
