@@ -1,8 +1,4 @@
 /* Body */
-a, a:hover, a:focus {
-  text-decoration: none;
-}
-
 html {
   position: relative;
   min-height: 100%;
@@ -54,10 +50,6 @@ body.fixed-nav {
   .card-columns {
     column-count: 2;
   }
-}
-
-.dropdown-backdrop {
-  position: relative;
 }
 
 /* Sticky footer */
