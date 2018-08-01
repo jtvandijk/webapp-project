@@ -61,7 +61,7 @@
 
       <!-- Surname exploration -->
       <div>
-        <div class="card-header bg-dark text-light">
+        <div class="card-header bg-dark text-light mb-3">
         <i class="fas fa-globe mr-3"></i>Surname exploration
         <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseSur" aria-expanded="true" aria-controls="collapseSur">
         <span class="fa fa-align-justify" style="text-decoration: none"></span>
@@ -170,128 +170,130 @@
 
       <!-- Location exploration -->
       <div>
-        <div class="card-header bg-dark text-light">
-        <i class="fas fa-globe mr-3"></i>Location exploration
+        <div class="card-header bg-dark text-light mb-3">
+        <i class="fas fa-location-arrow mr-3"></i>Location exploration
         <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseLoc" aria-expanded="true" aria-controls="collapseLoc">
         <span class="fa fa-align-justify" style="text-decoration: none"></span>
         </button>
         </div>
         <!-- Row: location stats -->
         <div id="collapseLoc" class="row collapse show" aria-labelledby="collapseLoc">
-          <!-- Topname -->
-          <div class="col-lg-4">
-            <div class="card mb-3">
-              <div class="card-header">
-              <i class= "fa fa-map-marker mr-3"></i>  Topname
-              <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseSearchMax" aria-expanded="true" aria-controls="collapseSearchMax">
-              <span class="fa fa-align-justify" style="text-decoration: none"></span>
-              </button>
-            </div>
-            {% if not db_sur %}
-            <div id="collapseSearchMax" class="collapse" aria-labelledby="collapseSearchMax">
-              <div class="card-body p-2">
-                <canvas id="cardTop" width="100%" height="100"></canvas>
-              </div>
-            </div>
-            {% else %}
-            {% block topnames %}
-            {% endblock %}
-            {% endif %}
-            </div>
-          </div>
-
-          <!-- Surname diversity -->
-          <div class="col-lg-4">
-            <div class="card mb-3">
-              <div class="card-header">
-                <i class="fa fa-chart-pie mr-3"></i>Surname diversity
-                <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseAlpha" aria-expanded="false" aria-controls="collapseAlpha">
-                <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                </button>
-              </div>
-              {% if not db_sur %}
-              <div id="collapseAlpha" class="collapse" aria-labelledby="collapseAlpha">
-                <div class="card-body p-2">
-                  <canvas id="cardFreq" width="100" height="100">
-                  </canvas>
-                </div>
-              </div>
-              {% else %}
-              {% block alpha %}
-              {% endblock %}
-              {% endif %}
-            </div>
-          </div>
-
-          <!-- Surname unique -->
-          <div class="col-lg-4">
-            <div class="card mb-3">
-              <div class="card-header">
-                <i class="fas fa-fingerprint mr-3"></i>Unique surnames
-                <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseUniq" aria-expanded="false" aria-controls="collapseUniq">
-                <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                </button>
-              </div>
-              {% if not db_sur %}
-              <div id="collapseUniq" class="collapse" aria-labelledby="collapseUniq">
-                <div class="card-body p-2">
-                  <canvas id="cardUniq" width="100" height="100">
-                  </canvas>
-                </div>
-              </div>
-              {% else %}
-              {% block uniq %}
-              {% endblock %}
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <!-- Row: location stats, feedback -->
-        <div class="row">
-
-          <!-- Popular -->
-          <div class="col-lg-4">
+          <div class="row">
+            <!-- Topname -->
+            <div class="col-lg-4">
               <div class="card mb-3">
-              <div class="card-header">
-                <i class="fas fa-ellipsis-h mr-3"></i>Most frequent surnames
-                <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseTop" aria-expanded="false" aria-controls="collapseTop">
+                <div class="card-header">
+                <i class= "fa fa-map-marker mr-3"></i>  Topname
+                <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseSearchMax" aria-expanded="true" aria-controls="collapseSearchMax">
                 <span class="fa fa-align-justify" style="text-decoration: none"></span>
                 </button>
               </div>
               {% if not db_sur %}
-              <div id="collapseTop" class="collapse" aria-labelledby="collapseTop">
+              <div id="collapseSearchMax" class="collapse" aria-labelledby="collapseSearchMax">
                 <div class="card-body p-2">
-                  <canvas id="cardTopList" width="100" height="100">
-                  </canvas>
+                  <canvas id="cardTop" width="100%" height="100"></canvas>
                 </div>
               </div>
               {% else %}
-              {% block toplist %}
+              {% block topnames %}
               {% endblock %}
               {% endif %}
+              </div>
+            </div>
+
+            <!-- Surname diversity -->
+            <div class="col-lg-4">
+              <div class="card mb-3">
+                <div class="card-header">
+                  <i class="fa fa-chart-pie mr-3"></i>Surname diversity
+                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseAlpha" aria-expanded="false" aria-controls="collapseAlpha">
+                  <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                  </button>
+                </div>
+                {% if not db_sur %}
+                <div id="collapseAlpha" class="collapse" aria-labelledby="collapseAlpha">
+                  <div class="card-body p-2">
+                    <canvas id="cardFreq" width="100" height="100">
+                    </canvas>
+                  </div>
+                </div>
+                {% else %}
+                {% block alpha %}
+                {% endblock %}
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Surname unique -->
+            <div class="col-lg-4">
+              <div class="card mb-3">
+                <div class="card-header">
+                  <i class="fas fa-fingerprint mr-3"></i>Unique surnames
+                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseUniq" aria-expanded="false" aria-controls="collapseUniq">
+                  <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                  </button>
+                </div>
+                {% if not db_sur %}
+                <div id="collapseUniq" class="collapse" aria-labelledby="collapseUniq">
+                  <div class="card-body p-2">
+                    <canvas id="cardUniq" width="100" height="100">
+                    </canvas>
+                  </div>
+                </div>
+                {% else %}
+                {% block uniq %}
+                {% endblock %}
+                {% endif %}
+              </div>
             </div>
           </div>
 
-          <!-- Feedback -->
-          <div class="col-lg-4">
-            <div class="card mb-3">
-              <div class="card-header">
-                <i class="fa fa-comments mr-3"></i>Feedback
-                <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseFeedback" aria-expanded="false" aria-controls="collapseFeedback">
-                <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                </button>
+          <!-- Row: location stats, feedback -->
+          <div class="row">
+
+            <!-- Popular -->
+            <div class="col-lg-4">
+                <div class="card mb-3">
+                <div class="card-header">
+                  <i class="fas fa-ellipsis-h mr-3"></i>Most frequent surnames
+                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseTop" aria-expanded="false" aria-controls="collapseTop">
+                  <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                  </button>
+                </div>
+                {% if not db_sur %}
+                <div id="collapseTop" class="collapse" aria-labelledby="collapseTop">
+                  <div class="card-body p-2">
+                    <canvas id="cardTopList" width="100" height="100">
+                    </canvas>
+                  </div>
+                </div>
+                {% else %}
+                {% block toplist %}
+                {% endblock %}
+                {% endif %}
               </div>
-              <div id="collapseFeedback" class="collapse" area-labelledby="collapseFeedback">
-                <div class="card-body p-2">
-                    <p class="card-text text-justify top">
-                    If you have any questions, concerns or feedback, please do not hesitate to contact us:<br/>
-                    </p>
-                    <p class="card-text text-center ml-0">
-                    <a href="mailto:j.t.vandijk@ucl.ac.uk" class="text-dark"> <i class="fa fa-envelope fa-2x float-center"></i></a>
-                    &nbsp;&nbsp;
-                    <a href="https://twitter.com/@urbndynamicslab" class="text-dark"> <i class="fab fa-twitter fa-2x"></i></a>
-                    </p>
+            </div>
+
+            <!-- Feedback -->
+            <div class="col-lg-4">
+              <div class="card mb-3">
+                <div class="card-header">
+                  <i class="fa fa-comments mr-3"></i>Feedback
+                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseFeedback" aria-expanded="false" aria-controls="collapseFeedback">
+                  <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                  </button>
+                </div>
+                <div id="collapseFeedback" class="collapse" area-labelledby="collapseFeedback">
+                  <div class="card-body p-2">
+                      <p class="card-text text-justify top">
+                      If you have any questions, concerns or feedback, please do not hesitate to contact us:<br/>
+                      </p>
+                      <p class="card-text text-center ml-0">
+                      <a href="mailto:j.t.vandijk@ucl.ac.uk" class="text-dark"> <i class="fa fa-envelope fa-2x float-center"></i></a>
+                      &nbsp;&nbsp;
+                      <a href="https://twitter.com/@urbndynamicslab" class="text-dark"> <i class="fab fa-twitter fa-2x"></i></a>
+                      </p>
+                  </div>
                 </div>
               </div>
             </div>
