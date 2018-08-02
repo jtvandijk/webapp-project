@@ -38,7 +38,7 @@ function showPosition(position) {
       url: "../udl-namekde/location/",
       data: {latitude: lat,
             longitude: lon,
-            csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+            csrfmiddlewaretoken: csrftoken
             },
       success: function (loclist) {
         stopLoad();

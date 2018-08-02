@@ -1,6 +1,24 @@
 // jQuery
 var $j = jQuery.noConflict();
 
+// CSRF
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+
 // Update map -- Search
 $j(document).on('submit', '#searchSur', function(e){
   e.preventDefault();
@@ -29,7 +47,7 @@ function get_data(selName,selYear,source) {
       url: "../udl-namekde/search/",
       data: {q: selName,
              y: selYear,
-             csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+             csrfmiddlewaretoken: csrftoken
             },
       success: function (data) {
         // No data entered
