@@ -14,8 +14,8 @@ import sys
 import re
 
 #reconstruct grid -- keep in memory
-xy = KdeGridxy.objects.values('x','y')
-gridc = pd.DataFrame.from_records(xy)
+xy = KdeGridxy.objects.values('gid','x','y')
+gridc = pd.DataFrame.from_records(xy).sort_values(by='gid')
 
 #search view
 def str_to_class(classname):
@@ -24,39 +24,41 @@ def str_to_class(classname):
 def search(request):
 
     #query db
-    if request.method == 'GET':
-        search_sur = (request.GET['q']).lower()
-        sclean = re.sub(r'[\W^0-9]+', ' ', search_sur)
-    elif request.method == 'POST':
-        search_sur = (request.POST['q']).lower()
-        sclean = re.sub(r'[\W^0-9]+', ' ', search_sur)
+    search_sur = (request.POST['q']).lower()
+    sclean = re.sub(r'[\W^0-9]+', ' ', search_sur)
     db_sur = KdeLookup.objects.filter(surname=sclean)
 
     #validate year
-    if request.method == 'GET' and 'y' in request.GET:
-        year_sel = (request.GET['y'])
-    elif request.method == 'POST' and 'y' in request.POST:
-        year_sel = (request.POST['y'])
-    else:
+    year_sel = (request.POST['y'])
+    if int(year_sel) == -1:
         year_sel = []
 
     #validate search
     qvalid=True
-    if len(sclean) == 0:
-        qvalid=False
+
+    #empty search
+    if len(search_sur) == 0:
+        sclean = 'Empty search'
+        years = []
+        freqs = []
+        year_sel = []
+        qvalid = False
+        contourprj = []
 
     #if not in db
-    if not db_sur:
+    elif not db_sur:
+        sclean = 'Not in db'
         years = []
+        freqs = []
+        year_sel = []
+        qvalid = False
         contourprj = []
-        freqs= []
 
     #if in database
-    if db_sur:
+    else:
         data = KdeLookup.objects.filter(surname=sclean).values()[0]
         available = {key: value for key, value in data.items() if value != None}
         years = [str(year[4:]) for year in list(available.keys()) if year.startswith('freq')]
-
         freq_chart = {key: value for key, value in data.items() if key.startswith('freq')}
         freqs = [str(value) for value in freq_chart.values()]
         freqs = [0 if x=='None' else int(x) for x in freqs]
@@ -99,57 +101,46 @@ def search(request):
                 tmp_prj.append(list(pwgs84_order))
             contourprj.append(tmp_prj)
 
-        #return if search from home
-        if request.method == 'GET':
+    #combine data
+    search = {
+            'clean_sur': sclean.title(),
+            'search_sur': search_sur,
+            'data': years,
+            'freqs': freqs,
+            'year_sel': year_sel,
+            'qvalid': qvalid,
+            'contourprj': contourprj,
+            }
 
-            #return view
-            return render(request,"search.html",{'search_sur':sclean.title(),'db_sur':db_sur,'data':years,'freqs':freqs,'year_sel':year_sel,'qvalid':qvalid,'contourprj':contourprj})
-
-        #return if search from searhc
-        if request.method == 'POST':
-
-            search = {
-                    'search_sur': sclean.title(),
-                    'db_sur': [],
-                    'data': years,
-                    'freqs': freqs,
-                    'year_sel': year_sel,
-                    'qvalid': qvalid,
-                    'contourprj': contourprj,
-                    }
-            #return data
-            return HttpResponse(json.dumps(search),content_type="application/json")
-
-    #if not in db
-    else:
-
-        #return emtpy
-        return render(request,"search.html",{'search_sur':search_sur.title(),'db_sur':db_sur,'data':years,'freqs':freqs,'year_sel':year_sel,'qvalid':qvalid,'contourprj':contourprj})
+    #return data
+    return HttpResponse(json.dumps(search),content_type="application/json")
 
 def location(request):
 
-    if request.method == 'POST':
+    #user location
+    lon = request.POST['longitude']
+    lat = request.POST['latitude']
 
-        #user location
-        lon = request.POST['longitude']
-        lat = request.POST['latitude']
-        #reproject
-        inProj = Proj(init='epsg:4326')
-        outProj = Proj(init='epsg:27700')
-        locprj = list(transform(inProj,outProj, lon,lat))
-        pnt = fromstr('POINT(' +str(locprj[0]) + ' ' +str(locprj[1]) + ')', srid=27700)
-        #spatial query for topnames
-        lsoa = LsoaTopnames.objects.filter(shape__contains=pnt)
-        div = {key: value for key, value in lsoa.values()[0].items()}
-        tnlist = [str(x).title() for x in div['topnames'][1:-1].split(',')]
-        unique = div['unique_n']
-        total = div['total_n']
-        alpha = div['diversity_a']
+    #reproject
+    inProj = Proj(init='epsg:4326')
+    outProj = Proj(init='epsg:27700')
+    locprj = list(transform(inProj,outProj, lon,lat))
+    pnt = fromstr('POINT(' +str(locprj[0]) + ' ' +str(locprj[1]) + ')', srid=27700)
 
-        loclist = {'topnames': tnlist,
-                   'unique': unique,
-                   'total': total,
-                   'alpha': alpha
-                   }
-        #return data
-        return HttpResponse(json.dumps(loclist),content_type="application/json")
+    #spatial query for topnames
+    lsoa = LsoaTopnames.objects.filter(shape__contains=pnt)
+    div = {key: value for key, value in lsoa.values()[0].items()}
+    tnlist = [str(x).title() for x in div['topnames'][1:-1].split(',')]
+    unique = div['unique_n']
+    total = div['total_n']
+    alpha = div['diversity_a']
+
+    #combine data
+    loclist = {'topnames': tnlist,
+               'unique': unique,
+               'total': total,
+               'alpha': alpha
+               }
+
+    #return data
+    return HttpResponse(json.dumps(loclist),content_type="application/json")

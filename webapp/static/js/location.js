@@ -2,7 +2,7 @@
 var $j = jQuery.noConflict();
 
 //event listener
-  $j(document).on('submit', '#locTop', function(e){
+$j(document).on('submit', '#locTop', function(e){
   e.preventDefault();
   startLoad();
   getLocation();

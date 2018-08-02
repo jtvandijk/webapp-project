@@ -73,7 +73,7 @@
           <div class="col-lg-4">
             <div class="card mb-3">
               <div class="card-header">
-                <i class= "fa fa-search pr-1"></i>  Search for a surname
+                <i class= "fa fa-search mr-3"></i>Search for a surname
                 <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseSearch" aria-expanded="true" aria-controls="collapseSearch">
                 <span class="fa fa-align-justify" style="text-decoration: none"></span>
                 </button>
@@ -83,7 +83,7 @@
                   <p class="card-text text-justify top">
                   Type a name in the field below to map the areas in the UK where this surname has the highest number of occurences.
                   </p>
-                  <form action="{% url 'search' %}">
+                  <form method="post" id="searchSur">
                   <div class="input-group">
                     <input class="form-control" type="text" placeholder="Type a surname, e.g. Smith" name="q" id="surname" maxlength="50">
                     <span class="input-group-append">
@@ -93,8 +93,8 @@
                     </span>
                   </div>
                   </form>
-                {% block search %}
-                {% endblock %}
+                  <p id="searchParam">
+                  </p>
                 </div>
               </div>
             </div>
@@ -108,37 +108,14 @@
                   <span class="fa fa-align-justify" style="text-decoration: none"></span>
                   </button>
                 </div>
-                {% if not db_sur %}
                 <div id="collapseFreq" class="collapse show" aria-labelledby="collapseFreq">
-                  <div class="card-body p-2">
-                    <p class="card-text text-justify top">
-                    Number of unique surnames that are available in our database.
-                    </p>
-                    <canvas id="cardFreq" width="100" height="100">
+                  <div class="card-body p-2" id="cardFreq">
 
-                    <!-- Chart JavaScript -->
-                    <script> var freqs = {{ data_freqs }} </script>
-                    <script src ="{% static 'js/chart.js' %}"></script>
+                    <!-- Frequency Chart JavaScript -->
+                    <script> var abs_freq = {{ data_freqs }} </script>
 
-                    </canvas>
                   </div>
                 </div>
-                {% else %}
-                <div id="collapseFreq" class="collapse show" aria-labelledby="collapseFreq">
-                  <div class="card-body p-2">
-                    <p class="card-text text-justify top">
-                    Absolute number of occurences for your search that is available in our database.
-                    </p>
-                    <canvas id="cardFreq" width="100" height="70">
-
-                    <!-- Chart JavaScript -->
-                    <script> var freqs = {{ freqs }} </script>
-                    <script src ="{% static 'js/chart.js' %}"></script>
-
-                    </canvas>
-                  </div>
-                </div>
-                {% endif %}
               </div>
             </div>
           </div>
@@ -157,7 +134,6 @@
                   <canvas id="cardMap" width="100" height="650">
 
                   <!-- KDE JavaScript -->
-                  <script src ="{% static 'js/map.js' %}"></script>
 
                   </canvas>
                 </div>
@@ -188,16 +164,23 @@
                 <span class="fa fa-align-justify" style="text-decoration: none"></span>
                 </button>
               </div>
-              {% if not db_sur %}
-              <div id="collapseSearchMax" class="collapse" aria-labelledby="collapseSearchMax">
-                <div class="card-body p-2">
-                  <canvas id="cardTop" width="100%" height="100"></canvas>
+              <!-- Produce location based topname -->
+                <div id="collapseSearchMax" class="collapse show" aria-labelledby="collapseSearchMax">
+                  <div class="card-body p-2" id="locList">
+                    <p class="card-text text-justify top">
+                    If you would like to see the most frequently occuring surnames at your current location,
+                    please click on the button below.
+                    </p>
+                    <form method="post" id="locTop">
+                      <p class="card-text text-center ml-0">
+                      {% csrf_token %}
+                      <button class="btn btn-primary btn-sm text-center" id= 'share-loc' type='submit'>Use my location</button>
+                      <img src="{% static 'load.gif' %}" id='loading-indicator' style='display:none' class="text-center"/>
+                      </p>
+                    </form>
+                    </p>
+                  </div>
                 </div>
-              </div>
-              {% else %}
-              {% block topnames %}
-              {% endblock %}
-              {% endif %}
               </div>
             </div>
 
@@ -210,17 +193,11 @@
                   <span class="fa fa-align-justify" style="text-decoration: none"></span>
                   </button>
                 </div>
-                {% if not db_sur %}
+                <!-- Produce diversity alpha -->
                 <div id="collapseAlpha" class="collapse" aria-labelledby="collapseAlpha">
-                  <div class="card-body p-2">
-                    <canvas id="cardFreq" width="100" height="100">
-                    </canvas>
+                  <div class="card-body p-2" id="locAlpha">
                   </div>
                 </div>
-                {% else %}
-                {% block alpha %}
-                {% endblock %}
-                {% endif %}
               </div>
             </div>
 
@@ -233,17 +210,11 @@
                   <span class="fa fa-align-justify" style="text-decoration: none"></span>
                   </button>
                 </div>
-                {% if not db_sur %}
+                <!-- Produce unique names -->
                 <div id="collapseUniq" class="collapse" aria-labelledby="collapseUniq">
-                  <div class="card-body p-2">
-                    <canvas id="cardUniq" width="100" height="100">
-                    </canvas>
+                  <div class="card-body p-2" id="locUniq">
                   </div>
                 </div>
-                {% else %}
-                {% block uniq %}
-                {% endblock %}
-                {% endif %}
               </div>
             </div>
           </div>
@@ -260,17 +231,11 @@
                   <span class="fa fa-align-justify" style="text-decoration: none"></span>
                   </button>
                 </div>
-                {% if not db_sur %}
+                <!-- Produce list most popular names -->
                 <div id="collapseTop" class="collapse" aria-labelledby="collapseTop">
-                  <div class="card-body p-2">
-                    <canvas id="cardTopList" width="100" height="100">
-                    </canvas>
+                  <div class="card-body p-2" id="topNames">
                   </div>
                 </div>
-                {% else %}
-                {% block toplist %}
-                {% endblock %}
-                {% endif %}
               </div>
             </div>
 
@@ -322,10 +287,11 @@
     </div>
   </footer>
 
-  <!-- KDE JavaScript -->
+  <!-- JavaScript -->
   <script src ="{% static 'js/main.js' %}"></script>
   <script src ="{% static 'js/location.js' %}"></script>
-  <script src ="{% static 'js/autoplay.js' %}"></script>
+  <script src ="{% static 'js/map.js' %}"></script>
+  <script src ="{% static 'js/chart.js' %}"></script>
 
   <!-- Bootstrap core JavaScript -->
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
