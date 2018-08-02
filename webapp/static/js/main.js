@@ -26,7 +26,7 @@ $j(document).ready(function() {
 function get_data(selName,selYear,source) {
     $j.ajax({
       method: 'POST',
-      url: "../search/",
+      url: "../udl-namekde/search/",
       data: {q: selName,
              y: selYear,
              csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()

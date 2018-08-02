@@ -35,7 +35,7 @@ function showPosition(position) {
 
     $j.ajax({
       method: 'POST',
-      url: "../location/",
+      url: "../udl-namekde/location/",
       data: {latitude: lat,
             longitude: lon,
             csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
