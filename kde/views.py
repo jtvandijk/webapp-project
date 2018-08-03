@@ -4,7 +4,7 @@
 from django.shortcuts import render
 from django.contrib.gis.geos import fromstr
 from django.http import HttpResponse
-from .models import KdeLookup, KdeGridxy, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, KdevClus2017, LsoaTopnames
+from .models import KdeLookup, KdeGridxy, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, KdevClus2017, LsoaTopnames, GeoTopnames
 from .contour import to_concave_points
 from pyproj import Proj, transform
 from sklearn.cluster import dbscan
@@ -130,6 +130,29 @@ def location(request):
     #spatial query for topnames
     lsoa = LsoaTopnames.objects.filter(shape__contains=pnt)
     div = {key: value for key, value in lsoa.values()[0].items()}
+    tnlist = [str(x).title() for x in div['topnames'][1:-1].split(',')]
+    unique = div['unique_n']
+    total = div['total_n']
+    alpha = div['diversity_a']
+
+    #combine data
+    loclist = {'topnames': tnlist,
+               'unique': unique,
+               'total': total,
+               'alpha': alpha
+               }
+
+    #return data
+    return HttpResponse(json.dumps(loclist),content_type="application/json")
+
+def geography(request):
+
+    #selected Geography
+    geo = request.POST['geography']
+
+    #query for topnames
+    sel_geo = GeoTopnames.objects.filter(agg_geo=geo)
+    div = {key: value for key, value in sel_geo.values()[0].items()}
     tnlist = [str(x).title() for x in div['topnames'][1:-1].split(',')]
     unique = div['unique_n']
     total = div['total_n']

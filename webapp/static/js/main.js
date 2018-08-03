@@ -1,7 +1,7 @@
-// jQuery
+//jQuery
 var $j = jQuery.noConflict();
 
-// CSRF
+//CSRF
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
@@ -16,10 +16,10 @@ function getCookie(name) {
         }
     }
     return cookieValue;
-}
+};
 var csrftoken = getCookie('csrftoken');
 
-// Update map -- Search
+//update map -- search
 $j(document).on('submit', '#searchSur', function(e){
   e.preventDefault();
   var q = document.getElementById('surname').value;
@@ -27,7 +27,7 @@ $j(document).on('submit', '#searchSur', function(e){
   get_data(q,y,'search');
 });
 
-// Update map -- Change
+//update map -- change
 $j(document).on('change', '#searchYear', function(e){
   e.preventDefault();
   var q = document.getElementById('surname').value;
@@ -35,12 +35,12 @@ $j(document).on('change', '#searchYear', function(e){
   get_data(q,y,'change');
 });
 
-// Chart -- On Load
+//chart -- on load
 $j(document).ready(function() {
   renderChart(abs_freq,'load_abs');
 });
 
-// AJAX for POST
+//AJAX for POST
 function get_data(selName,selYear,source) {
     $j.ajax({
       method: 'POST',
@@ -72,7 +72,7 @@ function get_data(selName,selYear,source) {
     })
 };
 
-// Render HTML
+//render HTML
 function renderHTML(data) {
     var pSearch = document.getElementById('searchParam');
     var foundPar = document.createElement('p');
@@ -83,7 +83,7 @@ function renderHTML(data) {
     foundPar.className = "card-text text-justify top pt-3";
     foundPar.innerHTML = "You searched for <strong>"+data.clean_sur+"</strong>. We have data available for the following years:";
 
-    // Set up empty select option
+    //set up empty select option
     foundList.id="searchYear";
     foundList.className="form-control";
     var li = document.createElement('option');
@@ -91,24 +91,24 @@ function renderHTML(data) {
     li.disabled = true;
     foundList.appendChild(li);
 
-    // Set up select options
+    //set up select options
     for (var i = 0; i < data.data.length; ++i) {
       var li = document.createElement('option');
       li.textContent = data.data[i];
       foundList.appendChild(li);
-    }
+    };
 
-    // Combine HTML elements
+    //combine HTML elements
     foundForm.className="my-3";
     foundForm.appendChild(foundList);
     foundPar.appendChild(foundForm);
     pSearch.replaceWith(foundPar);
 
-    // Update value selector
+    //update value selector
     setSelect(data.year_sel);
 };
 
-// Render Map
+//render map
 function renderMap(data) {
   contourGroup.clearLayers();
   var contour = new L.polygon([data.contourprj], {
@@ -121,7 +121,7 @@ function renderMap(data) {
   contour.addTo(contourGroup);
 };
 
-// Render None
+//render none
 function renderNone(data) {
   contourGroup.clearLayers();
 
@@ -133,10 +133,9 @@ function renderNone(data) {
   noText.textContent = "Please type in a surname before hitting submit.";
 
   pSearch.replaceWith(noText);
-
 };
 
-// Render Not Found
+//render not found
 function renderNotFound(data) {
   contourGroup.clearLayers();
 
@@ -150,7 +149,7 @@ function renderNotFound(data) {
   pSearch.replaceWith(notFound);
 };
 
-// Set value selector
+//set value selector
 function setSelect(selYear) {
   document.getElementById('searchYear').value = selYear;
 }

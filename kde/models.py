@@ -230,3 +230,14 @@ class LsoaTopnames(models.Model):
     class Meta:
         managed = True
         db_table = 'lsoa_topnames'
+
+class GeoTopnames(models.Model):
+    agg_geo = models.TextField(primary_key=True)
+    topnames = models.TextField(blank=True, null=True)
+    unique_n = models.IntegerField(blank=True, null=True)
+    total_n = models.IntegerField(blank=True, null=True)
+    diversity_a = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'geo_topnames'

@@ -1,11 +1,23 @@
-// jQuery
+//jQuery
 var $j = jQuery.noConflict();
 
+//location -- on load
+$j(document).ready(function() {
+  var selLoc = document.getElementById('selLoc').value;
+  showGeography(selLoc);
+});
+
 //event listener
-$j(document).on('submit', '#locTop', function(e){
+$j(document).on('submit', '#locUser', function(e){
   e.preventDefault();
-  startLoad();
-  getLocation();
+  var selLoc = document.getElementById('selLoc').value;
+  if (selLoc==="user"){
+    startLoad();
+    getLocation();
+  } else {
+    startLoad();
+    showGeography(selLoc);
+  }
 });
 
 //start loading indicator
@@ -17,6 +29,7 @@ function startLoad() {
 //stop loading indicator
 function stopLoad() {
   document.getElementById('loading-indicator').style.display='none';
+  document.getElementById('share-loc').style.display='inline';
 };
 
 //xy through https request
@@ -51,19 +64,40 @@ function showPosition(position) {
     })
 };
 
+//post xy to django backend
+function showGeography(geography) {
+
+    $j.ajax({
+      method: 'POST',
+      url: "../geography/",
+      data: {geography: geography,
+            csrfmiddlewaretoken: csrftoken
+            },
+      success: function (loclist) {
+        stopLoad();
+        renderTopname(loclist);
+        renderAlpha(loclist);
+        renderUniq(loclist);
+        renderLoclist(loclist);
+        showAll();
+      }
+    })
+};
+
 //topname
 function renderTopname(loclist) {
 
-  var locdiv = document.getElementById('locList');
+  var locdiv = document.getElementById('locTop');
   var container = document.createElement('div');
   var div = document.createElement('div');
   var par = document.createElement('p');
   var topname = document.createElement('h1');
   var foot = document.createElement('div');
 
+  container.id = ('locTop');
   div.className = "card-body p-2";
   par.className = "card-text text-justify top mb-0";
-  par.textContent = "Based on your location, the most popular surname in the area is:";
+  par.textContent = "The most popular surname at your selected location is:";
   topname.className = "text-center p-2";
   topname.style.color = "rgb(77,146,184)";
   topname.innerHTML = loclist.topnames[0];
@@ -86,9 +120,10 @@ function renderAlpha(loclist) {
   var alphav = document.createElement('h1');
   var foot = document.createElement('div');
 
+  container.id = ('locAlpha');
   div.className = "card-body p-2";
   par.className = "card-text text-justify top mb-0";
-  par.textContent = "The value below shows the probability that two individuals chosen at random share the same surname at your location.";
+  par.textContent = "The value below shows the probability that two individuals chosen at random share the same surname at your selected location.";
   alphav.className = "text-center p-2";
   alphav.style.color = "rgb(189,54,29)";
   alphav.innerHTML = loclist.alpha;
@@ -111,9 +146,10 @@ function renderUniq(loclist) {
   var surnames = document.createElement('h1');
   var foot = document.createElement('div');
 
+  container.id = ('locUniq');
   div.className = "card-body p-2";
   par.className = "card-text text-justify top mb-0";
-  par.textContent = "There is the following number of unique surnames in the area:";
+  par.textContent = "There is the following number of unique surnames at your selected location:";
   surnames.className = "text-center p-2";
   surnames.style.color = "rgb(96,175,111)";
   surnames.innerHTML = loclist.unique;
@@ -124,20 +160,21 @@ function renderUniq(loclist) {
   div.appendChild(surnames);
   container.appendChild(div);
   container.appendChild(foot);
-  uniqdiv .replaceWith(container);
+  uniqdiv.replaceWith(container);
 };
 
 //topnames
 function renderLoclist(loclist) {
 
   //render list
-  var locdiv = document.getElementById('topNames');
+  var locdiv = document.getElementById('locNames');
   var container = document.createElement('div');
   var div = document.createElement('div');
   var par = document.createElement('p');
   var ul = document.createElement('ul');
   var foot = document.createElement('div');
 
+  container.id = ('locNames');
   div.className = "card-body p-2";
   par.className = "card-text text-justify top";
   par.textContent = "Besides the most popular surname, the following surnames are also frequently occuring:";
@@ -148,7 +185,7 @@ function renderLoclist(loclist) {
     var li = document.createElement('li');
     li.innerHTML = loclist.topnames[i];
     ul.appendChild(li);
-  }
+  };
 
   div.appendChild(par);
   div.appendChild(ul);
@@ -162,9 +199,11 @@ function showAll() {
   var feedb = document.getElementById('collapseFeedback');
   var alpha = document.getElementById('collapseAlpha');
   var uniq = document.getElementById('collapseUniq');
-  var toplst = document.getElementById('collapseTop')
+  var toplst = document.getElementById('collapseNames');
+  var toploc = document.getElementById('collapseTop');
   feedb.className = 'collapse show';
   alpha.className = 'collapse show';
   uniq.className = 'collapse show';
   toplst.className = 'collapse show';
-}
+  toploc.className = 'collapse show';
+};
