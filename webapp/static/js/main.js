@@ -38,6 +38,7 @@ $j(document).on('change', '#searchYear', function(e){
 //chart -- on load
 $j(document).ready(function() {
   renderChart(abs_freq,'load_abs');
+  setGeo('London')
 });
 
 //AJAX for POST
@@ -152,4 +153,9 @@ function renderNotFound(data) {
 //set value selector
 function setSelect(selYear) {
   document.getElementById('searchYear').value = selYear;
+}
+
+//set geography selector
+function setGeo(geo) {
+  document.getElementById('selLoc').value = geo;
 }

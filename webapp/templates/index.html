@@ -172,10 +172,12 @@
                   </p>
                   <form method="post" id="locUser">
                     <select class="form-control" id="selLoc">
+                      <option disabled>Allow location services:</option>
                       <option value="user">Use my location</option>
-                      <option value="London" selected="selected">London</option>
-                      <option value="Manchester">Greater Manchester</option>
-                      <option value="Newcastle">Newcastle</option>
+                      <option disabled>Select a city:</option>
+                      {% for d in agg_geo %}
+                        <option>{{ d }}</option>
+                        {% endfor %}
                     </select>
                     <p class="card-text text-center mt-3">
                     <button class="btn btn-primary btn-sm text-center" id='share-loc' type='submit'>Apply selection</button>
@@ -184,22 +186,26 @@
                   </form>
                   </p>
                   </div>
+                  <div class="card-footer small text-muted p-2">
+                  Please note that these data are aggregated to LSOA-level for privacy reasons.
+                  City data are aggregated further by selecting LSOA centroids that fall within a city's built up area.
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Topname -->
+            <!-- Popular -->
             <div class="col-lg-4">
-              <div class="card mb-3">
+                <div class="card mb-3">
                 <div class="card-header">
-                <i class= "fa fa-map-marker mr-3"></i>Topname
-                <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseTop" aria-expanded="true" aria-controls="collapseTop">
-                <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                </button>
-              </div>
-              <!-- Produce location based topname -->
-                <div id="collapseTop" class="collapse" aria-labelledby="collapseTop">
-                  <div class="card-body p-2" id="locTop">
+                  <i class="fas fa-ellipsis-h mr-3"></i>Most frequent surnames
+                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseNames" aria-expanded="false" aria-controls="collapseNames">
+                  <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                  </button>
+                </div>
+                <!-- Produce list most popular names -->
+                <div id="collapseNames" class="collapse" aria-labelledby="collapseNames">
+                  <div class="card-body p-2" id="locNames">
                   </div>
                 </div>
               </div>
@@ -243,18 +249,18 @@
               </div>
             </div>
 
-            <!-- Popular -->
+            <!-- Topname -->
             <div class="col-lg-4">
-                <div class="card mb-3">
+              <div class="card mb-3">
                 <div class="card-header">
-                  <i class="fas fa-ellipsis-h mr-3"></i>Most frequent surnames
-                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseNames" aria-expanded="false" aria-controls="collapseNames">
-                  <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                  </button>
-                </div>
-                <!-- Produce list most popular names -->
-                <div id="collapseNames" class="collapse" aria-labelledby="collapseNames">
-                  <div class="card-body p-2" id="locNames">
+                <i class= "fa fa-map-marker mr-3"></i>Topname
+                <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseTop" aria-expanded="true" aria-controls="collapseTop">
+                <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                </button>
+              </div>
+              <!-- Produce location based topname -->
+                <div id="collapseTop" class="collapse" aria-labelledby="collapseTop">
+                  <div class="card-body p-2" id="locTop">
                   </div>
                 </div>
               </div>

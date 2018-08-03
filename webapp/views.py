@@ -1,8 +1,9 @@
 from django.shortcuts import render
-from kde.models import KdeLookup
+from kde.models import KdeLookup, GeoTopnames
 
 def index(request):
 
+    #absolute frequencies
     data_freqs=[]
     data_freqs.append(KdeLookup.objects.filter(freq1998__isnull=False).count())
     data_freqs.append(KdeLookup.objects.filter(freq1999__isnull=False).count())
@@ -25,4 +26,8 @@ def index(request):
     data_freqs.append(KdeLookup.objects.filter(freq2016__isnull=False).count())
     data_freqs.append(KdeLookup.objects.filter(freq2017__isnull=False).count())
 
-    return render(request,"index.html",{'data_freqs':data_freqs})
+    #aggregated geographies
+    agg_geo=sorted(GeoTopnames.objects.all().values_list('agg_geo', flat=True))
+    print(agg_geo)
+
+    return render(request,"index.html",{'data_freqs':data_freqs, 'agg_geo':agg_geo})

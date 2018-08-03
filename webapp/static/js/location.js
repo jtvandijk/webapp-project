@@ -92,7 +92,6 @@ function renderTopname(loclist) {
   var div = document.createElement('div');
   var par = document.createElement('p');
   var topname = document.createElement('h1');
-  var foot = document.createElement('div');
 
   container.id = ('locTop');
   div.className = "card-body p-2";
@@ -101,13 +100,10 @@ function renderTopname(loclist) {
   topname.className = "text-center p-2";
   topname.style.color = "rgb(77,146,184)";
   topname.innerHTML = loclist.topnames[0];
-  foot.className = "card-footer small text-justify text-muted p-2";
-  foot.textContent = "Please note that these data are aggregated to LSOA-level for privacy reasons.";
 
   div.appendChild(par);
   div.appendChild(topname);
   container.appendChild(div);
-  container.appendChild(foot);
   locdiv.replaceWith(container);
 };
 
@@ -118,7 +114,6 @@ function renderAlpha(loclist) {
   var div = document.createElement('div');
   var par = document.createElement('p');
   var alphav = document.createElement('h1');
-  var foot = document.createElement('div');
 
   container.id = ('locAlpha');
   div.className = "card-body p-2";
@@ -127,13 +122,10 @@ function renderAlpha(loclist) {
   alphav.className = "text-center p-2";
   alphav.style.color = "rgb(189,54,29)";
   alphav.innerHTML = loclist.alpha;
-  foot.className = "card-footer small text-justify text-muted p-2";
-  foot.textContent = "Value represents the Gini–Simpson Index.";
 
   div.appendChild(par);
   div.appendChild(alphav);
   container.appendChild(div);
-  container.appendChild(foot);
   alphadiv.replaceWith(container);
 };
 
@@ -144,7 +136,6 @@ function renderUniq(loclist) {
   var div = document.createElement('div');
   var par = document.createElement('p');
   var surnames = document.createElement('h1');
-  var foot = document.createElement('div');
 
   container.id = ('locUniq');
   div.className = "card-body p-2";
@@ -153,13 +144,10 @@ function renderUniq(loclist) {
   surnames.className = "text-center p-2";
   surnames.style.color = "rgb(96,175,111)";
   surnames.innerHTML = loclist.unique;
-  foot.className = "card-footer small text-justify text-muted p-2";
-  foot.textContent = "Please note that these data are aggregated to LSOA-level for privacy reasons.";
 
   div.appendChild(par);
   div.appendChild(surnames);
   container.appendChild(div);
-  container.appendChild(foot);
   uniqdiv.replaceWith(container);
 };
 
@@ -172,14 +160,11 @@ function renderLoclist(loclist) {
   var div = document.createElement('div');
   var par = document.createElement('p');
   var ul = document.createElement('ul');
-  var foot = document.createElement('div');
 
   container.id = ('locNames');
   div.className = "card-body p-2";
   par.className = "card-text text-justify top";
   par.textContent = "Besides the most popular surname, the following surnames are also frequently occuring:";
-  foot.className = "card-footer small text-justify text-muted p-2";
-  foot.textContent = "Please note that these data are aggregated to LSOA-level for privacy reasons.";
 
   for (var i = 1; i < loclist.topnames.length; ++i) {
     var li = document.createElement('li');
@@ -190,7 +175,6 @@ function renderLoclist(loclist) {
   div.appendChild(par);
   div.appendChild(ul);
   container.appendChild(div);
-  container.appendChild(foot);
   locdiv.replaceWith(container);
 };
 
