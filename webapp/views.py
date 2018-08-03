@@ -28,6 +28,5 @@ def index(request):
 
     #aggregated geographies
     agg_geo=sorted(GeoTopnames.objects.all().values_list('agg_geo', flat=True))
-    print(agg_geo)
 
-    return render(request,"index.html",{'data_freqs':data_freqs, 'agg_geo':agg_geo})
+    return render(request,"index.html",{'data_freqs':data_freqs,'agg_geo':agg_geo})

@@ -19,13 +19,13 @@ gridc = pd.DataFrame.from_records(xy).sort_values(by='gid')
 
 #search view
 def str_to_class(classname):
-    return getattr(sys.modules[__name__], classname)
+    return getattr(sys.modules[__name__],classname)
 
 def search(request):
 
     #query db
     search_sur = (request.POST['q']).lower()
-    sclean = re.sub(r'[\W^0-9]+', ' ', search_sur)
+    sclean = re.sub(r'[\W^0-9]+', ' ',search_sur)
     db_sur = KdeLookup.objects.filter(surname=sclean)
 
     #validate year

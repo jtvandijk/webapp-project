@@ -69,7 +69,7 @@ function showGeography(geography) {
 
     $j.ajax({
       method: 'POST',
-      url: "../geography/",
+      url: "../udl-namekde/geography/",
       data: {geography: geography,
             csrfmiddlewaretoken: csrftoken
             },
