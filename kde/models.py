@@ -3,46 +3,33 @@ from django.contrib.gis.db import models
 class KdeLookup(models.Model):
     uid = models.AutoField(primary_key=True)
     surname = models.TextField(blank=True, null=True)
-    uid1998 = models.IntegerField(blank=True, null=True)
+    freq1851 = models.IntegerField(blank=True, null=True)
+    freq1861 = models.IntegerField(blank=True, null=True)
+    freq1871 = models.IntegerField(blank=True, null=True)
+    freq1881 = models.IntegerField(blank=True, null=True)
+    freq1891 = models.IntegerField(blank=True, null=True)
+    freq1901 = models.IntegerField(blank=True, null=True)
+    freq1911 = models.IntegerField(blank=True, null=True)
+    freq1997 = models.IntegerField(blank=True, null=True)
     freq1998 = models.IntegerField(blank=True, null=True)
-    uid1999 = models.IntegerField(blank=True, null=True)
     freq1999 = models.IntegerField(blank=True, null=True)
-    uid2000 = models.IntegerField(blank=True, null=True)
     freq2000 = models.IntegerField(blank=True, null=True)
-    uid2001 = models.IntegerField(blank=True, null=True)
     freq2001 = models.IntegerField(blank=True, null=True)
-    uid2002 = models.IntegerField(blank=True, null=True)
     freq2002 = models.IntegerField(blank=True, null=True)
-    uid2003 = models.IntegerField(blank=True, null=True)
     freq2003 = models.IntegerField(blank=True, null=True)
-    uid2004 = models.IntegerField(blank=True, null=True)
     freq2004 = models.IntegerField(blank=True, null=True)
-    uid2005 = models.IntegerField(blank=True, null=True)
     freq2005 = models.IntegerField(blank=True, null=True)
-    uid2006 = models.IntegerField(blank=True, null=True)
     freq2006 = models.IntegerField(blank=True, null=True)
-    uid2007 = models.IntegerField(blank=True, null=True)
     freq2007 = models.IntegerField(blank=True, null=True)
-    uid2008 = models.IntegerField(blank=True, null=True)
     freq2008 = models.IntegerField(blank=True, null=True)
-    uid2009 = models.IntegerField(blank=True, null=True)
     freq2009 = models.IntegerField(blank=True, null=True)
-    uid2010 = models.IntegerField(blank=True, null=True)
     freq2010 = models.IntegerField(blank=True, null=True)
-    uid2011 = models.IntegerField(blank=True, null=True)
     freq2011 = models.IntegerField(blank=True, null=True)
-    uid2012 = models.IntegerField(blank=True, null=True)
     freq2012 = models.IntegerField(blank=True, null=True)
-    uid2013 = models.IntegerField(blank=True, null=True)
     freq2013 = models.IntegerField(blank=True, null=True)
-    uid2014 = models.IntegerField(blank=True, null=True)
     freq2014 = models.IntegerField(blank=True, null=True)
-    uid2015 = models.IntegerField(blank=True, null=True)
     freq2015 = models.IntegerField(blank=True, null=True)
-    uid2016 = models.IntegerField(blank=True, null=True)
     freq2016 = models.IntegerField(blank=True, null=True)
-    uid2017 = models.IntegerField(blank=True, null=True)
-    freq2017 = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = True
@@ -56,6 +43,70 @@ class KdeGridxy(models.Model):
     class Meta:
         managed = True
         db_table = 'kde_gridxy'
+
+class KdevClus1851(models.Model):
+    uid = models.AutoField(primary_key=True)
+    kde = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'kdev_clus1851'
+
+class KdevClus1861(models.Model):
+    uid = models.AutoField(primary_key=True)
+    kde = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'kdev_clus1861'
+
+class KdevClus1871(models.Model):
+    uid = models.AutoField(primary_key=True)
+    kde = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'kdev_clus1871'
+
+class KdevClus1881(models.Model):
+    uid = models.AutoField(primary_key=True)
+    kde = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'kdev_clus1881'
+
+class KdevClus1891(models.Model):
+    uid = models.AutoField(primary_key=True)
+    kde = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'kdev_clus1891'
+
+class KdevClus1901(models.Model):
+    uid = models.AutoField(primary_key=True)
+    kde = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'kdev_clus1901'
+
+class KdevClus1911(models.Model):
+    uid = models.AutoField(primary_key=True)
+    kde = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'kdev_clus1911'
+
+class KdevClus1997(models.Model):
+    uid = models.AutoField(primary_key=True)
+    kde = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'kdev_clus1997'
 
 class KdevClus1998(models.Model):
     uid = models.AutoField(primary_key=True)
@@ -208,14 +259,6 @@ class KdevClus2016(models.Model):
     class Meta:
         managed = True
         db_table = 'kdev_clus2016'
-
-class KdevClus2017(models.Model):
-    uid = models.AutoField(primary_key=True)
-    kde = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = True
-        db_table = 'kdev_clus2017'
 
 class LsoaTopnames(models.Model):
     lsoa = models.TextField(primary_key=True)
