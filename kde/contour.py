@@ -1,5 +1,9 @@
 #JTVD - 2018
 
+#groupig needs to be fixed -- loose points connected with each other (min point size?)
+#either remove loose points of given contour level
+#or create circle around grid centroid (or hexagon of sorts)
+
 #libraries
 import numpy as np
 from shapely.geometry import Point,Polygon,LineString,MultiPolygon
