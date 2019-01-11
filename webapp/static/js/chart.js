@@ -1,4 +1,7 @@
 // Surname frequency chart
+var freqhr = document.getElementById("cardFreqHr");
+var freqcr = document.getElementById("cardFreqCr");
+
 function renderChartCr(freqs,source) {
 
   //Context
@@ -9,7 +12,7 @@ function renderChartCr(freqs,source) {
 
   freqDiv.className = "card-body p-2";
   freqDiv.id = "cardFreq";
-  freqCan.id = "freqChart";
+  freqCan.id = "freqChartHr";
   freqCan.width = "100";
   freqCan.height = "70";
   freqPar.className = "card-text text-justify";
@@ -25,7 +28,7 @@ function renderChartCr(freqs,source) {
   freqSearch.replaceWith(freqDiv);
 
   // Chart
-  var ctx = document.getElementById("freqChart");
+  var ctx = document.getElementById("freqChartHr");
   var fchart = new Chart (ctx, {
   type: 'line',
   data: {
@@ -57,7 +60,7 @@ function renderChartCr(freqs,source) {
 
   freqDiv.className = "card-body p-2";
   freqDiv.id = "cardFreq";
-  freqCan.id = "freqChart";
+  freqCan.id = "freqChartCr";
   freqCan.width = "100";
   freqCan.height = "70";
   freqPar.className = "card-text text-justify";
@@ -73,7 +76,7 @@ function renderChartCr(freqs,source) {
   freqSearch.replaceWith(freqDiv);
 
   // Chart
-  var ctx = document.getElementById("freqChart");
+  var ctx = document.getElementById("freqChartCr");
   var fchart = new Chart (ctx, {
   type: 'line',
   data: {
