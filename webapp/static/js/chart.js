@@ -35,8 +35,8 @@ function renderChartHr(freqs,source) {
     labels: ['1851','1861','1871','1881','1891','1901','191'],
       datasets: [{
         data: freqs,
-        borderColor: "#3273d1",
-        backgroundColor: "rgba(250,123,250,0.4)",
+        borderColor: "#53a062",
+        backgroundColor: "rgba(96,175,111,1)",
         pointBackgroundColor: "#000000",
         pointBorderColor: "#000000"
       }]
