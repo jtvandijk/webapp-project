@@ -4,7 +4,6 @@
 *.pyc
 __pycache__/
 migrations/
-/static
 local_settings.py
 
 #misc
