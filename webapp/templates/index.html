@@ -100,22 +100,39 @@
             </div>
 
             <!-- Frequency -->
+
             <div>
               <div class="card mb-3">
                 <div class="card-header">
                   <i class="fas fa-chart-line mr-3"></i>Frequency
-                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseFreq" aria-expanded="false" aria-controls="collapseFreq">
+                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseFreqHr" aria-expanded="false" aria-controls="collapseFreqHr">
                     <span class="fa fa-align-justify" style="text-decoration: none"></span>
                   </button>
                 </div>
-                <div id="collapseFreq" class="collapse show" aria-labelledby="collapseFreq">
-                  <div class="card-body p-2" id="cardFreq">
+                <div id="collapseFreqHr" class="collapse show" aria-labelledby="collapseFreqHr">
+                  <div class="card-body p-2" id="cardFreqHr">
 
-                    <!-- Frequency Chart JavaScript -->
-                    <script>
-                      var hr_freq = {{ hr_freqs }}
-                      var cr_freq = {{ cr_freqs }}
-                    </script>
+                    <!-- Frequency Chart HR JavaScript -->
+                    <script> var hr_freq = {{ hr_freqs }} </script>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="card mb-3">
+                <div class="card-header">
+                  <i class="fas fa-chart-line mr-3"></i>Frequency
+                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseFreqCr" aria-expanded="false" aria-controls="collapseFreqCr">
+                    <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                  </button>
+                </div>
+                <div id="collapseFreqCr" class="collapse show" aria-labelledby="collapseFreqCr">
+                  <div class="card-body p-2" id="cardFreqCr">
+
+                    <!-- Frequency Chart CR JavaScript -->
+                    <script> var cr_freq = {{ cr_freqs }} </script>
 
                   </div>
                 </div>
