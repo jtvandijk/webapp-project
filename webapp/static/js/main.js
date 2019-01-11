@@ -36,7 +36,7 @@ $j(document).on('change', '#searchYear', function(e){
 
 //chart / location -- on load
 $j(document).ready(function() {
-  renderChart(cr_freq,'load_abs');
+  renderChart(cr_freq,hr_freq,'load_abs');
   setGeo('London')
 });
 
