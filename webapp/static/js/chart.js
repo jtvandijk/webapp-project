@@ -17,7 +17,7 @@ function renderChartHr(freqs,source) {
   freqCan.height = "70";
   freqPar.className = "card-text text-justify";
   if (source=="load_abs") {
-    freqPar.textContent = "Number of unique surnames that are available in our database for the period 1851-1911.";
+    freqPar.textContent = "Number of unique surnames that are available in our database for the period 1851-1911. Data for Great Britain, with the exception of 1871 (only Scotland) and 1911 (only England and Wales).";
   } else {
     freqPar.textContent = "Absolute number of occurences for your search that is available in our database for the period 1851-1911.";
   };
@@ -32,7 +32,7 @@ function renderChartHr(freqs,source) {
   var fchart = new Chart (ctx, {
   type: 'line',
   data: {
-    labels: ['1851','1861','1871','1881','1891','1901','191'],
+    labels: ['1851','1861','1871','1881','1891','1901','1911'],
       datasets: [{
         data: freqs,
         borderColor: "#53a062",
@@ -73,7 +73,7 @@ function renderChartCr(freqs,source) {
   freqCan.height = "70";
   freqPar.className = "card-text text-justify";
   if (source=="load_abs") {
-    freqPar.textContent = "Number of unique surnames that are available in our database for the period 1997-2016.";
+    freqPar.textContent = "Number of unique surnames that are available in our database for the period 1997-2016. Data for the entire United Kingdom.";
   } else {
     freqPar.textContent = "Absolute number of occurences for your search that is available in our database for the period 1997-2016.";
   };
