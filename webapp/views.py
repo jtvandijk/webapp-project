@@ -4,16 +4,16 @@ from kde.models import KdeLookup, GeoTopnames
 def index(request):
 
     #absolute frequencies
-    hist_freqs=[]
+    hr_freqs=[]
 
     #historic census
-    hist_freqs.append(KdeLookup.objects.filter(freq1851__isnull=False).count())
-    hist_freqs.append(KdeLookup.objects.filter(freq1861__isnull=False).count())
-    hist_freqs.append(KdeLookup.objects.filter(freq1871__isnull=False).count())
-    hist_freqs.append(KdeLookup.objects.filter(freq1881__isnull=False).count())
-    hist_freqs.append(KdeLookup.objects.filter(freq1891__isnull=False).count())
-    hist_freqs.append(KdeLookup.objects.filter(freq1901__isnull=False).count())
-    hist_freqs.append(KdeLookup.objects.filter(freq1911__isnull=False).count())
+    hr_freqs.append(KdeLookup.objects.filter(freq1851__isnull=False).count())
+    hr_freqs.append(KdeLookup.objects.filter(freq1861__isnull=False).count())
+    hr_freqs.append(KdeLookup.objects.filter(freq1871__isnull=False).count())
+    hr_freqs.append(KdeLookup.objects.filter(freq1881__isnull=False).count())
+    hr_freqs.append(KdeLookup.objects.filter(freq1891__isnull=False).count())
+    hr_freqs.append(KdeLookup.objects.filter(freq1901__isnull=False).count())
+    hr_freqs.append(KdeLookup.objects.filter(freq1911__isnull=False).count())
 
     #consumer registers
     cr_freqs=[]
