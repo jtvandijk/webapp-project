@@ -44,7 +44,15 @@ function renderChartHr(freqs,source) {
     options: {
         legend: {
             display: false
+          },
+        scales: {
+            yAxes: [{
+            ticks: {
+              min: 0,
+              max: 60000
             }
+            }]
+        }
         }
   });
 };
@@ -94,7 +102,15 @@ function renderChartCr(freqs,source) {
     options: {
         legend: {
             display: false
+          },
+        scales: {
+            yAxes: [{
+            ticks: {
+              min: 0,
+              max: 60000
             }
+            }]
+        }
         }
   });
 };
