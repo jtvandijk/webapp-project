@@ -17,7 +17,7 @@ function renderChartHr(freqs,source) {
   freqCan.height = "70";
   freqPar.className = "card-text text-justify";
   if (source=="load_abs") {
-    freqPar.textContent = "Number of unique surnames that are available in our database for the period 1851-1911. Data for Great Britain, with the exception of 1871 (only Scotland) and 1911 (only England and Wales).";
+    freqPar.textContent = "Number of unique surnames that are available in our database for the period 1851-1911. Data for Great Britain, with the exception of 1871 (only Scotland) and 1911 (only England and Wales). Surnames found in the Historic Censuses of Population are only included if they occur at least 30 times in our database.";
   } else {
     freqPar.textContent = "Absolute number of occurences for your search that is available in our database for the period 1851-1911.";
   };
@@ -73,7 +73,7 @@ function renderChartCr(freqs,source) {
   freqCan.height = "70";
   freqPar.className = "card-text text-justify";
   if (source=="load_abs") {
-    freqPar.textContent = "Number of unique surnames that are available in our database for the period 1997-2016. Data for the entire United Kingdom.";
+    freqPar.textContent = "Number of unique surnames that are available in our database for the period 1997-2016. Data for the entire United Kingdom. Surnames found in our Contemporary Consumer Registers are only included if they occur at least 50 times in our database.";
   } else {
     freqPar.textContent = "Absolute number of occurences for your search that is available in our database for the period 1997-2016.";
   };

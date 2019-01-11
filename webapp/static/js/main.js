@@ -54,10 +54,12 @@ function get_data(selName,selYear,source) {
         // No data entered
         if (data.clean_sur==='Empty Search'){
           renderNone(data);
-          renderChart(cr_freq,'load_abs');
+          renderChartHr(hr_freq,'load_abs');
+          renderChartCr(cr_freq,'load_abs');
         // No data found
         } else if (data.clean_sur==='Not In Db'){
           renderNotFound(data);
+          renderChartHr(hr_freq,'load_abs');
           renderChart(cr_freq,'load_abs');
         // Data found
         } else if (source==='search') {
