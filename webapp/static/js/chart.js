@@ -36,7 +36,7 @@ function renderChartHr(freqs,source) {
       datasets: [{
         data: freqs,
         borderColor: "#53a062",
-        backgroundColor: "rgba(96,175,111,1)",
+        backgroundColor: "rgba(96,175,111,0.4)",
         pointBackgroundColor: "#000000",
         pointBorderColor: "#000000"
       }]
