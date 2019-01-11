@@ -42,5 +42,5 @@ def index(request):
     agg_geo=sorted(GeoTopnames.objects.all().values_list('agg_geo', flat=True))
 
     #return
-    return render(request,"index.html", {'cr_freqs':cr_freqs,'agg_geo':agg_geo})
+    return render(request,"index.html", {'hr_freqs':hr_freqs,'cr_freqs':cr_freqs,'agg_geo':agg_geo})
     #{'hist_freqs':hist_freqs,'cr_freqs':cr_freqs,'agg_geo':agg_geo})
