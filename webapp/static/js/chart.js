@@ -2,7 +2,7 @@
 var freqhr = document.getElementById("cardFreqHr");
 var freqcr = document.getElementById("cardFreqCr");
 
-function renderChartCr(freqs,source) {
+function renderChartHr(freqs,source) {
 
   //Context
   var freqSearch = document.getElementById('cardFreqHr');
