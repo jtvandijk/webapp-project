@@ -53,11 +53,11 @@ function get_data(selName,selYear,source) {
         // No data entered
         if (data.clean_sur==='Empty Search'){
           renderNone(data);
-          renderChart(abs_freq,'load_abs');
+          renderChart(cr_freq,'load_abs');
         // No data found
         } else if (data.clean_sur==='Not In Db'){
           renderNotFound(data);
-          renderChart(abs_freq,'load_abs');
+          renderChart(cr_freq,'load_abs');
         // Data found
         } else if (source==='search') {
           renderHTML(data);
