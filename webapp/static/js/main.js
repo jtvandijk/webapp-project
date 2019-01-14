@@ -47,7 +47,6 @@ function get_data(selName,selYear,source) {
     $j.ajax({
       method: 'POST',
       url: '../udl-namekde/search/',
-      //url: '../udl-namekde/search/',
       data: {q: selName,
              y: selYear,
              csrfmiddlewaretoken: csrftoken
