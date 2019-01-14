@@ -25,10 +25,8 @@ def search(request):
 
     #query db
     search_sur = (request.POST['q']).lower()
-    sclean = re.sub(r'[\W^0-9]+', ' ',search_sur)
+    sclean = re.sub(r'[\W^0-9^\s]+', '',search_sur)
     db_sur = KdeLookup.objects.filter(surname=sclean)
-
-    print(dub_sur)
 
     #validate year
     year_sel = (request.POST['y'])
@@ -64,23 +62,33 @@ def search(request):
         freq_chart = {key: value for key, value in data.items() if key.startswith('freq')}
         freqs = [str(value) for value in freq_chart.values()]
         freqs = [0 if x=='None' else int(x) for x in freqs]
+        hr_freq = freqs[:7]
+        cr_freq = freqs[7:]
         if not year_sel:
             year_sel = years[0]
 
-        #get uid
-        uid_key = "uid" + str(year_sel)
-        uid_sel = int(available.get(uid_key))
-
         #get data
         kdev = str_to_class("KdevClus" + (str(year_sel)))
-        year_data = str(kdev.objects.filter(uid=uid_sel).values('kde'))
+        year_data = str(kdev.objects.filter(surname=sclean).values('kde'))
         val = [int(x) for x in year_data[21:-5].split(',')]
 
-        #add selected values
-        gridc['val'] = val
-        gridc['id'] = gridc.index
+        #prepare data
+        spx = int((len(val)/2)+.5)
+        idx = val[:spx]
+        kdx = val[spx:]
+
+        #temp data fix
+        idx[spx-1] = int(str(val[spx-1])[:-1])
+        kdx.insert(0,1)
+
+        #pd DataFrame
+        kdf = pd.DataFrame({'gid':idx,'val':kdx})
+
+        #add values to grid
         level = 50
-        kde_sel = gridc[(gridc['val'] >= level)]
+        kde_sel = pd.merge(gridc,kdf,on='gid',how='inner')
+        kde_sel = kde_sel[(kde_sel['val'] >= level)]
+
         coord = [[int(x[1]),int(x[0])] for x in (list(zip(kde_sel.x,kde_sel.y)))]
         cs, lbls = dbscan(coord, eps=2000)
         kde_sel = kde_sel.copy()
@@ -105,15 +113,16 @@ def search(request):
 
     #combine data
     search = {
-            'clean_sur': sclean.title(),
+            'clean_sur': re.sub(r'[\W^0-9^]+', ' ',search_sur).title(),
             'search_sur': search_sur,
             'data': years,
-            'freqs': freqs,
+            'hr_freq': hr_freq,
+            'cr_freq': cr_freq,
             'year_sel': year_sel,
             'qvalid': qvalid,
             'contourprj': contourprj,
             }
-
+    print(search)
     #return data
     return HttpResponse(json.dumps(search),content_type="application/json")
 

@@ -43,9 +43,11 @@ $j(document).ready(function() {
 
 //AJAX for POST
 function get_data(selName,selYear,source) {
+    var max_y = 60000;
     $j.ajax({
       method: 'POST',
       url: '../udl-namekde/search/',
+      //url: '../udl-namekde/search/',
       data: {q: selName,
              y: selYear,
              csrfmiddlewaretoken: csrftoken
@@ -54,18 +56,19 @@ function get_data(selName,selYear,source) {
         // No data entered
         if (data.clean_sur==='Empty Search'){
           renderNone(data);
-          renderChartHr(hr_freq,'load_abs');
-          renderChartCr(cr_freq,'load_abs');
+          renderChartHr(hr_freq,'load_abs',max_y);
+          renderChartCr(cr_freq,'load_abs',max_y);
         // No data found
         } else if (data.clean_sur==='Not In Db'){
           renderNotFound(data);
-          renderChartHr(hr_freq,'load_abs');
-          renderChart(cr_freq,'load_abs');
+          renderChartHr(hr_freq,'load_abs',max_y);
+          renderChartCr(cr_freq,'load_abs',max_y);
         // Data found
         } else if (source==='search') {
           renderHTML(data);
           renderMap(data);
-          renderChart(data.freqs,'');
+          renderChartHr(data.hr_freq,'');
+          renderChartCr(data.cr_freq,'');
         // No new search
         } else {
           renderHTML(data);

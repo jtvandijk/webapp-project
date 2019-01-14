@@ -1,8 +1,10 @@
 //surname frequency chart
 var freqhr = document.getElementById('cardFreqHr');
 var freqcr = document.getElementById('cardFreqCr');
+var max_y = 60000
+console.log(max_y)
 
-function renderChartHr(freqs,source) {
+function renderChartHr(freqs,source,max_y) {
 
   //context
   var freqSearch = document.getElementById('cardFreqHr');
@@ -11,7 +13,7 @@ function renderChartHr(freqs,source) {
   var freqCan = document.createElement('canvas');
 
   freqDiv.className = 'card-body p-2';
-  freqDiv.id = 'cardFreq';
+  freqDiv.id = 'cardFreqHr';
   freqCan.id = 'freqChartHr';
   freqCan.width = '100';
   freqCan.height = '70';
@@ -49,7 +51,7 @@ function renderChartHr(freqs,source) {
             yAxes: [{
             ticks: {
               min: 0,
-              max: 60000
+              max: max_y
             }
             }]
         }
@@ -57,7 +59,7 @@ function renderChartHr(freqs,source) {
   });
 };
 
-function renderChartCr(freqs,source) {
+function renderChartCr(freqs,source,max_y) {
 
   //context
   var freqSearch = document.getElementById('cardFreqCr');
@@ -66,7 +68,7 @@ function renderChartCr(freqs,source) {
   var freqCan = document.createElement('canvas');
 
   freqDiv.className = 'card-body p-2';
-  freqDiv.id = 'cardFreq';
+  freqDiv.id = 'cardFreqCr';
   freqCan.id = 'freqChartCr';
   freqCan.width = '100';
   freqCan.height = '70';
@@ -106,7 +108,7 @@ function renderChartCr(freqs,source) {
             yAxes: [{
             ticks: {
               min: 0,
-              max: 60000
+              max: max_y
             }
             }]
         }
