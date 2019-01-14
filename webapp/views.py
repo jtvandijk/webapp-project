@@ -43,4 +43,3 @@ def index(request):
 
     #return
     return render(request,"index.html", {'hr_freqs':hr_freqs,'cr_freqs':cr_freqs,'agg_geo':agg_geo})
-    #{'hist_freqs':hist_freqs,'cr_freqs':cr_freqs,'agg_geo':agg_geo})

@@ -11,7 +11,7 @@ $j(document).ready(function() {
 $j(document).on('submit', '#locUser', function(e){
   e.preventDefault();
   var selLoc = document.getElementById('selLoc').value;
-  if (selLoc==="user"){
+  if (selLoc==='user'){
     startLoad();
     getLocation();
   } else {
@@ -48,7 +48,7 @@ function showPosition(position) {
 
     $j.ajax({
       method: 'POST',
-      url: "../udl-namekde/location/",
+      url: '../udl-namekde/location/',
       data: {latitude: lat,
             longitude: lon,
             csrfmiddlewaretoken: csrftoken
@@ -69,7 +69,7 @@ function showGeography(geography) {
 
     $j.ajax({
       method: 'POST',
-      url: "../udl-namekde/geography/",
+      url: '../udl-namekde/geography/',
       data: {geography: geography,
             csrfmiddlewaretoken: csrftoken
             },
@@ -94,11 +94,11 @@ function renderTopname(loclist) {
   var topname = document.createElement('h1');
 
   container.id = ('locTop');
-  div.className = "card-body p-2";
-  par.className = "card-text text-justify top mb-0";
-  par.textContent = "The most popular surname at your selected location is:";
-  topname.className = "text-center p-2";
-  topname.style.color = "rgb(77,146,184)";
+  div.className = 'card-body p-2';
+  par.className = 'card-text text-justify top mb-0';
+  par.textContent = 'The most popular surname at your selected location is:';
+  topname.className = 'text-center p-2';
+  topname.style.color = 'rgb(77,146,184)';
   topname.innerHTML = loclist.topnames[0];
 
   div.appendChild(par);
@@ -116,11 +116,11 @@ function renderAlpha(loclist) {
   var alphav = document.createElement('h1');
 
   container.id = ('locAlpha');
-  div.className = "card-body p-2";
-  par.className = "card-text text-justify top mb-0";
-  par.textContent = "The value below shows the probability that two individuals chosen at random share the same surname at your selected location.";
-  alphav.className = "text-center p-2";
-  alphav.style.color = "rgb(189,54,29)";
+  div.className = 'card-body p-2';
+  par.className = 'card-text text-justify top mb-0';
+  par.textContent = 'The value below shows the probability that two individuals chosen at random share the same surname at your selected location.';
+  alphav.className = 'text-center p-2';
+  alphav.style.color = 'rgb(189,54,29)';
   alphav.innerHTML = loclist.alpha;
 
   div.appendChild(par);
@@ -138,11 +138,11 @@ function renderUniq(loclist) {
   var surnames = document.createElement('h1');
 
   container.id = ('locUniq');
-  div.className = "card-body p-2";
-  par.className = "card-text text-justify top mb-0";
-  par.textContent = "There is the following number of unique surnames at your selected location:";
-  surnames.className = "text-center p-2";
-  surnames.style.color = "rgb(96,175,111)";
+  div.className = 'card-body p-2';
+  par.className = 'card-text text-justify top mb-0';
+  par.textContent = 'There is the following number of unique surnames at your selected location:';
+  surnames.className = 'text-center p-2';
+  surnames.style.color = 'rgb(96,175,111)';
   surnames.innerHTML = loclist.unique;
 
   div.appendChild(par);
@@ -162,9 +162,9 @@ function renderLoclist(loclist) {
   var ul = document.createElement('ul');
 
   container.id = ('locNames');
-  div.className = "card-body p-2";
-  par.className = "card-text text-justify top";
-  par.textContent = "Besides the most popular surname, the following surnames are also frequently occuring:";
+  div.className = 'card-body p-2';
+  par.className = 'card-text text-justify top';
+  par.textContent = 'Besides the most popular surname, the following surnames are also frequently occuring:';
 
   for (var i = 1; i < loclist.topnames.length; ++i) {
     var li = document.createElement('li');

@@ -28,6 +28,8 @@ def search(request):
     sclean = re.sub(r'[\W^0-9]+', ' ',search_sur)
     db_sur = KdeLookup.objects.filter(surname=sclean)
 
+    print(dub_sur)
+
     #validate year
     year_sel = (request.POST['y'])
     if int(year_sel) == -1:

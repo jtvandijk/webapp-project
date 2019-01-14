@@ -1,7 +1,7 @@
 //jQuery
 var $j = jQuery.noConflict();
 
-//CSRF
+//csrf
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
@@ -45,7 +45,7 @@ $j(document).ready(function() {
 function get_data(selName,selYear,source) {
     $j.ajax({
       method: 'POST',
-      url: "../udl-namekde/search/",
+      url: '../udl-namekde/search/',
       data: {q: selName,
              y: selYear,
              csrfmiddlewaretoken: csrftoken
@@ -82,15 +82,15 @@ function renderHTML(data) {
     var foundForm = document.createElement('form');
     var foundList = document.createElement('select');
 
-    foundPar.id = "searchParam";
-    foundPar.className = "card-text text-justify top pt-3";
-    foundPar.innerHTML = "You searched for <strong>"+data.clean_sur+"</strong>. We have data available for the following years:";
+    foundPar.id = 'searchParam';
+    foundPar.className = 'card-text text-justify top pt-3';
+    foundPar.innerHTML = 'You searched for <strong>'+data.clean_sur+'</strong>. We have data available for the following years:';
 
     //set up empty select option
-    foundList.id="searchYear";
-    foundList.className="form-control";
+    foundList.id='searchYear';
+    foundList.className='form-control';
     var li = document.createElement('option');
-    li.textContent = "Select a year:";
+    li.textContent = 'Select a year:';
     li.disabled = true;
     foundList.appendChild(li);
 
@@ -102,7 +102,7 @@ function renderHTML(data) {
     };
 
     //combine HTML elements
-    foundForm.className="my-3";
+    foundForm.className='my-3';
     foundForm.appendChild(foundList);
     foundPar.appendChild(foundForm);
     pSearch.replaceWith(foundPar);
@@ -131,9 +131,9 @@ function renderNone(data) {
   var pSearch = document.getElementById('searchParam');
   var noText = document.createElement('p');
 
-  noText.className = "card-text text-justify top pt-3";
-  noText.id = "searchParam";
-  noText.textContent = "Please type in a surname before hitting submit.";
+  noText.className = 'card-text text-justify top pt-3';
+  noText.id = 'searchParam';
+  noText.textContent = 'Please type in a surname before hitting submit.';
 
   pSearch.replaceWith(noText);
 };
@@ -145,9 +145,9 @@ function renderNotFound(data) {
   var pSearch = document.getElementById('searchParam');
   var notFound = document.createElement('p');
 
-  notFound.className = "card-text text-justify top pt-3";
-  notFound.id = "searchParam";
-  notFound.innerHTML = "Unfortunately, <strong>"+data.search_sur+"</strong> is not in our database. Are you sure you did not make a typo?";
+  notFound.className = 'card-text text-justify top pt-3';
+  notFound.id = 'searchParam';
+  notFound.innerHTML = 'Unfortunately, <strong>'+data.search_sur+'</strong> is not in our database. Are you sure you did not make a typo?';
 
   pSearch.replaceWith(notFound);
 };
