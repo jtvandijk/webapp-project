@@ -2,7 +2,6 @@
 var freqhr = document.getElementById('cardFreqHr');
 var freqcr = document.getElementById('cardFreqCr');
 var max_y = 60000
-console.log(max_y)
 
 function renderChartHr(freqs,source,max_y) {
 
