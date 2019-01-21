@@ -17,22 +17,28 @@ function getCookie(name) {
     return cookieValue;
 };
 
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader(“X-CSRFToken”, getCookie(‘csrftoken’));
+        }
+    }
+});
+
 //update map -- search
 $j(document).on('submit', '#searchSur', function(e){
   e.preventDefault();
-  var csrftoken = getCookie('csrftoken');
   var q = document.getElementById('surname').value;
   var y = -1;
-  get_data(q,y,'search',csrftoken);
+  get_data(q,y,'search');
 });
 
 //update map -- change
 $j(document).on('change', '#searchYear', function(e){
   e.preventDefault();
-  var csrftoken = getCookie('csrftoken');
   var q = document.getElementById('surname').value;
   var y = document.getElementById('searchYear').value;
-  get_data(q,y,'change',csrftoken);
+  get_data(q,y,'change');
 });
 
 //chart / location -- on load
@@ -43,7 +49,7 @@ $j(document).ready(function() {
 });
 
 //AJAX for POST
-function get_data(selName,selYear,source,csrftoken) {
+function get_data(selName,selYear,source) {
     var max_y = 60000;
     $j.ajax({
       method: 'POST',
