@@ -38,18 +38,20 @@ def search(request):
 
     #empty search
     if len(search_sur) == 0:
-        sclean = 'Empty search'
+        source = 'Empty search'
         years = []
-        freqs = []
+        hr_freq = []
+        cr_freq = []
         year_sel = []
         qvalid = False
         contourprj = []
 
     #if not in db
     elif not db_sur:
-        sclean = 'Not in db'
+        source = 'Not in db'
         years = []
-        freqs = []
+        hr_freq = []
+        cr_freq = []
         year_sel = []
         qvalid = False
         contourprj = []
@@ -57,6 +59,7 @@ def search(request):
     #if in database
     else:
         data = KdeLookup.objects.filter(surname=sclean).values()[0]
+        source = 'In db'
         available = {key: value for key, value in data.items() if value != None}
         years = [str(year[4:]) for year in list(available.keys()) if year.startswith('freq')]
         freq_chart = {key: value for key, value in data.items() if key.startswith('freq')}
@@ -73,12 +76,11 @@ def search(request):
         val = [int(x) for x in year_data[21:-5].split(',')]
 
         #prepare data
-        #spx = int((len(val)/2)+.5)
-        spx = int(len(val)/2)
+        spx = int((len(val)/2)+.5)
         idx = val[:spx]
         kdx = val[spx:]
 
-        #temp data fix
+        #temp data fix // population weighted kde
         #idx[spx-1] = int(str(val[spx-1])[:-1])
         #kdx.insert(0,1)
 
@@ -86,14 +88,14 @@ def search(request):
         kdf = pd.DataFrame({'gid':idx,'val':kdx})
 
         #add values to grid
-        level = 50
+        level = 10
         kde_sel = pd.merge(gridc,kdf,on='gid',how='inner')
         kde_sel = kde_sel[(kde_sel['val'] >= level)]
-
         coord = [[int(x[1]),int(x[0])] for x in (list(zip(kde_sel.x,kde_sel.y)))]
         cs, lbls = dbscan(coord, eps=2000)
         kde_sel = kde_sel.copy()
         kde_sel['group'] = lbls
+        kde_sel = kde_sel[(kde_sel['group'] >= 0)]
 
         #identify for each group concave points
         contourp = to_concave_points(kde_sel, coord)
@@ -116,6 +118,7 @@ def search(request):
     search = {
             'clean_sur': re.sub(r'[\W^0-9^]+', ' ',search_sur).title(),
             'search_sur': search_sur,
+            'source': source,
             'data': years,
             'hr_freq': hr_freq,
             'cr_freq': cr_freq,

@@ -1,6 +1,6 @@
 #JTVD - 2018
 
-#groupig needs to be fixed -- loose points connected with each other (min point size?)
+#groupig needs to be fixed -- loose points connected with each other (min point size?) // possibly fixed with filter group labels == -1
 #either remove loose points of given contour level
 #or create circle around grid centroid (or hexagon of sorts)
 
@@ -9,6 +9,7 @@ import numpy as np
 from shapely.geometry import Point,Polygon,LineString,MultiPolygon
 
 def to_concave_points(df, coord):
+
     groups = np.unique(df['group'].tolist())
     contours = []
 
@@ -21,6 +22,7 @@ def to_concave_points(df, coord):
             else:
                 record[x] = dict()
                 record[x][y] = None
+
         return record
 
     for g in groups:
