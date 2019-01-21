@@ -1,4 +1,4 @@
-// Settings modal
+//settings modal
 var modal = document.getElementById('settings');
 var link = document.getElementById('settings_modal');
 var span = document.getElementsByClassName("close")[0];
