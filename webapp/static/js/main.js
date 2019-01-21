@@ -43,6 +43,7 @@ $j(document).ready(function() {
 
 //AJAX for POST
 function get_data(selName,selYear,source) {
+    var csrftoken = getCookie('csrftoken');
     var max_y = 60000;
     $j.ajax({
       method: 'POST',
