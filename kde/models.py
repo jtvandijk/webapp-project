@@ -53,7 +53,7 @@ class KdevClus1851(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus1851'
+        db_table = 'kdef_clus1851'
 
 class KdevClus1861(models.Model):
     surname = models.TextField(primary_key=True)
@@ -64,7 +64,7 @@ class KdevClus1861(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus1861'
+        db_table = 'kdef_clus1861'
 
 class KdevClus1871(models.Model):
     surname = models.TextField(primary_key=True)
@@ -75,7 +75,7 @@ class KdevClus1871(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus1871'
+        db_table = 'kdef_clus1871'
 
 class KdevClus1881(models.Model):
     surname = models.TextField(primary_key=True)
@@ -86,7 +86,7 @@ class KdevClus1881(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus1881'
+        db_table = 'kdef_clus1881'
 
 class KdevClus1891(models.Model):
     surname = models.TextField(primary_key=True)
@@ -97,7 +97,7 @@ class KdevClus1891(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus1891'
+        db_table = 'kdef_clus1891'
 
 class KdevClus1901(models.Model):
     surname = models.TextField(primary_key=True)
@@ -108,7 +108,7 @@ class KdevClus1901(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus1901'
+        db_table = 'kdef_clus1901'
 
 class KdevClus1911(models.Model):
     surname = models.TextField(primary_key=True)
@@ -119,7 +119,7 @@ class KdevClus1911(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus1911'
+        db_table = 'kdef_clus1911'
 
 class KdevClus1997(models.Model):
     surname = models.TextField(primary_key=True)
@@ -130,7 +130,7 @@ class KdevClus1997(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus1997'
+        db_table = 'kdef_clus1997'
 
 class KdevClus1998(models.Model):
     surname = models.TextField(primary_key=True)
@@ -141,7 +141,7 @@ class KdevClus1998(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus1998'
+        db_table = 'kdef_clus1998'
 
 class KdevClus1999(models.Model):
     surname = models.TextField(primary_key=True)
@@ -152,7 +152,7 @@ class KdevClus1999(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus1999'
+        db_table = 'kdef_clus1999'
 
 class KdevClus2000(models.Model):
     surname = models.TextField(primary_key=True)
@@ -163,7 +163,7 @@ class KdevClus2000(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2000'
+        db_table = 'kdef_clus2000'
 
 class KdevClus2001(models.Model):
     surname = models.TextField(primary_key=True)
@@ -174,7 +174,7 @@ class KdevClus2001(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2001'
+        db_table = 'kdef_clus2001'
 
 class KdevClus2002(models.Model):
     surname = models.TextField(primary_key=True)
@@ -185,7 +185,7 @@ class KdevClus2002(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2002'
+        db_table = 'kdef_clus2002'
 
 class KdevClus2003(models.Model):
     surname = models.TextField(primary_key=True)
@@ -196,7 +196,7 @@ class KdevClus2003(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2003'
+        db_table = 'kdef_clus2003'
 
 class KdevClus2004(models.Model):
     surname = models.TextField(primary_key=True)
@@ -207,7 +207,7 @@ class KdevClus2004(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2004'
+        db_table = 'kdef_clus2004'
 
 class KdevClus2005(models.Model):
     surname = models.TextField(primary_key=True)
@@ -218,7 +218,7 @@ class KdevClus2005(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2005'
+        db_table = 'kdef_clus2005'
 
 class KdevClus2006(models.Model):
     surname = models.TextField(primary_key=True)
@@ -229,7 +229,7 @@ class KdevClus2006(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2006'
+        db_table = 'kdef_clus2006'
 
 class KdevClus2007(models.Model):
     surname = models.TextField(primary_key=True)
@@ -240,7 +240,7 @@ class KdevClus2007(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2007'
+        db_table = 'kdef_clus2007'
 
 class KdevClus2008(models.Model):
     surname = models.TextField(primary_key=True)
@@ -251,7 +251,7 @@ class KdevClus2008(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2008'
+        db_table = 'kdef_clus2008'
 
 class KdevClus2009(models.Model):
     surname = models.TextField(primary_key=True)
@@ -262,7 +262,7 @@ class KdevClus2009(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2009'
+        db_table = 'kdef_clus2009'
 
 class KdevClus2010(models.Model):
     surname = models.TextField(primary_key=True)
@@ -273,7 +273,7 @@ class KdevClus2010(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2010'
+        db_table = 'kdef_clus2010'
 
 class KdevClus2011(models.Model):
     surname = models.TextField(primary_key=True)
@@ -284,7 +284,7 @@ class KdevClus2011(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2011'
+        db_table = 'kdef_clus2011'
 
 class KdevClus2012(models.Model):
     surname = models.TextField(primary_key=True)
@@ -295,7 +295,7 @@ class KdevClus2012(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2012'
+        db_table = 'kdef_clus2012'
 
 class KdevClus2013(models.Model):
     surname = models.TextField(primary_key=True)
@@ -306,7 +306,7 @@ class KdevClus2013(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2013'
+        db_table = 'kdef_clus2013'
 
 class KdevClus2014(models.Model):
     surname = models.TextField(primary_key=True)
@@ -317,7 +317,7 @@ class KdevClus2014(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2014'
+        db_table = 'kdef_clus2014'
 
 class KdevClus2015(models.Model):
     surname = models.TextField(primary_key=True)
@@ -328,7 +328,7 @@ class KdevClus2015(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'kdev_clus2015'
+        db_table = 'kdef_clus2015'
 
 class KdevClus2016(models.Model):
     surname = models.TextField(primary_key=True)
@@ -336,10 +336,10 @@ class KdevClus2016(models.Model):
     pop = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
     bw = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
     kde = models.TextField(blank=True, null=True)
-    
+
     class Meta:
         managed = True
-        db_table = 'kdev_clus2016'
+        db_table = 'kdef_clus2016'
 
 class LsoaTopnames(models.Model):
     lsoa = models.TextField(primary_key=True)
