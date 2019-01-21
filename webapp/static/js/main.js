@@ -18,6 +18,10 @@ function getCookie(name) {
 };
 var csrftoken = getCookie('csrftoken');
 
+function csrfSafeMethod(method) {
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
 $j.ajaxSetup({
     beforeSend: function(xhr, settings) {
       if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
