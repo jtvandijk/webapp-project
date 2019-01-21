@@ -16,7 +16,7 @@ $j(document).on('submit', '#locUser', function(e){
     getLocation();
   } else {
     startLoad();
-    setTimeout(showGeography(selLoc),2000);
+    setTimeout(showGeography,2000,selLoc);
   }
 });
 
