@@ -2,24 +2,18 @@
 webapp settings
 """
 
+#libraries
 import os
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+#paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
+#security
 SECRET_KEY = 'SECRET KEY'
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 ALLOWED_HOSTS = []
 
-# Application definition
-
+#applications
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -61,11 +55,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'webapp.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/2.0/ref/settings/#databases
-
-
+#database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -77,11 +67,9 @@ DATABASES = {
     }
 }
 
+POSTGIS_VERSION = (2,1,4)
 
-
-# Password validation
-# https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
-
+#password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -97,42 +85,22 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/2.0/topics/i18n/
-
+#internationalization
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'Europe/London'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.0/howto/static-files/
-
-POSTGIS_VERSION = (2,1,4)
-
+#static files (CSS, JavaScript, Images)
 STATICFILES_DIRS = [
         os.path.join(BASE_DIR, 'webapp/static'),
-        os.path.join(BASE_DIR, 'webapp/media'),
         ]
-
-FORCE_SCRIPT_NAME = ''
 
 STATIC_URL = '/udl-namekde/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-MEDIA_URL = '/udl-namekde/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-# local settings
+#local settings
 try:
     from .local_settings import *
 except ImportError:
