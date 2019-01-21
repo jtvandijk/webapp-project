@@ -4,19 +4,21 @@ var $j = jQuery.noConflict();
 //location -- on load
 $j(document).ready(function() {
   var selLoc = document.getElementById('selLoc').value;
-  showGeography(selLoc);
+  var csrftoken = getCookie('csrftoken');
+  showGeography(selLoc,csrftoken);
 });
 
 //event listener
 $j(document).on('submit', '#locUser', function(e){
   e.preventDefault();
   var selLoc = document.getElementById('selLoc').value;
+  var csrftoken = getCookie('csrftoken');
   if (selLoc==='user'){
     startLoad();
     getLocation();
   } else {
     startLoad();
-    showGeography(selLoc);
+    showGeography(selLoc,csrftoken);
   }
 });
 
@@ -42,7 +44,7 @@ function getLocation() {
 };
 
 //post xy to django backend
-function showPosition(position) {
+function showPosition(position,csrftoken) {
     var lat = position.coords.latitude;
     var lon = position.coords.longitude;
 
@@ -65,7 +67,7 @@ function showPosition(position) {
 };
 
 //post xy to django backend
-function showGeography(geography) {
+function showGeography(geography,csrftoken) {
 
     $j.ajax({
       method: 'POST',
