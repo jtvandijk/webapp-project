@@ -73,13 +73,14 @@ def search(request):
         val = [int(x) for x in year_data[21:-5].split(',')]
 
         #prepare data
-        spx = int((len(val)/2)+.5)
+        #spx = int((len(val)/2)+.5)
+        spx = int(len(val)/2)
         idx = val[:spx]
         kdx = val[spx:]
 
         #temp data fix
-        idx[spx-1] = int(str(val[spx-1])[:-1])
-        kdx.insert(0,1)
+        #idx[spx-1] = int(str(val[spx-1])[:-1])
+        #kdx.insert(0,1)
 
         #pd DataFrame
         kdf = pd.DataFrame({'gid':idx,'val':kdx})
@@ -122,7 +123,7 @@ def search(request):
             'qvalid': qvalid,
             'contourprj': contourprj,
             }
-    print(search)
+
     #return data
     return HttpResponse(json.dumps(search),content_type="application/json")
 
