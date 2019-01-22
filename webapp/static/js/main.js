@@ -57,7 +57,8 @@ function get_data(selName,selYear,source) {
     var max_y = 60000;
     $j.ajax({
       method: 'POST',
-      url: '../udl-namekde/search/',
+      //url: '../udl-namekde/search/',
+      url: '../search/',
       data: {q: selName,
              y: selYear,
              csrfmiddlewaretoken: csrftoken
@@ -126,15 +127,31 @@ function renderHTML(data) {
 
 //render map
 function renderMap(data) {
+
+  //clear previous layers
   contourGroup.clearLayers();
-  var contour = new L.polygon([data.contourprj], {
 
+  //create GeoJSON
+  var contour = {
+      "type": "Feature",
+      "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [data.contourprj]
+      }
+  };
+
+  //define style
+  var contour_style = {
     color: 'red',
-    fillColor: '#f03',
+    fillColor: '#f03'
+  };
 
-    });
-  contour.addTo(kdemap);
-  contour.addTo(contourGroup);
+  //prepare for leaflet
+  var sel_contour = L.geoJSON(contour, {style: contour_style})
+
+  //add to grouping and add to map
+  contourGroup.addLayer(sel_contour);
+  kdemap.addLayer(contourGroup);
 };
 
 //render none

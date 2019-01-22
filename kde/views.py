@@ -110,7 +110,7 @@ def search(request):
             tmp_prj = []
             for coord in contour:
                 pwgs84 = transform(inProj,outProj, coord[0],coord[1])
-                pwgs84_order = [pwgs84[1], pwgs84[0]]
+                pwgs84_order = [pwgs84[0], pwgs84[1]]
                 tmp_prj.append(list(pwgs84_order))
             contourprj.append(tmp_prj)
 
