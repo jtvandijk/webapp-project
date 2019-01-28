@@ -95,6 +95,7 @@ USE_TZ = True
 #static files (CSS, JavaScript, Images)
 STATICFILES_DIRS = [
         os.path.join(BASE_DIR, 'webapp/static'),
+        os.path.join(BASE_DIR, 'webapp/media')
         ]
 
 STATIC_URL = '/udl-namekde/static/'
