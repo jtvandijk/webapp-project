@@ -37,9 +37,6 @@ function renderHTML(data) {
 //render found
 function renderMap(data) {
 
-  //clear previous layers
-  //contourGroup.clearLayers();
-
   //create GeoJSON
   var contour = {
       "type": "Feature",
@@ -59,7 +56,6 @@ function renderMap(data) {
   var sel_contour = L.geoJSON(contour, {style: contour_style})
 
   //add to grouping and add to map
-  //contourGroup.addLayer(sel_contour);
   return(sel_contour);
 };
 

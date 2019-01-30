@@ -19,6 +19,7 @@ $j(document).on('change', '#searchYear', function(e){
 
 //search surname -- new search
 function get_data(selName,selYear,source) {
+    console.log('getting data');
     var max_y = 60000;
     $j.ajax({
       method: 'POST',
@@ -48,6 +49,8 @@ function get_data(selName,selYear,source) {
           renderChartHr(data.hr_freq,'');
           renderChartCr(data.cr_freq,'');
           return;
+        } else {
+          return(data);
         }
       }
     })
@@ -71,3 +74,21 @@ async function get_update_data(selName,selYear,source) {
     });
     return update_data;
 };
+
+// //search surname
+// function get_update_data(selName,selYear,source) {
+//
+//     // No new search
+//     $j.ajax({
+//       method: 'POST',
+//       //url: '../udl-namekde/search/',
+//       url: '../search/',
+//       data: {q: selName,
+//              y: selYear,
+//              csrfmiddlewaretoken: csrftoken
+//             },
+//       success: function (data) {
+//         return data;
+//       }
+//     });
+// };

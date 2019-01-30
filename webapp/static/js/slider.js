@@ -1,72 +1,23 @@
 // Attibution: SODA API requests based on this example: https://github.com/chriswhong/soda-leaflet
 L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
 
-    initialize: function(options,data) {
-        var heatmapCfg = this._getHeatmapOptions(options.heatmatOptions || {});
-        var layer = new HeatmapOverlay(heatmapCfg);
+    initialize: function(layer,options,surname,contour) {
         L.TimeDimension.Layer.prototype.initialize.call(this, layer, options);
         this._currentLoadedTime = 0;
-        this._currentTimeData = {
-            max: this.options.heatmapMax || 10,
-            data: []
-        };
-        this._baseURL = this.options.baseURL || null;
-        this._period = this.options.period || "P1M";
+        this._currentTimeData = null;
+        this._surname = this._baseLayer.surname;
     },
 
-    _getHeatmapOptions: function(options) {
-        var config = {};
-        var defaultConfig = {
-            radius: 15,
-            maxOpacity: .8,
-            scaleRadius: false,
-            useLocalExtrema: false,
-            latField: 'lat',
-            lngField: 'lng',
-            valueField: 'count'
-        };
-        for (var attrname in defaultConfig) {
-            config[attrname] = defaultConfig[attrname];
-        }
-        for (var attrname in options) {
-            config[attrname] = options[attrname];
-        }
-        return config;
-    },
-
-    onAdd: function(map) {
-        L.TimeDimension.Layer.prototype.onAdd.call(this, map);
-
-        //
-        var data = this.options.data;
-        var sel_contour = renderMap(data);
-        map.addLayer(sel_contour);
-        //
-
-        map.addLayer(this._baseLayer);
-        console.log('on add');
-        if (this._timeDimension) {
-            this._getDataForTime(this._timeDimension.getCurrentTime());
-        }
-    },
+    // onAdd: function(map) {
+    //     L.TimeDimension.Layer.prototype.onAdd.call(this, map);
+    //     if (this._timeDimension) {
+    //         this._getDataForTime(this._timeDimension.getCurrentTime());
+    //     }
+    // },
 
     _onNewTimeLoading: function(ev) {
-        this._getDataForTime(ev.time);
-        this._updateDataForYear(map,ev.time);
-        console.log('new time');
+        this._getDataForYear(ev.time);
         return;
-    },
-
-    _updateDataForYear: async function() {
-
-        //
-        var update_data = get_update_data(this.options.data.search_sur,1998,'In db');
-        update_data.then(function(value){
-          var update_sel_contour = renderMap(value);
-          map.addLayer(update_sel_contour);
-        });
-        //
-
     },
 
     isReady: function(time) {
@@ -74,227 +25,110 @@ L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
     },
 
     _update: function() {
-        this._baseLayer.setData(this._currentTimeData);
-        return true;
+        // if (!this._map)
+        //     return;
+        // var layer = L.geoJson(this._currentTimeData, this._baseLayer.options);
+        // if (this._currentLayer) {
+        //     this._map.removeLayer(this._currentLayer);
+        // }
+        // layer.addTo(this._map);
+        // this._currentLayer = layer;
+    },
+
+    _getDataForYear: function(time,option,surname,contour) {
+      var d = new Date(time).getFullYear();
+      var update_data = get_update_data(this._surname,d,'In db');
+
+      console.log(d);
+      console.log(this._baseLayer.surname);
+      console.log(update_data);
     },
 
     _getDataForTime: function(time) {
-        if (!this._baseURL || !this._map) {
-            return;
-        }
-        var url = this._constructQuery(time);
-        var oReq = new XMLHttpRequest();
-        oReq.addEventListener("load", (function(xhr) {
-            var response = xhr.currentTarget.response;
-            var data = JSON.parse(response);
-            delete this._currentTimeData.data;
-            this._currentTimeData.data = [];
-            for (var i = 0; i < data.length; i++) {
-                var marker = data[i];
-                if (marker.location) {
-                    this._currentTimeData.data.push({
-                        lat: marker.location.latitude,
-                        lng: marker.location.longitude,
-                        count: 1
-                    });
-                }
-            }
-            this._currentLoadedTime = time;
-            if (this._timeDimension && time == this._timeDimension.getCurrentTime() && !this._timeDimension.isLoading()) {
-                this._update();
-            }
-            this.fire('timeload', {
-                time: time
-            });
-        }).bind(this));
+           if (!this._map) {
+               return;
+           }
+           //var d = new Date(time).getFullYear();
+           // var callback = function(status, data) {
+           //     if (status == 'ok'){
+           //         this._currentTimeData = data;
+           //     } else{
+           //         this._currentTimeData = [];
+           //     }
+           //     this._currentLoadedTime = time;
+           //     if (this._timeDimension && time == this._timeDimension.getCurrentTime() && !this._timeDimension.isLoading()) {
+           //         this._update();
+           //     }
+           //     this.fire('timeload', {
+           //         time: time
+           //     });
+           // };
+           //this._currenTimeData = get_update_data(surname, d , 'In db')
 
-        oReq.open("GET", url);
-        oReq.send();
+           //var update_data = get_data(surname,d,'In db');
+           //console.log(d);
+           //console.log(update_data);
 
-    },
+           //
 
-    _constructQuery: function(time) {
-        var bbox = this._map.getBounds();
-        var sodaQueryBox = [bbox._northEast.lat, bbox._southWest.lng, bbox._southWest.lat, bbox._northEast.lng];
+           // update_data.then(function(value){
+           //   var update_sel_contour = renderMap(value);
+           //   map.addLayer(update_sel_contour);
+           // });
 
-        var startDate = new Date(time);
-        var endDate = new Date(startDate.getTime());
-        L.TimeDimension.Util.addTimeDuration(endDate, this._period, false);
-
-        var where = "&$where=created_date > '" +
-            startDate.format('yyyy-mm-dd') +
-            "' AND created_date < '" +
-            endDate.format('yyyy-mm-dd') +
-            "' AND within_box(location," +
-            sodaQueryBox +
-            ")&$order=created_date desc";
-
-        var url = this._baseURL + where;
-        return url;
-    }
-
-});
-
+        },
+   });
 
 function renderSlider(map, data) {
 
   //set up years
-  var years = ''
+  var years = '';
   for (var i = 0; i < data.data.length - 1; ++i) {
     years = years + data.data[i] + ',';
-  };
-  var years = years + data.data[data.data.length-1]
+    };
+  var years = years + data.data[data.data.length-1];
 
+  //set up time dimension
+  var timeDimension = new L.TimeDimension({
+        times: years,
+    });
 
-  Date.prototype.format = function (mask, utc) {
-      return dateFormat(this, mask, utc);
-  };
+  //set time dimension to map
+  map.timeDimension = timeDimension;
+  timeDimension.setCurrentTime(timeDimension.getAvailableTimes()[0]);
 
-  L.timeDimension.layer.timekdemap = function(options, data) {
-      return new L.TimeDimension.Layer.kdemap(options, data);
-  };
-
-  var sel_contour = renderMap(data);
-  console.log(sel_contour);
-
-  var testSODALayer = L.timeDimension.layer.timekdemap({
-      baseURL: 'https://data.cityofnewyork.us/resource/erm2-nwe9.json?$select=location,closed_date,complaint_type,street_name,created_date,status,unique_key,agency_name,due_date,descriptor,location_type,agency,incident_address&complaint_type=Noise - Commercial',
-      data: data,});
-
-  testSODALayer.addTo(map);
-
-  L.Control.TimeDimensionCustom = L.Control.TimeDimension.extend({
-      _getDisplayDateFormat: function(date){
-          return date.format("mmmm yyyy");
-      }
-  });
-
-  var timeDimensionControl = new L.Control.TimeDimensionCustom({
-      playerOptions: {
-          buffer: 1,
-          minBufferReady: -1
-      }
-  });
-
-    var timeDimension = new L.TimeDimension({
-            times: years,
-        });
-
-    var player = new L.TimeDimension.Player({
-        transitionTime: 100,
-        loop: false,
-        startOver:true
+  // set up player
+  var player = new L.TimeDimension.Player({
+      transitionTime: 0,
+      loop: false,
+      buffer: -1,
+      minBufferReady: -1,
+      startOver:false
     }, timeDimension);
 
-    //player options
-    var timeDimensionControlOptions = {
-        player: player,
-        timeDimension: timeDimension,
-        position: 'topright',
-        autoPlay: false,
-        speedSlider: false,
-        timeSliderDragUpdate: false,
+  var timeDimensionControlOptions = {
+      player: player,
+      timeDimension: timeDimension,
+      position: 'topright',
+      autoPlay: false,
+      speedSlider: false,
+      timeSliderDragUpdate: true,
     };
 
-  var timeDimensionControl2 = new L.Control.TimeDimension(timeDimensionControlOptions);
-
-
-    //instantiate TimeDimension
-    var timeDimension = new L.TimeDimension({
-            times: years,
-        });
-
+  var timeDimensionControl = new L.Control.TimeDimension(timeDimensionControlOptions);
   map.addControl(timeDimensionControl);
-  map.addControl(timeDimensionControl2);
 
+  //time layers
+  L.timeDimension.layer.timekdemap = function(layer, options, surname, contour) {
+      return new L.TimeDimension.Layer.kdemap(layer, options, surname, contour);
+    };
+
+  var surnamelayer = L.timeDimension.layer.timekdemap({
+      surname: data.search_sur,
+      contour: data.contourprj,
+    });
+
+  console.log(surnamelayer);
+  //add
+  surnamelayer.addTo(map);
 };
-
-
-
-
-
-
-
-// //slider
-// function renderSlider(data) {
-//
-//   //set up years
-//   var years = ''
-//   for (var i = 0; i < data.data.length - 1; ++i) {
-//     years = years + data.data[i] + ',';
-//   };
-//   var years = years + data.data[data.data.length]
-//
-//   //instantiate TimeDimension
-//   var timeDimension = new L.TimeDimension({
-//           times: years,
-//       });
-//
-//   //set to first available year
-//   timeDimension.setCurrentTime(timeDimension.getAvailableTimes()[0]);
-//
-//   //data
-//   var contourData = renderMap(data);
-//
-//   //instantiate TimeDimension layer
-//   L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
-//
-//       initialize: function() {
-//         L.TimeDimension.Layer.prototype.initialize.call(this);
-//         console.log('init');
-//         return;
-//       },
-//
-//       onAdd: function(map) {
-//         L.TimeDimension.Layer.prototype.onAdd.call(this, map);
-//         map.addLayer(contourData);
-//         console.log('add');
-//         return;
-//       },
-//
-//       _onNewTimeLoading: function(ev) {
-//           console.log('new_time');
-//           return;
-//       },
-//
-//       _update: function(ev) {
-//         console.log('update');
-//       },
-//
-//       isReady: function(time) {
-//         console.log('isready');
-//       },
-//
-//
-//     });
-//
-//   //player
-//   var player = new L.TimeDimension.Player({
-//       transitionTime: 100,
-//       loop: false,
-//       startOver:true
-//   }, timeDimension);
-//
-//   //player options
-//   var timeDimensionControlOptions = {
-//       player: player,
-//       timeDimension: timeDimension,
-//       position: 'topright',
-//       autoPlay: false,
-//       speedSlider: false,
-//       timeSliderDragUpdate: false,
-//   };
-//
-//   //contour layer
-//   L.timeDimension.layer.timekdemap = function() {
-//       return new L.TimeDimension.Layer.kdemap();
-//   };
-//
-//   //add
-//   var timeDimensionControl = new L.Control.TimeDimension(timeDimensionControlOptions);
-//   var contourLayer = L.timeDimension.layer.timekdemap({});
-//
-//   contourLayer.addTo(map);
-//   map.addControl(timeDimensionControl);
-//
-// };
