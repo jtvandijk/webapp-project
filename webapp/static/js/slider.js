@@ -1,19 +1,22 @@
 // Attibution: SODA API requests based on this example: https://github.com/chriswhong/soda-leaflet
 L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
 
-    initialize: function(layer,options,surname,contour) {
+    initialize: function(layer,options,surname,year,contour) {
         L.TimeDimension.Layer.prototype.initialize.call(this, layer, options);
+        this._currentTimeData = renderMap(this._baseLayer.contour);
         this._currentLoadedTime = 0;
-        this._currentTimeData = null;
+        this._loadingTimeIndex = 0;
+
         this._surname = this._baseLayer.surname;
+        this._year = this._baseLayer.year;
     },
 
-    // onAdd: function(map) {
-    //     L.TimeDimension.Layer.prototype.onAdd.call(this, map);
-    //     if (this._timeDimension) {
-    //         this._getDataForTime(this._timeDimension.getCurrentTime());
-    //     }
-    // },
+    onAdd: function(map,time) {
+        L.TimeDimension.Layer.prototype.onAdd.call(this, map);
+        if (this._timeDimension) {
+            this._getDataForYear(this._timeDimension.getCurrentTime());
+        }
+    },
 
     _onNewTimeLoading: function(ev) {
         this._getDataForYear(ev.time);
@@ -25,59 +28,42 @@ L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
     },
 
     _update: function() {
-        // if (!this._map)
-        //     return;
-        // var layer = L.geoJson(this._currentTimeData, this._baseLayer.options);
-        // if (this._currentLayer) {
-        //     this._map.removeLayer(this._currentLayer);
-        // }
-        // layer.addTo(this._map);
-        // this._currentLayer = layer;
+      if (!this._map){
+            return;
+        }
+
+        if (this._timeDimension) {
+          console.log(this._timeDimension);
+        }
+        var layer = this._currentTimeData;
+        console.log(layer);
+
+        if (this._currentLayer) {
+            this._map.removeLayer(this._currentLayer);
+        }
+        layer.addTo(this._map);
+        this._currentLayer = layer;
     },
 
-    _getDataForYear: function(time,option,surname,contour) {
+    _getDataForYear: function(time) {
+      if (!this._map) {
+        return;
+      }
       var d = new Date(time).getFullYear();
-      var update_data = get_update_data(this._surname,d,'In db');
+      var contour = get_update_data(this._surname,d,'In db').then((function(value){
 
-      console.log(d);
-      console.log(this._baseLayer.surname);
-      console.log(update_data);
-    },
+        this._currentTimeData = value;
+        this._currentLoadedTime = time;
 
-    _getDataForTime: function(time) {
-           if (!this._map) {
-               return;
-           }
-           //var d = new Date(time).getFullYear();
-           // var callback = function(status, data) {
-           //     if (status == 'ok'){
-           //         this._currentTimeData = data;
-           //     } else{
-           //         this._currentTimeData = [];
-           //     }
-           //     this._currentLoadedTime = time;
-           //     if (this._timeDimension && time == this._timeDimension.getCurrentTime() && !this._timeDimension.isLoading()) {
-           //         this._update();
-           //     }
-           //     this.fire('timeload', {
-           //         time: time
-           //     });
-           // };
-           //this._currenTimeData = get_update_data(surname, d , 'In db')
+        console.log(this._currentTimeData);
+        console.log(this._currentLoadedTime);
 
-           //var update_data = get_data(surname,d,'In db');
-           //console.log(d);
-           //console.log(update_data);
-
-           //
-
-           // update_data.then(function(value){
-           //   var update_sel_contour = renderMap(value);
-           //   map.addLayer(update_sel_contour);
-           // });
-
-        },
-   });
+        if (this._timeDimension && time == this._timeDimension.getCurrentTime() && !this._timeDimension.isLoading()) {
+            this._update();
+        }
+      }).bind(this));
+      }
+    });
 
 function renderSlider(map, data) {
 
@@ -119,16 +105,16 @@ function renderSlider(map, data) {
   map.addControl(timeDimensionControl);
 
   //time layers
-  L.timeDimension.layer.timekdemap = function(layer, options, surname, contour) {
-      return new L.TimeDimension.Layer.kdemap(layer, options, surname, contour);
+  L.timeDimension.layer.timekdemap = function(layer, options, surname, year, contour) {
+      return new L.TimeDimension.Layer.kdemap(layer, options, surname, year, contour);
     };
 
   var surnamelayer = L.timeDimension.layer.timekdemap({
       surname: data.search_sur,
+      year: data.data[0],
       contour: data.contourprj,
     });
 
-  console.log(surnamelayer);
   //add
   surnamelayer.addTo(map);
 };

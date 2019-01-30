@@ -19,7 +19,6 @@ $j(document).on('change', '#searchYear', function(e){
 
 //search surname -- new search
 function get_data(selName,selYear,source) {
-    console.log('getting data');
     var max_y = 60000;
     $j.ajax({
       method: 'POST',
@@ -46,6 +45,7 @@ function get_data(selName,selYear,source) {
         } else if (source==='search') {
           renderHTML(data);
           renderSlider(map,data);
+          renderMap(map,data);
           renderChartHr(data.hr_freq,'');
           renderChartCr(data.cr_freq,'');
           return;
@@ -59,8 +59,10 @@ function get_data(selName,selYear,source) {
 //search surname
 async function get_update_data(selName,selYear,source) {
 
+    console.log('update data');
+
     // No new search
-    update_data = await $j.ajax({
+    var data = await $j.ajax({
       method: 'POST',
       //url: '../udl-namekde/search/',
       url: '../search/',
@@ -70,25 +72,25 @@ async function get_update_data(selName,selYear,source) {
             },
       success: function (data) {
         return data;
-      }
-    });
-    return update_data;
-};
+        }
+      });
 
-// //search surname
-// function get_update_data(selName,selYear,source) {
-//
-//     // No new search
-//     $j.ajax({
-//       method: 'POST',
-//       //url: '../udl-namekde/search/',
-//       url: '../search/',
-//       data: {q: selName,
-//              y: selYear,
-//              csrfmiddlewaretoken: csrftoken
-//             },
-//       success: function (data) {
-//         return data;
-//       }
-//     });
-// };
+      //create GeoJSON
+      var contour = {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [data.contourprj]
+          }
+      };
+
+      //define style
+      var contour_style = {
+        color: 'red',
+        fillColor: '#f03'
+        };
+
+      //prepare for Leaflet
+      var contourJSON = L.geoJSON(contour, {style: contour_style});
+      return contourJSON;
+};

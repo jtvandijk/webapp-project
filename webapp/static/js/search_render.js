@@ -34,31 +34,6 @@ function renderHTML(data) {
     setSelect(data.year_sel);
 };
 
-//render found
-function renderMap(data) {
-
-  //create GeoJSON
-  var contour = {
-      "type": "Feature",
-      "geometry": {
-          "type": "MultiPolygon",
-          "coordinates": [data.contourprj]
-      }
-  };
-
-  //define style
-  var contour_style = {
-    color: 'red',
-    fillColor: '#f03'
-  };
-
-  //prepare for leaflet
-  var sel_contour = L.geoJSON(contour, {style: contour_style})
-
-  //add to grouping and add to map
-  return(sel_contour);
-};
-
 //render none
 function renderNone(data) {
   contourGroup.clearLayers();
@@ -85,4 +60,29 @@ function renderNotFound(data) {
   notFound.innerHTML = 'Unfortunately, <strong>'+data.search_sur+'</strong> is not in our database. Are you sure you did not make a typo?';
 
   pSearch.replaceWith(notFound);
+};
+
+//render found
+function renderMap(data) {
+
+  console.log(data);
+
+  //create GeoJSON
+  var contour = {
+      "type": "Feature",
+      "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [data]
+      }
+  };
+
+  //define style
+  var contour_style = {
+    color: 'red',
+    fillColor: '#f03'
+  };
+
+  //prepare for Leaflet
+  var contourJSON = L.geoJSON(contour, {style: contour_style});
+  return contourJSON;
 };
