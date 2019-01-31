@@ -62,8 +62,8 @@ async function get_update_data(selName,selYear,source) {
     // No new search
     var data = await $j.ajax({
       method: 'POST',
-      //url: '../udl-namekde/search/',
-      url: '../search/',
+      url: '../udl-namekde/search/',
+      //url: '../search/',
       data: {q: selName,
              y: selYear,
              csrfmiddlewaretoken: csrftoken
