@@ -22,8 +22,8 @@ function get_data(selName,selYear,source) {
     var max_y = 60000;
     $j.ajax({
       method: 'POST',
-      //url: '../udl-namekde/search/',
-      url: '../search/',
+      url: '../udl-namekde/search/',
+      //url: '../search/',
       data: {q: selName,
              y: selYear,
              csrfmiddlewaretoken: csrftoken
