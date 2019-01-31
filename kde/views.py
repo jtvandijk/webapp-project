@@ -83,7 +83,7 @@ def search(request):
         kdf = pd.DataFrame({'gid':idx,'val':kdx})
 
         #add values to grid
-        level = 10
+        level = 50
         kde_sel = pd.merge(gridc,kdf,on='gid',how='inner')
         kde_sel = kde_sel[(kde_sel['val'] >= level)]
         coord = [[int(x[1]),int(x[0])] for x in (list(zip(kde_sel.x,kde_sel.y)))]
