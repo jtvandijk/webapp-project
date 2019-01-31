@@ -42,11 +42,6 @@ $j(document).ready(function() {
   showGeography(selLoc);
 });
 
-//set year selector
-function setSelect(selYear) {
-  document.getElementById('searchYear').value = selYear;
-}
-
 //set geography selector
 function setGeo(geo) {
   document.getElementById('selLoc').value = geo;

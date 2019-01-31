@@ -1,4 +1,4 @@
-// //basemap
+//basemap
 var map = L.map('kdemap').setView([54.505, -4], 6);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
             {attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors,\n' +

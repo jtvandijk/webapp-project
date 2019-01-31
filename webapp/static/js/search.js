@@ -10,12 +10,12 @@ $j(document).on('submit', '#searchSur', function(e){
 });
 
 //update map -- change
-$j(document).on('change', '#searchYear', function(e){
-  e.preventDefault();
-  var q = document.getElementById('surname').value;
-  var y = document.getElementById('searchYear').value;
-  get_data(q,y,'change');
-});
+// $j(document).on('change', '#searchYear', function(e){
+//   e.preventDefault();
+//   var q = document.getElementById('surname').value;
+//   var y = document.getElementById('searchYear').value;
+//   get_data(q,y,'change');
+// });
 
 //search surname -- new search
 function get_data(selName,selYear,source) {
@@ -29,19 +29,19 @@ function get_data(selName,selYear,source) {
              csrfmiddlewaretoken: csrftoken
             },
       success: function (data) {
-        // No data entered
+        // no data entered
         if (data.source==='Empty search'){
           renderNone(data);
           renderChartHr(hr_freq,'load_abs',max_y);
           renderChartCr(cr_freq,'load_abs',max_y);
           return;
-        // No data found
+        // no data found
         } else if (data.source==='Not in db'){
           renderNotFound(data);
           renderChartHr(hr_freq,'load_abs',max_y);
           renderChartCr(cr_freq,'load_abs',max_y);
           return;
-        // Data found
+        // data found
         } else if (source==='search') {
           renderHTML(data);
           renderSlider(map,data);
@@ -50,7 +50,7 @@ function get_data(selName,selYear,source) {
           renderChartCr(data.cr_freq,'');
           return;
         } else {
-          return(data);
+          return data;
         }
       }
     })
@@ -58,8 +58,6 @@ function get_data(selName,selYear,source) {
 
 //search surname
 async function get_update_data(selName,selYear,source) {
-
-    console.log('update data');
 
     // No new search
     var data = await $j.ajax({

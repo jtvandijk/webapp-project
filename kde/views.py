@@ -33,9 +33,6 @@ def search(request):
     if int(year_sel) == -1:
         year_sel = []
 
-    #validate search
-    qvalid=True
-
     #empty search
     if len(search_sur) == 0:
         source = 'Empty search'
@@ -43,7 +40,6 @@ def search(request):
         hr_freq = []
         cr_freq = []
         year_sel = []
-        qvalid = False
         contourprj = []
 
     #if not in db
@@ -53,7 +49,6 @@ def search(request):
         hr_freq = []
         cr_freq = []
         year_sel = []
-        qvalid = False
         contourprj = []
 
     #if in database
@@ -123,7 +118,6 @@ def search(request):
             'hr_freq': hr_freq,
             'cr_freq': cr_freq,
             'year_sel': year_sel,
-            'qvalid': qvalid,
             'contourprj': contourprj,
             }
 
@@ -162,7 +156,7 @@ def location(request):
 
 def geography(request):
 
-    #selected Geography
+    #selected geography
     geo = request.POST['geography']
 
     #query for topnames

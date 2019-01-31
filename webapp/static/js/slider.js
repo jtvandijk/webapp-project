@@ -1,69 +1,63 @@
 // Attibution: SODA API requests based on this example: https://github.com/chriswhong/soda-leaflet
 L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
 
-    initialize: function(layer,options,surname,year,contour) {
-        L.TimeDimension.Layer.prototype.initialize.call(this, layer, options);
-        this._currentTimeData = renderMap(this._baseLayer.contour);
-        this._currentLoadedTime = 0;
-        this._loadingTimeIndex = 0;
+  initialize: function(layer,options,surname,year,contour) {
+    L.TimeDimension.Layer.prototype.initialize.call(this, layer, options);
+    this._currentTimeData = renderMap(this._baseLayer.contour);
+    this._currentLoadedTime = 0;
+    this._loadingTimeIndex = 0;
 
-        this._surname = this._baseLayer.surname;
-        this._year = this._baseLayer.year;
+    this._surname = this._baseLayer.surname;
+    this._year = this._baseLayer.year;
+
     },
 
-    onAdd: function(map,time) {
-        L.TimeDimension.Layer.prototype.onAdd.call(this, map);
-        if (this._timeDimension) {
-            this._getDataForYear(this._timeDimension.getCurrentTime());
-        }
-    },
-
-    _onNewTimeLoading: function(ev) {
-        this._getDataForYear(ev.time);
-        return;
-    },
-
-    isReady: function(time) {
-        return (this._currentLoadedTime == time);
-    },
-
-    _update: function() {
-      if (!this._map){
-            return;
-        }
-
-        if (this._timeDimension) {
-          console.log(this._timeDimension);
-        }
-        var layer = this._currentTimeData;
-        console.log(layer);
-
-        if (this._currentLayer) {
-            this._map.removeLayer(this._currentLayer);
-        }
-        layer.addTo(this._map);
-        this._currentLayer = layer;
-    },
-
-    _getDataForYear: function(time) {
-      if (!this._map) {
-        return;
+  onAdd: function(map,time) {
+    L.TimeDimension.Layer.prototype.onAdd.call(this, map);
+      if (this._timeDimension) {
+        this._getDataForYear(this._timeDimension.getCurrentTime());
       }
-      var d = new Date(time).getFullYear();
-      var contour = get_update_data(this._surname,d,'In db').then((function(value){
+    },
 
-        this._currentTimeData = value;
-        this._currentLoadedTime = time;
+  _onNewTimeLoading: function(ev) {
+    this._getDataForYear(ev.time);
+    return;
+    },
 
-        console.log(this._currentTimeData);
-        console.log(this._currentLoadedTime);
+  isReady: function(time) {
+    return (this._currentLoadedTime == time);
+    },
 
-        if (this._timeDimension && time == this._timeDimension.getCurrentTime() && !this._timeDimension.isLoading()) {
-            this._update();
-        }
-      }).bind(this));
-      }
-    });
+  _update: function() {
+    if (!this._map){
+      return;
+    }
+
+    if (this._currentLayer) {
+      this._map.removeLayer(this._currentLayer);
+    }
+
+    var layer = this._currentTimeData;
+    layer.addTo(this._map);
+    this._currentLayer = layer;
+
+    },
+
+  _getDataForYear: function(time) {
+    if (!this._map) {
+      return;
+    }
+
+    var d = new Date(time).getFullYear();
+    var contour = get_update_data(this._surname,d,'In db').then((function(value){
+      this._currentTimeData = value;
+      this._currentLoadedTime = time;
+      if (this._timeDimension && time == this._timeDimension.getCurrentTime() && !this._timeDimension.isLoading()) {
+        this._update();
+      }}).bind(this));
+    },
+
+  });
 
 function renderSlider(map, data) {
 
@@ -76,7 +70,7 @@ function renderSlider(map, data) {
 
   //set up time dimension
   var timeDimension = new L.TimeDimension({
-        times: years,
+      times: years,
     });
 
   //set time dimension to map
@@ -117,4 +111,5 @@ function renderSlider(map, data) {
 
   //add
   surnamelayer.addTo(map);
+
 };
