@@ -1,17 +1,21 @@
-//render HTML
+//render found
 function renderHTML(data) {
 
   var pSearch = document.getElementById('searchParam');
+  var eSearch = document.getElementById('searchExtra');
   var foundPar = document.createElement('p');
-  var foundForm = document.createElement('form');
-  var foundList = document.createElement('select');
+  var foundExt = document.createElement('p');
 
   foundPar.id = 'searchParam';
   foundPar.className = 'card-text text-justify top pt-3';
-  foundPar.innerHTML = 'You searched for <strong>'+data.clean_sur+'</strong>.';
+  foundPar.innerHTML = 'You searched for <strong>'+data.clean_sur+'</strong>. Use the slider navigation on the map to switch between the years that are available for your search.';
+
+  foundExt.id = 'searchExtra';
+  foundExt.className = 'card-text text-justify top';
+  foundExt.innerHTML = 'The polygons on the map indicate the areas in which more than 50 per cent of the surname&quot;s population is concentrated.';
 
   pSearch.replaceWith(foundPar);
-
+  eSearch.replaceWith(foundExt);
 };
 
 //render none

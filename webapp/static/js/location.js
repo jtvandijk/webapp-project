@@ -31,41 +31,45 @@ function getLocation() {
 
     //get location
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition);
+        navigator.geolocation.getCurrentPosition(showLocation);
     }
 };
 
 //post location to django backend
-function showPosition(position) {
+function showLocation(position) {
     var lat = position.coords.latitude;
     var lon = position.coords.longitude;
 
     $j.ajax({
       method: 'POST',
-      //url: '../udl-namekde/location/',
-      url: '../location/',
+      url: '../udl-namekde/location/',
+      // url: '../location/',
       data: {latitude: lat,
             longitude: lon,
             csrfmiddlewaretoken: csrftoken
             },
       success: function (loclist) {
         stopLoad();
-        renderTopname(loclist);
-        renderAlpha(loclist);
-        renderUniq(loclist);
-        renderLoclist(loclist);
-        showAll();
-      }
+        if(loclist){
+          renderTopname(loclist);
+          renderAlpha(loclist);
+          renderUniq(loclist);
+          renderLoclist(loclist);
+          showAll();
+      } else {
+          console.log('outside gb');
+          renderNoLoc();
+      }}
     })
-};
+  };
 
 //post geography to django backend
 function showGeography(geography) {
 
     $j.ajax({
       method: 'POST',
-      //url: '../udl-namekde/geography/',
-      url: '../geography/',
+      url: '../udl-namekde/geography/',
+      // url: '../geography/',
       data: {geography: geography,
             csrfmiddlewaretoken: csrftoken
             },
@@ -78,4 +82,4 @@ function showGeography(geography) {
         showAll();
       }
     })
-};
+  };

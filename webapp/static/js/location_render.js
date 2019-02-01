@@ -19,6 +19,11 @@ function renderTopname(loclist) {
   div.appendChild(topname);
   container.appendChild(div);
   locdiv.replaceWith(container);
+
+  var noLoc = document.getElementById('noLoc');
+  var parLoc = document.createElement('p');
+  noLoc.replaceWith(parLoc);
+  parLoc.id = 'noLoc';
 };
 
 //alpha value
@@ -99,9 +104,22 @@ function showAll() {
   var uniq = document.getElementById('collapseUniq');
   var toplst = document.getElementById('collapseNames');
   var toploc = document.getElementById('collapseTop');
+
   feedb.className = 'collapse show';
   alpha.className = 'collapse show';
   uniq.className = 'collapse show';
   toplst.className = 'collapse show';
   toploc.className = 'collapse show';
+};
+
+//topname
+function renderNoLoc() {
+  var noLoc = document.getElementById('noLoc');
+  var parLoc = document.createElement('p');
+
+  parLoc.id = 'noLoc';
+  parLoc.className = 'card-text text-justify top pb-0 mb-0';
+  parLoc.innerHTML = 'Unfortunately, we were unable to pinpoint your location. Please note that locations outside of <strong>Great Britain</strong> are not supported.';
+
+  noLoc.replaceWith(parLoc);
 };

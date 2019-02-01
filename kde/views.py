@@ -105,8 +105,7 @@ def search(request):
             tmp_prj = []
             for coord in contour:
                 pwgs84 = transform(inProj,outProj, coord[0],coord[1])
-                pwgs84_order = [pwgs84[0], pwgs84[1]]
-                tmp_prj.append(list(pwgs84_order))
+                tmp_prj.append(list(pwgs84))
             contourprj.append(tmp_prj)
 
     #combine data
@@ -138,18 +137,23 @@ def location(request):
 
     #spatial query for topnames
     lsoa = LsoaTopnames.objects.filter(shape__contains=pnt)
-    div = {key: value for key, value in lsoa.values()[0].items()}
-    tnlist = [str(x).title() for x in div['topnames'][1:-1].split(',')]
-    unique = div['unique_n']
-    total = div['total_n']
-    alpha = div['diversity_a']
 
-    #combine data
-    loclist = {'topnames': tnlist,
-               'unique': unique,
-               'total': total,
-               'alpha': alpha
-               }
+    #if spatial query successful
+    if lsoa:
+        div = {key: value for key, value in lsoa.values()[0].items()}
+        tnlist = [str(x).title() for x in div['topnames'][1:-1].split(',')]
+        unique = div['unique_n']
+        total = div['total_n']
+        alpha = div['diversity_a']
+
+        #combine data
+        loclist = {'topnames': tnlist,
+                   'unique': unique,
+                   'total': total,
+                   'alpha': alpha
+                   }
+    else:
+        loclist = None
 
     #return data
     return HttpResponse(json.dumps(loclist),content_type="application/json")

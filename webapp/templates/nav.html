@@ -15,13 +15,13 @@
   <!-- Navigation elements-->
   <div class="collapse navbar-collapse" id="navbarResponsive">
     <ul class="navbar-nav mr-auto">
-      <li class="nav-item mr-3" data-toggle="tooltip" data-placement="right" title="Home">
+      <li class="nav-item mr-3 px-2" data-toggle="tooltip" data-placement="right" title="Home">
         <a class="nav-link" href="{% url 'home' %}">
           <i class="fa fa-fw fa-home mr-1"></i>
           <span class="nav-link-text">Home</span>
         </a>
       </li>
-      <li class="nav-item dropdown mr-3">
+      <li class="nav-item dropdown mr-3 px-2">
         <a class="nav-link dropdown-toggle" id="infodrop" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           <i class="fa fa-fw fa-link mr-1"></i>
           <span class="nav-link-text">More information</span>
@@ -33,6 +33,12 @@
           <a class="dropdown-item" href="https://esrc.ukri.org/">Economic and Social Research Council</a>
         </div>
       </li>
+      <li class="nav-item m3 px-2" data-toggle="tooltip" data-replacemnt="right" title="Acknowledgements">
+        <a class="nav-link" id="acknowledgements" aria-haspopup="true" aria-expanded="false" href="#">
+          <i class="fas fa-info-circle mr-1"></i>
+          <span class="nav-link-text">Acknowledgements</span>
+        </a>
+      </li>
     </ul>
     <ul class="navbar-nav ml-auto">
       <li class="nav-item logo">
@@ -41,5 +47,39 @@
     </ul>
   </div>
 </nav>
+
+<!-- Acknowledgements modal -->
+<div id="acknowledgements_modal" class="modal">
+  <div class="modal-content">
+    <div class="card">
+      <div class="card-header bg-dark text-light">
+        <i class="fas fa-info-circle mr-3"></i>Acknowledgements
+        <span class="close">&times;</span>
+      </div>
+      <div class="card-body p-2">
+        <h5>Funding</h5>
+        <p class="card-text text-justify top">
+          This work is funded by the UK ESRC Consumer Data Research Centre (CDRC) grant reference ES/L011840/1 and EPSRC grant EP/M023583/1 (‘UK Regions Digital Research Facility’).
+        </p>
+        <h5>About the data</h5>
+        <p class="card-text text-justify top">
+          Digitally encoded Historic Census data for England, Scotland, and Wales provide population-wide micro data of individuals’ names and addresses.
+          This integrated collection of historic census microdata covers the decennial census of England and Wales for 1851, 1861, 1881, 1891, 1901, 1911,
+          and for Scotland for the period 1851 to 1901. The addresses are linked to parishes, which have been digitised into a set of two consistent parish geographies.
+          Because contemporary censuses do not disclose names, extensive databases of names at the addresses-level were sought from public versions of the electoral
+          register from 1997 until 2016, with supplements from consumer data from 2002 onwards to capture those that opt-out or are not eligible to vote.
+          The ‘Consumer Registers’ are linked to bolster their coverage and are found to be representative of the vast majority of the UK’s adult population
+        </p>
+        <h5>References</h5>
+        <p class="card-text text-justify top">
+          Cheshire, J.A. & Longley, P.A. (2012) Identifying spatial concentrations of surnames. <em>International Journal of Geographical Information Science</em>. 26 (2), 309–325.<br /><br />
+          Higgs, E. & Schürer, K. (2014) <em>Integrated Census Microdata (I-CeM), 1851-1911</em>, [data collection]. UK Data Service SN: 748. DOI: 10.5255/UKDA-SN-7481-1<br /><br />
+          Lansley, G., Li, W. & Longley, P.A. (2018) Modelling small area level population change from administrative and consumer data, in <em>Proceedings of the 26th Conference on GIS Research UK (GISRUK)</em>. Leicester: University of Leicester.<br /><br />
+          Longley, P. A., Cheshire, J., & Singleton, A. (Eds.). (2018). <em>Consumer Data Research</em>. London: UCL Press.<br /><br />
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

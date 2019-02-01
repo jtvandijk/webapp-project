@@ -16,16 +16,9 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.3/dist/leaflet.css" integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ==" crossorigin="anonymous"/>
-    <link rel="stylesheet" href="{% static 'css/slider.css' %}"/>
     <!-- Custom CSS-->
     <link href="{% static 'css/custom.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/slider.css' %}" rel="stylesheet"/>
-
-    <!-- Chart JavaScript-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js" integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw==" crossorigin=""></script>
-    <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
-
     <!-- Include html elements-->
     {% include "nav.html"%}
 
@@ -54,25 +47,26 @@
           </div>
           <div id="collapseAbout" class="collapse show" aria-labelledby="collapseAbout">
             <div class="card-body p-2">
-            <p class="card-text text-justify top" id="kde">
-            This app explores the <strong>Geography of Surnames</strong> for selected years in Great Britain. The map
-            could indicate your family history, migration patterns, or just be a quirk. Names with a relative low frequency are
-            not mapped to preserve privacy.
+            <p class="card-text text-justify top">
+            Welcome to the <strong>Great Britain Family Names</strong> website which presents the findings of a project based at University College London (UCL) that is investigating
+            the distribution of surnames in Great Britain, both current and historic. It allows users to search the databases that we have created, and to trace the
+            geography and history of their family names (available years may differ between surnames). The map could indicate your family history, migration patterns, or just be a quirk.
             </p>
           </div>
+         </div>
         </div>
-      </div>
 
-      <!-- Surname exploration -->
-      <div>
-        <div class="card-header bg-dark text-light mb-3">
-        <i class="fas fa-globe mr-3"></i>Surname exploration
-        <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseSur" aria-expanded="true" aria-controls="collapseSur">
-          <span class="fa fa-align-justify" style="text-decoration: none"></span>
-        </button>
-        </div>
-        <!-- Row: container -->
-        <div id="collapseSur" class="row collapse show" aria-labelledby="collapseSur">
+        <!-- Surname exploration -->
+        <div>
+          <div class="card-header bg-dark text-light mb-3">
+          <i class="fas fa-globe mr-3"></i>Surname exploration
+          <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseSur" aria-expanded="true" aria-controls="collapseSur">
+            <span class="fa fa-align-justify" style="text-decoration: none"></span>
+          </button>
+          </div>
+
+          <!-- Row: container -->
+          <div id="collapseSur" class="row collapse show" aria-labelledby="collapseSur">
             <!-- Search -->
             <div class="col-lg-4">
               <div class="card mb-3">
@@ -98,6 +92,8 @@
                     </div>
                     </form>
                     <p id="searchParam">
+                    </p>
+                    <p id="searchExtra">
                     </p>
                   </div>
                 </div>
@@ -125,7 +121,21 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
+        <!-- Database statistics -->
+
+        <div>
+          <div class="card-header bg-dark text-light mb-3">
+          <i class="fas fa-signal mr-3"></i>Database statistics
+          <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseStat" aria-expanded="true" aria-controls="collapseStat">
+            <span class="fa fa-align-justify" style="text-decoration: none"></span>
+          </button>
+          </div>
+
+          <!-- Row: container -->
+          <div id="collapseStat" class="row collapse show" aria-labelledby="collapseStat">
             <!-- Frequency HR -->
 
             <div class="col-lg-6">
@@ -168,147 +178,150 @@
           </div>
         </div>
 
-      <!-- Location exploration -->
-      <div>
-        <div class="card-header bg-dark text-light mb-3">
-          <i class="fas fa-location-arrow mr-3"></i>Location exploration
-          <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseLoc" aria-expanded="true" aria-controls="collapseLoc">
-            <span class="fa fa-align-justify" style="text-decoration: none"></span>
-          </button>
-        </div>
-        <!-- Row: location stats -->
-        <div id="collapseLoc" class="collapse show" aria-labelledby="collapseLoc">
-          <div class="row">
-            <!-- Location manager -->
-            <div class="col-lg-4">
-              <div class="card mb-3">
-                <div class="card-header">
-                  <i class="fas fa-compass mr-3"></i>Location manager
-                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseLocMan" aria-expanded="true" aria-controls="collapseLocMan">
-                    <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                  </button>
-                </div>
-                <!-- Location selector -->
-                <div id="collapseLocMan" class="collapse show" aria-labelledby="collapseLocMan">
-                  <div class="card-body p-2" id="locMan">
-                  <p class="card-text text-justify top">
-                  Select a location below to explore its surname statistics. Or simply select 'Use my location' to explore the surname statistics of your current location.
-                  </p>
-                  <form method="post" id="locUser">
-                    <select class="form-control" id="selLoc">
-                      <option disabled>Allow location services:</option>
-                      <option value="user">Use my location</option>
-                      <option disabled>Select a city:</option>
-                      {% for d in agg_geo %}
-                        <option>{{ d }}</option>
-                        {% endfor %}
-                    </select>
-                    <p class="card-text text-center mt-3">
-                    <button class="btn btn-primary btn-sm text-center" id='share-loc' type='submit'>Apply selection</button>
-                    <img src="{% static 'load.gif' %}" id='loading-indicator' style='display:none' class="text-center"/>
-                    </p>
-                  </form>
-                  </p>
-                  </div>
-                  <div class="card-footer small text-justify text-muted p-2">
-                  Please note that these data are aggregated to LSOA-level for privacy reasons.
-                  City data are aggregated further by selecting LSOA centroids that fall within a city's built up area.
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Popular -->
-            <div class="col-lg-4">
-                <div class="card mb-3">
-                <div class="card-header">
-                  <i class="fas fa-ellipsis-h mr-3"></i>Most frequent surnames
-                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseNames" aria-expanded="false" aria-controls="collapseNames">
-                    <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                  </button>
-                </div>
-                <!-- Produce list most popular names -->
-                <div id="collapseNames" class="collapse" aria-labelledby="collapseNames">
-                  <div class="card-body p-2" id="locNames">
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Surname unique -->
-            <div class="col-lg-4">
-              <div class="card mb-3">
-                <div class="card-header">
-                  <i class="fas fa-fingerprint mr-3"></i>Unique surnames
-                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseUniq" aria-expanded="false" aria-controls="collapseUniq">
-                    <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                  </button>
-                </div>
-                <!-- Produce unique names -->
-                <div id="collapseUniq" class="collapse" aria-labelledby="collapseUniq">
-                  <div class="card-body p-2" id="locUniq">
-                  </div>
-                </div>
-              </div>
-            </div>
+        <!-- Location exploration -->
+        <div>
+          <div class="card-header bg-dark text-light mb-3">
+            <i class="fas fa-location-arrow mr-3"></i>Location exploration
+            <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseLoc" aria-expanded="true" aria-controls="collapseLoc">
+              <span class="fa fa-align-justify" style="text-decoration: none"></span>
+            </button>
           </div>
-
-          <!-- Row container -->
-          <div class="row">
-
-            <!-- Surname diversity -->
-            <div class="col-lg-4">
-              <div class="card mb-3">
-                <div class="card-header">
-                  <i class="fa fa-chart-pie mr-3"></i>Surname diversity
-                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseAlpha" aria-expanded="false" aria-controls="collapseAlpha">
-                    <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                  </button>
+          <!-- Row: location stats -->
+          <div id="collapseLoc" class="collapse show" aria-labelledby="collapseLoc">
+            <div class="row">
+              <!-- Location manager -->
+              <div class="col-lg-4">
+                <div class="card mb-3">
+                  <div class="card-header">
+                    <i class="fas fa-compass mr-3"></i>Location manager
+                    <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseLocMan" aria-expanded="true" aria-controls="collapseLocMan">
+                      <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                    </button>
+                  </div>
+                  <!-- Location selector -->
+                  <div id="collapseLocMan" class="collapse show" aria-labelledby="collapseLocMan">
+                    <div class="card-body p-2" id="locMan">
+                    <p class="card-text text-justify top">
+                    Select a location below to explore its surname statistics. Or simply select 'Use my location' to explore the surname statistics of your current location.
+                    </p>
+                    <form method="post" id="locUser">
+                      <select class="form-control" id="selLoc">
+                        <option disabled>Allow location services:</option>
+                        <option value="user">Use my location</option>
+                        <option disabled>Select a city:</option>
+                        {% for d in agg_geo %}
+                          <option>{{ d }}</option>
+                          {% endfor %}
+                      </select>
+                      <p class="card-text text-center mt-3">
+                      <button class="btn btn-primary btn-sm text-center" id='share-loc' type='submit'>Apply selection</button>
+                      <img src="{% static 'load.gif' %}" id='loading-indicator' style='display:none' class="text-center"/>
+                      </p>
+                      <p id="noLoc">
+                      </p>
+                    </form>
+                    </p>
+                    </div>
+                    <div class="card-footer small text-justify text-muted p-2">
+                    Please note that these data are aggregated to LSOA-level for privacy reasons.
+                    City data are aggregated further by selecting LSOA centroids that fall within a city's built up area.
+                    </div>
+                  </div>
                 </div>
-                <!-- Produce diversity alpha -->
-                <div id="collapseAlpha" class="collapse" aria-labelledby="collapseAlpha">
-                  <div class="card-body p-2" id="locAlpha">
+              </div>
+
+              <!-- Popular -->
+              <div class="col-lg-4">
+                  <div class="card mb-3">
+                  <div class="card-header">
+                    <i class="fas fa-ellipsis-h mr-3"></i>Most frequent surnames
+                    <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseNames" aria-expanded="false" aria-controls="collapseNames">
+                      <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                    </button>
+                  </div>
+                  <!-- Produce list most popular names -->
+                  <div id="collapseNames" class="collapse" aria-labelledby="collapseNames">
+                    <div class="card-body p-2" id="locNames">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Surname unique -->
+              <div class="col-lg-4">
+                <div class="card mb-3">
+                  <div class="card-header">
+                    <i class="fas fa-fingerprint mr-3"></i>Unique surnames
+                    <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseUniq" aria-expanded="false" aria-controls="collapseUniq">
+                      <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                    </button>
+                  </div>
+                  <!-- Produce unique names -->
+                  <div id="collapseUniq" class="collapse" aria-labelledby="collapseUniq">
+                    <div class="card-body p-2" id="locUniq">
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Topname -->
-            <div class="col-lg-4">
-              <div class="card mb-3">
-                <div class="card-header">
-                <i class= "fa fa-map-marker mr-3"></i>Topname
-                <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseTop" aria-expanded="true" aria-controls="collapseTop">
-                  <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                </button>
-              </div>
-              <!-- Produce location based topname -->
-                <div id="collapseTop" class="collapse" aria-labelledby="collapseTop">
-                  <div class="card-body p-2" id="locTop">
+            <!-- Row container -->
+            <div class="row">
+
+              <!-- Surname diversity -->
+              <div class="col-lg-4">
+                <div class="card mb-3">
+                  <div class="card-header">
+                    <i class="fa fa-chart-pie mr-3"></i>Surname diversity
+                    <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseAlpha" aria-expanded="false" aria-controls="collapseAlpha">
+                      <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                    </button>
+                  </div>
+                  <!-- Produce diversity alpha -->
+                  <div id="collapseAlpha" class="collapse" aria-labelledby="collapseAlpha">
+                    <div class="card-body p-2" id="locAlpha">
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Feedback -->
-            <div class="col-lg-4">
-              <div class="card mb-3">
-                <div class="card-header">
-                  <i class="fa fa-comments mr-3"></i>Feedback
-                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseFeedback" aria-expanded="false" aria-controls="collapseFeedback">
+              <!-- Topname -->
+              <div class="col-lg-4">
+                <div class="card mb-3">
+                  <div class="card-header">
+                  <i class= "fa fa-map-marker mr-3"></i>Topname
+                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseTop" aria-expanded="true" aria-controls="collapseTop">
                     <span class="fa fa-align-justify" style="text-decoration: none"></span>
                   </button>
                 </div>
-                <div id="collapseFeedback" class="collapse" area-labelledby="collapseFeedback">
-                  <div class="card-body p-2">
-                      <p class="card-text text-justify top">
-                      If you have any questions, concerns or feedback, please do not hesitate to contact us:<br/>
-                      </p>
-                      <p class="card-text text-center ml-0">
-                      <a href="mailto:j.t.vandijk@ucl.ac.uk" class="text-dark"> <i class="fa fa-envelope fa-2x float-center"></i></a>
-                      &nbsp;&nbsp;
-                      <a href="https://twitter.com/@urbndynamicslab" class="text-dark"> <i class="fab fa-twitter fa-2x"></i></a>
-                      </p>
+                <!-- Produce location based topname -->
+                  <div id="collapseTop" class="collapse" aria-labelledby="collapseTop">
+                    <div class="card-body p-2" id="locTop">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Feedback -->
+              <div class="col-lg-4">
+                <div class="card mb-3">
+                  <div class="card-header">
+                    <i class="fa fa-comments mr-3"></i>Feedback
+                    <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseFeedback" aria-expanded="false" aria-controls="collapseFeedback">
+                      <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                    </button>
+                  </div>
+                  <div id="collapseFeedback" class="collapse" area-labelledby="collapseFeedback">
+                    <div class="card-body p-2">
+                        <p class="card-text text-justify top">
+                        If you have any questions, concerns or feedback, please do not hesitate to contact us:<br/>
+                        </p>
+                        <p class="card-text text-center ml-0">
+                        <a href="mailto:j.t.vandijk@ucl.ac.uk" class="text-dark"> <i class="fa fa-envelope fa-2x float-center"></i></a>
+                        &nbsp;&nbsp;
+                        <a href="https://twitter.com/@urbndynamicslab" class="text-dark"> <i class="fab fa-twitter fa-2x"></i></a>
+                        </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -316,18 +329,17 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Logo -->
-    <div class="row">
-      <div class="col-lg-12 text-center p-3">
-        <a href="https://www.ucl.ac.uk/urban-dynamics-lab">
-        <img src="{% static 'udl_logo.png' %}" height="60" />
-        </a>
+      <!-- Logo -->
+      <div class="row">
+        <div class="col-lg-12 text-center p-3">
+          <a href="https://www.ucl.ac.uk/urban-dynamics-lab">
+          <img src="{% static 'udl_logo.png' %}" height="60" />
+          </a>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
   <!-- /.container-fluid-->
   <!-- /.content-wrapper-->
@@ -339,12 +351,18 @@
     </div>
   </footer>
 
+  <!-- Chart JavaScript-->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js" integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw==" crossorigin=""></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+
   <!-- Leaflet slider JavaScript-->
   <script type="text/javascript" src="https://cdn.rawgit.com/nezasa/iso8601-js-period/master/iso8601.min.js"></script>
 
-  <!-- JavaScript -->
+  <!-- Custom JavaScript -->
+  <script> var ireland ="{% static 'js/ireland.geojson' %}";</script>
   <script src ="{% static 'js/main.js' %}"></script>
-  <script src ="{% static 'js/ireland.js' %}"></script>
+  <script src ="{% static 'js/modal.js' %}"></script>
   <script src ="{% static 'js/map.js' %}"></script>
   <script src ="{% static 'js/chart.js' %}"></script>
   <script src ="{% static 'js/search.js' %}"></script>

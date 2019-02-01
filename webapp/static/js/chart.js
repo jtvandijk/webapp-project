@@ -3,7 +3,7 @@ var freqhr = document.getElementById('cardFreqHr');
 var freqcr = document.getElementById('cardFreqCr');
 var max_y = 60000
 
-function renderChartHr(freqs,source,max_y) {
+function renderChartHr(freqs,source,search_sur,max_y) {
 
   //context
   var freqSearch = document.getElementById('cardFreqHr');
@@ -18,9 +18,9 @@ function renderChartHr(freqs,source,max_y) {
   freqCan.height = '70';
   freqPar.className = 'card-text text-justify';
   if (source=='load_abs') {
-    freqPar.textContent = 'Number of unique surnames that are available in our database for the period 1851-1911. Data for Great Britain, with the exception of 1871 (only Scotland) and 1911 (only England and Wales). Surnames found in the Historic Censuses of Population are only included if they occur at least 30 times in our database.';
+    freqPar.innerHTML = 'Number of <strong>unique surnames</strong> that are available in our database for the period 1851-1911. Data for Great Britain, with the exception of 1871 (only Scotland) and 1911 (only England and Wales). Surnames found in the Historic Censuses of Population are only included if they occur at least 30 times in our database.';
   } else {
-    freqPar.textContent = 'Absolute number of occurences for your search that is available in our database for the period 1851-1911.';
+    freqPar.innerHTML = 'Absolute number of times <strong>'+search_sur+'</strong> is recorded in our database for the period 1997-2016.';
   };
 
   //combine HTML elements
@@ -58,7 +58,7 @@ function renderChartHr(freqs,source,max_y) {
   });
 };
 
-function renderChartCr(freqs,source,max_y) {
+function renderChartCr(freqs,source,search_sur,max_y) {
 
   //context
   var freqSearch = document.getElementById('cardFreqCr');
@@ -73,9 +73,9 @@ function renderChartCr(freqs,source,max_y) {
   freqCan.height = '70';
   freqPar.className = 'card-text text-justify';
   if (source=='load_abs') {
-    freqPar.textContent = 'Number of unique surnames that are available in our database for the period 1997-2016. Data for the entire United Kingdom. Surnames found in our Contemporary Consumer Registers are only included if they occur at least 50 times in our database.';
+    freqPar.innerHTML = 'Number of <strong>unique surnames</strong> that are available in our database for the period 1997-2016. Data for the entire United Kingdom. Surnames found in our Contemporary Consumer Registers are only included if they occur at least 50 times in our database.';
   } else {
-    freqPar.textContent = 'Absolute number of occurences for your search that is available in our database for the period 1997-2016.';
+    freqPar.innerHTML = 'Absolute number of times <strong>'+search_sur+'</strong> is recorded in our database for the period 1997-2016.';
   };
 
   //combine HTML elements

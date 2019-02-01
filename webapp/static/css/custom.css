@@ -1,4 +1,4 @@
-/* Body */
+/* body */
 html {
   position: relative;
   min-height: 100%;
@@ -25,7 +25,7 @@ body.fixed-nav {
   padding-top: 1rem;
 }
 
-/* Adjust viewport */
+/* adjust viewport */
 @media (min-width: 992px) {
   .content-wrapper {
     margin-left: 50px;
@@ -52,7 +52,7 @@ body.fixed-nav {
   }
 }
 
-/* Sticky footer */
+/* sticky footer */
 footer.sticky-footer {
   position: absolute;
   right: 0;
@@ -63,25 +63,25 @@ footer.sticky-footer {
   line-height: 55px;
 }
 
-/* Settings modal */
+/* modal settings modal */
 .modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 999999; /* Sit on top */
-    padding-top: 100px; /* Location of the box */
+    display: none; /* hidden by default */
+    position: fixed; /* stay in place */
+    z-index: 999999; /* sit on top */
+    padding-top: 100px; /* location of modal */
     left: 0;
     top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    width: 100%; /* full width */
+    height: 100%; /* full height */
+    overflow: auto; /* enable scroll if needed */
+    background-color: rgb(0,0,0); /* fallback color */
+    background-color: rgba(0,0,0,0.4); /* black w/ opacity */
 }
 
-/* Modal Content */
+/* modal content */
 .modal-content {
     margin: auto;
-    width: 80%;
+    width: 65%;
 }
 
 .close {

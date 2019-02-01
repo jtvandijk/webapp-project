@@ -64,29 +64,6 @@ L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
 
   });
 
-  // Add method to layer control class
-  L.Control.Layers.include({
-      getActiveOverlays: function () {
-
-          // Create array for holding active layers
-          var active = [];
-
-          // Iterate all layers in control
-          this._layers.forEach(function (obj) {
-
-              // Check if it's an overlay and added to the map
-              if (obj.overlay && this._map.hasLayer(obj.layer)) {
-
-                  // Push layer to active array
-                  active.push(obj.layer);
-              }
-          });
-
-          // Return array
-          return active;
-      }
-  });
-
 function renderSlider(map, data) {
 
   //remove control
