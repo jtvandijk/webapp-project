@@ -1,4 +1,8 @@
-// Attibution: SODA API requests based on this example: https://github.com/chriswhong/soda-leaflet
+//global
+var control;
+var layerm;
+
+//timedimension layer
 L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
 
   initialize: function(layer,options,surname,year,contour) {
@@ -40,6 +44,7 @@ L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
     var layer = this._currentTimeData;
     layer.addTo(this._map);
     this._currentLayer = layer;
+    layerm=layer
 
     },
 
@@ -59,7 +64,36 @@ L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
 
   });
 
+  // Add method to layer control class
+  L.Control.Layers.include({
+      getActiveOverlays: function () {
+
+          // Create array for holding active layers
+          var active = [];
+
+          // Iterate all layers in control
+          this._layers.forEach(function (obj) {
+
+              // Check if it's an overlay and added to the map
+              if (obj.overlay && this._map.hasLayer(obj.layer)) {
+
+                  // Push layer to active array
+                  active.push(obj.layer);
+              }
+          });
+
+          // Return array
+          return active;
+      }
+  });
+
 function renderSlider(map, data) {
+
+  //remove control
+  if (control != undefined) {
+     map.removeControl(control);
+     map.removeLayer(layerm);
+     }
 
   //set up years
   var years = '';
@@ -77,7 +111,7 @@ function renderSlider(map, data) {
   map.timeDimension = timeDimension;
   timeDimension.setCurrentTime(timeDimension.getAvailableTimes()[0]);
 
-  // set up player
+  //  set up player
   var player = new L.TimeDimension.Player({
       transitionTime: 0,
       loop: false,
@@ -109,7 +143,11 @@ function renderSlider(map, data) {
       contour: data.contourprj,
     });
 
+  //manage
+  control = timeDimensionControl;
+  layer = surnamelayer;
+
   //add
-  surnamelayer.addTo(map);
+  map.addLayer(surnamelayer);
 
 };
