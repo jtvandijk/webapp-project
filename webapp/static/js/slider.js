@@ -43,6 +43,7 @@ L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
 
     var layer = this._currentTimeData;
     layer.addTo(this._map);
+    map.fitBounds(layer.getBounds());
     this._currentLayer = layer;
     layerm=layer
 

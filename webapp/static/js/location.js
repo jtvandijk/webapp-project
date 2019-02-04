@@ -1,8 +1,13 @@
 //jQuery
 var $j = jQuery.noConflict();
 
+//set geography selector
+function setGeo(geo) {
+  document.getElementById('selLoc').value = geo;
+}
+
 //event listener
-$j(document).on('submit', '#locUser', function(e){
+$j(document).on('submit','#locUser',function(e){
   e.preventDefault();
   var selLoc = document.getElementById('selLoc').value;
   if (selLoc==='user'){
@@ -10,7 +15,7 @@ $j(document).on('submit', '#locUser', function(e){
     getLocation();
   } else {
     startLoad();
-    setTimeout(showGeography,2000,selLoc);
+    setTimeout(showGeography,1500,selLoc);
   }
 });
 
@@ -42,8 +47,8 @@ function showLocation(position) {
 
     $j.ajax({
       method: 'POST',
-      url: '../udl-namekde/location/',
-      // url: '../location/',
+      //url: '../udl-namekde/location/',
+      url: '../location/',
       data: {latitude: lat,
             longitude: lon,
             csrfmiddlewaretoken: csrftoken
@@ -55,9 +60,7 @@ function showLocation(position) {
           renderAlpha(loclist);
           renderUniq(loclist);
           renderLoclist(loclist);
-          showAll();
       } else {
-          console.log('outside gb');
           renderNoLoc();
       }}
     })
@@ -68,8 +71,8 @@ function showGeography(geography) {
 
     $j.ajax({
       method: 'POST',
-      url: '../udl-namekde/geography/',
-      // url: '../geography/',
+      //url: '../udl-namekde/geography/',
+      url: '../geography/',
       data: {geography: geography,
             csrfmiddlewaretoken: csrftoken
             },
@@ -79,7 +82,6 @@ function showGeography(geography) {
         renderAlpha(loclist);
         renderUniq(loclist);
         renderLoclist(loclist);
-        showAll();
       }
     })
   };

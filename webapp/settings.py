@@ -1,6 +1,4 @@
-"""
-webapp settings
-"""
+#webapp settings
 
 #libraries
 import os

@@ -18,9 +18,9 @@ function renderChartHr(freqs,source,search_sur,max_y) {
   freqCan.height = '70';
   freqPar.className = 'card-text text-justify';
   if (source=='load_abs') {
-    freqPar.innerHTML = 'Number of <strong>unique surnames</strong> that are available in our database for the period 1851-1911. Data for Great Britain, with the exception of 1871 (only Scotland) and 1911 (only England and Wales). Surnames found in the Historic Censuses of Population are only included if they occur at least 30 times in our database.';
+    freqPar.innerHTML = 'Number of <strong>unique surnames</strong> that are available in our database for the years 1851, 1861, 1881, 1901, and 1911. Data for Great Britain, with the exception of 1911 (only England and Wales). Surnames found in the Historic Censuses of Population are only included if they occur at least 30 times in our database.';
   } else {
-    freqPar.innerHTML = 'Absolute number of times <strong>'+search_sur+'</strong> is recorded in our database for the period 1997-2016.';
+    freqPar.innerHTML = 'Absolute number of times <strong>'+search_sur+'</strong> is recorded in our database for the period 1851-1911.';
   };
 
   //combine HTML elements
@@ -33,7 +33,7 @@ function renderChartHr(freqs,source,search_sur,max_y) {
   var fchart = new Chart (ctx, {
   type: 'line',
   data: {
-    labels: ['1851','1861','1871','1881','1891','1901','1911'],
+    labels: ['1851','1861','1881','1891','1901','1911'],
       datasets: [{
         data: freqs,
         borderColor: '#3273d1',

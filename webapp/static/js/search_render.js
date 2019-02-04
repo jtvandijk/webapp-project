@@ -12,7 +12,7 @@ function renderHTML(data) {
 
   foundExt.id = 'searchExtra';
   foundExt.className = 'card-text text-justify top';
-  foundExt.innerHTML = 'The polygons on the map indicate the areas in which more than 50 per cent of the surname&quot;s population is concentrated.';
+  foundExt.innerHTML = 'The polygons on the map indicate the areas in which more than 50 per cent of the surname&quot;s population is concentrated. Note that the differences in sizes of the polygons between consecutive years can be minimal.';
 
   pSearch.replaceWith(foundPar);
   eSearch.replaceWith(foundExt);
@@ -45,7 +45,7 @@ function renderNotFound(data) {
 };
 
 //render found // first search, before timedimension controller
-function renderMap(data) {
+function renderMap(data,selYear) {
 
   //create GeoJSON
   var contour = {
@@ -57,9 +57,16 @@ function renderMap(data) {
   };
 
   //define style
-  var contour_style = {
-    color: 'red',
-    fillColor: '#f03'
+  if (selYear < 1997) {
+    var contour_style = {
+      color: 'red',
+      fillColor: '#f03'
+      };
+  } else {
+    var contour_style = {
+      color: 'blue',
+      fillColor: '#3273d1'
+    }
   };
 
   //prepare for Leaflet

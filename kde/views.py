@@ -4,7 +4,7 @@
 from django.shortcuts import render
 from django.contrib.gis.geos import fromstr
 from django.http import HttpResponse
-from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1871, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, LsoaTopnames, GeoTopnames
+from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, LsoaTopnames, GeoTopnames
 from .contour import to_concave_points
 from pyproj import Proj, transform
 from sklearn.cluster import dbscan
@@ -64,6 +64,11 @@ def search(request):
         cr_freq = freqs[7:]
         if not year_sel:
             year_sel = years[0]
+
+        #no 1871
+        del freqs[2]
+        del hr_freq[2]
+        del years[2]
 
         #get data
         kdev = str_to_class("KdevClus" + (str(year_sel)))

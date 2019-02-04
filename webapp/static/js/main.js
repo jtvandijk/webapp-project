@@ -41,8 +41,3 @@ $j(document).ready(function() {
   var selLoc = document.getElementById('selLoc').value;
   showGeography(selLoc);
 });
-
-//set geography selector
-function setGeo(geo) {
-  document.getElementById('selLoc').value = geo;
-}

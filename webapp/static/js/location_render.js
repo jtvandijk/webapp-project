@@ -97,21 +97,6 @@ function renderLoclist(loclist) {
   locdiv.replaceWith(container);
 };
 
-//show all
-function showAll() {
-  var feedb = document.getElementById('collapseFeedback');
-  var alpha = document.getElementById('collapseAlpha');
-  var uniq = document.getElementById('collapseUniq');
-  var toplst = document.getElementById('collapseNames');
-  var toploc = document.getElementById('collapseTop');
-
-  feedb.className = 'collapse show';
-  alpha.className = 'collapse show';
-  uniq.className = 'collapse show';
-  toplst.className = 'collapse show';
-  toploc.className = 'collapse show';
-};
-
 //topname
 function renderNoLoc() {
   var noLoc = document.getElementById('noLoc');
