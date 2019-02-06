@@ -14,6 +14,9 @@ var southWest = L.latLng(61.0, 4.05),
 
 map.setMaxBounds(bounds);
 
+//fullscreen
+map.addControl(new L.Control.Fullscreen());
+
 //ireland
 $j.getJSON(ireland, function (data) {
     L.geoJSON(data,  {weight: 0, fillColor: '#DCDCDC', fillOpacity: '.8'}).addTo(map);

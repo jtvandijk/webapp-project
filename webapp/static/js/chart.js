@@ -36,8 +36,8 @@ function renderChartHr(freqs,source,search_sur,max_y) {
     labels: ['1851','1861','1881','1891','1901','1911'],
       datasets: [{
         data: freqs,
-        borderColor: '#3273d1',
-        backgroundColor: 'rgba(0,123,250,0.4)',
+        borderColor: '#FA2600',
+        backgroundColor: 'rgba(250,38,0,0.4)',
         pointBackgroundColor: '#000000',
         pointBorderColor: '#000000'
       }]
@@ -94,7 +94,7 @@ function renderChartCr(freqs,source,search_sur,max_y) {
       datasets: [{
         data: freqs,
         borderColor: '#3273d1',
-        backgroundColor: 'rgba(0,123,250,0.4)',
+        backgroundColor: 'rgba(50,115,209,0.4)',
         pointBackgroundColor: '#000000',
         pointBorderColor: '#000000'
       }]

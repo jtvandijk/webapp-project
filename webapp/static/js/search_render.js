@@ -12,14 +12,21 @@ function renderHTML(data) {
 
   foundExt.id = 'searchExtra';
   foundExt.className = 'card-text text-justify top';
-  foundExt.innerHTML = 'The polygons on the map indicate the areas in which more than 50 per cent of the surname&quot;s population is concentrated. Note that the differences in sizes of the polygons between consecutive years can be minimal.';
+  foundExt.innerHTML = 'The polygons on the map indicate the areas in which more than 50 per cent of the surname&#39;s population is concentrated. Note that the differences in sizes of the polygons between consecutive years can be minimal.';
 
   pSearch.replaceWith(foundPar);
   eSearch.replaceWith(foundExt);
 };
 
 //render none
-function renderNone(data) {
+async function renderNone(data) {
+
+  //delay
+  let promise = new Promise((resolve, reject) => {
+    setTimeout(() => resolve(""), 700)
+  });
+  await promise;
+  stopMapLoad();
 
   var pSearch = document.getElementById('searchParam');
   var noText = document.createElement('p');
@@ -28,11 +35,23 @@ function renderNone(data) {
   noText.id = 'searchParam';
   noText.textContent = 'Please type in a surname before hitting submit.';
 
+  var foundExt = document.getElementById('searchExtra');
+  var searchExt = document.createElement('p');
+  searchExt.id = 'searchExtra';
+
+  foundExt.replaceWith(searchExt);
   pSearch.replaceWith(noText);
 };
 
 //render not found
-function renderNotFound(data) {
+async function renderNotFound(data) {
+
+  //delay
+  let promise = new Promise((resolve, reject) => {
+    setTimeout(() => resolve(""), 1500)
+  });
+  await promise;
+  stopMapLoad();
 
   var pSearch = document.getElementById('searchParam');
   var notFound = document.createElement('p');
@@ -41,11 +60,16 @@ function renderNotFound(data) {
   notFound.id = 'searchParam';
   notFound.innerHTML = 'Unfortunately, <strong>'+data.search_sur+'</strong> is not in our database. Are you sure you did not make a typo?';
 
+  var foundExt = document.getElementById('searchExtra');
+  var searchExt = document.createElement('p');
+  searchExt.id = 'searchExtra';
+
+  foundExt.replaceWith(searchExt);
   pSearch.replaceWith(notFound);
 };
 
 //render found // first search, before timedimension controller
-function renderMap(data,selYear) {
+function renderMap(data,year) {
 
   //create GeoJSON
   var contour = {
@@ -57,15 +81,17 @@ function renderMap(data,selYear) {
   };
 
   //define style
-  if (selYear < 1997) {
+  if (year < 1997) {
     var contour_style = {
-      color: 'red',
-      fillColor: '#f03'
+      color: '#FA2600',
+      fillColor: '#FA2600',
+      fillOpacity: .4,
       };
   } else {
     var contour_style = {
-      color: 'blue',
-      fillColor: '#3273d1'
+      color: '#3273d1',
+      fillColor: '#3273d1',
+      fillOpacity: .4,
     }
   };
 

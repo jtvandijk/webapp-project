@@ -7,7 +7,7 @@ L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
 
   initialize: function(layer,options,surname,year,contour) {
     L.TimeDimension.Layer.prototype.initialize.call(this, layer, options);
-    this._currentTimeData = renderMap(this._baseLayer.contour);
+    this._currentTimeData = renderMap(this._baseLayer.contour,this._baseLayer.year);
     this._currentLoadedTime = 0;
     this._loadingTimeIndex = 0;
 
@@ -65,7 +65,7 @@ L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
 
   });
 
-function renderSlider(map, data) {
+function renderSlider(map,data) {
 
   //remove control
   if (control != undefined) {
