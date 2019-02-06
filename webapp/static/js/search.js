@@ -15,8 +15,8 @@ function get_data(selName,selYear,source) {
     var max_y = 60000;
     $j.ajax({
       method: 'POST',
-      //url: '../udl-namekde/search/',
-      url: '../search/',
+      url: '../udl-namekde/search/',
+      //url: '../search/',
       data: {q: selName,
              y: selYear,
              csrfmiddlewaretoken: csrftoken
@@ -51,8 +51,8 @@ async function get_update_data(selName,selYear,source) {
     // No new search
     var data = await $j.ajax({
       method: 'POST',
-      //url: '../udl-namekde/search/',
-      url: '../search/',
+      url: '../udl-namekde/search/',
+      //url: '../search/',
       data: {q: selName,
              y: selYear,
              csrfmiddlewaretoken: csrftoken
@@ -85,7 +85,6 @@ async function get_update_data(selName,selYear,source) {
           fillOpacity: .4,
         }
       };
-
 
       //prepare for Leaflet
       var contourJSON = L.geoJSON(contour, {style: contour_style});
