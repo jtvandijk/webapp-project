@@ -5,7 +5,6 @@ class KdeLookup(models.Model):
     surname = models.TextField(blank=True, null=True)
     freq1851 = models.IntegerField(blank=True, null=True)
     freq1861 = models.IntegerField(blank=True, null=True)
-    freq1871 = models.IntegerField(blank=True, null=True)
     freq1881 = models.IntegerField(blank=True, null=True)
     freq1891 = models.IntegerField(blank=True, null=True)
     freq1901 = models.IntegerField(blank=True, null=True)
@@ -65,17 +64,6 @@ class KdevClus1861(models.Model):
     class Meta:
         managed = True
         db_table = 'kdef_clus1861'
-
-class KdevClus1871(models.Model):
-    surname = models.TextField(primary_key=True)
-    year = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    pop = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    bw = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    kde = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = True
-        db_table = 'kdef_clus1871'
 
 class KdevClus1881(models.Model):
     surname = models.TextField(primary_key=True)

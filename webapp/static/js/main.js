@@ -31,9 +31,9 @@ $j.ajaxSetup({
 
 //chart / geography -- on load
 $j(document).ready(function() {
-  renderChartHr(hr_freq,'load_abs');
-  renderChartCr(cr_freq,'load_abs');
-  setGeo('London')
+  renderChart('hr',hr_freq);
+  renderChart('cr',cr_freq);
+  setGeo('London');
 });
 
 //geography -- on load

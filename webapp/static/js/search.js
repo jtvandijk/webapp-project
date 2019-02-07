@@ -2,99 +2,65 @@
 var $j = jQuery.noConflict();
 
 //update map -- search
-$j(document).on('submit', '#searchSur', function(e){
+$j(document).on('submit','#searchSur',function(e){
   e.preventDefault();
   var q = document.getElementById('surname').value;
-  var y = -1;
-  get_data(q,y,'search');
+  get_data(q);
 });
 
 //search surname -- new search
-function get_data(selName,selYear,source) {
+function get_data(q) {
     startMapLoad();
-    var max_y = 60000;
     $j.ajax({
       method: 'POST',
-      url: '../udl-namekde/search/',
-      //url: '../search/',
-      data: {q: selName,
-             y: selYear,
+      //url: '../udl-namekde/search/',
+      url: '../search/',
+      data: {q: q,
              csrfmiddlewaretoken: csrftoken
             },
       success: function (data) {
         // no data entered
-        if (data.source==='Empty search'){
-          renderNone(data);
+        if (data.source==='empty'){
+          renderNone();
           return;
         // no data found
-        } else if (data.source==='Not in db'){
-          renderNotFound(data);
+        } else if (data.source==='none'){
+          renderNotFound(data.surname);
           return;
         // data found
-        } else if (source==='search') {
-          renderHTML(data);
-          renderSlider(map,data);
-          renderChartHr(data.hr_freq,'',data.clean_sur);
-          renderChartCr(data.cr_freq,'',data.clean_sur);
+      } else if (data.source==='found') {
+          renderHTML(data.surname);
+          // renderSlider(map,data);
+          renderChart('hr',data.hr_freq,data.surname);
+          renderChart('cr',data.cr_freq,data.surname);
           stopMapLoad();
           return;
+        // nothing
         } else {
-          return data;
-        }
+          return;
+        }}
       }
-    })
-};
-
-//search surname
-async function get_update_data(selName,selYear,source) {
-
-    // No new search
-    var data = await $j.ajax({
-      method: 'POST',
-      url: '../udl-namekde/search/',
-      //url: '../search/',
-      data: {q: selName,
-             y: selYear,
-             csrfmiddlewaretoken: csrftoken
-            },
-      success: function (data) {
-        return data;
-        }
-      });
-
-      //create GeoJSON
-      var contour = {
-        "type": "Feature",
-        "geometry": {
-          "type": "MultiPolygon",
-          "coordinates": [data.contourprj]
-          }
-      };
-
-      //define style
-      if (selYear < 1997) {
-        var contour_style = {
-          color: '#FA2600',
-          fillColor: '#FA2600',
-          fillOpacity: .4,
-          };
-      } else {
-        var contour_style = {
-          color: '#3273d1',
-          fillColor: '#3273d1',
-          fillOpacity: .4,
-        }
-      };
-
-      //prepare for Leaflet
-      var contourJSON = L.geoJSON(contour, {style: contour_style});
-      return contourJSON;
-};
+    )
+  };
 
 //start map loading indicator
 function startMapLoad() {
+
   document.getElementById('mapload').style.display='flex';
-}
+  var pSearch = document.getElementById('searchParam');
+  var foundExt = document.getElementById('searchExtra');
+  var onLoad = document.createElement('p');
+  var searchExt = document.createElement('p');
+
+  onLoad.className = 'card-text text-center top pt-3';
+  onLoad.id = 'searchParam';
+  onLoad.innerHTML = '<strong>LOADING ... </strong><br /><br />This may take up to 30 seconds.';
+  searchExt.id = 'searchExtra';
+
+  pSearch.replaceWith(onLoad);
+  foundExt.replaceWith(searchExt);
+
+};
 
 //stop loading indicator
 function stopMapLoad() {

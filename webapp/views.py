@@ -13,7 +13,6 @@ def index(request):
     #historic census
     hr_freq.append(KdeLookup.objects.filter(freq1851__isnull=False).count())
     hr_freq.append(KdeLookup.objects.filter(freq1861__isnull=False).count())
-    #hr_freq.append(KdeLookup.objects.filter(freq1871__isnull=False).count())
     hr_freq.append(KdeLookup.objects.filter(freq1881__isnull=False).count())
     hr_freq.append(KdeLookup.objects.filter(freq1891__isnull=False).count())
     hr_freq.append(KdeLookup.objects.filter(freq1901__isnull=False).count())
@@ -46,4 +45,4 @@ def index(request):
     agg_geo=sorted(GeoTopnames.objects.all().values_list('agg_geo',flat=True))
 
     #return
-    return render(request,"index.html",{'hr_freq':hr_freq,'cr_freq':cr_freq,'agg_geo':agg_geo})
+    return render(request,'index.html',{'hr_freq':hr_freq,'cr_freq':cr_freq,'agg_geo':agg_geo})

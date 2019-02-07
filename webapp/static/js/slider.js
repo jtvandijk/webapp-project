@@ -5,26 +5,15 @@ var layerm;
 //timedimension layer
 L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
 
-  initialize: function(layer,options,surname,year,contour) {
-    L.TimeDimension.Layer.prototype.initialize.call(this, layer, options);
+  initialize: function(options) {
+    L.TimeDimension.Layer.prototype.initialize.call(this, options);
     this._currentTimeData = renderMap(this._baseLayer.contour,this._baseLayer.year);
-    this._currentLoadedTime = 0;
-    this._loadingTimeIndex = 0;
-
     this._surname = this._baseLayer.surname;
     this._year = this._baseLayer.year;
-
-    },
-
-  onAdd: function(map,time) {
-    L.TimeDimension.Layer.prototype.onAdd.call(this, map);
-      if (this._timeDimension) {
-        this._getDataForYear(this._timeDimension.getCurrentTime());
-      }
     },
 
   _onNewTimeLoading: function(ev) {
-    this._getDataForYear(ev.time);
+    this._getData(ev.time);
     return;
     },
 
@@ -33,9 +22,6 @@ L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
     },
 
   _update: function() {
-    if (!this._map){
-      return;
-    }
 
     if (this._currentLayer) {
       this._map.removeLayer(this._currentLayer);
@@ -46,21 +32,16 @@ L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
     map.fitBounds(layer.getBounds());
     this._currentLayer = layer;
     layerm=layer
-
     },
 
-  _getDataForYear: function(time) {
-    if (!this._map) {
-      return;
-    }
+  _getData: function(time) {
 
     var d = new Date(time).getFullYear();
     var contour = get_update_data(this._surname,d,'In db').then((function(value){
       this._currentTimeData = value;
       this._currentLoadedTime = time;
-      if (this._timeDimension && time == this._timeDimension.getCurrentTime() && !this._timeDimension.isLoading()) {
-        this._update();
-      }}).bind(this));
+      this._update();
+      }).bind(this));
     },
 
   });
@@ -111,8 +92,8 @@ function renderSlider(map,data) {
   map.addControl(timeDimensionControl);
 
   //time layers
-  L.timeDimension.layer.timekdemap = function(layer, options, surname, year, contour) {
-      return new L.TimeDimension.Layer.kdemap(layer, options, surname, year, contour);
+  L.timeDimension.layer.timekdemap = function(options) {
+      return new L.TimeDimension.Layer.kdemap(options);
     };
 
   var surnamelayer = L.timeDimension.layer.timekdemap({
