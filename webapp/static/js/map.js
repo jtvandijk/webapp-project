@@ -28,10 +28,11 @@ function renderContour(years,contours) {
   //individual features
   var layers = [];
   for (var i = 0, len = contours.length; i < len; i++){
+      var time = new Date (years[i]).getTime();
       layers.push({
           "type": "Feature",
           "properties": {
-            "time": years[i],
+            "time": time,
           },
           "geometry": {
               "type": "MultiPolygon",
