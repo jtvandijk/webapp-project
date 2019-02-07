@@ -1,7 +1,3 @@
-//global
-var control;
-var layerm;
-
 //timedimension layer
 L.TimeDimension.Layer.kdemap = L.TimeDimension.Layer.extend({
 
@@ -110,3 +106,49 @@ function renderSlider(map,data) {
   map.addLayer(surnamelayer);
 
 };
+
+function renderMap(years,contours,map) {
+
+  //geoJSON
+  var layer = renderContour(years,contours);
+  console.log(layer);
+
+  layer.addTo(map);
+  //L.timeDimension.layer.geoJson(layer).addTo(map);
+
+  //set up years
+  var slider = '';
+  for (var i = 0; i < years - 1; ++i) {
+    slider = slider + years[i] + ',';
+    };
+  var slider = slider + years[years.length-1];
+
+  //set up time dimension
+  var timeDimension = new L.TimeDimension({
+      times: slider,
+    });
+
+  //set time dimension to map
+  map.timeDimension = timeDimension;
+
+  // set up player
+  var player = new L.TimeDimension.Player({
+      transitionTime: 0,
+      loop: false,
+      buffer: -1,
+      minBufferReady: -1,
+      startOver:false
+    }, timeDimension);
+
+  var timeDimensionControlOptions = {
+      player: player,
+      timeDimension: timeDimension,
+      position: 'topright',
+      autoPlay: false,
+      speedSlider: false,
+      timeSliderDragUpdate: true,
+    };
+
+  var timeDimensionControl = new L.Control.TimeDimension(timeDimensionControlOptions);
+  map.addControl(timeDimensionControl);
+}

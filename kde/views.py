@@ -94,6 +94,7 @@ def search(request):
             kde = pd.merge(gridc,kdf,on='gid',how='inner')
             coord = [[int(x[1]),int(x[0])] for x in (list(zip(kde.x,kde.y)))]
             cs,lbls = dbscan(coord,eps=2000)
+            kde = kde.copy()
             kde['group'] = lbls
             kde = kde[(kde['group'] >= 0)]
 
@@ -105,16 +106,19 @@ def search(request):
             outProj = Proj(init='epsg:4326')
 
             #contour reprojected data
-            contour = []
+            contourprj = []
             for contour in contourp:
                 tmp_prj = []
                 for coord in contour:
                     pwgs84 = transform(inProj,outProj,coord[0],coord[1])
                     tmp_prj.append(list(pwgs84))
-                contour.append(tmp_prj)
+                contourprj.append(tmp_prj)
 
             #add
-            contours
+            data = []
+            data.append(year)
+            data.append(contourprj)
+            contours.append(data)
 
         #combine data
         search = {
@@ -123,6 +127,7 @@ def search(request):
                 'years': years,
                 'hr_freq': hr_freq,
                 'cr_freq': cr_freq,
+                'contours': contours
                 }
 
         #return data

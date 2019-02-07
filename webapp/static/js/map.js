@@ -19,40 +19,36 @@ map.addControl(new L.Control.Fullscreen());
 
 //ireland
 $j.getJSON(ireland, function (data) {
-    L.geoJSON(data,  {weight: 0, fillColor: '#DCDCDC', fillOpacity: '.8'}).addTo(map);
+    L.geoJSON(data, {weight: 0, fillColor: '#DCDCDC', fillOpacity: '.8'}).addTo(map);
 });
 
+//render geoJSON layer
+function renderContour(years,contours) {
 
+  //individual features
+  var layers = [];
+  for (var i = 0, len = contours.length; i < len; i++){
+      layers.push({
+          "type": "Feature",
+          "properties": {
+            "time": years[i],
+          },
+          "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [contours[i][1]]
+          }});
+  };
 
-
-//render found // first search, before timedimension controller
-function renderMap(data,year) {
-
-  //create GeoJSON
-  var contour = {
-      "type": "Feature",
-      "geometry": {
-          "type": "MultiPolygon",
-          "coordinates": [data]
+  //leaflet layer
+  var contourJSON = L.geoJSON(layers, {
+    style: function(feature) {
+      if(feature.properties.time < 1990) {
+         return {color: '#FA2600',fillColor: '#FA2600',fillOpacity: .4};
+      } else if (feature.properties.time > 1990) {
+        return {color: '#3273d1',fillColor: '#3273d1',fillOpacity: .4};
       }
-  };
+  }});
 
-  //define style
-  if (year < 1997) {
-    var contour_style = {
-      color: '#FA2600',
-      fillColor: '#FA2600',
-      fillOpacity: .4,
-      };
-  } else {
-    var contour_style = {
-      color: '#3273d1',
-      fillColor: '#3273d1',
-      fillOpacity: .4,
-    }
-  };
-
-  //prepare for Leaflet
-  var contourJSON = L.geoJSON(contour, {style: contour_style});
+  //return
   return contourJSON;
 };
