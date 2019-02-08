@@ -3,7 +3,7 @@
 #libraries
 from django.contrib.gis.geos import fromstr
 from django.http import HttpResponse
-from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, LsoaTopnames, GeoTopnames
+from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, LsoaTopnames, GeoTopnames, RenderedNames
 from .contour import to_concave_points
 from pyproj import Proj, transform
 from sklearn.cluster import dbscan
@@ -11,6 +11,7 @@ import json
 import pandas as pd
 import sys
 import re
+import ast
 
 #reconstruct grid -- keep in memory
 xy = KdeGridxy.objects.values('gid','x','y')
@@ -30,6 +31,7 @@ def search(request):
     search_sur = (request.POST['q']).lower()
     clean_sur = re.sub(r'[\W^0-9^\s]+','',search_sur)
     db_sur = KdeLookup.objects.filter(surname=clean_sur)
+    ren_sur = RenderedNames.objects.filter(surname=clean_sur)
 
     #empty search
     if len(search_sur) == 0:
@@ -50,7 +52,26 @@ def search(request):
         #return none
         return HttpResponse(json.dumps(search),content_type="application/json")
 
-    #if in database
+    #if pre-rendered
+    elif ren_sur:
+
+        #pre-rendered data
+        data = RenderedNames.objects.filter(surname=clean_sur).values()[0]
+
+        #combine data
+        search = {
+                'surname': re.sub(r'[\W^0-9^]+',' ',search_sur).title(),
+                'source': data.get('source'),
+                'years': ast.literal_eval(data.get('years')),
+                'hr_freq': ast.literal_eval(data.get('hr_freq')),
+                'cr_freq': ast.literal_eval(data.get('cr_freq')),
+                'contours': ast.literal_eval(data.get('contours'))
+                }
+
+        #return data
+        return HttpResponse(json.dumps(search),content_type="application/json")
+
+    #calculate
     else:
 
         #contours
@@ -129,6 +150,11 @@ def search(request):
                 'cr_freq': cr_freq,
                 'contours': contours
                 }
+
+        #save to db
+        if not ren_sur:
+            rendered = RenderedNames(clean_sur,source,years,hr_freq,cr_freq,contours)
+            rendered.save()
 
         #return data
         return HttpResponse(json.dumps(search),content_type="application/json")
