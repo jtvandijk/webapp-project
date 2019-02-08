@@ -361,6 +361,7 @@ class RenderedNames(models.Model):
     hr_freq = models.TextField(blank=True,null=True)
     cr_freq = models.TextField(blank=True,null=True)
     contours = models.TextField(blank=True,null=True)
+    count = models.IntegerField(blank=True,null=True)
 
     class Meta:
         managed = True

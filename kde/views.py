@@ -57,6 +57,8 @@ def search(request):
 
         #pre-rendered data
         data = RenderedNames.objects.filter(surname=clean_sur).values()[0]
+        count = data.get('count')
+        RenderedNames.objects.filter(surname=clean_sur).update(count=count+1)
 
         #combine data
         search = {
@@ -153,7 +155,7 @@ def search(request):
 
         #save to db
         if not ren_sur:
-            rendered = RenderedNames(clean_sur,source,years,hr_freq,cr_freq,contours)
+            rendered = RenderedNames(clean_sur,source,years,hr_freq,cr_freq,contours,1)
             rendered.save()
 
         #return data
