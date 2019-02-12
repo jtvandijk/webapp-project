@@ -38,6 +38,7 @@ class KdeGridxy(models.Model):
     gid = models.IntegerField(primary_key=True)
     x = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     y = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
+    bool = models.IntegerField(blank=True,null=True)
 
     class Meta:
         managed = True

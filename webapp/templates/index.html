@@ -361,11 +361,15 @@
   <!-- Leaflet slider JavaScript -->
   <script type="text/javascript" src="https://cdn.rawgit.com/nezasa/iso8601-js-period/master/iso8601.min.js"></script>
 
+  <!-- Turf JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
+
   <!-- fullscreenControl -->
   <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
 
   <!-- Custom JavaScript -->
-  <script> var ireland ="{% static 'js/ireland.geojson' %}";</script>
+  <script> var ireland_gjson ="{% static 'js/ireland.geojson' %}";</script>
+  <script> var uk_gjson = "{% static 'js/uk.geojson' %}";</script>
   <script src ="{% static 'js/main.js' %}"></script>
   <script src ="{% static 'js/modal.js' %}"></script>
   <script src ="{% static 'js/map.js' %}"></script>

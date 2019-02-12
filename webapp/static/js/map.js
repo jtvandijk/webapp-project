@@ -17,8 +17,8 @@ map.setMaxBounds(bounds);
 //fullscreen
 map.addControl(new L.Control.Fullscreen());
 
-//ireland
-$j.getJSON(ireland, function (data) {
+//shapes
+var ireland = $j.getJSON(ireland_gjson, function (data) {
     L.geoJSON(data, {weight: 0, fillColor: '#DCDCDC', fillOpacity: '.8'}).addTo(map);
 });
 
@@ -27,7 +27,8 @@ function renderContour(years,contours) {
 
   //individual features
   var layers = [];
-  for (var i = 0, len = contours.length; i < len; i++){
+  //contours.length-1
+  for (var i = 0, len = 1; i < len; i++){
       var time = new Date (years[i].toString()).getTime();
       layers.push({
           "type": "Feature",
@@ -35,10 +36,52 @@ function renderContour(years,contours) {
             "time": time,
           },
           "geometry": {
-              "type": "MultiPolygon",
+              "type": 'MultiPolygon',
               "coordinates": [contours[i][1]]
           }});
   };
+
+  console.log(layers[0].geometry.coordinates);
+
+  var poly1 = turf.polygon([[
+    [-0.801742, 51.48565],
+    [-0.801742, 51.60491],
+    [-0.584762, 51.60491],
+    [-0.584762, 51.48565],
+    [-0.801742, 51.48565]
+  ]]);
+
+
+  var poly2 = turf.polygon([[
+    [-0.520217, 51.535693],
+    [-0.64038, 51.553967],
+    [-0.720031, 51.526554],
+    [-0.669906, 51.507309],
+    [-0.723464, 51.446643],
+    [-0.532577, 51.408574],
+    [-0.487258, 51.477466],
+    [-0.520217, 51.535693]
+  ]]);
+
+  var poly3 = turf.polygon(layers[0].geometry.coordinates);
+
+  L.geoJSON(poly1).addTo(map);
+  L.geoJSON(poly2).addTo(map);
+  //var t = L.geoJSON(layers[0].geometry.coordinates)
+//  console.log(poly3 );
+//  var ukclip = turf.difference(poly1, poly2);
+//  var clipclip = turf.difference(t, poly2);
+
+//  L.geoJSON(ukclip,{color: '#FA2600',fillcolor: '#FA2600'}).addTo(map);
+//  L.geoJSON(clipclip,{color: '#FA2600',fillcolor: '#FA2600'}).addTo(map);
+
+
+
+  //
+  //var difference = turf.intersect(feature1,feature2);
+  //console.log(difference);
+  //
+  //L.geoJSON(difference).addTo(map);
 
   //leaflet layer
   var contourJSON = L.geoJSON(layers, {
@@ -50,6 +93,7 @@ function renderContour(years,contours) {
       }
   }});
 
+  console.log(contourJSON);
   //return
   return contourJSON;
 };

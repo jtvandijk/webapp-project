@@ -14,8 +14,9 @@ import re
 import ast
 
 #reconstruct grid -- keep in memory
-xy = KdeGridxy.objects.values('gid','x','y')
-gridc = pd.DataFrame.from_records(xy).sort_values(by='gid')
+xy = KdeGridxy.objects.values('gid','x','y','bool')
+gridc = pd.DataFrame.from_records(xy)
+gridc = gridc[(gridc['bool'] == 1)]
 
 #param
 level = 50
@@ -53,25 +54,25 @@ def search(request):
         return HttpResponse(json.dumps(search),content_type="application/json")
 
     #if pre-rendered
-    elif ren_sur:
-
-        #pre-rendered data
-        data = RenderedNames.objects.filter(surname=clean_sur).values()[0]
-        count = data.get('count')
-        RenderedNames.objects.filter(surname=clean_sur).update(count=count+1)
-
-        #combine data
-        search = {
-                'surname': re.sub(r'[\W^0-9^]+',' ',search_sur).title(),
-                'source': data.get('source'),
-                'years': ast.literal_eval(data.get('years')),
-                'hr_freq': ast.literal_eval(data.get('hr_freq')),
-                'cr_freq': ast.literal_eval(data.get('cr_freq')),
-                'contours': ast.literal_eval(data.get('contours'))
-                }
-
-        #return data
-        return HttpResponse(json.dumps(search),content_type="application/json")
+    # elif ren_sur:
+    #
+    #     #pre-rendered data
+    #     data = RenderedNames.objects.filter(surname=clean_sur).values()[0]
+    #     count = data.get('count')
+    #     RenderedNames.objects.filter(surname=clean_sur).update(count=count+1)
+    #
+    #     #combine data
+    #     search = {
+    #             'surname': re.sub(r'[\W^0-9^]+',' ',search_sur).title(),
+    #             'source': data.get('source'),
+    #             'years': ast.literal_eval(data.get('years')),
+    #             'hr_freq': ast.literal_eval(data.get('hr_freq')),
+    #             'cr_freq': ast.literal_eval(data.get('cr_freq')),
+    #             'contours': ast.literal_eval(data.get('contours'))
+    #             }
+    #
+    #     #return data
+    #     return HttpResponse(json.dumps(search),content_type="application/json")
 
     #calculate
     else:
@@ -135,6 +136,7 @@ def search(request):
                 for coord in contour:
                     pwgs84 = transform(inProj,outProj,coord[0],coord[1])
                     tmp_prj.append(list(pwgs84))
+                tmp_prj.append(tmp_prj[0])
                 contourprj.append(tmp_prj)
 
             #add
