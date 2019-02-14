@@ -92,4 +92,4 @@ function renderMap(years,contours,map) {
 
   //add
   geoJsonTimeLayer.addTo(map);
-}
+};

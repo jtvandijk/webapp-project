@@ -3,20 +3,30 @@
 #libraries
 from django.contrib.gis.geos import fromstr
 from django.http import HttpResponse
+from django.conf import settings
 from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, LsoaTopnames, GeoTopnames, RenderedNames
 from .contour import to_concave_points
 from pyproj import Proj, transform
 from sklearn.cluster import dbscan
+from shapely.geometry import Polygon,MultiPolygon
+from fiona.crs import from_epsg
 import json
 import pandas as pd
+import geopandas as gpd
 import sys
 import re
 import ast
+import os
 
 #reconstruct grid -- keep in memory
 xy = KdeGridxy.objects.values('gid','x','y','bool')
 gridc = pd.DataFrame.from_records(xy)
 gridc = gridc[(gridc['bool'] == 1)]
+
+#uk outline -- keep in memory
+path = os.path.join(settings.STATIC_ROOT,'js/uk.geojson')
+uk = gpd.read_file(path).to_crs(epsg=27700)
+uk.drop(uk.columns[[0,1,2,3,4]],axis=1,inplace=True)
 
 #param
 level = 50
@@ -125,19 +135,28 @@ def search(request):
             #group to concave points
             contourp = to_concave_points(kde,coord)
 
-            #British National Grid to WGS84
-            inProj = Proj(init='epsg:27700')
-            outProj = Proj(init='epsg:4326')
+            #clip
+            contours = gpd.GeoSeries([Polygon(contour) for contour in contourp])
+            contours = gpd.GeoDataFrame({'geometry': contours})
+            contours.crs = from_epsg(27700)
 
-            #contour reprojected data
+            clp_prj = gpd.overlay(uk,contours,how='intersection')
+            clp_prj['geometry'] = clp_prj['geometry'].to_crs(epsg=4326)
+
+            print(clp_prj)
+
+            #contour data
             contourprj = []
             for contour in contourp:
-                tmp_prj = []
-                for coord in contour:
-                    pwgs84 = transform(inProj,outProj,coord[0],coord[1])
-                    tmp_prj.append(list(pwgs84))
-                tmp_prj.append(tmp_prj[0])
-                contourprj.append(tmp_prj)
+
+                #clip
+                polygon = gpd.GeoDataFrame()
+                polygon.loc[0,'geometry'] = Polygon(contour)
+                polygon.crs = from_epsg(27700)
+                clp_prj = gpd.overlay(uk,polygon,how='intersection')
+
+                #reproject
+                clp_prj['geometry'] = clp_prj['geometry'].to_crs(epsg=4326)
 
             #add
             data = []
