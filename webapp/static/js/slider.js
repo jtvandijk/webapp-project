@@ -55,6 +55,8 @@ function renderMap(years,contours,map) {
     });
   timeDimension.setCurrentTime(timeDimension.getAvailableTimes()[0]);
 
+  console.log(timeDimension.getAvailableTimes());
+
   //set up player
   var player = new L.TimeDimension.Player({
       transitionTime: 0,

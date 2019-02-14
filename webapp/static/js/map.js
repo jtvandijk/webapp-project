@@ -4,7 +4,7 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
             {attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors,\n' +
             'Map tiles by &copy; <a href="https://carto.com/attributions">CARTO</a>',
             minZoom: '6',
-            // maxZoom: '10',
+            maxZoom: '10',
           }).addTo(map);
 
 //bounds
@@ -20,26 +20,24 @@ map.addControl(new L.Control.Fullscreen());
 //countries
 $j.getJSON(ireland_gjson, function (data) {L.geoJSON(data, {weight:0,fillColor:'#DCDCDC',fillOpacity:'.8'}).addTo(map);});
 
-// var uk;
-// $j.getJSON(uk_gjson, function (data) {uk = turf.helper.multiPolygon(data.features[0].geometry.coordinates);});
-
 //render geoJSON layer
 function renderContour(years,contours) {
 
   //individual features
   var layers = [];
-  for (var i = 0, len = contours.length; i < len; i++){
+  for (var i = 0, clen = contours.length; i < clen; i++) {
     var time = new Date (years[i].toString()).getTime();
-    layers.push({
-        "type": "Feature",
-        "properties": {
-          "time": time,
-        },
-        "geometry": {
-            "type": "MultiPolygon",
-            "coordinates": [contours[i][1]]
-        }});
+    var cont = JSON.parse(contours[i][1])
+
+    //individual polygons
+    for (var j = 0, flen = cont.features.length; j < flen; j++) {
+      console.log(cont.features[j]);
+      cont.features[j].properties.time = time;
       };
+
+    //combine
+    layers.push(cont);
+    };
 
   //leaflet layer
   var contourJSON = L.geoJSON(layers, {

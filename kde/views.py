@@ -64,31 +64,31 @@ def search(request):
         return HttpResponse(json.dumps(search),content_type="application/json")
 
     #if pre-rendered
-    # elif ren_sur:
-    #
-    #     #pre-rendered data
-    #     data = RenderedNames.objects.filter(surname=clean_sur).values()[0]
-    #     count = data.get('count')
-    #     RenderedNames.objects.filter(surname=clean_sur).update(count=count+1)
-    #
-    #     #combine data
-    #     search = {
-    #             'surname': re.sub(r'[\W^0-9^]+',' ',search_sur).title(),
-    #             'source': data.get('source'),
-    #             'years': ast.literal_eval(data.get('years')),
-    #             'hr_freq': ast.literal_eval(data.get('hr_freq')),
-    #             'cr_freq': ast.literal_eval(data.get('cr_freq')),
-    #             'contours': ast.literal_eval(data.get('contours'))
-    #             }
-    #
-    #     #return data
-    #     return HttpResponse(json.dumps(search),content_type="application/json")
+    elif ren_sur:
+
+        #pre-rendered data
+        data = RenderedNames.objects.filter(surname=clean_sur).values()[0]
+        count = data.get('count')
+        RenderedNames.objects.filter(surname=clean_sur).update(count=count+1)
+
+        #combine data
+        search = {
+                'surname': re.sub(r'[\W^0-9^]+',' ',search_sur).title(),
+                'source': data.get('source'),
+                'years': ast.literal_eval(data.get('years')),
+                'hr_freq': ast.literal_eval(data.get('hr_freq')),
+                'cr_freq': ast.literal_eval(data.get('cr_freq')),
+                'contours': ast.literal_eval(data.get('contours'))
+                }
+
+        #return data
+        return HttpResponse(json.dumps(search),content_type="application/json")
 
     #calculate
     else:
 
-        #contours
-        contours = []
+        #contour collection
+        contour_collection = []
 
         #surname attributes
         data = KdeLookup.objects.filter(surname=clean_sur).values()[0]
@@ -139,30 +139,20 @@ def search(request):
             contours = gpd.GeoSeries([Polygon(contour) for contour in contourp])
             contours = gpd.GeoDataFrame({'geometry': contours})
             contours.crs = from_epsg(27700)
-
             clp_prj = gpd.overlay(uk,contours,how='intersection')
+
+            #smooth and project
+            clp_prj['geometry'] = clp_prj.geometry.buffer(10000,join_style=1).buffer(-10000,join_style=1)
             clp_prj['geometry'] = clp_prj['geometry'].to_crs(epsg=4326)
 
-            print(clp_prj)
+            #to json
+            contourprj = clp_prj.to_json()
 
-            #contour data
-            contourprj = []
-            for contour in contourp:
-
-                #clip
-                polygon = gpd.GeoDataFrame()
-                polygon.loc[0,'geometry'] = Polygon(contour)
-                polygon.crs = from_epsg(27700)
-                clp_prj = gpd.overlay(uk,polygon,how='intersection')
-
-                #reproject
-                clp_prj['geometry'] = clp_prj['geometry'].to_crs(epsg=4326)
-
-            #add
+            #add to collection
             data = []
             data.append(year)
             data.append(contourprj)
-            contours.append(data)
+            contour_collection.append(data)
 
         #combine data
         search = {
@@ -171,12 +161,12 @@ def search(request):
                 'years': years,
                 'hr_freq': hr_freq,
                 'cr_freq': cr_freq,
-                'contours': contours
+                'contours': contour_collection
                 }
 
         #save to db
         if not ren_sur:
-            rendered = RenderedNames(clean_sur,source,years,hr_freq,cr_freq,contours,1)
+            rendered = RenderedNames(clean_sur,source,years,hr_freq,cr_freq,contour_collection,1)
             rendered.save()
 
         #return data
@@ -192,7 +182,7 @@ def location(request):
     inProj = Proj(init='epsg:4326')
     outProj = Proj(init='epsg:27700')
     locprj = list(transform(inProj,outProj,lon,lat))
-    pnt = fromstr('POINT(' +str(locprj[0]) + ' ' +str(locprj[1]) + ')',srid=27700)
+    pnt = fromstr('POINT('+str(locprj[0])+' ' +str(locprj[1])+')',srid=27700)
 
     #spatial query for topnames
     lsoa = LsoaTopnames.objects.filter(shape__contains=pnt)
