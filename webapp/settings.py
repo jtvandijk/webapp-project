@@ -8,7 +8,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 #security
 SECRET_KEY = 'SECRET KEY'
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = []
 
 #applications

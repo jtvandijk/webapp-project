@@ -31,7 +31,6 @@ function renderContour(years,contours) {
 
     //individual polygons
     for (var j = 0, flen = cont.features.length; j < flen; j++) {
-      console.log(cont.features[j]);
       cont.features[j].properties.time = time;
       };
 
