@@ -12,18 +12,22 @@
 
     <title>Urban Dynamics Lab - Names in Great Britain</title>
 
-    <!-- CSS-->
+    <!--bootstrap css-->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous"/>
+    <!--leaflet css-->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.3/dist/leaflet.css" integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ==" crossorigin="anonymous"/>
+    <!--mapbox fullscreen css-->
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css"/>
-    <!-- Custom CSS-->
+    <!--custom css-->
     <link href="{% static 'css/custom.css' %}" rel="stylesheet"/>
-    <!-- Include html elements-->
+
+    <!--include navigation-->
     {% include "nav.html"%}
 
     <!-- csrf token -->
     {% csrf_token %}
+
   </head>
 
 <body class="fixed-nav sticky-footer">
@@ -31,11 +35,11 @@
   {% block nav %}
   {% endblock %}
 
-  <!-- Main content -->
+  <!--main content -->
   <div class="content-wrapper">
     <div class="container-fluid">
 
-      <!-- About -->
+      <!--about section-->
       <div id="dashboard">
         <div class="card mb-3">
           <div class="card-header bg-dark text-light">
@@ -55,7 +59,7 @@
          </div>
         </div>
 
-        <!-- Surname exploration -->
+        <!--surname section-->
         <div>
           <div class="card-header bg-dark text-light mb-3">
           <i class="fas fa-globe mr-3"></i>Surname exploration
@@ -64,9 +68,9 @@
           </button>
           </div>
 
-          <!-- Row: container -->
+          <!--container -->
           <div id="collapseSur" class="row collapse show" aria-labelledby="collapseSur">
-            <!-- Search -->
+            <!--search section-->
             <div class="col-lg-4">
               <div class="card mb-3">
                 <div class="card-header">
@@ -99,7 +103,7 @@
               </div>
             </div>
 
-            <!-- Map -->
+            <!--map section-->
             <div class="col-lg-8">
               <div class="card mb-3" >
                 <div class="card-header">
@@ -115,7 +119,7 @@
                     </div>
                     <canvas id="cardMap" width="100" height="650">
 
-                      <!-- KDE Map -->
+                      <!--map-->
 
                     </canvas>
                   </div>
@@ -126,7 +130,7 @@
           </div>
         </div>
 
-        <!-- Database statistics -->
+        <!--graph section-->
 
         <div>
           <div class="card-header bg-dark text-light mb-3">
@@ -136,10 +140,9 @@
           </button>
           </div>
 
-          <!-- Row: container -->
+          <!--container-->
           <div id="collapseStat" class="row collapse show" aria-labelledby="collapseStat">
-            <!-- Frequency HR -->
-
+            <!--chart section -->
             <div class="col-lg-6">
               <div class="card mb-3">
                 <div class="card-header">
@@ -151,7 +154,7 @@
                 <div id="collapseFreqHr" class="collapse show" aria-labelledby="collapseFreqHr">
                   <div class="card-body p-2" id="cardFreqHr">
 
-                    <!-- Frequency Chart HR JavaScript -->
+                    <!--historic chart-->
                     <script> var hr_freq = {{ hr_freq }} </script>
 
                   </div>
@@ -170,7 +173,7 @@
                 <div id="collapseFreqCr" class="collapse show" aria-labelledby="collapseFreqCr">
                   <div class="card-body p-2" id="cardFreqCr">
 
-                    <!-- Frequency Chart CR JavaScript -->
+                    <!--contemporary chart -->
                     <script> var cr_freq = {{ cr_freq }} </script>
 
                   </div>
@@ -180,7 +183,7 @@
           </div>
         </div>
 
-        <!-- Location exploration -->
+        <!--location section -->
         <div>
           <div class="card-header bg-dark text-light mb-3">
             <i class="fas fa-location-arrow mr-3"></i>Location exploration
@@ -188,10 +191,10 @@
               <span class="fa fa-align-justify" style="text-decoration: none"></span>
             </button>
           </div>
-          <!-- Row: location stats -->
+          <!--containter -->
           <div id="collapseLoc" class="collapse show" aria-labelledby="collapseLoc">
             <div class="row">
-              <!-- Location manager -->
+              <!--location selection-->
               <div class="col-lg-4">
                 <div class="card mb-3">
                   <div class="card-header">
@@ -200,7 +203,7 @@
                       <span class="fa fa-align-justify" style="text-decoration: none"></span>
                     </button>
                   </div>
-                  <!-- Location selector -->
+                  <!--location selection-->
                   <div id="collapseLocMan" class="collapse show" aria-labelledby="collapseLocMan">
                     <div class="card-body p-2" id="locMan">
                     <p class="card-text text-justify top">
@@ -232,7 +235,7 @@
                 </div>
               </div>
 
-              <!-- Most frequent -->
+              <!--frequency surnames-->
               <div class="col-lg-4">
                   <div class="card mb-3">
                   <div class="card-header">
@@ -241,7 +244,7 @@
                       <span class="fa fa-align-justify" style="text-decoration: none"></span>
                     </button>
                   </div>
-                  <!-- Produce list most popular names -->
+                  <!--frequency surnames-->
                   <div id="collapseNames" class="collapse show" aria-labelledby="collapseNames">
                     <div class="card-body p-2" id="locNames">
                     </div>
@@ -249,7 +252,7 @@
                 </div>
               </div>
 
-              <!-- Surname unique -->
+              <!--unique surnames -->
               <div class="col-lg-4">
                 <div class="card mb-3">
                   <div class="card-header">
@@ -258,7 +261,7 @@
                       <span class="fa fa-align-justify" style="text-decoration: none"></span>
                     </button>
                   </div>
-                  <!-- Produce unique names -->
+                  <!--unique surnames-->
                   <div id="collapseUniq" class="collapse show" aria-labelledby="collapseUniq">
                     <div class="card-body p-2" id="locUniq">
                     </div>
@@ -267,10 +270,9 @@
               </div>
             </div>
 
-            <!-- Row container -->
+            <!--container -->
             <div class="row">
-
-              <!-- Surname diversity -->
+              <!--surname diversity-->
               <div class="col-lg-4">
                 <div class="card mb-3">
                   <div class="card-header">
@@ -279,7 +281,7 @@
                       <span class="fa fa-align-justify" style="text-decoration: none"></span>
                     </button>
                   </div>
-                  <!-- Produce diversity alpha -->
+                  <!--surname diversity-->
                   <div id="collapseAlpha" class="collapse show" aria-labelledby="collapseAlpha">
                     <div class="card-body p-2" id="locAlpha">
                     </div>
@@ -287,7 +289,7 @@
                 </div>
               </div>
 
-              <!-- Topname -->
+              <!--topname -->
               <div class="col-lg-4">
                 <div class="card mb-3">
                   <div class="card-header">
@@ -296,7 +298,7 @@
                     <span class="fa fa-align-justify" style="text-decoration: none"></span>
                   </button>
                 </div>
-                <!-- Produce location based topname -->
+                <!--topname-->
                   <div id="collapseTop" class="collapse show" aria-labelledby="collapseTop">
                     <div class="card-body p-2" id="locTop">
                     </div>
@@ -304,7 +306,7 @@
                 </div>
               </div>
 
-              <!-- Feedback -->
+              <!--feedback-->
               <div class="col-lg-4">
                 <div class="card mb-3">
                   <div class="card-header">
@@ -332,7 +334,7 @@
         </div>
       </div>
 
-      <!-- Logo -->
+      <!--logo-->
       <div class="row">
         <div class="col-lg-12 text-center p-3">
           <a href="https://www.ucl.ac.uk/urban-dynamics-lab">
@@ -353,18 +355,18 @@
     </div>
   </footer>
 
-  <!-- Chart JavaScript-->
+  <!--charts js-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js" integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw==" crossorigin=""></script>
   <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
 
-  <!-- Leaflet slider JavaScript -->
+  <!--leaflet slider js-->
   <script type="text/javascript" src="https://cdn.rawgit.com/nezasa/iso8601-js-period/master/iso8601.min.js"></script>
 
-  <!-- fullscreenControl -->
+  <!--mapbox fullscreen js -->
   <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
 
-  <!-- Custom JavaScript -->
+  <!--custom js-->
   <script> var ireland_gjson ="{% static 'js/ireland.geojson' %}";</script>
   <script src="{% static 'js/main.js' %}"></script>
   <script src="{% static 'js/modal.js' %}"></script>
@@ -377,7 +379,7 @@
   <script src="{% static 'js/timedimension.js' %}"></script>
   <script src="{% static 'js/slider.js' %}"></script>
 
-  <!-- Bootstrap core JavaScript -->
+  <!-- bootstrap cs-->
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
