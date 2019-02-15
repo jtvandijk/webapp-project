@@ -10,8 +10,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'SECRET KEY'
 DEBUG = False
 ALLOWED_HOSTS = []
-X_FRAME_OPTIONS = 'DENY
-CSRF_COOKIE_SECURE = True
+X_FRAME_OPTIONS = 'DENY'
+CSRF_COOKIE_SECURE = True'
 
 #applications
 INSTALLED_APPS = [
