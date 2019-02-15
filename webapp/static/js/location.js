@@ -47,8 +47,8 @@ function showLocation(position) {
 
     $j.ajax({
       method: 'POST',
-      url: '../udl-namekde/location/',
-      // url: '../location/',
+      // url: '../udl-namekde/location/',
+      url: '../location/',
       data: {latitude: lat,
             longitude: lon,
             csrfmiddlewaretoken: csrftoken
@@ -71,8 +71,8 @@ function showGeography(geography) {
 
     $j.ajax({
       method: 'POST',
-      url: '../udl-namekde/geography/',
-      // url: '../geography/',
+      // url: '../udl-namekde/geography/',
+      url: '../geography/',
       data: {geography: geography,
             csrfmiddlewaretoken: csrftoken
             },
