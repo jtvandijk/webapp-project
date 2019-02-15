@@ -1,5 +1,5 @@
 //surname frequency chart
-function renderChart(database,freqs,surname) {
+function renderChart(database,freqs,maxy,surname) {
 
   //context
   var freqDiv = document.createElement('div');
@@ -13,8 +13,9 @@ function renderChart(database,freqs,surname) {
 
   //render historic or consumer chart
   if (database === 'hr') {
+    freqs.splice(2,0,NaN);
     var freqSearch = document.getElementById('cardFreqHr');
-    var labels = ['1851','1861','1881','1891','1901','1911'];
+    var labels = ['1851','1861','1871','1881','1891','1901','1911'];
     var bordercolor = '#FA2600';
     var backgroundcolor = 'rgba(250,38,0,0.4)';
     freqDiv.id = 'cardFreqHr';
@@ -32,6 +33,7 @@ function renderChart(database,freqs,surname) {
 
   //render absolute or surname chart
   if (surname == null && database === 'hr') {
+    var maxy = 60000;
     freqPar.innerHTML = 'Number of <strong>unique surnames</strong> that are available in our database for the years 1851, 1861, 1881, 1901, and 1911. Data for Great Britain, with the exception of 1911 (only England and Wales). Surnames found in the Historic Censuses of Population are only included if they occur at least 30 times in our database.';
   } else if (surname == null && database === 'cr') {
     freqPar.innerHTML = 'Number of <strong>unique surnames</strong> that are available in our database for the period 1997-2016. Data for the entire United Kingdom. Surnames found in our Contemporary Consumer Registers are only included if they occur at least 50 times in our database.';
@@ -56,10 +58,12 @@ function renderChart(database,freqs,surname) {
         borderColor: bordercolor,
         backgroundColor: backgroundcolor,
         pointBackgroundColor: '#000000',
-        pointBorderColor: '#000000'
+        pointBorderColor: '#000000',
+        pointRadius: 5,
+        spanGaps: true,
       }]},
     options: {legend: { display: false},
-        scales: {yAxes: [{ticks: {min: 0}}]}
+        scales: {yAxes: [{ticks: {min: 0, max: maxy}}]}
       }};
 
   //chart

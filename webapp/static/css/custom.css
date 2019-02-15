@@ -1,4 +1,8 @@
 /* body */
+.in-text-link a {
+    color: #000 !important;
+}
+
 html {
   position: relative;
   min-height: 100%;

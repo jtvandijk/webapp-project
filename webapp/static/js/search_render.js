@@ -59,7 +59,7 @@ function renderHTML(surname) {
   foundPar.innerHTML = 'You searched for <strong>'+surname+'</strong>. Use the slider navigation on the map to switch between the years that are available for your search.';
   foundPar2.id = 'searchExtra';
   foundPar2.className = 'card-text text-justify top';
-  foundPar2.innerHTML = 'The polygons on the map indicate the areas in which more than 50 per cent of the surname&#39;s population is concentrated. Note that the differences in sizes of the polygons between consecutive years can be minimal.';
+  foundPar2.innerHTML = 'For each year, the red or blue lines enclose the extent of 50 per cent of all recorded bearers of a chosen surname. If you are looking at your own name, and live outside these areas, this means that you are currently drawn from the other 50 per cent of bearers of the surname – but we hope that this tool will nevertheless be of use in tracing your family geography and history.';
 
   pSearch.replaceWith(foundPar);
   foundExt.replaceWith(foundPar2);

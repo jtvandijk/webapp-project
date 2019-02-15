@@ -14,7 +14,7 @@ function get_data(q) {
     $j.ajax({
       method: 'POST',
       url: '../udl-namekde/search/',
-      //url: '../search/',
+      // url: '../search/',
       data: {q: q,
              csrfmiddlewaretoken: csrftoken
             },
@@ -29,10 +29,25 @@ function get_data(q) {
           return;
         // data found
         } else if (data.source==='found') {
+
+          //chart value
+          var chartval = data.hr_freq.concat(data.cr_freq);
+          var maxval = Math.max.apply(null, chartval)
+          if (maxval < 100) {
+            var maxy = 100 * Math.ceil(maxval / 100);
+          } else if (maxval < 1000) {
+            var maxy = 1000 * Math.ceil(maxval / 1000);
+          } else if (maxval < 5000) {
+            var maxy = 5000 * Math.ceil(maxval / 5000);
+          } else {
+            var maxy = 10000 * Math.ceil(maxval / 10000);
+          }
+
+          //render
           renderHTML(data.surname);
           renderMap(data.years,data.contours,map);
-          renderChart('hr',data.hr_freq,data.surname);
-          renderChart('cr',data.cr_freq,data.surname);
+          renderChart('hr',data.hr_freq,maxy,data.surname);
+          renderChart('cr',data.cr_freq,maxy,data.surname);
           stopMapLoad();
           return;
         }
