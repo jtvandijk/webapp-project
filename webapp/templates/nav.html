@@ -2,7 +2,7 @@
 {% load staticfiles %}
 
 <!--navigation-->
-<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top mb-100">
+<nav class="navbar navbar-expand-md navbar-dark bg-custom fixed-top mb-100">
 
   <!--brand-->
   <a class="navbar-brand" href="#">GB Names</a>
@@ -15,68 +15,158 @@
   <!--navigation: elements-->
   <div class="collapse navbar-collapse" id="navbarResponsive">
     <ul class="navbar-nav mr-auto">
-      <li class="nav-item mr-3 px-2" data-toggle="tooltip" data-placement="right" title="Home">
-        <a class="nav-link" href="{% url 'home' %}">
-          <i class="fa fa-fw fa-home mr-1"></i>
-          <span class="nav-link-text">Home</span>
+      <li class="nav-item mr-1" data-toggle="tooltip" data-placement="right" title="Home">
+        <a class="nav-link active" href="{% url 'home' %}">
+          <span class="nav-link-text">Names</span>
         </a>
       </li>
-      <li class="nav-item m3 px-2" data-toggle="tooltip" data-replacemnt="right" title="Acknowledgements">
-        <a class="nav-link" id="acknowledgements" aria-haspopup="true" aria-expanded="false" href="#">
-          <i class="fas fa-info-circle mr-1"></i>
-          <span class="nav-link-text">Acknowledgements</span>
+      <li class="nav-item mr-1" data-toggle="tooltip" data-placement="right" title="location">
+        <a class="nav-link" href="{% url 'location' %}">
+          <span class="nav-link-text">Location</span>
         </a>
       </li>
-      <li class="nav-item dropdown mr-3 px-2">
+      <li class="nav-item dropdown mr-1">
         <a class="nav-link dropdown-toggle" id="infodrop" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <i class="fa fa-fw fa-link mr-1"></i>
-          <span class="nav-link-text">More information</span>
+          <span class="nav-link-text">About</span>
         </a>
         <div class="dropdown-menu" aria-labelledby="infodrop">
-          <a class="dropdown-item" href="https://www.ucl.ac.uk/urban-dynamics-lab">Urban Dynamics Lab</a>
-          <a class="dropdown-item" href="https://www.cdrc.ac.uk/">Consumer Data Research Centre</a>
-          <a class="dropdown-item" href="https://www.ons.gov.uk/">UK Office for National Statistics</a>
-          <a class="dropdown-item" href="https://esrc.ukri.org/">Economic and Social Research Council</a>
+          <a class="dropdown-item" href="#" data-modal="aboutModal">About GB Names</a>
+          <a class="dropdown-item" href="#" data-modal="cdrcModal" >About CDRC</a>
+          <a class="dropdown-item" href="#" data-modal="faqModal">FAQ</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="#" data-modal="creditModal">Credits</a>
+          <a class="dropdown-item" href="#" data-modal="privacyModal">Privacy policy</a>
+          <a class="dropdown-item" href="#" data-modal="contactModal">Contact</a>
         </div>
       </li>
     </ul>
-    <ul class="navbar-nav ml-auto">
-      <li class="nav-item logo">
-        <img src="{% static 'ucl_logo.png' %}" height="40" />
-      </li>
-    </ul>
+    <form class="form-inline my-lg-0" method="post" id="searchSur">
+      <input class="form-control mr-sm-2" type="text" placeholder="Surname" name="q" id="surname" maxlength="50">
+      <input class="btn btn-outline-light my-2 my-sm-0 mr-sm-2" type="reset" value="Reset">
+		  <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
+		</form>
   </div>
 </nav>
 
-<!--acknowledgements-->
-<div id="acknowledgements_modal" class="modal">
+<!--initialSearch-->
+<div id="searchModal" class="modal" role="dialog">
   <div class="modal-content">
     <div class="card">
-      <div class="card-header bg-dark text-light">
-        <i class="fas fa-info-circle mr-1"></i>Acknowledgements
-        <span class="close">&times;</span>
+      <div class="card-header badge-dark bg-custom pl-3">
+        <h4>GB Names
+          <span class="close">&times;</span>
+        </h4>
       </div>
-      <div class="card-body p-2">
-        <h5>Funding</h5>
-        <p class="card-text text-justify top">
-          This work is funded by the UK ESRC Consumer Data Research Centre (CDRC) grant reference ES/L011840/1 and EPSRC grant EP/M023583/1 (‘UK Regions Digital Research Facility’).
-        </p>
-        <h5>About the data</h5>
-        <p class="card-text text-justify top">
-          Digitally encoded Historic Census data for England, Scotland, and Wales provide population-wide micro data of individuals’ names and addresses.
-          This integrated collection of historic census microdata covers the decennial census of England and Wales for 1851, 1861, 1881, 1891, 1901, 1911,
-          and for Scotland for the period 1851 to 1901. The addresses are linked to parishes, which have been digitised into a set of two consistent parish geographies.
-          Because contemporary censuses do not disclose names, extensive databases of names at the addresses-level were sought from public versions of the electoral
-          register from 1997 until 2016, with supplements from consumer data from 2002 onwards to capture those that opt-out or are not eligible to vote.
-          The ‘Consumer Registers’ are linked to bolster their coverage and are found to be representative of the vast majority of the UK’s adult population
-        </p>
-        <h5>References</h5>
-        <p class="card-text text-justify top">
-          Cheshire, J.A. & Longley, P.A. (2012) Identifying spatial concentrations of surnames. <em>International Journal of Geographical Information Science</em>. 26 (2), 309–325.<br /><br />
-          Higgs, E. & Schürer, K. (2014) <em>Integrated Census Microdata (I-CeM), 1851-1911</em>, [data collection]. UK Data Service SN: 748. DOI: 10.5255/UKDA-SN-7481-1<br /><br />
-          Lansley, G., Li, W. & Longley, P.A. (2018) Modelling small area level population change from administrative and consumer data, in <em>Proceedings of the 26th Conference on GIS Research UK (GISRUK)</em>. Leicester: University of Leicester.<br /><br />
-          Longley, P. A., Cheshire, J., & Singleton, A. (Eds.). (2018). <em>Consumer Data Research</em>. London: UCL Press.<br /><br />
-        </p>
+      <div class="card-body text-justify p-3">
+        Welcome to the GB Names website. Our research, carried out at the ESRC Consumer Data Research Centre and the UCL Urban Dynamics Lab, is exploring the spread of family names across Great Britain, using historic censuses and recent consumer registers.
+        <div class="mt-4 text-center">
+        <h5>What's your family name?</h5>
+        </div>
+        <div class="mt-4 text-center">
+          <form class="form-inline justify-content-center" method="post" id="initSur">
+            <input class="form-control mr-sm-2 mb-2" type="text" placeholder="Surname" name="q" id="init_surname" maxlength="50">
+            <button class="btn btn-outline-primary mb-2" type="submit">Search</button>
+          </form>
+        </div>
+      </div>
+      <div class="card-footer small text-muted text-justify p-3">
+        GB Names records surname searches for statistical purposes. Surname searches that have not been previously executed by you or by others may take up to 30 seconds.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--about-->
+<div id="aboutModal" class="modal" role="dialog">
+  <div class="modal-content">
+    <div class="card">
+      <div class="card-header badge-dark bg-custom pl-3">
+        <h4>About GB Names
+          <span class="close">&times;</span>
+        </h4>
+      </div>
+      <div class="card-body text-justify p-3">
+        GB Names focuses upon the origins and spread of family bloodlines through surnames as manifest in the past and over more recent years.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--cdrc-->
+<div id="cdrcModal" class="modal" role="dialog">
+  <div class="modal-content">
+    <div class="card">
+      <div class="card-header badge-dark bg-custom pl-3">
+        <h4>About CDRC
+          <span class="close">&times;</span>
+        </h4>
+      </div>
+      <div class="card-body text-justify p-3">
+        CDRC.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--faq-->
+<div id="faqModal" class="modal" role="dialog">
+  <div class="modal-content">
+    <div class="card">
+      <div class="card-header badge-dark bg-custom pl-3">
+        <h4>Frequently Asked Questions
+          <span class="close">&times;</span>
+        </h4>
+      </div>
+      <div class="card-body text-justify p-3">
+        Frequently Asked Questions.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--credits-->
+<div id="creditModal" class="modal" role="dialog">
+  <div class="modal-content">
+    <div class="card">
+      <div class="card-header badge-dark bg-custom pl-3">
+        <h4>Credits
+          <span class="close">&times;</span>
+        </h4>
+      </div>
+      <div class="card-body text-justify p-3">
+        Credits.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--privacy-->
+<div id="privacyModal" class="modal" role="dialog">
+  <div class="modal-content">
+    <div class="card">
+      <div class="card-header badge-dark bg-custom pl-3">
+        <h4>Privacy policy
+          <span class="close">&times;</span>
+        </h4>
+      </div>
+      <div class="card-body text-justify p-3">
+        Privacy policy.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--contact-->
+<div id="contactModal" class="modal" role="dialog">
+  <div class="modal-content">
+    <div class="card">
+      <div class="card-header badge-dark bg-custom pl-3">
+        <h4>Contact
+          <span class="close">&times;</span>
+        </h4>
+      </div>
+      <div class="card-body text-justify p-3">
+        Contact.
       </div>
     </div>
   </div>

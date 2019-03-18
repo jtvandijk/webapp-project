@@ -1,6 +1,14 @@
 //jQuery
 var $j = jQuery.noConflict();
 
+//update map -- search on load
+$j(document).on('submit','#initSur',function(e) {
+    e.preventDefault();
+    searchmodal.style.display = 'none';
+    var q = document.getElementById('init_surname').value;
+    get_data(q);
+  });
+
 //update map -- search
 $j(document).on('submit','#searchSur',function(e) {
     e.preventDefault();
@@ -8,13 +16,13 @@ $j(document).on('submit','#searchSur',function(e) {
     get_data(q);
   });
 
-//search surname -- new search
+//search surname
 function get_data(q) {
     startMapLoad();
     $j.ajax({
       method: 'POST',
-      url: '../udl-namekde/search/',
-      // url: '../search/',
+      // url: '../udl-namekde/search/',
+      url: '../search/',
       data: {q: q,
              csrfmiddlewaretoken: csrftoken
             },
@@ -22,10 +30,12 @@ function get_data(q) {
         // no data entered
         if (data.source==='empty'){
           renderNone();
+          scroll(0,0);
           return;
         // no data found
         } else if (data.source==='none'){
           renderNotFound(data.surname);
+          scroll(0,0);
           return;
         // data found
         } else if (data.source==='found') {
@@ -44,6 +54,7 @@ function get_data(q) {
           }
 
           //render
+          scroll(0,0);
           renderHTML(data.surname);
           renderMap(data.years,data.contours,map);
           renderChart('hr',data.hr_freq,maxy,data.surname);
@@ -60,17 +71,12 @@ function startMapLoad() {
 
     document.getElementById('mapload').style.display='flex';
     var pSearch = document.getElementById('searchParam');
-    var foundExt = document.getElementById('searchExtra');
-    var onLoad = document.createElement('p');
-    var searchExt = document.createElement('p');
+    var onLoad = document.createElement('h1');
 
-    onLoad.className = 'card-text text-center top pt-3';
     onLoad.id = 'searchParam';
-    onLoad.innerHTML = '<br /><strong>LOADING ... </strong><br /><br />This may take up to 30 seconds.';
-    searchExt.id = 'searchExtra';
+    onLoad.innerHTML = '...';
 
     pSearch.replaceWith(onLoad);
-    foundExt.replaceWith(searchExt);
 
   };
 

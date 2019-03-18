@@ -10,17 +10,17 @@
     <meta name="JT van Dijk" content="">
     <link rel="icon" href="{% static 'favlogo.png' %}"/>
 
-    <title>Urban Dynamics Lab - Names in Great Britain</title>
+    <title>GB Names</title>
 
     <!--bootstrap css-->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous"/>
     <!--leaflet css-->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.3/dist/leaflet.css" integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ==" crossorigin="anonymous"/>
     <!--mapbox fullscreen css-->
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css"/>
     <!--custom css-->
-    <link href="{% static 'css/custom.css' %}" rel="stylesheet"/>
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
 
     <!--include navigation-->
     {% include "nav.html"%}
@@ -30,7 +30,7 @@
 
   </head>
 
-<body class="fixed-nav sticky-footer">
+<body class="fixed-nav">
 
   {% block nav %}
   {% endblock %}
@@ -38,103 +38,42 @@
   <!--main content -->
   <div class="content-wrapper">
     <div class="container-fluid">
-
-      <!--about section-->
       <div id="dashboard">
-        <div class="card mb-3">
-          <div class="card-header bg-dark text-light">
-          <i class="fa fa-list-ul mr-3"></i>About
-          <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseAbout" aria-expanded="true" aria-controls="collapseAbout">
-            <span class="fa fa-align-justify" style="text-decoration: none"></span>
-          </button>
-          </div>
-          <div id="collapseAbout" class="collapse show" aria-labelledby="collapseAbout">
-            <div class="card-body p-2">
-            <p class="card-text text-justify top">
-            Welcome to the <strong>Great Britain Family Names</strong> website which presents selected findings of projects based at the University College London
-            <a class="in-text-link" href="https://www.cdrc.ac.uk/">Consumer Data Research Centre</a> and <a class="in-text-link" href="https://www.ucl.ac.uk/urban-dynamics-lab">Urban Dynamics Lab</a>.
-            Our research focuses upon the origins and spread of family bloodlines as manifest in the past and over more recent years. Our estimates of the spread of
-            names over time are based upon <a href="https://www1.essex.ac.uk/history/research/icem/default.htm">Historic Census data</a> and much more recent
-            <a href="https://www.cdrc.ac.uk/data-services/cdrcdata/">Consumer Registers</a>.
-            </p>
-          </div>
-         </div>
-        </div>
 
         <!--surname section-->
-        <div>
-          <div class="card-header bg-dark text-light mb-3">
-          <i class="fas fa-globe mr-3"></i>Surname exploration
-          <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseSur" aria-expanded="true" aria-controls="collapseSur">
-            <span class="fa fa-align-justify" style="text-decoration: none"></span>
-          </button>
-          </div>
+        <div class="col-lg-8 mx-auto" style="height: 68px">
+          <p id="searchParam"></p>
+        </div>
 
-          <!--container -->
-          <div id="collapseSur" class="row collapse show" aria-labelledby="collapseSur">
-            <!--search section-->
-            <div class="col-lg-4">
-              <div class="card mb-3">
-                <div class="card-header">
-                  <i class= "fa fa-search mr-3"></i>Search for a surname
-                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseSearch" aria-expanded="true" aria-controls="collapseSearch">
-                    <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                  </button>
-                </div>
-                <div id="collapseSearch" class="collapse show" aria-labelledby="collapseSearch">
-                  <div class="card-body p-2">
-                    <p class="card-text text-justify top">
-                      By entering a surname and subsequently using the slider bar on the map, you can see how family names have spread across Great Britain over the periods
-                      between historic Censuses (shown in red) and more recent time periods (shown in blue).
-                    </p>
-                    <form method="post" id="searchSur">
-                    <div class="input-group">
-                      <input class="form-control" type="text" placeholder="Type a surname, e.g. Smith" name="q" id="surname" maxlength="50">
-                      <span class="input-group-append">
-                        <button class="btn btn-primary" type="submit">
-                          <i class="fa fa-search"></i>
-                        </button>
-                      </span>
-                    </div>
-                    </form>
-                    <p id="searchParam">
-                    </p>
-                    <p id="searchExtra">
-                    </p>
-                  </div>
-                </div>
-              </div>
+        <!--map section-->
+        <div class="col-lg-8 mx-auto">
+          <div class="card mb-3" >
+            <div class="card-header">
+              <h4>Contour Map
+              <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseMap" aria-expanded="true" aria-controls="collapseMap">
+                <span class="fa fa-align-justify" style="text-decoration: none"></span>
+              </button>
+              </h4>
             </div>
-
-            <!--map section-->
-            <div class="col-lg-8">
-              <div class="card mb-3" >
-                <div class="card-header">
-                  <i class="fa fa-map mr-3"></i>Contour map
-                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseMap" aria-expanded="true" aria-controls="collapseMap">
-                    <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                  </button>
+            <div id="collapseMap" class="collapse show" aria-labelledby="collapseMap">
+              <div id="kdemap" class="card-body p-0">
+                <div id="mapload" class="loading" style="display:none">
+                  <img src="{% static 'load.gif' %}" class="text-center" height="50" width="50"/>
                 </div>
-                <div id="collapseMap" class="collapse show" aria-labelledby="collapseMap">
-                  <div id="kdemap" class="card-body p-0">
-                    <div id="mapload" class="loading" style="display:none">
-                      <img src="{% static 'load.gif' %}" class="text-center" height="50" width="50"/>
-                    </div>
-                    <canvas id="cardMap" width="100" height="650">
+                <canvas id="cardMap" width="100" height="650">
 
-                      <!--map-->
+                  <!--map-->
 
-                    </canvas>
-                  </div>
-                  <div class="card-footer small text-muted p-2">Background map © OpenStreetMap contributors</div>
-                </div>
+                </canvas>
+              </div>
+              <div id="mapLegend">
               </div>
             </div>
           </div>
         </div>
+      </div>
 
         <!--graph section-->
-
         <div>
           <div class="card-header bg-dark text-light mb-3">
           <i class="fas fa-signal mr-3"></i>Surname statistics
@@ -337,26 +276,16 @@
         </div>
       </div>
 
-      <!--logo-->
-      <div class="row">
-        <div class="col-lg-12 text-center p-3">
-          <a href="https://www.ucl.ac.uk/urban-dynamics-lab">
-          <img src="{% static 'udl_logo.png' %}" height="60" />
-          </a>
-        </div>
-      </div>
+      <!--footer-->
+      <div class="mb-3 text-justify">
+        <small>
+          &copy; <a href="https://cdrc.ac.uk/">Consumer Data Research Centre</a> and <a href="https://www.ucl.ac.uk/urban-dynamics-lab">Urban Dynamics Lab</a> {% now "Y" %}.
+          All rights reserved. Project led by <a href="http://paul-longley.com/">Prof Paul Longley</a>.
+          Data science and website by <a href="https://www.linkedin.com/in/jtvandijk/">Dr Justin van Dijk</a>.
+        </small>
+    	</div>
     </div>
   </div>
-
-  <!-- /.container-fluid-->
-  <!-- /.content-wrapper-->
-  <footer class="sticky-footer">
-    <div class="container">
-      <div class="text-center">
-        <small>Copyright © Urban Dynamics Lab {% now "Y" %} </small>
-      </div>
-    </div>
-  </footer>
 
   <!--charts js-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>

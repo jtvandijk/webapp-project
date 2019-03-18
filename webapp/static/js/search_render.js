@@ -1,66 +1,74 @@
 //render none
-async function renderNone() {
+function renderNone() {
 
-  //delay
-  let promise = new Promise((resolve, reject) => {
-    setTimeout(() => resolve(""), 700)
-  });
-  await promise;
+  //stop load
   stopMapLoad();
 
+  //render empty search
   var pSearch = document.getElementById('searchParam');
-  var foundExt = document.getElementById('searchExtra');
+  var lSearch = document.getElementById('mapLegend');
   var noText = document.createElement('p');
-  var searchExt = document.createElement('p');
+  var mapLegend = document.createElement('div');
 
-  noText.className = 'card-text text-justify top pt-3';
+  noText.className = 'p-3 mb-2 bg-orange text-dark';
   noText.id = 'searchParam';
   noText.textContent = 'Please type in a surname before hitting submit.';
-  searchExt.id = 'searchExtra';
+
+  mapLegend.id = 'mapLegend';
 
   pSearch.replaceWith(noText);
-  foundExt.replaceWith(searchExt);
+  lSearch.replaceWith(mapLegend);
+
+  //remove previous layer if exist
+  if (control != undefined) {
+      map.removeControl(control);
+      map.removeLayer(layer_rm);
+      };
 };
 
 //render not found
-async function renderNotFound(surname) {
+function renderNotFound(surname) {
 
-  //delay
-  let promise = new Promise((resolve, reject) => {
-    setTimeout(() => resolve(""), 1200)
-  });
-  await promise;
+  //stop load
   stopMapLoad();
 
+  //render not found
   var pSearch = document.getElementById('searchParam');
-  var foundExt = document.getElementById('searchExtra');
+  var lSearch = document.getElementById('mapLegend');
   var notFound = document.createElement('p');
-  var searchExt = document.createElement('p');
+  var mapLegend = document.createElement('div');
 
-  notFound.className = 'card-text text-justify top pt-3';
+  notFound.className = 'p-3 mb-2 bg-orange text-dark';
   notFound.id = 'searchParam';
   notFound.innerHTML = 'Unfortunately, <strong>'+surname+'</strong> is not in our database. Are you sure you did not make a typo?';
-  searchExt.id = 'searchExtra';
+
+  mapLegend.id = 'mapLegend';
 
   pSearch.replaceWith(notFound);
-  foundExt.replaceWith(searchExt);
+  lSearch.replaceWith(mapLegend);
+
+  //remove previous layer if exist
+  if (control != undefined) {
+      map.removeControl(control);
+      map.removeLayer(layer_rm);
+      };
 };
 
 //render found
 function renderHTML(surname) {
 
   var pSearch = document.getElementById('searchParam');
-  var foundExt = document.getElementById('searchExtra');
-  var foundPar = document.createElement('p');
-  var foundPar2 = document.createElement('p');
+  var lSearch = document.getElementById('mapLegend');
+  var foundPar = document.createElement('h1');
+  var mapLegend = document.createElement('div');
 
   foundPar.id = 'searchParam';
-  foundPar.className = 'card-text text-justify top pt-3';
-  foundPar.innerHTML = 'You searched for <strong>'+surname+'</strong>. Use the slider navigation on the map to switch between the years that are available for your search.';
-  foundPar2.id = 'searchExtra';
-  foundPar2.className = 'card-text text-justify top';
-  foundPar2.innerHTML = 'For each year, the red or blue lines enclose the extent of 50 per cent of all recorded bearers of a chosen surname. If you are looking at your own name, and live outside these areas, this means that you are currently drawn from the other 50 per cent of bearers of the surname – but we hope that this tool will nevertheless be of use in tracing your family geography and history.';
+  foundPar.innerHTML = surname.toUpperCase();
+
+  mapLegend.id = 'mapLegend';
+  mapLegend.className = 'card-footer small text-muted text-justify p-3'
+  mapLegend.innerHTML = 'The red lines enclose the areas where 50% of name bearers lived over the period 1851-1911, where we have the historic Census data. The blue lines show the much more recent distributions.'
 
   pSearch.replaceWith(foundPar);
-  foundExt.replaceWith(foundPar2);
+  lSearch.replaceWith(mapLegend);
 };
