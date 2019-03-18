@@ -21,6 +21,10 @@
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css"/>
     <!--custom css-->
     <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
+    <!-- bootstrap js-->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
     <!--include navigation-->
     {% include "nav.html"%}
@@ -40,250 +44,131 @@
     <div class="container-fluid">
       <div id="dashboard">
 
-        <!--surname section-->
-        <div class="col-lg-8 mx-auto" style="height: 68px">
-          <p id="searchParam"></p>
-        </div>
-
-        <!--map section-->
-        <div class="col-lg-8 mx-auto">
-          <div class="card mb-3" >
-            <div class="card-header">
-              <h4>Contour Map
-              <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseMap" aria-expanded="true" aria-controls="collapseMap">
-                <span class="fa fa-align-justify" style="text-decoration: none"></span>
-              </button>
-              </h4>
-            </div>
-            <div id="collapseMap" class="collapse show" aria-labelledby="collapseMap">
-              <div id="kdemap" class="card-body p-0">
-                <div id="mapload" class="loading" style="display:none">
-                  <img src="{% static 'load.gif' %}" class="text-center" height="50" width="50"/>
-                </div>
-                <canvas id="cardMap" width="100" height="650">
-
-                  <!--map-->
-
-                </canvas>
+        <!--name section-->
+        <div class="tab-content">
+          <div id="names" class="tab-pane active" role="tabpanel">
+            <div class="row justify-content-center">
+              <div class="col-lg-7 col-md-8 col-sm-9" style="height: 68px">
+                <p id="searchParam"></p>
               </div>
-              <div id="mapLegend">
+            </div>
+
+            <!--map section-->
+            <div class="row justify-content-center">
+              <div class="col-lg-7 col-md-8 col-sm-9">
+                <div class="card mb-3" >
+                  <div class="card-header pl-3">
+                    <h4>Contour Map
+                    <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseMap" aria-expanded="true" aria-controls="collapseMap">
+                      <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                    </button>
+                    </h4>
+                  </div>
+                  <div id="collapseMap" class="collapse show" aria-labelledby="collapseMap">
+                    <div id="kdemap" class="card-body p-0">
+                      <div id="mapload" class="loading" style="display:none">
+                        <img src="{% static 'load.gif' %}" class="text-center" height="50" width="50"/>
+                      </div>
+                      <canvas id="cardMap" width="100" height="650">
+
+                        <!--map-->
+
+                      </canvas>
+                    </div>
+                    <div id="mapLegend">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!--graph section-->
+            <div class="row justify-content-center">
+              <div class="col-lg-7 col-md-8 col-sm-9">
+                <div class="card mb-3">
+                  <div class="card-header pl-3">
+                    <h4>1851-1911
+                    <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseFreqHr" aria-expanded="false" aria-controls="collapseFreqHr">
+                      <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                    </button>
+                    </h4>
+                  </div>
+                  <div id="collapseFreqHr" class="collapse show" aria-labelledby="collapseFreqHr">
+                    <div class="card-body p-2" id="cardFreqHr">
+
+                      <!--historic chart-->
+                      <script> var hr_freq = {{ hr_freq }} </script>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row justify-content-center">
+              <div class="col-lg-7 col-md-8 col-sm-9">
+                <div class="card mb-3">
+                  <div class="card-header pl-3">
+                    <h4>1997-2016
+                    <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseFreqCr" aria-expanded="false" aria-controls="collapseFreqCr">
+                      <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                    </button>
+                    </h4>
+                  </div>
+                  <div id="collapseFreqCr" class="collapse show" aria-labelledby="collapseFreqCr">
+                    <div class="card-body p-2" id="cardFreqCr">
+
+                      <!--contemporary chart -->
+                      <script> var cr_freq = {{ cr_freq }} </script>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!--location section-->
+          <div id="location" class="tab-pane" role="tabpanel">
+            <div class="row justify-content-center">
+              <div class="col-lg-7 col-md-8 col-sm-9" style="height: 68px">
+                <p id="locParam"></p>
+              </div>
+            </div>
+
+            <!--map section-->
+            <div class="row justify-content-center">
+              <div class="col-lg-7 col-md-8 col-sm-9">
+                <div class="card mb-3" >
+                  <div class="card-header pl-3">
+                    <h4>Location selection
+                    <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseLoc" aria-expanded="true" aria-controls="collapseLoc">
+                      <span class="fa fa-align-justify" style="text-decoration: none"></span>
+                    </button>
+                    </h4>
+                  </div>
+                  <div id="collapseLoc" class="collapse show" aria-labelledby="collapseLoc">
+
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-        <!--graph section-->
-        <div>
-          <div class="card-header bg-dark text-light mb-3">
-          <i class="fas fa-signal mr-3"></i>Surname statistics
-          <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseStat" aria-expanded="true" aria-controls="collapseStat">
-            <span class="fa fa-align-justify" style="text-decoration: none"></span>
-          </button>
-          </div>
-
-          <!--container-->
-          <div id="collapseStat" class="row collapse show" aria-labelledby="collapseStat">
-            <!--chart section -->
-            <div class="col-lg-6">
-              <div class="card mb-3">
-                <div class="card-header">
-                  <i class="fas fa-chart-line mr-3"></i>Frequency Historic Census
-                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseFreqHr" aria-expanded="false" aria-controls="collapseFreqHr">
-                    <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                  </button>
-                </div>
-                <div id="collapseFreqHr" class="collapse show" aria-labelledby="collapseFreqHr">
-                  <div class="card-body p-2" id="cardFreqHr">
-
-                    <!--historic chart-->
-                    <script> var hr_freq = {{ hr_freq }} </script>
-
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-lg-6">
-              <div class="card mb-3">
-                <div class="card-header">
-                  <i class="fas fa-chart-line mr-3"></i>Frequency Contemporary Registers
-                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseFreqCr" aria-expanded="false" aria-controls="collapseFreqCr">
-                    <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                  </button>
-                </div>
-                <div id="collapseFreqCr" class="collapse show" aria-labelledby="collapseFreqCr">
-                  <div class="card-body p-2" id="cardFreqCr">
-
-                    <!--contemporary chart -->
-                    <script> var cr_freq = {{ cr_freq }} </script>
-
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!--location section -->
-        <div>
-          <div class="card-header bg-dark text-light mb-3">
-            <i class="fas fa-location-arrow mr-3"></i>Location exploration
-            <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseLoc" aria-expanded="true" aria-controls="collapseLoc">
-              <span class="fa fa-align-justify" style="text-decoration: none"></span>
-            </button>
-          </div>
-          <!--containter -->
-          <div id="collapseLoc" class="collapse show" aria-labelledby="collapseLoc">
-            <div class="row">
-              <!--location selection-->
-              <div class="col-lg-4">
-                <div class="card mb-3">
-                  <div class="card-header">
-                    <i class="fas fa-compass mr-3"></i>Location manager
-                    <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseLocMan" aria-expanded="true" aria-controls="collapseLocMan">
-                      <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                    </button>
-                  </div>
-                  <!--location selection-->
-                  <div id="collapseLocMan" class="collapse show" aria-labelledby="collapseLocMan">
-                    <div class="card-body p-2" id="locMan">
-                    <p class="card-text text-justify top">
-                    Select a location below to explore its surname statistics. Or simply select 'Use my location' to explore the surname statistics of your current location.
-                    </p>
-                    <form method="post" id="locUser">
-                      <select class="form-control" id="selLoc">
-                        <option disabled>Allow location services:</option>
-                        <option value="user">Use my location</option>
-                        <option disabled>Select a city:</option>
-                        {% for d in agg_geo %}
-                          <option>{{ d }}</option>
-                          {% endfor %}
-                      </select>
-                      <p class="card-text text-center mt-3">
-                      <button class="btn btn-primary btn-sm text-center" id='share-loc' type='submit'>Apply selection</button>
-                      <img src="{% static 'load.gif' %}" id='loading-indicator' style='display:none' class="text-center" height="50" width="50"/>
-                      </p>
-                      <p id="noLoc">
-                      </p>
-                    </form>
-                    </p>
-                    </div>
-                    <div class="card-footer small text-justify text-muted p-2">
-                    Please note that these data are aggregated to LSOA-level for privacy reasons.
-                    City data are aggregated further by selecting LSOA centroids that fall within a city's built up area.
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!--frequency surnames-->
-              <div class="col-lg-4">
-                  <div class="card mb-3">
-                  <div class="card-header">
-                    <i class="fas fa-ellipsis-h mr-3"></i>Most frequent surnames
-                    <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseNames" aria-expanded="false" aria-controls="collapseNames">
-                      <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                    </button>
-                  </div>
-                  <!--frequency surnames-->
-                  <div id="collapseNames" class="collapse show" aria-labelledby="collapseNames">
-                    <div class="card-body p-2" id="locNames">
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!--unique surnames -->
-              <div class="col-lg-4">
-                <div class="card mb-3">
-                  <div class="card-header">
-                    <i class="fas fa-fingerprint mr-3"></i>Unique surnames
-                    <button class="btn btn-light p-0 float-right" data-toggle="collapse show" data-target="#collapseUniq" aria-expanded="false" aria-controls="collapseUniq">
-                      <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                    </button>
-                  </div>
-                  <!--unique surnames-->
-                  <div id="collapseUniq" class="collapse show" aria-labelledby="collapseUniq">
-                    <div class="card-body p-2" id="locUniq">
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!--container -->
-            <div class="row">
-              <!--surname diversity-->
-              <div class="col-lg-4">
-                <div class="card mb-3">
-                  <div class="card-header">
-                    <i class="fa fa-chart-pie mr-3"></i>Surname diversity
-                    <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseAlpha" aria-expanded="false" aria-controls="collapseAlpha">
-                      <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                    </button>
-                  </div>
-                  <!--surname diversity-->
-                  <div id="collapseAlpha" class="collapse show" aria-labelledby="collapseAlpha">
-                    <div class="card-body p-2" id="locAlpha">
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!--topname -->
-              <div class="col-lg-4">
-                <div class="card mb-3">
-                  <div class="card-header">
-                  <i class= "fa fa-map-marker mr-3"></i>Topname
-                  <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseTop" aria-expanded="true" aria-controls="collapseTop">
-                    <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                  </button>
-                </div>
-                <!--topname-->
-                  <div id="collapseTop" class="collapse show" aria-labelledby="collapseTop">
-                    <div class="card-body p-2" id="locTop">
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!--feedback-->
-              <div class="col-lg-4">
-                <div class="card mb-3">
-                  <div class="card-header">
-                    <i class="fa fa-comments mr-3"></i>Feedback
-                    <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseFeedback" aria-expanded="false" aria-controls="collapseFeedback">
-                      <span class="fa fa-align-justify" style="text-decoration: none"></span>
-                    </button>
-                  </div>
-                  <div id="collapseFeedback" class="collapse show" area-labelledby="collapseFeedback">
-                    <div class="card-body p-2">
-                        <p class="card-text text-justify top">
-                        If you have any questions, concerns or feedback, please do not hesitate to contact us:<br/>
-                        </p>
-                        <p class="card-text text-center ml-0">
-                        <a hr_freqef="mailto:j.t.vandijk@ucl.ac.uk" class="text-dark"> <i class="fa fa-envelope fa-2x float-center"></i></a>
-                        &nbsp;&nbsp;
-                        <a href="https://twitter.com/@urbndynamicslab" class="text-dark"> <i class="fab fa-twitter fa-2x"></i></a>
-                        </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <!--footer-->
+        <div class="row justify-content-center">
+          <div class="col-lg-7 col-md-8 col-sm-9">
+            <div class="mb-3 text-justify">
+              <small>
+                &copy; <a href="https://cdrc.ac.uk/">Consumer Data Research Centre</a> and <a href="https://www.ucl.ac.uk/urban-dynamics-lab">Urban Dynamics Lab</a> {% now "Y" %}.
+                All rights reserved. Project led by <a href="http://paul-longley.com/">Prof Paul Longley</a>.
+                Data science and website by <a href="https://www.linkedin.com/in/jtvandijk/">Dr Justin van Dijk</a>.
+              </small>
+          	</div>
           </div>
         </div>
       </div>
-
-      <!--footer-->
-      <div class="mb-3 text-justify">
-        <small>
-          &copy; <a href="https://cdrc.ac.uk/">Consumer Data Research Centre</a> and <a href="https://www.ucl.ac.uk/urban-dynamics-lab">Urban Dynamics Lab</a> {% now "Y" %}.
-          All rights reserved. Project led by <a href="http://paul-longley.com/">Prof Paul Longley</a>.
-          Data science and website by <a href="https://www.linkedin.com/in/jtvandijk/">Dr Justin van Dijk</a>.
-        </small>
-    	</div>
     </div>
   </div>
 
@@ -310,11 +195,6 @@
   <script src="{% static 'js/location_render.js' %}"></script>
   <script src="{% static 'js/timedimension.js' %}"></script>
   <script src="{% static 'js/slider.js' %}"></script>
-
-  <!-- bootstrap cs-->
-  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
 </body>
 </html>

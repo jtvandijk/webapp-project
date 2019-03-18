@@ -2,30 +2,26 @@
 {% load staticfiles %}
 
 <!--navigation-->
-<nav class="navbar navbar-expand-md navbar-dark bg-custom fixed-top mb-100">
+<nav class="navbar navbar-expand-md navbar-dark bg-custom fixed-top">
 
   <!--brand-->
   <a class="navbar-brand" href="#">GB Names</a>
 
   <!--navigation: hidden-->
-  <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
 
   <!--navigation: elements-->
-  <div class="collapse navbar-collapse" id="navbarResponsive">
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item mr-1" data-toggle="tooltip" data-placement="right" title="Home">
-        <a class="nav-link active" href="{% url 'home' %}">
-          <span class="nav-link-text">Names</span>
-        </a>
+  <div class="collapse navbar-collapse" id="navbarSupportedContent" role="tablist">
+    <ul class="navbar-nav mr-auto nav" id="nav-tab" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="names-tab" data-toggle="tab" role="tab" href="#names">Names</a>
       </li>
-      <li class="nav-item mr-1" data-toggle="tooltip" data-placement="right" title="location">
-        <a class="nav-link" href="{% url 'location' %}">
-          <span class="nav-link-text">Location</span>
-        </a>
+      <li class="nav-item">
+        <a class="nav-link" id="location-tab" data-toggle="tab" role="tab" href="#location">Location</a>
       </li>
-      <li class="nav-item dropdown mr-1">
+      <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" id="infodrop" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           <span class="nav-link-text">About</span>
         </a>
@@ -87,6 +83,18 @@
       </div>
       <div class="card-body text-justify p-3">
         GB Names focuses upon the origins and spread of family bloodlines through surnames as manifest in the past and over more recent years.
+        Digitally encoded Historic Census data for England, Scotland, and Wales provide population-wide micro data of individuals’ names and addresses.
+        This integrated collection of historic census microdata covers the decennial census of England and Wales for 1851, 1861, 1881, 1891, 1901, 1911,
+        and for Scotland for the period 1851 to 1901. The addresses are linked to parishes, which have been digitised into a set of two consistent parish geographies.
+        Because contemporary censuses do not disclose names, extensive databases of names at the addresses-level were sought from public versions of the electoral
+        register from 1997 until 2016, with supplements from consumer data from 2002 onwards to capture those that opt-out or are not eligible to vote.
+        The ‘Consumer Registers’ are linked to bolster their coverage and are found to be representative of the vast majority of the UK’s adult population
+      </div>
+      <div class="card-body text-justify p3">
+        Cheshire, J.A. & Longley, P.A. (2012) Identifying spatial concentrations of surnames. <em>International Journal of Geographical Information Science</em>. 26 (2), 309–325.<br /><br />
+        Higgs, E. & Schürer, K. (2014) <em>Integrated Census Microdata (I-CeM), 1851-1911</em>, [data collection]. UK Data Service SN: 748. DOI: 10.5255/UKDA-SN-7481-1<br /><br />
+        Lansley, G., Li, W. & Longley, P.A. (2018) Modelling small area level population change from administrative and consumer data, in <em>Proceedings of the 26th Conference on GIS Research UK (GISRUK)</em>. Leicester: University of Leicester.<br /><br />
+        Longley, P. A., Cheshire, J., & Singleton, A. (Eds.). (2018). <em>Consumer Data Research</em>. London: UCL Press.<br /><br />
       </div>
     </div>
   </div>
@@ -134,7 +142,7 @@
         </h4>
       </div>
       <div class="card-body text-justify p-3">
-        Credits.
+        This work is funded by the UK ESRC Consumer Data Research Centre (CDRC) grant reference ES/L011840/1 and EPSRC grant EP/M023583/1 (‘UK Regions Digital Research Facility’).
       </div>
     </div>
   </div>

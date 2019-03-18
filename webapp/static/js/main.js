@@ -33,11 +33,11 @@ $j.ajaxSetup({
 $j(document).ready(function() {
   renderChart('hr',hr_freq);
   renderChart('cr',cr_freq);
-  setGeo('London');
+  //setGeo('London');
 });
 
 //geography -- on load
 $j(document).ready(function() {
-  var selLoc = document.getElementById('selLoc').value;
-  showGeography(selLoc);
+  //var selLoc = document.getElementById('selLoc').value;
+  //showGeography(selLoc);
 });

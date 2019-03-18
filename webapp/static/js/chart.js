@@ -34,13 +34,13 @@ function renderChart(database,freqs,maxy,surname) {
   //render absolute or surname chart
   if (surname == null && database === 'hr') {
     var maxy = 60000;
-    freqPar.innerHTML = 'Number of <strong>unique surnames</strong> that are available in our database for the years 1851, 1861, 1881, 1901, and 1911. Data for Great Britain, with the exception of 1911 (only England and Wales). Surnames found in the Historic Censuses of Population are only included if they occur at least 30 times in our database.';
+    freqPar.innerHTML = 'This shows the frequency of distinct surnames available in the historic data'
   } else if (surname == null && database === 'cr') {
-    freqPar.innerHTML = 'Number of <strong>unique surnames</strong> that are available in our database for the period 1997-2016. Data for the entire United Kingdom. Surnames found in our Contemporary Consumer Registers are only included if they occur at least 50 times in our database.';
+    freqPar.innerHTML = 'This shows the frequency of distinct surnames available in recent years';
   } else if (surname != null && database === 'hr') {
-    freqPar.innerHTML = 'Absolute number of times <strong>'+surname+'</strong> is recorded in our database for the period 1851-1911.';
+    freqPar.innerHTML = 'This shows the number of adult and child bearers of <strong>'+surname+'</strong> using historic Census data.';
   } else if (surname != null && database === 'cr'){
-    freqPar.innerHTML = 'Absolute number of times <strong>'+surname+'</strong> is recorded in our database for the period 1997-2016.';
+    freqPar.innerHTML = 'This shows the number of adult (only) bearers of <strong>'+surname+'</strong> in recent years.';
   };
 
   //combine HTML elements
