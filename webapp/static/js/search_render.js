@@ -7,7 +7,11 @@ function renderNone() {
   //render empty search
   var pSearch = document.getElementById('searchParam');
   var lSearch = document.getElementById('mapLegend');
+  var c1Search = document.getElementById('cardFreqHr');
+  var c2Search = document.getElementById('cardFreqCr');
   var noText = document.createElement('p');
+  var chartCanvas1 = document.createElement('div');
+  var chartCanvas2 = document.createElement('div');
   var mapLegend = document.createElement('div');
 
   noText.className = 'p-3 mb-2 bg-orange text-dark';
@@ -15,9 +19,15 @@ function renderNone() {
   noText.textContent = 'Please type in a surname before hitting submit.';
 
   mapLegend.id = 'mapLegend';
+  chartCanvas1.id = 'cardFreqHr';
+  chartCanvas1.className = 'card-body p-2'
+  chartCanvas2.id = 'cardFreqCr';
+  chartCanvas2.className = 'card-body p-2'
 
   pSearch.replaceWith(noText);
   lSearch.replaceWith(mapLegend);
+  c1Search.replaceWith(chartCanvas1);
+  c2Search.replaceWith(chartCanvas2);
 
   //remove previous layer if exist
   if (control != undefined) {
@@ -35,7 +45,11 @@ function renderNotFound(surname) {
   //render not found
   var pSearch = document.getElementById('searchParam');
   var lSearch = document.getElementById('mapLegend');
+  var c1Search = document.getElementById('cardFreqHr');
+  var c2Search = document.getElementById('cardFreqCr');
   var notFound = document.createElement('p');
+  var chartCanvas1 = document.createElement('div');
+  var chartCanvas2 = document.createElement('div');
   var mapLegend = document.createElement('div');
 
   notFound.className = 'p-3 mb-2 bg-orange text-dark';
@@ -43,9 +57,15 @@ function renderNotFound(surname) {
   notFound.innerHTML = 'Unfortunately, <strong>'+surname+'</strong> is not in our database. Are you sure you did not make a typo?';
 
   mapLegend.id = 'mapLegend';
+  chartCanvas1.id = 'cardFreqHr';
+  chartCanvas1.className = 'card-body p-2'
+  chartCanvas2.id = 'cardFreqCr';
+  chartCanvas2.className = 'card-body p-2'
 
   pSearch.replaceWith(notFound);
   lSearch.replaceWith(mapLegend);
+  c1Search.replaceWith(chartCanvas1);
+  c2Search.replaceWith(chartCanvas2);
 
   //remove previous layer if exist
   if (control != undefined) {

@@ -1,10 +1,4 @@
-#JTVD - 2018
-
-#groupig needs to be fixed -- loose points connected with each other (min point size?) // possibly fixed with filter group labels == -1
-#either remove loose points of given contour level
-#or create circle around grid centroid (or hexagon of sorts)
-
-#libraries
+#grid reconstruction
 import numpy as np
 from shapely.geometry import Point,Polygon,LineString,MultiPolygon
 

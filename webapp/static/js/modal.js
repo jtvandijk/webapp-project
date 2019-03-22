@@ -25,6 +25,14 @@ clsBtns.forEach(function(btn){
   }
 });
 
+var clsMdl = [...document.getElementsByClassName('close-modal')];
+clsMdl.forEach(function(btn){
+  btn.onclick = function() {
+    var parent_modal = btn.parentElement.parentElement.parentElement.parentElement.getAttribute('id');
+    document.getElementById(parent_modal).style.display = 'none';
+  }
+});
+
 window.onclick = function(event){
   var clsWindow = [...document.getElementsByClassName('modal')];
   clsWindow.forEach(function(win){

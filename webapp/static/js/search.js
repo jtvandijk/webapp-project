@@ -22,7 +22,7 @@ function get_data(q) {
     $j.ajax({
       method: 'POST',
       url: '../udl-namekde/search/',
-      //url: '../search/',
+      // url: '../search/',
       data: {q: q,
              csrfmiddlewaretoken: csrftoken
             },
@@ -45,8 +45,14 @@ function get_data(q) {
           var maxval = Math.max.apply(null, chartval)
           if (maxval < 100) {
             var maxy = 100 * Math.ceil(maxval / 100);
+          } else if (maxval < 300) {
+            var maxy = 300 * Math.ceil(maxval / 300);
+          } else if (maxval < 600) {
+            var maxy = 600 * Math.ceil(maxval / 600);
           } else if (maxval < 1000) {
             var maxy = 1000 * Math.ceil(maxval / 1000);
+          } else if (maxval < 3000) {
+            var maxy = 3000 * Math.ceil(maxval / 3000);
           } else if (maxval < 5000) {
             var maxy = 5000 * Math.ceil(maxval / 5000);
           } else {

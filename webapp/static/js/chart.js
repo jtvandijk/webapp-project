@@ -38,7 +38,7 @@ function renderChart(database,freqs,maxy,surname) {
   } else if (surname == null && database === 'cr') {
     freqPar.innerHTML = 'This shows the frequency of distinct surnames available in recent years';
   } else if (surname != null && database === 'hr') {
-    freqPar.innerHTML = 'This shows the number of adult and child bearers of <strong>'+surname+'</strong> using historic Census data.';
+    freqPar.innerHTML = 'This shows the number of adult and child bearers of <strong>'+surname+'</strong> in historic data.';
   } else if (surname != null && database === 'cr'){
     freqPar.innerHTML = 'This shows the number of adult (only) bearers of <strong>'+surname+'</strong> in recent years.';
   };

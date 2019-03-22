@@ -1,3 +1,4 @@
+#models
 from django.contrib.gis.db import models
 
 class KdeLookup(models.Model):
@@ -330,30 +331,39 @@ class KdevClus2016(models.Model):
         managed = True
         db_table = 'kdef_clus2016'
 
-class LsoaTopnames(models.Model):
-    lsoa = models.TextField(primary_key=True)
-    long = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
-    lat = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
-    topnames = models.TextField(blank=True,null=True)
-    unique_n = models.IntegerField(blank=True,null=True)
-    total_n = models.IntegerField(blank=True,null=True)
-    shape = models.PolygonField(srid=27700)
-    diversity_a = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
+class ForeNames(models.Model):
+    surname = models.TextField(primary_key=True)
+    male = models.TextField(blank=True,null=True)
+    female = models.TextField(blank=True,null=True)
+    male_freq = models.IntegerField(blank=True,null=True)
+    female_freq = models.IntegerField(blank=True,null=True)
+    year = models.IntegerField(blank=True,null=True)
 
     class Meta:
         managed = True
-        db_table = 'lsoa_topnames'
+        db_table = 'names_forename'
 
-class GeoTopnames(models.Model):
-    agg_geo = models.TextField(primary_key=True)
-    topnames = models.TextField(blank=True,null=True)
-    unique_n = models.IntegerField(blank=True,null=True)
-    total_n = models.IntegerField(blank=True,null=True)
-    diversity_a = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
+class ParishNames(models.Model):
+    surname = models.TextField(primary_key=True)
+    conparid = models.FloatField(blank=True,null=True)
+    parish = models.TextField(blank=True,null=True)
+    parish_freq = models.IntegerField(blank=True,null=True)
+    year = models.IntegerField(blank=True,null=True)
 
     class Meta:
         managed = True
-        db_table = 'geo_topnames'
+        db_table = 'names_parish'
+
+class OA_Names(models.Model):
+    surname = models.TextField(primary_key=True)
+    oa = models.TextField(blank=True,null=True)
+    oa_freq = models.IntegerField(blank=True,null=True)
+    year = models.IntegerField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'names_parish'
+
 
 class RenderedNames(models.Model):
     surname = models.TextField(primary_key=True)
@@ -366,4 +376,4 @@ class RenderedNames(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'rendered_names'
+        db_table = 'names_rendered'

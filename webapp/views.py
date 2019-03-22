@@ -1,8 +1,8 @@
-#JTVD - 2018
+#JTVD - 2019
 
 #libraries
 from django.shortcuts import render
-from kde.models import KdeLookup, GeoTopnames
+from kde.models import KdeLookup
 
 #index views
 def index(request):
@@ -41,8 +41,5 @@ def index(request):
     cr_freq.append(KdeLookup.objects.filter(freq2015__isnull=False).count())
     cr_freq.append(KdeLookup.objects.filter(freq2016__isnull=False).count())
 
-    #aggregated geographies
-    agg_geo=sorted(GeoTopnames.objects.all().values_list('agg_geo',flat=True))
-
     #return
-    return render(request,'index.html',{'hr_freq':hr_freq,'cr_freq':cr_freq,'agg_geo':agg_geo})
+    return render(request,'index.html',{'hr_freq':hr_freq,'cr_freq':cr_freq})
