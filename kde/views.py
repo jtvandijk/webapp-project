@@ -4,7 +4,7 @@
 from django.contrib.gis.geos import fromstr
 from django.http import HttpResponse
 from django.conf import settings
-from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, ForeNames, ParishNames, OA_Names, RenderedNames
+from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, ForeNames, ParishNames, OA_Names, OA_NamesCat, RenderedNames
 from .contour import to_concave_points
 from pyproj import Proj, transform
 from sklearn.cluster import dbscan
@@ -12,7 +12,9 @@ from shapely.geometry import Polygon,MultiPolygon
 from fiona.crs import from_epsg
 import json
 import pandas as pd
+import numpy as np
 import geopandas as gpd
+import random
 import sys
 import re
 import ast
@@ -71,6 +73,31 @@ def search(request):
         count = data.get('count')
         RenderedNames.objects.filter(surname=clean_sur).update(count=count+1)
 
+        #statistics -- forename
+        forenames = ForeNames.objects.filter(surname=clean_sur).values()
+        fore_male_hist0 = []
+        fore_female_hist0 = []
+        fore_male_cont0 = []
+        fore_female_cont0 = []
+
+        for f in forenames:
+            if(f['year'] < 1950):
+                fore_male_hist0.append(f['male'].split(','))
+                fore_female_hist0.append(f['female'].split(','))
+            else:
+                fore_male_cont0.append(f['male'].split(','))
+                fore_female_cont0.append(f['female'].split(','))
+
+        fore_male_hist = np.unique([item for sublist in fore_male_hist0 for item in sublist])
+        fore_female_hist = np.unique([item for sublist in fore_female_hist0 for item in sublist])
+        fore_male_cont = np.unique([item for sublist in fore_male_cont0 for item in sublist])
+        fore_female_cont = np.unique([item for sublist in fore_female_cont0 for item in sublist])
+
+        random.shuffle(fore_male_hist)
+        random.shuffle(fore_female_hist)
+        random.shuffle(fore_male_cont)
+        random.shuffle(fore_female_cont)
+
         #combine data
         search = {
                 'surname': re.sub(r'[\W^0-9^]+',' ',search_sur).title(),
@@ -78,7 +105,11 @@ def search(request):
                 'years': ast.literal_eval(data.get('years')),
                 'hr_freq': ast.literal_eval(data.get('hr_freq')),
                 'cr_freq': ast.literal_eval(data.get('cr_freq')),
-                'contours': ast.literal_eval(data.get('contours'))
+                'contours': ast.literal_eval(data.get('contours')),
+                'foremh': fore_male_hist[:10].tolist(),
+                'forefh': fore_female_hist[:10].tolist(),
+                'foremc': fore_male_cont[:10].tolist(),
+                'forefc': fore_female_cont[:10].tolist(),
                 }
 
         #return data
@@ -154,6 +185,31 @@ def search(request):
             data.append(contourprj)
             contour_collection.append(data)
 
+        #statistics -- forename
+        forenames = ForeNames.objects.filter(surname=clean_sur).values()
+        fore_male_hist0 = []
+        fore_female_hist0 = []
+        fore_male_cont0 = []
+        fore_female_cont0 = []
+
+        for f in forenames:
+            if(f['year'] < 1950):
+                fore_male_hist0.append(f['male'].split(','))
+                fore_female_hist0.append(f['female'].split(','))
+            else:
+                fore_male_cont0.append(f['male'].split(','))
+                fore_female_cont0.append(f['female'].split(','))
+
+        fore_male_hist = np.unique([item for sublist in fore_male_hist0 for item in sublist])
+        fore_female_hist = np.unique([item for sublist in fore_female_hist0 for item in sublist])
+        fore_male_cont = np.unique([item for sublist in fore_male_cont0 for item in sublist])
+        fore_female_cont = np.unique([item for sublist in fore_female_cont0 for item in sublist])
+
+        random.shuffle(fore_male_hist)
+        random.shuffle(fore_female_hist)
+        random.shuffle(fore_male_cont)
+        random.shuffle(fore_female_cont)
+
         #combine data
         search = {
                 'surname': re.sub(r'[\W^0-9^]+',' ',search_sur).title(),
@@ -161,7 +217,11 @@ def search(request):
                 'years': years,
                 'hr_freq': hr_freq,
                 'cr_freq': cr_freq,
-                'contours': contour_collection
+                'contours': contour_collection,
+                'foremh': fore_male_hist[:10].tolist(),
+                'forefh': fore_female_hist[:10].tolist(),
+                'foremc': fore_male_cont[:10].tolist(),
+                'forefc': fore_female_cont[:10].tolist(),
                 }
 
         #save to db

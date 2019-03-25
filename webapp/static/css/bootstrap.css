@@ -2419,6 +2419,22 @@ fieldset:disabled a.btn {
   pointer-events: none;
 }
 
+.btn-historic {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000000;
+  background-color: rgba(250,38,0,0.4);
+  border-color: #fa2600;
+}
+
+.btn-contemporary {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000000;
+  background-color: rgba(50,115,209,0.4);
+  border-color: #3273d1;
+}
+
 .btn-primary {
   color: #fff;
   background-color: #007bff;

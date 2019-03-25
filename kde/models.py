@@ -362,8 +362,17 @@ class OA_Names(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'names_parish'
+        db_table = 'names_oa'
 
+class OA_NamesCat(models.Model):
+    surname = models.TextField(primary_key=True)
+    oagroupcd = models.TextField(blank=True,null=True)
+    oagroupnm = models.IntegerField(blank=True,null=True)
+    freq = models.IntegerField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'names_oa_cat'
 
 class RenderedNames(models.Model):
     surname = models.TextField(primary_key=True)

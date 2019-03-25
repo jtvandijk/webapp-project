@@ -63,6 +63,7 @@ function get_data(q) {
           scroll(0,0);
           renderHTML(data.surname);
           renderMap(data.years,data.contours,map);
+          renderForenames(data.foremh,data.forefh,data.foremc,data.forefc)
           renderChart('hr',data.hr_freq,maxy,data.surname);
           renderChart('cr',data.cr_freq,maxy,data.surname);
           stopMapLoad();
