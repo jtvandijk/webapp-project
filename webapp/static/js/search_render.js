@@ -35,9 +35,9 @@ function renderNone() {
 
   mapLegend.id = 'mapLegend';
   chartCanvas1.id = 'cardFreqHr';
-  chartCanvas1.className = 'card-body p-2'
+  chartCanvas1.className = 'card-body p-2';
   chartCanvas2.id = 'cardFreqCr';
-  chartCanvas2.className = 'card-body p-2'
+  chartCanvas2.className = 'card-body p-2';
 
   pSearch.replaceWith(noText);
   lSearch.replaceWith(mapLegend);
@@ -95,9 +95,9 @@ function renderNotFound(surname) {
 
   mapLegend.id = 'mapLegend';
   chartCanvas1.id = 'cardFreqHr';
-  chartCanvas1.className = 'card-body p-2'
+  chartCanvas1.className = 'card-body p-2';
   chartCanvas2.id = 'cardFreqCr';
-  chartCanvas2.className = 'card-body p-2'
+  chartCanvas2.className = 'card-body p-2';
 
   pSearch.replaceWith(notFound);
   lSearch.replaceWith(mapLegend);
@@ -130,8 +130,8 @@ function renderHTML(surname) {
   foundPar.innerHTML = surname.toUpperCase();
 
   mapLegend.id = 'mapLegend';
-  mapLegend.className = 'card-footer small text-muted text-justify p-3'
-  mapLegend.innerHTML = 'The red lines enclose the areas where 50% of name bearers lived over the period 1851-1911, where we have the historic Census data. The blue lines show the much more recent distributions.'
+  mapLegend.className = 'card-footer small text-muted text-justify p-3';
+  mapLegend.innerHTML = 'The red lines enclose the areas where 50% of name bearers lived over the period 1851-1911, where we have the historic Census data. The blue lines show the much more recent distributions.';
 
   //back to names tablist
   $('#nav-tab a[href="#names"]').tab('show');
