@@ -101,7 +101,7 @@ STATICFILES_DIRS = [
         os.path.join(BASE_DIR,'webapp/media')
         ]
 
-# STATIC_URL = '/static/'
+#STATIC_URL = '/static/'
 STATIC_URL = '/udl-namekde/static/'
 STATIC_ROOT = os.path.join(BASE_DIR,'static')
 

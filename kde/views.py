@@ -4,7 +4,7 @@
 from django.contrib.gis.geos import fromstr
 from django.http import HttpResponse
 from django.conf import settings
-from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, ForeNames, ParishNames, OA_Names, OA_NamesCat, RenderedNames
+from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, ForeNames, ParishNames, ParishLookup, OA_Names, OA_Lookup, RenderedNames
 from .contour import to_concave_points
 from pyproj import Proj, transform
 from sklearn.cluster import dbscan
@@ -48,19 +48,15 @@ def search(request):
 
     #empty search
     if len(search_sur) == 0:
-        search = {
-                 'source':'empty',
-                 }
+        search = {'source':'empty',}
 
         #return empty
         return HttpResponse(json.dumps(search),content_type="application/json")
 
     #if not in db
     elif not db_sur:
-        search = {
-                  'source':'none',
-                  'surname': search_sur,
-                 }
+        search = {'source':'none',
+                  'surname': search_sur,}
 
         #return none
         return HttpResponse(json.dumps(search),content_type="application/json")
@@ -75,32 +71,18 @@ def search(request):
 
         #statistics -- forename
         forenames = ForeNames.objects.filter(surname=clean_sur).values()
-        fore_male_hist0 = []
-        fore_female_hist0 = []
-        fore_male_cont0 = []
-        fore_female_cont0 = []
+        fore_male_hist, fore_female_hist, fore_male_cont, fore_female_cont = forenames_stats(forenames)
 
-        for f in forenames:
-            if(f['year'] < 1950):
-                fore_male_hist0.append(f['male'].split(','))
-                fore_female_hist0.append(f['female'].split(','))
-            else:
-                fore_male_cont0.append(f['male'].split(','))
-                fore_female_cont0.append(f['female'].split(','))
+        #statistics -- parish
+        parishes = ParishNames.objects.filter(surname=clean_sur).values('regcnty','parish')
+        par_top = parish_stats(parishes)
 
-        fore_male_hist = np.unique([item for sublist in fore_male_hist0 for item in sublist])
-        fore_female_hist = np.unique([item for sublist in fore_female_hist0 for item in sublist])
-        fore_male_cont = np.unique([item for sublist in fore_male_cont0 for item in sublist])
-        fore_female_cont = np.unique([item for sublist in fore_female_cont0 for item in sublist])
-
-        random.shuffle(fore_male_hist)
-        random.shuffle(fore_female_hist)
-        random.shuffle(fore_male_cont)
-        random.shuffle(fore_female_cont)
+        #statistics -- oa
+        oas = OA_Names.objects.filter(surname=clean_sur).values('oa')
+        oa_top = oa_stats(oas)
 
         #combine data
-        search = {
-                'surname': re.sub(r'[\W^0-9^]+',' ',search_sur).title(),
+        search = {'surname': re.sub(r'[\W^0-9^]+',' ',search_sur).title(),
                 'source': data.get('source'),
                 'years': ast.literal_eval(data.get('years')),
                 'hr_freq': ast.literal_eval(data.get('hr_freq')),
@@ -110,7 +92,8 @@ def search(request):
                 'forefh': fore_female_hist[:10].tolist(),
                 'foremc': fore_male_cont[:10].tolist(),
                 'forefc': fore_female_cont[:10].tolist(),
-                }
+                'partop': par_top[:10].tolist(),
+                'oatop': oa_top[:10].tolist(),}
 
         #return data
         return HttpResponse(json.dumps(search),content_type="application/json")
@@ -187,32 +170,18 @@ def search(request):
 
         #statistics -- forename
         forenames = ForeNames.objects.filter(surname=clean_sur).values()
-        fore_male_hist0 = []
-        fore_female_hist0 = []
-        fore_male_cont0 = []
-        fore_female_cont0 = []
+        fore_male_hist, fore_female_hist, fore_male_cont, fore_female_cont = forenames_stats(forenames)
 
-        for f in forenames:
-            if(f['year'] < 1950):
-                fore_male_hist0.append(f['male'].split(','))
-                fore_female_hist0.append(f['female'].split(','))
-            else:
-                fore_male_cont0.append(f['male'].split(','))
-                fore_female_cont0.append(f['female'].split(','))
+        #statistics -- parish
+        parishes = ParishNames.objects.filter(surname=clean_sur).values('regcnty','parish')
+        par_top = parish_stats(parishes)
 
-        fore_male_hist = np.unique([item for sublist in fore_male_hist0 for item in sublist])
-        fore_female_hist = np.unique([item for sublist in fore_female_hist0 for item in sublist])
-        fore_male_cont = np.unique([item for sublist in fore_male_cont0 for item in sublist])
-        fore_female_cont = np.unique([item for sublist in fore_female_cont0 for item in sublist])
-
-        random.shuffle(fore_male_hist)
-        random.shuffle(fore_female_hist)
-        random.shuffle(fore_male_cont)
-        random.shuffle(fore_female_cont)
+        #statistics -- oa
+        oas = OA_Names.objects.filter(surname=clean_sur).values('oa')
+        oa_top = oa_stats(oas)
 
         #combine data
-        search = {
-                'surname': re.sub(r'[\W^0-9^]+',' ',search_sur).title(),
+        search = {'surname': re.sub(r'[\W^0-9^]+',' ',search_sur).title(),
                 'source': source,
                 'years': years,
                 'hr_freq': hr_freq,
@@ -222,7 +191,8 @@ def search(request):
                 'forefh': fore_female_hist[:10].tolist(),
                 'foremc': fore_male_cont[:10].tolist(),
                 'forefc': fore_female_cont[:10].tolist(),
-                }
+                'partop': par_top[:10].tolist(),
+                'oatop': oa_top[:10].tolist(),}
 
         #save to db
         if not ren_sur:
@@ -231,6 +201,88 @@ def search(request):
 
         #return data
         return HttpResponse(json.dumps(search),content_type="application/json")
+
+def forenames_stats(forenames):
+
+    #names
+    fore_male_hist0 = []
+    fore_female_hist0 = []
+    fore_male_cont0 = []
+    fore_female_cont0 = []
+
+    #male,female,hist,cont
+    for f in forenames:
+        if(f['year'] < 1950):
+            fore_male_hist0.append(f['male'].split(','))
+            fore_female_hist0.append(f['female'].split(','))
+        else:
+            fore_male_cont0.append(f['male'].split(','))
+            fore_female_cont0.append(f['female'].split(','))
+
+    #unique
+    fore_male_hist = np.unique([item for sublist in fore_male_hist0 for item in sublist])
+    fore_female_hist = np.unique([item for sublist in fore_female_hist0 for item in sublist])
+    fore_male_cont = np.unique([item for sublist in fore_male_cont0 for item in sublist])
+    fore_female_cont = np.unique([item for sublist in fore_female_cont0 for item in sublist])
+
+    #shuffle order
+    random.shuffle(fore_male_hist)
+    random.shuffle(fore_female_hist)
+    random.shuffle(fore_male_cont)
+    random.shuffle(fore_female_cont)
+
+    #return
+    return(fore_male_hist,fore_female_hist,fore_male_cont,fore_female_cont)
+
+def parish_stats(parishes):
+
+    #empty
+    if not parishes:
+        par_top = ['No parishes found']
+
+    #parishes
+    else:
+        par_top = []
+
+        #regcnty, parish
+        for p in parishes:
+            regcnty = p['regcnty'].title()
+            parish = p['parish']
+
+            #parish
+            if parish == '-':
+                parjoin = regcnty
+            else:
+                parjoin = regcnty + ': ' + parish
+            par_top.append(parjoin)
+
+    #shuffle order
+    random.shuffle(par_top)
+
+    #return
+    return(np.unique(par_top))
+
+def oa_stats(oas):
+
+    #empty
+    if not oas:
+        oa_top = ['No oa\'s found']
+
+    #oas
+    else:
+        oa_top = []
+
+        #oa, lad
+        for o in oas:
+            lad = OA_Lookup.objects.filter(oa11=o['oa']).values('ladnm')[0]
+            oajoin = lad['ladnm'] + ': ' + o['oa']
+            oa_top.append(oajoin)
+
+    #shuffle order
+    random.shuffle(oa_top)
+
+    #return
+    return(np.unique(oa_top))
 
 def location(request):
 
@@ -265,29 +317,6 @@ def location(request):
     #if spatial query unsuccesful
     else:
         loclist = None
-
-    #return data
-    return HttpResponse(json.dumps(loclist),content_type='application/json')
-
-def geography(request):
-
-    #selected geography
-    geo = request.POST['geography']
-
-    #query for topnames
-    sel_geo = GeoTopnames.objects.filter(agg_geo=geo)
-    div = {key: value for key, value in sel_geo.values()[0].items()}
-    tnlist = [str(x).title() for x in div['topnames'][1:-1].split(',')]
-    unique = div['unique_n']
-    total = div['total_n']
-    alpha = div['diversity_a']
-
-    #combine data
-    loclist = {'topnames': tnlist,
-               'unique': unique,
-               'total': total,
-               'alpha': alpha
-               }
 
     #return data
     return HttpResponse(json.dumps(loclist),content_type='application/json')

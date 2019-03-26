@@ -14,7 +14,6 @@ from kde import views as kde_views
 #     path('admin/', admin.site.urls,name='admin'),
 #     path('search/', kde_views.search, name='search'),
 #     path('location/', kde_views.location, name='location'),
-#     path('geography/', kde_views.geography, name='geography'),
 # ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 urlpatterns = [

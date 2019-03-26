@@ -2435,6 +2435,20 @@ fieldset:disabled a.btn {
   border-color: #3273d1;
 }
 
+.btn-parish {
+  color: #fff;
+  color: #6c757d;
+  border-color: #6c757d;
+}
+
+.btn-oa {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #fff;
+  color: #6c757d;
+  border-color: #6c757d;
+}
+
 .btn-primary {
   color: #fff;
   background-color: #007bff;

@@ -22,7 +22,7 @@ function get_data(q) {
     $j.ajax({
       method: 'POST',
       url: '../udl-namekde/search/',
-      // url: '../search/',
+      //url: '../search/',
       data: {q: q,
              csrfmiddlewaretoken: csrftoken
             },
@@ -42,30 +42,18 @@ function get_data(q) {
 
           //chart value
           var chartval = data.hr_freq.concat(data.cr_freq);
-          var maxval = Math.max.apply(null, chartval)
-          if (maxval < 100) {
-            var maxy = 100 * Math.ceil(maxval / 100);
-          } else if (maxval < 300) {
-            var maxy = 300 * Math.ceil(maxval / 300);
-          } else if (maxval < 600) {
-            var maxy = 600 * Math.ceil(maxval / 600);
-          } else if (maxval < 1000) {
-            var maxy = 1000 * Math.ceil(maxval / 1000);
-          } else if (maxval < 3000) {
-            var maxy = 3000 * Math.ceil(maxval / 3000);
-          } else if (maxval < 5000) {
-            var maxy = 5000 * Math.ceil(maxval / 5000);
-          } else {
-            var maxy = 10000 * Math.ceil(maxval / 10000);
-          }
+          var maxval = Math.max.apply(null, chartval);
+          var maxy = calcMax(maxval);
 
           //render
           scroll(0,0);
           renderHTML(data.surname);
           renderMap(data.years,data.contours,map);
-          renderForenames(data.foremh,data.forefh,data.foremc,data.forefc);
           renderChart('hr',data.hr_freq,maxy,data.surname);
           renderChart('cr',data.cr_freq,maxy,data.surname);
+          renderForenames(data.foremh,data.forefh,data.foremc,data.forefc);
+          renderParish(data.partop);
+          renderOA(data.oatop);
           stopMapLoad();
           return;
         }
@@ -76,6 +64,7 @@ function get_data(q) {
 //start map loading indicator
 function startMapLoad() {
 
+    //start map loading indicator
     document.getElementById('mapload').style.display='flex';
     var pSearch = document.getElementById('searchParam');
     var onLoad = document.createElement('h1');
@@ -83,8 +72,8 @@ function startMapLoad() {
     onLoad.id = 'searchParam';
     onLoad.innerHTML = '...';
 
+    //replace
     pSearch.replaceWith(onLoad);
-
   };
 
 //stop loading indicator
