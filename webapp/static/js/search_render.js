@@ -1,127 +1,45 @@
 //render none
 function renderNone() {
 
-  //stop load
+  //functions
   stopMapLoad();
+  clearPage();
 
   //get elements
   var pSearch = document.getElementById('searchParam');
-  var lSearch = document.getElementById('mapLegend');
-  var c1Search = document.getElementById('cardFreqHr');
-  var c2Search = document.getElementById('cardFreqCr');
-  var foreFemale = document.getElementById('ForeNamesFemale');
-  var foreMale = document.getElementById('ForeNamesMale');
-  var fLegend = document.getElementById('foreFemaleLegend');
-  var mLegend = document.getElementById('foreMaleLegend');
 
   //create elements
   var noText = document.createElement('p');
-  var mapLegend = document.createElement('div');
-  var chartCanvas1 = document.createElement('div');
-  var chartCanvas2 = document.createElement('div');
-  var foreMaleLegend = document.createElement('div');
-  var foreFemaleLegend = document.createElement('div');
-  var foreNamesF = document.createElement('ul');
-  var foreNamesM = document.createElement('ul');
 
   //set elements
   noText.className = 'p-3 mb-2 bg-orange text-dark';
   noText.id = 'searchParam';
   noText.textContent = 'Please type in a surname before hitting submit.';
 
-  mapLegend.id = 'mapLegend';
-
-  chartCanvas1.id = 'cardFreqHr';
-  chartCanvas1.className = 'card-body p-2';
-  chartCanvas2.id = 'cardFreqCr';
-  chartCanvas2.className = 'card-body p-2';
-
-  foreNamesF.id = 'ForeNamesFemale';
-  foreNamesM.id = 'ForeNamesMale';
-  foreFemaleLegend.id = 'foreFemaleLegend';
-  foreMaleLegend.id = 'foreMaleLegend';
-
   //replace
   pSearch.replaceWith(noText);
-  lSearch.replaceWith(mapLegend);
-  c1Search.replaceWith(chartCanvas1);
-  c2Search.replaceWith(chartCanvas2);
-  foreFemale.replaceWith(foreNamesF);
-  foreMale.replaceWith(foreNamesM);
-  fLegend.replaceWith(foreFemaleLegend);
-  mLegend.replaceWith(foreMaleLegend);
-
-  //back to names tablist
-  $('#nav-tab a[href="#names"]').tab('show');
-
-  //remove previous map layer if exist
-  if (control != undefined) {
-      map.removeControl(control);
-      map.removeLayer(layer_rm);
-      };
-    };
+};
 
 //render not found
 function renderNotFound(surname) {
 
-  //stop load
+  //functions
   stopMapLoad();
+  clearPage();
 
   //get elements
   var pSearch = document.getElementById('searchParam');
-  var lSearch = document.getElementById('mapLegend');
-  var c1Search = document.getElementById('cardFreqHr');
-  var c2Search = document.getElementById('cardFreqCr');
-  var foreFemale = document.getElementById('ForeNamesFemale');
-  var foreMale = document.getElementById('ForeNamesMale');
-  var fLegend = document.getElementById('foreFemaleLegend');
-  var mLegend = document.getElementById('foreMaleLegend');
 
   //create elements
   var notFound = document.createElement('p');
-  var mapLegend = document.createElement('div');
-  var chartCanvas1 = document.createElement('div');
-  var chartCanvas2 = document.createElement('div');
-  var foreNamesF = document.createElement('ul');
-  var foreNamesM = document.createElement('ul');
-  var foreMaleLegend = document.createElement('div');
-  var foreFemaleLegend = document.createElement('div');
 
   //set elements
   notFound.className = 'p-3 mb-2 bg-orange text-dark';
   notFound.id = 'searchParam';
   notFound.innerHTML = 'Unfortunately, <strong>'+surname+'</strong> is not in our database. Are you sure you did not make a typo?';
 
-  mapLegend.id = 'mapLegend';
-
-  chartCanvas1.id = 'cardFreqHr';
-  chartCanvas1.className = 'card-body p-2';
-  chartCanvas2.id = 'cardFreqCr';
-  chartCanvas2.className = 'card-body p-2';
-
-  foreNamesF.id = 'ForeNamesFemale';
-  foreNamesM.id = 'ForeNamesMale';
-  foreFemaleLegend.id = 'foreFemaleLegend';
-  foreMaleLegend.id = 'foreMaleLegend';
-
   //replace
   pSearch.replaceWith(notFound);
-  lSearch.replaceWith(mapLegend);
-  c1Search.replaceWith(chartCanvas1);
-  c2Search.replaceWith(chartCanvas2);
-  foreFemale.replaceWith(foreNamesF);
-  foreMale.replaceWith(foreNamesM);
-  fLegend.replaceWith(foreFemaleLegend);
-  mLegend.replaceWith(foreMaleLegend);
-
-  //back to names tablist
-  $('#nav-tab a[href="#names"]').tab('show');
-
-  //remove previous map layer if exist
-  if (control != undefined) {
-      map.removeControl(control);
-      map.removeLayer(layer_rm);
-      };
 };
 
 //render found
@@ -222,9 +140,9 @@ function renderForenames(fmh,ffh,fmc,ffc) {
 function renderParish(partop) {
 
   //get, create, set, elements
-  var pPar = document.getElementById('topParish');
+  var pPar = document.getElementById('topPar');
   var topPar = document.createElement('ul');
-  topPar.id = 'topParish';
+  topPar.id = 'topPar';
   topPar.className = 'list-inline ml-3 mt-2 mr-3 mb-3';
 
   //parish buttons
@@ -258,4 +176,107 @@ function renderOA(oatop) {
 
   //replace
   pOA.replaceWith(topOA);
+};
+
+//render modal oa cat
+function renderCAT(oacat) {
+
+  //get elements
+  var sgButton = document.getElementById('sgCat');
+  var gButton = document.getElementById('gCat');
+
+  //create elements
+  var sgDiv = document.createElement('div');
+  var gDiv = document.createElement('div');
+  var sgDivbtn = document.createElement('button')
+  var gDivbtn = document.createElement('button')
+
+  //set elements
+  sgDiv.id = 'sgCat';
+  gDiv.id = 'gCat';
+  sgDiv.className = 'card-body p-2';
+  gDiv.className = 'card-body p-2';
+
+  //classname
+  cls = oacat[2].slice(0,1);
+
+  //values
+  sgDivbtn.className = 'btn btn-g'+cls+' btn-lg btn-block';
+  gDivbtn.className = 'btn btn-g'+cls+' sub btn-lg btn-block';
+  sgDivbtn.innerHTML = oacat[0];
+  gDivbtn.innerHTML = oacat[1];
+  sgDiv.appendChild(sgDivbtn);
+  gDiv.appendChild(gDivbtn);
+
+  //replace
+  sgButton.replaceWith(sgDiv);
+  gButton.replaceWith(gDiv);
+
+};
+
+//clear page
+function clearPage() {
+
+  //get elements
+  var lSearch = document.getElementById('mapLegend');
+  var c1Search = document.getElementById('cardFreqHr');
+  var c2Search = document.getElementById('cardFreqCr');
+  var foreFemale = document.getElementById('ForeNamesFemale');
+  var foreMale = document.getElementById('ForeNamesMale');
+  var fLegend = document.getElementById('foreFemaleLegend');
+  var mLegend = document.getElementById('foreMaleLegend');
+  var pPar = document.getElementById('topPar');
+  var pOA = document.getElementById('topOA');
+  var sgCat = document.getElementById('sgCat');
+  var gCat = document.getElementById('gCat');
+
+  //create elements
+  var mapLegend = document.createElement('div');
+  var chartCanvas1 = document.createElement('div');
+  var chartCanvas2 = document.createElement('div');
+  var foreMaleLegend = document.createElement('div');
+  var foreFemaleLegend = document.createElement('div');
+  var foreNamesF = document.createElement('ul');
+  var foreNamesM = document.createElement('ul');
+  var topPar = document.createElement('ul');
+  var topOA = document.createElement('ul');
+  var sgDiv = document.createElement('div');
+  var gDiv = document.createElement('div');
+
+  //set elements
+  mapLegend.id = 'mapLegend';
+  chartCanvas1.id = 'cardFreqHr';
+  chartCanvas1.className = 'card-body p-2';
+  chartCanvas2.id = 'cardFreqCr';
+  chartCanvas2.className = 'card-body p-2';
+  foreNamesF.id = 'ForeNamesFemale';
+  foreNamesM.id = 'ForeNamesMale';
+  foreFemaleLegend.id = 'foreFemaleLegend';
+  foreMaleLegend.id = 'foreMaleLegend';
+  topPar.id = 'topPar';
+  topOA.id = 'topOA';
+  sgDiv.id = 'sgCat';
+  gDiv.id = 'gCat';
+
+  //replace
+  lSearch.replaceWith(mapLegend);
+  c1Search.replaceWith(chartCanvas1);
+  c2Search.replaceWith(chartCanvas2);
+  foreFemale.replaceWith(foreNamesF);
+  foreMale.replaceWith(foreNamesM);
+  fLegend.replaceWith(foreFemaleLegend);
+  mLegend.replaceWith(foreMaleLegend);
+  pPar.replaceWith(topPar);
+  pOA.replaceWith(topOA);
+  sgCat.replaceWith(sgDiv);
+  gCat.replaceWith(gDiv);
+
+  //back to names tablist
+  $('#nav-tab a[href="#names"]').tab('show');
+
+  //remove previous map layer if exist
+  if (control != undefined) {
+      map.removeControl(control);
+      map.removeLayer(layer_rm);
+      };
 };

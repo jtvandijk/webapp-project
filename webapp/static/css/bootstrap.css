@@ -2424,7 +2424,6 @@ fieldset:disabled a.btn {
   pointer-events: none;
   color: #000000;
   background-color: rgba(250,38,0,0.4);
-  border-color: #fa2600;
 }
 
 .btn-contemporary {
@@ -2432,21 +2431,96 @@ fieldset:disabled a.btn {
   pointer-events: none;
   color: #000000;
   background-color: rgba(50,115,209,0.4);
-  border-color: #3273d1;
 }
 
-.btn-parish {
-  color: #fff;
-  color: #6c757d;
-  border-color: #6c757d;
+.btn-g1 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000000;
+  background-color: #7DB96F;
 }
 
-.btn-oa {
+.btn-g1.sub {
+  background-color: #92BA8B;
+}
+
+.btn-g2 {
   cursor: not-allowed;
   pointer-events: none;
   color: #fff;
-  color: #6c757d;
-  border-color: #6c757d;
+  background-color: #D64D49;
+}
+
+.btn-g2.sub {
+  color: #000000;
+
+  background-color: #ECB4B4;
+}
+
+.btn-g3 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000000;
+  background-color: #EB99C6;
+}
+
+.btn-g3.sub {
+  background-color: #F2C0DC;
+}
+
+.btn-g4 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000000;
+  background-color: #F1994E;
+}
+
+.btn-g4.sub {
+  background-color: #DD8D49;
+}
+
+.btn-g5 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000000;
+  background-color: #AA7351;
+}
+
+.btn-g5.sub {
+  background-color: #C1987E;
+}
+
+.btn-g6 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000000;
+  background-color: #9F6DAD;
+}
+
+.btn-g6.sub {
+  background-color: #BB99C5;
+}
+
+.btn-g7 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000000;
+  background-color: #6491BF;
+}
+
+.btn-g7.sub {
+  background-color: #92ABC4;
+}
+
+.btn-g8 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000000;
+  background-color: #F8D464;
+}
+
+.btn-g8.sub {
+  background-color: #FDF3CF;
 }
 
 .btn-primary {

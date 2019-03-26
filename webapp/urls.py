@@ -8,7 +8,7 @@ from django.conf.urls.static import static
 from . import views
 from kde import views as kde_views
 
-# #patterns
+#patterns
 # urlpatterns = [
 #     path('', views.index, name='home'),
 #     path('admin/', admin.site.urls,name='admin'),

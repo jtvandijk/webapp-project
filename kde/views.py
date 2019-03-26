@@ -4,7 +4,7 @@
 from django.contrib.gis.geos import fromstr
 from django.http import HttpResponse
 from django.conf import settings
-from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, ForeNames, ParishNames, ParishLookup, OA_Names, OA_Lookup, RenderedNames
+from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, ForeNames, ParishNames, ParishLookup, OA_Names, OA_Lookup, OA_NamesCat, CatLookup, RenderedNames
 from .contour import to_concave_points
 from pyproj import Proj, transform
 from sklearn.cluster import dbscan
@@ -81,6 +81,10 @@ def search(request):
         oas = OA_Names.objects.filter(surname=clean_sur).values('oa')
         oa_top = oa_stats(oas)
 
+        #statistics -- oac
+        oac = OA_NamesCat.objects.filter(surname=clean_sur).values('oagroupcd','oagroupnm')
+        oac_mod = oac_stats(oac)
+
         #combine data
         search = {'surname': re.sub(r'[\W^0-9^]+',' ',search_sur).title(),
                 'source': data.get('source'),
@@ -93,7 +97,8 @@ def search(request):
                 'foremc': fore_male_cont[:10].tolist(),
                 'forefc': fore_female_cont[:10].tolist(),
                 'partop': par_top[:10].tolist(),
-                'oatop': oa_top[:10].tolist(),}
+                'oatop': oa_top[:10].tolist(),
+                'oacat': list(oac_mod),}
 
         #return data
         return HttpResponse(json.dumps(search),content_type="application/json")
@@ -180,6 +185,10 @@ def search(request):
         oas = OA_Names.objects.filter(surname=clean_sur).values('oa')
         oa_top = oa_stats(oas)
 
+        #statistics -- oac
+        oac = OA_NamesCat.objects.filter(surname=clean_sur).values('oagroupcd','oagroupnm')
+        oac_mod = oac_stats(oac)
+
         #combine data
         search = {'surname': re.sub(r'[\W^0-9^]+',' ',search_sur).title(),
                 'source': source,
@@ -192,7 +201,8 @@ def search(request):
                 'foremc': fore_male_cont[:10].tolist(),
                 'forefc': fore_female_cont[:10].tolist(),
                 'partop': par_top[:10].tolist(),
-                'oatop': oa_top[:10].tolist(),}
+                'oatop': oa_top[:10].tolist,
+                'oacat': list(oac_mod),}
 
         #save to db
         if not ren_sur:
@@ -257,16 +267,17 @@ def parish_stats(parishes):
             par_top.append(parjoin)
 
     #shuffle order
+    par_top = np.unique(par_top)
     random.shuffle(par_top)
 
     #return
-    return(np.unique(par_top))
+    return(par_top)
 
 def oa_stats(oas):
 
     #empty
     if not oas:
-        oa_top = ['No oa\'s found']
+        oa_top = ['No OA\'s found']
 
     #oas
     else:
@@ -279,10 +290,26 @@ def oa_stats(oas):
             oa_top.append(oajoin)
 
     #shuffle order
+    oa_top = np.unique(oa_top)
     random.shuffle(oa_top)
 
     #return
-    return(np.unique(oa_top))
+    return(oa_top)
+
+def oac_stats(oac):
+
+    #empty
+    if not oac:
+        oac_sn = ['No OA classification found']
+        oac_gn = ['No OA classification found']
+    #oac
+    else:
+        oac_gn = oac[0]['oagroupnm']
+        oac_sg = oac[0]['oagroupcd']
+        oac_sn = CatLookup.objects.filter(groupcd=oac_sg).values('supergroupnm')[0]['supergroupnm']
+
+    #return
+    return(oac_sn,oac_gn,oac_sg)
 
 def location(request):
 

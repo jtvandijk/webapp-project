@@ -341,7 +341,7 @@ class ForeNames(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'names_forename'
+        db_table = 'names_freq_forename'
 
 class ParishLookup(models.Model):
     conparid = models.FloatField(primary_key=True)
@@ -363,7 +363,7 @@ class ParishNames(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'names_parish'
+        db_table = 'names_freq_parish'
 
 class OA_Lookup(models.Model):
     pcdc = models.TextField(blank=True,null=True)
@@ -387,7 +387,7 @@ class OA_Names(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'names_oa'
+        db_table = 'names_freq_oa'
 
 class OA_NamesCat(models.Model):
     surname = models.TextField(primary_key=True)
@@ -397,7 +397,24 @@ class OA_NamesCat(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'names_oa_cat'
+        db_table = 'names_cat_oa'
+
+class CatLookup(models.Model):
+    oa11 = models.TextField(primary_key=True)
+    ladcd = models.TextField(blank=True,null=True)
+    ladnm = models.TextField(blank=True,null=True)
+    cntcd = models.TextField(blank=True,null=True)
+    cntnm = models.TextField(blank=True,null=True)
+    supergroupcd = models.IntegerField(blank=True,null=True)
+    supergroupnm = models.TextField(blank=True,null=True)
+    groupcd = models.TextField(blank=True,null=True)
+    groupnm = models.TextField(blank=True,null=True)
+    subgroupcd = models.TextField(blank=True,null=True)
+    subgroupmn = models.TextField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'oa_classification'
 
 class RenderedNames(models.Model):
     surname = models.TextField(primary_key=True)

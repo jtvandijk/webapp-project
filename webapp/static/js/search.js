@@ -22,7 +22,7 @@ function get_data(q) {
     $j.ajax({
       method: 'POST',
       url: '../udl-namekde/search/',
-      //url: '../search/',
+      // url: '../search/',
       data: {q: q,
              csrfmiddlewaretoken: csrftoken
             },
@@ -54,6 +54,7 @@ function get_data(q) {
           renderForenames(data.foremh,data.forefh,data.foremc,data.forefc);
           renderParish(data.partop);
           renderOA(data.oatop);
+          renderCAT(data.oacat);
           stopMapLoad();
           return;
         }
