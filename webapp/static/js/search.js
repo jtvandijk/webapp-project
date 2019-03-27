@@ -55,20 +55,28 @@ function get_data(q) {
     })
   };
 
-//start map loading indicator
-function startMapLoad() {
+  //start map loading indicator
+  function startMapLoad() {
 
-    //start map loading indicator
-    document.getElementById('mapload').style.display='flex';
-    var pSearch = document.getElementById('searchParam');
-    var onLoad = document.createElement('h1');
+      //start map loading indicator
+      document.getElementById('mapload').style.display='flex';
 
-    onLoad.id = 'searchParam';
-    onLoad.innerHTML = '...';
+      //get elements
+      var pSearch = document.getElementById('searchParam');
+      var pLocation = document.getElementById('locParam');
+      var sName = document.createElement('h1');
+      var sLoc = document.createElement('h1');
 
-    //replace
-    pSearch.replaceWith(onLoad);
-  };
+      //create elements
+      sName.id = 'searchParam';
+      sName.innerHTML = '...';
+      sLoc.id = 'locParam';
+      sLoc.innerHTML = '...';
+
+      //replace
+      pSearch.replaceWith(sName);
+      pLocation.replaceWith(sLoc);
+    };
 
 //stop loading indicator
 function stopMapLoad() {

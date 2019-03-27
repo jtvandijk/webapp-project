@@ -7,17 +7,24 @@ function renderNone() {
 
   //get elements
   var pSearch = document.getElementById('searchParam');
+  var pLocation = document.getElementById('locParam');
 
   //create elements
   var noText = document.createElement('p');
+  var noLoc = document.createElement('p');
 
   //set elements
   noText.className = 'p-3 mb-2 bg-orange text-dark';
   noText.id = 'searchParam';
   noText.textContent = 'Please type in a surname before hitting submit.';
 
+  noLoc.className = 'p-3 mb-2 bg-orange text-dark';
+  noLoc.id = 'locParam';
+  noLoc.textContent = 'Please type in a surname before hitting submit.';
+
   //replace
   pSearch.replaceWith(noText);
+  pLocation.replaceWith(noLoc);
 };
 
 //render not found
@@ -29,17 +36,24 @@ function renderNotFound(surname) {
 
   //get elements
   var pSearch = document.getElementById('searchParam');
+  var pLocation = document.getElementById('locParam');
 
   //create elements
   var notFound = document.createElement('p');
+  var notLoc = document.createElement('p');
 
   //set elements
   notFound.className = 'p-3 mb-2 bg-orange text-dark';
   notFound.id = 'searchParam';
   notFound.innerHTML = 'Unfortunately, <strong>'+surname+'</strong> is not in our database. Are you sure you did not make a typo?';
 
+  notLoc.className = 'p-3 mb-2 bg-orange text-dark';
+  notLoc.id = 'locParam';
+  notLoc.textContent = 'Please type in a surname before hitting submit.';
+
   //replace
   pSearch.replaceWith(notFound);
+  pLocation.replaceWith(notLoc);
 };
 
 //render found
@@ -47,15 +61,20 @@ function renderHTML(surname) {
 
   //get elements
   var pSearch = document.getElementById('searchParam');
+  var pLocation = document.getElementById('locParam');
   var lSearch = document.getElementById('mapLegend');
 
   //create elements
   var foundPar = document.createElement('h1');
+  var foundLoc = document.createElement('h1');
   var mapLegend = document.createElement('div');
 
   //set elements
   foundPar.id = 'searchParam';
   foundPar.innerHTML = surname.toUpperCase();
+
+  foundLoc.id = 'locParam';
+  foundLoc.innerHTML = surname.toUpperCase();
 
   mapLegend.id = 'mapLegend';
   mapLegend.className = 'card-footer small text-muted text-justify p-3';
@@ -64,6 +83,7 @@ function renderHTML(surname) {
   //replace
   pSearch.replaceWith(foundPar);
   lSearch.replaceWith(mapLegend);
+  pLocation.replaceWith(foundLoc);
 
   //back to names tablist
   $('#nav-tab a[href="#names"]').tab('show');

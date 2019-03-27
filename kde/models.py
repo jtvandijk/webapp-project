@@ -343,16 +343,6 @@ class ForeNames(models.Model):
         managed = True
         db_table = 'names_freq_forename'
 
-class ParishLookup(models.Model):
-    conparid = models.FloatField(primary_key=True)
-    regcnty = models.TextField(blank=True,null=True)
-    parish = models.TextField(blank=True,null=True)
-    country = models.TextField(blank=True,null=True)
-
-    class Meta:
-        managed = True
-        db_table = 'conpar_lookup'
-
 class ParishNames(models.Model):
     surname = models.TextField(primary_key=True)
     conparid = models.FloatField(blank=True,null=True)
@@ -365,7 +355,53 @@ class ParishNames(models.Model):
         managed = True
         db_table = 'names_freq_parish'
 
-class OA_Lookup(models.Model):
+class OaNames(models.Model):
+    surname = models.TextField(primary_key=True)
+    oa = models.TextField(blank=True,null=True)
+    oa_freq = models.IntegerField(blank=True,null=True)
+    year = models.IntegerField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'names_freq_oa'
+
+class OaNamesCat(models.Model):
+    surname = models.TextField(primary_key=True)
+    oagroupcd = models.TextField(blank=True,null=True)
+    oagroupnm = models.IntegerField(blank=True,null=True)
+    freq = models.IntegerField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'names_cat_oa'
+
+class OaNamesAHAH(models.Model):
+    surname = models.TextField(primary_key=True)
+    ahah_dec = models.IntegerField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'names_health_oa'
+
+class OaNamesIMD(models.Model):
+    surname = models.TextField(primary_key=True)
+    imd_dec = models.IntegerField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'names_imd_oa'
+
+class ParishLookup(models.Model):
+    conparid = models.FloatField(primary_key=True)
+    regcnty = models.TextField(blank=True,null=True)
+    parish = models.TextField(blank=True,null=True)
+    country = models.TextField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'lookup_parish'
+
+class OaLookup(models.Model):
     pcdc = models.TextField(blank=True,null=True)
     oa11 = models.TextField(blank=True,null=True)
     lsoacd11 = models.TextField(blank=True,null=True)
@@ -377,27 +413,7 @@ class OA_Lookup(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'oa_lookup'
-
-class OA_Names(models.Model):
-    surname = models.TextField(primary_key=True)
-    oa = models.TextField(blank=True,null=True)
-    oa_freq = models.IntegerField(blank=True,null=True)
-    year = models.IntegerField(blank=True,null=True)
-
-    class Meta:
-        managed = True
-        db_table = 'names_freq_oa'
-
-class OA_NamesCat(models.Model):
-    surname = models.TextField(primary_key=True)
-    oagroupcd = models.TextField(blank=True,null=True)
-    oagroupnm = models.IntegerField(blank=True,null=True)
-    freq = models.IntegerField(blank=True,null=True)
-
-    class Meta:
-        managed = True
-        db_table = 'names_cat_oa'
+        db_table = 'lookup_oa'
 
 class CatLookup(models.Model):
     oa11 = models.TextField(primary_key=True)

@@ -4,7 +4,7 @@
 from django.contrib.gis.geos import fromstr
 from django.http import HttpResponse
 from django.conf import settings
-from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, ForeNames, ParishNames, ParishLookup, OA_Names, OA_Lookup, OA_NamesCat, CatLookup, RenderedNames
+from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, ForeNames, ParishNames, ParishLookup, OaNames, OaLookup, OaNamesCat, OaNamesAHAH, OaNamesIMD, CatLookup, RenderedNames
 from .contour import to_concave_points
 from pyproj import Proj, transform
 from sklearn.cluster import dbscan
@@ -78,11 +78,11 @@ def search(request):
         par_top = parish_stats(parishes)
 
         #statistics -- oa
-        oas = OA_Names.objects.filter(surname=clean_sur).values('oa')
+        oas = OaNames.objects.filter(surname=clean_sur).values('oa')
         oa_top = oa_stats(oas)
 
         #statistics -- oac
-        oac = OA_NamesCat.objects.filter(surname=clean_sur).values('oagroupcd','oagroupnm')
+        oac = OaNamesCat.objects.filter(surname=clean_sur).values('oagroupcd','oagroupnm')
         oac_mod = oac_stats(oac)
 
         #combine data
@@ -182,11 +182,11 @@ def search(request):
         par_top = parish_stats(parishes)
 
         #statistics -- oa
-        oas = OA_Names.objects.filter(surname=clean_sur).values('oa')
+        oas = OaNames.objects.filter(surname=clean_sur).values('oa')
         oa_top = oa_stats(oas)
 
         #statistics -- oac
-        oac = OA_NamesCat.objects.filter(surname=clean_sur).values('oagroupcd','oagroupnm')
+        oac = OaNamesCat.objects.filter(surname=clean_sur).values('oagroupcd','oagroupnm')
         oac_mod = oac_stats(oac)
 
         #combine data
@@ -285,7 +285,7 @@ def oa_stats(oas):
 
         #oa, lad
         for o in oas:
-            lad = OA_Lookup.objects.filter(oa11=o['oa']).values('ladnm')[0]
+            lad = OaLookup.objects.filter(oa11=o['oa']).values('ladnm')[0]
             oajoin = lad['ladnm'] + ': ' + o['oa']
             oa_top.append(oajoin)
 
