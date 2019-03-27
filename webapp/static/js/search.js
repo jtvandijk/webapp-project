@@ -6,6 +6,7 @@ $j(document).on('submit','#initSur',function(e) {
     e.preventDefault();
     searchmodal.style.display = 'none';
     var q = document.getElementById('init_surname').value;
+    scroll(0,0);
     get_data(q);
   });
 
@@ -13,6 +14,7 @@ $j(document).on('submit','#initSur',function(e) {
 $j(document).on('submit','#searchSur',function(e) {
     e.preventDefault();
     var q = document.getElementById('surname').value;
+    scroll(0,0);
     get_data(q);
   });
 
@@ -30,27 +32,18 @@ function get_data(q) {
         // no data entered
         if (data.source==='empty'){
           renderNone();
-          scroll(0,0);
           return;
         // no data found
         } else if (data.source==='none'){
           renderNotFound(data.surname);
-          scroll(0,0);
           return;
         // data found
         } else if (data.source==='found') {
 
-          //chart value
-          var chartval = data.hr_freq.concat(data.cr_freq);
-          var maxval = Math.max.apply(null, chartval);
-          var maxy = calcMax(maxval);
-
           //render
-          scroll(0,0);
           renderHTML(data.surname);
           renderMap(data.years,data.contours,map);
-          renderChart('hr',data.hr_freq,maxy,data.surname);
-          renderChart('cr',data.cr_freq,maxy,data.surname);
+          renderTable(data.hr_freq,data.cr_freq,data.surname);
           renderForenames(data.foremh,data.forefh,data.foremc,data.forefc);
           renderParish(data.partop);
           renderOA(data.oatop);

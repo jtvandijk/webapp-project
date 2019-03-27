@@ -2436,53 +2436,51 @@ fieldset:disabled a.btn {
 .btn-g1 {
   cursor: not-allowed;
   pointer-events: none;
-  color: #000000;
-  background-color: #7DB96F;
+  color: #fff;;
+  background-color: #31a354;
 }
 
 .btn-g1.sub {
-  background-color: #92BA8B;
+  background-color: #74c476;
 }
 
 .btn-g2 {
   cursor: not-allowed;
   pointer-events: none;
   color: #fff;
-  background-color: #D64D49;
+  background-color: #de2d26;
 }
 
 .btn-g2.sub {
-  color: #000000;
-
-  background-color: #ECB4B4;
+  background-color: #fb6a4a;
 }
 
 .btn-g3 {
   cursor: not-allowed;
   pointer-events: none;
-  color: #000000;
-  background-color: #EB99C6;
+  color: #fff;
+  background-color: #BE719F;
 }
 
 .btn-g3.sub {
-  background-color: #F2C0DC;
+  background-color: #D48FB0;
 }
 
 .btn-g4 {
   cursor: not-allowed;
   pointer-events: none;
-  color: #000000;
-  background-color: #F1994E;
+  color: #fff;
+  background-color: #e6550d;
 }
 
 .btn-g4.sub {
-  background-color: #DD8D49;
+  background-color: #fd8d3c;
 }
 
 .btn-g5 {
   cursor: not-allowed;
   pointer-events: none;
-  color: #000000;
+  color: #fff;
   background-color: #AA7351;
 }
 
@@ -2493,34 +2491,34 @@ fieldset:disabled a.btn {
 .btn-g6 {
   cursor: not-allowed;
   pointer-events: none;
-  color: #000000;
-  background-color: #9F6DAD;
+  color: #fff;
+  background-color: #756bb1;
 }
 
 .btn-g6.sub {
-  background-color: #BB99C5;
+  background-color: #9e9ac8 ;
 }
 
 .btn-g7 {
   cursor: not-allowed;
   pointer-events: none;
-  color: #000000;
-  background-color: #6491BF;
+  color: #fff;
+  background-color: #3182bd;
 }
 
 .btn-g7.sub {
-  background-color: #92ABC4;
+  background-color: #6baed6;
 }
 
 .btn-g8 {
   cursor: not-allowed;
   pointer-events: none;
-  color: #000000;
-  background-color: #F8D464;
+  color: #fff;
+  background-color: #FFBA01;
 }
 
 .btn-g8.sub {
-  background-color: #FDF3CF;
+  background-color: #FED901;
 }
 
 .btn-primary {
@@ -6612,7 +6610,19 @@ a.close.disabled {
 }
 
 .bg-custom {
-  background-color: #3182bd !important;
+  background-color: #2171b5 !important;
+}
+
+.bg-notes {
+  background-color: #c6dbef !important;
+}
+
+.bg-historic {
+  background-color: rgba(250,38,0,0.4) !important;
+}
+
+.bg-contemporary {
+  background-color: rgba(50,115,209,0.4) !important;
 }
 
 a.bg-custom:hover, a.bg-custom:focus,

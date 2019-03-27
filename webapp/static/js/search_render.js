@@ -211,7 +211,6 @@ function renderCAT(oacat) {
   //replace
   sgButton.replaceWith(sgDiv);
   gButton.replaceWith(gDiv);
-
 };
 
 //clear page
@@ -219,8 +218,6 @@ function clearPage() {
 
   //get elements
   var lSearch = document.getElementById('mapLegend');
-  var c1Search = document.getElementById('cardFreqHr');
-  var c2Search = document.getElementById('cardFreqCr');
   var foreFemale = document.getElementById('ForeNamesFemale');
   var foreMale = document.getElementById('ForeNamesMale');
   var fLegend = document.getElementById('foreFemaleLegend');
@@ -229,11 +226,11 @@ function clearPage() {
   var pOA = document.getElementById('topOA');
   var sgCat = document.getElementById('sgCat');
   var gCat = document.getElementById('gCat');
+  var tableHR = document.getElementById('tableHR');
+  var tableCR = document.getElementById('tableCR');
 
   //create elements
   var mapLegend = document.createElement('div');
-  var chartCanvas1 = document.createElement('div');
-  var chartCanvas2 = document.createElement('div');
   var foreMaleLegend = document.createElement('div');
   var foreFemaleLegend = document.createElement('div');
   var foreNamesF = document.createElement('ul');
@@ -242,13 +239,11 @@ function clearPage() {
   var topOA = document.createElement('ul');
   var sgDiv = document.createElement('div');
   var gDiv = document.createElement('div');
+  var hrFreq = document.createElement('table');
+  var crFreq = document.createElement('table');
 
   //set elements
   mapLegend.id = 'mapLegend';
-  chartCanvas1.id = 'cardFreqHr';
-  chartCanvas1.className = 'card-body p-2';
-  chartCanvas2.id = 'cardFreqCr';
-  chartCanvas2.className = 'card-body p-2';
   foreNamesF.id = 'ForeNamesFemale';
   foreNamesM.id = 'ForeNamesMale';
   foreFemaleLegend.id = 'foreFemaleLegend';
@@ -257,11 +252,11 @@ function clearPage() {
   topOA.id = 'topOA';
   sgDiv.id = 'sgCat';
   gDiv.id = 'gCat';
+  hrFreq.id = 'tableHR';
+  crFreq.id = 'tableCR';
 
   //replace
   lSearch.replaceWith(mapLegend);
-  c1Search.replaceWith(chartCanvas1);
-  c2Search.replaceWith(chartCanvas2);
   foreFemale.replaceWith(foreNamesF);
   foreMale.replaceWith(foreNamesM);
   fLegend.replaceWith(foreFemaleLegend);
@@ -270,6 +265,8 @@ function clearPage() {
   pOA.replaceWith(topOA);
   sgCat.replaceWith(sgDiv);
   gCat.replaceWith(gDiv);
+  tableHR.replaceWith(hrFreq);
+  tableCR.replaceWith(crFreq);
 
   //back to names tablist
   $('#nav-tab a[href="#names"]').tab('show');

@@ -1,4 +1,4 @@
-#JTVD - 2018
+#JTVD - 2019
 
 #libraries
 from django.contrib.gis.geos import fromstr
@@ -201,7 +201,7 @@ def search(request):
                 'foremc': fore_male_cont[:10].tolist(),
                 'forefc': fore_female_cont[:10].tolist(),
                 'partop': par_top[:10].tolist(),
-                'oatop': oa_top[:10].tolist,
+                'oatop': oa_top[:10].tolist(),
                 'oacat': list(oac_mod),}
 
         #save to db
