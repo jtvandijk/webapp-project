@@ -80,19 +80,13 @@ function startMapLoad() {
 
     //get elements
     var pSearch = document.getElementById('searchParam');
-    var pLocation = document.getElementById('locParam');
     var sName = document.createElement('h1');
-    var sLoc = document.createElement('h1');
 
     //create elements
     sName.id = 'searchParam';
     sName.innerHTML = '...';
-    sLoc.id = 'locParam';
-    sLoc.innerHTML = '...';
-
     //replace
     pSearch.replaceWith(sName);
-    pLocation.replaceWith(sLoc);
   };
 
 //stop loading indicator

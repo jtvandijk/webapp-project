@@ -40,42 +40,44 @@
     <div class="container-fluid">
       <div id="dashboard">
 
+        <!--search details-->
+        <div class="row justify-content-center">
+          <div class="col-lg-7 col-md-8 col-sm-9" style="height: 68px">
+            <p id="searchParam"></p>
+          </div>
+        </div>
+
+        <!--jumbotron-->
+        <div class="row justify-content-center">
+          <div class="col-lg-7 col-md-8 col-sm-9">
+            <div id="jumbotron" class="jumbotron bg-notes p-3 mb-xl">
+              <h1>GB Names
+                <button id="clsJumbo" class="btn p-0 float-right">
+                  <span class="fas fa-times fa-2x pt-1"></span>
+                </button>
+              </h1>
+              <p class="lead text-justify">
+                Welcome to the GB Names website. Our research, carried out at the ESRC Consumer Data Research Centre and the UCL Urban Dynamics Lab, is exploring the spread of family names across Great Britain, using historic censuses and recent consumer registers.
+              </p>
+              <div class="mt-4 text-center">
+                <h4>What's your family name?</h4>
+              </div>
+              <div class="mt-4 text-center p-1 mb-3">
+                <form class="form-inline justify-content-center" method="post" id="initSur">
+                  <input class="form-control mr-sm-2 mb-2" type="text" placeholder="Family name" name="q" id="init_surname" maxlength="50">
+                  <button class="btn btn-outline-primary mb-2" type="submit">Search</button>
+                </form>
+              </div>
+              <div class="card-footer small text-muted text-justify">
+                GB Names records surname searches for statistical purposes. Surname searches that have not been previously executed by you or by others may take up to 30 seconds.
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!--name section-->
         <div class="tab-content">
           <div id="names" class="tab-pane active" role="tabpanel">
-            <div class="row justify-content-center">
-              <div class="col-lg-7 col-md-8 col-sm-9" style="height: 68px">
-                <p id="searchParam"></p>
-              </div>
-            </div>
-
-            <!--jumbotron-->
-            <div class="row justify-content-center">
-              <div class="col-lg-7 col-md-8 col-sm-9">
-                <div id="jumbotron" class="jumbotron bg-notes p-3 mb-xl">
-                  <h1>GB Names
-                    <button id="clsJumbo" class="btn p-0 float-right">
-                      <span class="fas fa-times fa-2x pt-1"></span>
-                    </button>
-                  </h1>
-                  <p class="lead text-justify">
-                    Welcome to the GB Names website. Our research, carried out at the ESRC Consumer Data Research Centre and the UCL Urban Dynamics Lab, is exploring the spread of family names across Great Britain, using historic censuses and recent consumer registers.
-                  </p>
-                  <div class="mt-4 text-center">
-                    <h4>What's your family name?</h4>
-                  </div>
-                  <div class="mt-4 text-center p-1 mb-3">
-                    <form class="form-inline justify-content-center" method="post" id="initSur">
-                      <input class="form-control mr-sm-2 mb-2" type="text" placeholder="Family name" name="q" id="init_surname" maxlength="50">
-                      <button class="btn btn-outline-primary mb-2" type="submit">Search</button>
-                    </form>
-                  </div>
-                  <div class="card-footer small text-muted text-justify p-3">
-                    GB Names records surname searches for statistical purposes. Surname searches that have not been previously executed by you or by others may take up to 30 seconds.
-                  </div>
-                </div>
-              </div>
-            </div>
 
             <!--map section-->
             <div class="row justify-content-center">
@@ -418,11 +420,6 @@
 
           <!--location section-->
           <div id="location" class="tab-pane" role="tabpanel">
-            <div class="row justify-content-center">
-              <div class="col-lg-7 col-md-8 col-sm-9" style="height: 68px">
-                <p id="locParam"></p>
-              </div>
-            </div>
 
             <!--map section-->
             <div class="row justify-content-center">
@@ -430,7 +427,7 @@
                 <div class="card mb-3" >
                   <div class="card-header pl-3">
                     <h4>Area Map
-                    <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseLoc" aria-expanded="true" aria-controls="collapseLoc">
+                    <button class="btn btn-light p-0 float-right" data-toggle="collapse show" data-target="#collapseLoc" aria-expanded="true" aria-controls="collapseLoc">
                       <span class="fa fa-align-justify" style="text-decoration: none"></span>
                     </button>
                     </h4>
