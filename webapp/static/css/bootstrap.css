@@ -8586,6 +8586,10 @@ button.bg-dark:focus {
   margin-bottom: 3rem !important;
 }
 
+.mb-xl {
+  margin-bottom: 5rem !important;
+}
+
 .ml-5,
 .mx-5 {
   margin-left: 3rem !important;

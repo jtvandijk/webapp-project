@@ -49,6 +49,34 @@
               </div>
             </div>
 
+            <!--jumbotron-->
+            <div class="row justify-content-center">
+              <div class="col-lg-7 col-md-8 col-sm-9">
+                <div id="jumbotron" class="jumbotron bg-notes p-3 mb-xl">
+                  <h1>GB Names
+                    <button id="clsJumbo" class="btn p-0 float-right">
+                      <span class="fas fa-times fa-2x pt-1"></span>
+                    </button>
+                  </h1>
+                  <p class="lead text-justify">
+                    Welcome to the GB Names website. Our research, carried out at the ESRC Consumer Data Research Centre and the UCL Urban Dynamics Lab, is exploring the spread of family names across Great Britain, using historic censuses and recent consumer registers.
+                  </p>
+                  <div class="mt-4 text-center">
+                    <h4>What's your family name?</h4>
+                  </div>
+                  <div class="mt-4 text-center p-1 mb-3">
+                    <form class="form-inline justify-content-center" method="post" id="initSur">
+                      <input class="form-control mr-sm-2 mb-2" type="text" placeholder="Family name" name="q" id="init_surname" maxlength="50">
+                      <button class="btn btn-outline-primary mb-2" type="submit">Search</button>
+                    </form>
+                  </div>
+                  <div class="card-footer small text-muted text-justify p-3">
+                    GB Names records surname searches for statistical purposes. Surname searches that have not been previously executed by you or by others may take up to 30 seconds.
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!--map section-->
             <div class="row justify-content-center">
               <div class="col-lg-7 col-md-8 col-sm-9">
@@ -91,7 +119,7 @@
                         </button>
                         </h4>
                       </div>
-                      <div id="collapseForeFem" class="collapse show" aria-labelledby="collapseForeFem">
+                      <div id="collapseForeFem" class="collapse" aria-labelledby="collapseForeFem">
                         <ul id="ForeNamesFemale" class="list-inline ml-3 mt-2 mr-3 mb-3"></ul>
                         <div id="foreFemaleLegend">
                         </div>
@@ -107,7 +135,7 @@
                         </button>
                         </h4>
                       </div>
-                      <div id="collapseForeMal" class="collapse show" aria-labelledby="collapseForeMal">
+                      <div id="collapseForeMal" class="collapse" aria-labelledby="collapseForeMal">
                         <ul id="ForeNamesMale" class="list-inline ml-3 mt-2 mr-3 mb-3"></ul>
                         <div id="foreMaleLegend">
                         </div>
@@ -131,7 +159,7 @@
                         </button>
                         </h4>
                       </div>
-                      <div id="collapsePar" class="card-body p-0 collapse show">
+                      <div id="collapsePar" class="card-body p-0 collapse">
                         <ul id="topPar" class="list-inline ml-3 mt-2 mr-3 mb-3"></ul>
                       </div>
                     </div>
@@ -145,7 +173,7 @@
                         </button>
                         </h4>
                       </div>
-                      <div id="collapseOA" class="card-body p-0 collapse show">
+                      <div id="collapseOA" class="card-body p-0 collapse">
                         <ul id="topOA" class="list-inline ml-3 mt-2 mr-3 mb-3"></ul>
                       </div>
                     </div>
@@ -167,7 +195,7 @@
                     </h4>
                     <small>2011</small>
                   </div>
-                  <div id="collapseCat" class="collapse show" aria-labelledby="collapseCat">
+                  <div id="collapseCat" class="collapse" aria-labelledby="collapseCat">
                     <div class="card-body p-2" id="cardFreqCr">
                       <div class="row justify-content-center">
                         <div class="col-lg-6">
@@ -200,7 +228,7 @@
                         </h4>
                         <small>2016</small>
                       </div>
-                      <div id="collapseAHAH" class="card-body p-0 collapse show">
+                      <div id="collapseAHAH" class="card-body p-0 collapse">
                         <div class="p-3">
                           <div id="AHAH" style="display:none">
                           <button id="hlth1" class="btn btn-h1 btn-sm btn-block p-0 m-0">Worst perfoming</button>
@@ -230,7 +258,7 @@
                         </h4>
                         <small>2015</small>
                       </div>
-                      <div id="collapseIMD" class="card-body p-0 collapse show">
+                      <div id="collapseIMD" class="card-body p-0 collapse">
                         <div class="p-3">
                           <div id="IMD" style="display:none">
                           <button id="imd1" class="btn btn-l1 btn-sm btn-block p-0 m-0">Most deprived</button>
@@ -268,7 +296,7 @@
                         </h4>
                         <small>2017</small>
                       </div>
-                      <div id="collapseBBAND" class="card-body p-0 collapse show">
+                      <div id="collapseBBAND" class="card-body p-0 collapse">
                         <div class="p-3">
                           <div id="BBAND" style="display:none">
                             <button id="bband11" class="btn btn-b11 btn-sm btn-block p-0 m-0">Under 5 mbt/s</button>
@@ -301,7 +329,7 @@
                             </h4>
                             <small>2018</small>
                           </div>
-                          <div id="collapseIUC" class="card-body p-0 collapse show">
+                          <div id="collapseIUC" class="card-body p-0 collapse">
                             <div class="p-3">
                               <div id="IUC">
                               </div>
@@ -322,7 +350,7 @@
                             </h4>
                             <small>2011</small>
                           </div>
-                          <div id="collapseCRVUL" class="card-body p-0 collapse show">
+                          <div id="collapseCRVUL" class="card-body p-0 collapse">
                             <div class="p-3">
                               <div id="CRVUL">
                               </div>
@@ -348,7 +376,7 @@
                     </h4>
                     <small>1851-1911</small>
                   </div>
-                  <div id="collapseFreqHr" class="collapse show" aria-labelledby="collapseFreqHr">
+                  <div id="collapseFreqHr" class="collapse" aria-labelledby="collapseFreqHr">
                     <div class="card-body p-0" id="cardFreqHr">
                       <div class="table-responsive p-3 m-0" style="width:98%">
 
@@ -373,7 +401,7 @@
                     </h4>
                     <small>1997-2016</small>
                   </div>
-                  <div id="collapseFreqCr" class="collapse show" aria-labelledby="collapseFreqCr">
+                  <div id="collapseFreqCr" class="collapse" aria-labelledby="collapseFreqCr">
                     <div class="card-body p-0" id="cardFreqCr">
                       <div class="table-responsive p-3 m-0" style="width:98%">
 
@@ -407,7 +435,7 @@
                     </button>
                     </h4>
                   </div>
-                  <div id="collapseLoc" class="collapse show" aria-labelledby="collapseLoc">
+                  <div id="collapseLoc" class="collapse" aria-labelledby="collapseLoc">
                     <p>
                     </p>
                   </div>

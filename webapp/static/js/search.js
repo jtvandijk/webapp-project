@@ -4,8 +4,9 @@ var $j = jQuery.noConflict();
 //update map -- search on load
 $j(document).on('submit','#initSur',function(e) {
     e.preventDefault();
-    searchmodal.style.display = 'none';
     var q = document.getElementById('init_surname').value;
+    var c = [...document.getElementsByClassName('collapse')];
+    show(c);
     scroll(0,0);
     get_data(q);
   });
@@ -60,6 +61,11 @@ function get_data(q) {
 
           //stop map loading indicator
           stopMapLoad();
+
+          //remove jumbotron
+          jumbotron.style.display = 'none';
+
+          //return
           return;
         }
       }

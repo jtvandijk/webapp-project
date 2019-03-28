@@ -1,5 +1,17 @@
 //jQuery
 var $j = jQuery.noConflict();
+var jumboBtn = document.getElementById('clsJumbo');
+
+//jumbotron onclick
+jumboBtn.onclick = function() {
+    jumbotron.style.display = 'none';
+};
+
+//show
+function show(cards) {
+  cards.forEach(function(card){
+    card.classList.add('show');
+})};
 
 //csrf
 function getCookie(name) {

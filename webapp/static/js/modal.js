@@ -2,11 +2,6 @@
 var searchmodal = document.getElementById('searchModal');
 var modal = document.getElementsByClassName('modal');
 
-//display onload
-window.onload = function() {
-    searchmodal.style.display = 'block';
-};
-
 //display onclick
 var modalBtns = [...document.getElementsByClassName('dropdown-item')];
 modalBtns.forEach(function(btn){
