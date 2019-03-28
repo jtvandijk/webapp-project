@@ -40,14 +40,25 @@ function get_data(q) {
         // data found
         } else if (data.source==='found') {
 
-          //render
+          //render main
           renderHTML(data.surname);
           renderMap(data.years,data.contours,map);
+
+          //render names
           renderTable(data.hr_freq,data.cr_freq,data.surname);
           renderForenames(data.foremh,data.forefh,data.foremc,data.forefc);
           renderParish(data.partop);
           renderOA(data.oatop);
           renderCAT(data.oacat);
+
+          //render consumer statistics
+          renderHealth(data.oahlth);
+          renderIMD(data.oaimd);
+          renderBBAND(data.bband);
+          renderIUC(data.iuc);
+          renderCRVUL(data.crvul);
+
+          //stop map loading indicator
           stopMapLoad();
           return;
         }
@@ -55,28 +66,28 @@ function get_data(q) {
     })
   };
 
+//start map loading indicator
+function startMapLoad() {
+
   //start map loading indicator
-  function startMapLoad() {
+    document.getElementById('mapload').style.display='flex';
 
-      //start map loading indicator
-      document.getElementById('mapload').style.display='flex';
+    //get elements
+    var pSearch = document.getElementById('searchParam');
+    var pLocation = document.getElementById('locParam');
+    var sName = document.createElement('h1');
+    var sLoc = document.createElement('h1');
 
-      //get elements
-      var pSearch = document.getElementById('searchParam');
-      var pLocation = document.getElementById('locParam');
-      var sName = document.createElement('h1');
-      var sLoc = document.createElement('h1');
+    //create elements
+    sName.id = 'searchParam';
+    sName.innerHTML = '...';
+    sLoc.id = 'locParam';
+    sLoc.innerHTML = '...';
 
-      //create elements
-      sName.id = 'searchParam';
-      sName.innerHTML = '...';
-      sLoc.id = 'locParam';
-      sLoc.innerHTML = '...';
-
-      //replace
-      pSearch.replaceWith(sName);
-      pLocation.replaceWith(sLoc);
-    };
+    //replace
+    pSearch.replaceWith(sName);
+    pLocation.replaceWith(sLoc);
+  };
 
 //stop loading indicator
 function stopMapLoad() {

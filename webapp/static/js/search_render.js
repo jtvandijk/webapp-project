@@ -192,11 +192,11 @@ function renderOA(oatop) {
     li.innerHTML = oatop[i];
     li.className = 'btn btn-outline-secondary mt-2 mr-1';
     topOA.appendChild(li);
-  };
+    };
 
   //replace
   pOA.replaceWith(topOA);
-};
+  };
 
 //render modal oa cat
 function renderCAT(oacat) {
@@ -208,8 +208,8 @@ function renderCAT(oacat) {
   //create elements
   var sgDiv = document.createElement('div');
   var gDiv = document.createElement('div');
-  var sgDivbtn = document.createElement('button')
-  var gDivbtn = document.createElement('button')
+  var sgDivbtn = document.createElement('button');
+  var gDivbtn = document.createElement('button');
 
   //set elements
   sgDiv.id = 'sgCat';
@@ -231,7 +231,119 @@ function renderCAT(oacat) {
   //replace
   sgButton.replaceWith(sgDiv);
   gButton.replaceWith(gDiv);
+  };
+
+//render modal oa ahah
+function renderHealth(oahlth) {
+
+  //remove select
+  removeSelect('hlth',11);
+
+  //table
+  document.getElementById('AHAH').style.display='block';
+
+  //get elements
+  var id = 'hlth'+oahlth.toString();
+  var hlthcat = document.getElementById(id);
+
+  //select
+  hlthcat.className = 'btn btn-h'+oahlth.toString()+' btn-sm btn-block btn-select p-0 m-0';
+  };
+
+//render modal oa imd
+function renderIMD(oaimd) {
+
+  //remove select
+  removeSelect('imd',11);
+
+  //table
+  document.getElementById('IMD').style.display='block';
+
+  //get elements
+  var id = 'imd'+oaimd.toString();
+  var imdcat = document.getElementById(id);
+
+  //select
+  imdcat.className = 'btn btn-l'+oaimd.toString()+' btn-sm btn-block btn-select p-0 m-0';
+  };
+
+//render modal oa bband
+function renderBBAND(bband) {
+
+  //remove selected
+  removeSelect('bband',12);
+
+  //table
+  document.getElementById('BBAND').style.display='block';
+
+  //get elements
+  var id = 'bband'+bband.toString();
+  var bbcat = document.getElementById(id);
+
+  //select
+  bbcat.className = 'btn btn-b'+bband.toString()+' btn-sm btn-block btn-select p-0 m-0';
+  };
+
+function renderIUC(iuc) {
+
+  //get elements
+  var iucEl = document.getElementById('IUC');
+
+  //create elements
+  var iucDiv = document.createElement('div');
+  var iucBtn = document.createElement('button');
+
+  //set elements
+  iucDiv.id = 'IUC';
+  iucDiv.className = 'card-body p-2';
+
+  //classname
+  cls = iuc[0];
+
+  //values
+  iucBtn.className = 'btn btn-iuc'+cls+' btn-lg btn-block';
+  iucBtn.innerHTML = iuc[1];
+  iucDiv.appendChild(iucBtn);
+
+  //replace
+  iucEl.replaceWith(iucDiv);
 };
+
+function renderCRVUL(crvul) {
+
+  //get elements
+  var crvulEl = document.getElementById('CRVUL');
+
+  //create elements
+  var crvulDiv = document.createElement('div');
+  var crvulBtn = document.createElement('button');
+
+  //set elements
+  crvulDiv.id = 'CRVUL';
+  crvulDiv.className = 'card-body p-2';
+
+  //classname
+  cls = crvul[0];
+
+  //values
+  crvulBtn.className = 'btn btn-crvul'+cls+' btn-lg btn-block';
+  crvulBtn.innerHTML = crvul[1];
+  crvulDiv.appendChild(crvulBtn);
+
+  //replace
+  crvulEl.replaceWith(crvulDiv);
+};
+
+//remove select
+function removeSelect(rem,n) {
+
+  //loop
+  for (var i = 1; i < n; ++i) {
+    var id = rem+i.toString();
+    var remcat = document.getElementById(id);
+    remcat.classList.remove('btn-select');
+    };
+  };
 
 //clear page
 function clearPage() {
@@ -248,6 +360,8 @@ function clearPage() {
   var gCat = document.getElementById('gCat');
   var tableHR = document.getElementById('tableHR');
   var tableCR = document.getElementById('tableCR');
+  var iucEl = document.getElementById('IUC');
+  var crvulEl = document.getElementById('CRVUL');
 
   //create elements
   var mapLegend = document.createElement('div');
@@ -261,6 +375,8 @@ function clearPage() {
   var gDiv = document.createElement('div');
   var hrFreq = document.createElement('table');
   var crFreq = document.createElement('table');
+  var iuc = document.createElement('div');
+  var crvul = document.createElement('div');
 
   //set elements
   mapLegend.id = 'mapLegend';
@@ -274,6 +390,8 @@ function clearPage() {
   gDiv.id = 'gCat';
   hrFreq.id = 'tableHR';
   crFreq.id = 'tableCR';
+  iuc.id = 'IUC';
+  crvul.id = 'CRVUL';
 
   //replace
   lSearch.replaceWith(mapLegend);
@@ -287,6 +405,13 @@ function clearPage() {
   gCat.replaceWith(gDiv);
   tableHR.replaceWith(hrFreq);
   tableCR.replaceWith(crFreq);
+  iucEl.replaceWith(iuc);
+  crvulEl.replaceWith(crvul);
+
+  //hide
+  document.getElementById('AHAH').style.display='none';
+  document.getElementById('IMD').style.display='none';
+  document.getElementById('BBAND').style.display='none';
 
   //back to names tablist
   $('#nav-tab a[href="#names"]').tab('show');
@@ -295,5 +420,5 @@ function clearPage() {
   if (control != undefined) {
       map.removeControl(control);
       map.removeLayer(layer_rm);
-      };
-};
+    };
+  };

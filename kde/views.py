@@ -4,7 +4,7 @@
 from django.contrib.gis.geos import fromstr
 from django.http import HttpResponse
 from django.conf import settings
-from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, ForeNames, ParishNames, ParishLookup, OaNames, OaLookup, OaNamesCat, OaNamesAHAH, OaNamesIMD, CatLookup, RenderedNames
+from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, ForeNames, ParishNames, ParishLookup, OaNames, OaLookup, OaNamesCat, OaNamesAHAH, OaNamesIMD, OaNamesIUC, OaNamesBBAND, OaNamesCRVUL, CatLookup, RenderedNames
 from .contour import to_concave_points
 from pyproj import Proj, transform
 from sklearn.cluster import dbscan
@@ -85,6 +85,26 @@ def search(request):
         oac = OaNamesCat.objects.filter(surname=clean_sur).values('oagroupcd','oagroupnm')
         oac_mod = oac_stats(oac)
 
+        #statistics -- oah
+        oah = OaNamesAHAH.objects.filter(surname=clean_sur).values('surname','ahah_dec_rev')
+        oah_mod = oah_stats(oah)
+
+        #statistics -- imd
+        imd = OaNamesIMD.objects.filter(surname=clean_sur).values('surname','imd_dec')
+        imd_mod = imd_stats(imd)
+
+        #statistics -- bband
+        bband = OaNamesBBAND.objects.filter(surname=clean_sur).values('surname','bbandcd')
+        bband_mod = bband_stats(bband)
+
+        #statistics -- iuc
+        iuc = OaNamesIUC.objects.filter(surname=clean_sur).values('surname','iuccd','iucnm')
+        iuc_mod = iuc_stats(iuc)
+
+        #statistics -- crvul
+        crvul = OaNamesCRVUL.objects.filter(surname=clean_sur).values('surname','crvulcd','crvulnm')
+        crvul_mod = crvul_stats(crvul)
+
         #combine data
         search = {'surname': re.sub(r'[\W^0-9^]+',' ',search_sur).title(),
                 'source': data.get('source'),
@@ -98,7 +118,12 @@ def search(request):
                 'forefc': fore_female_cont[:10].tolist(),
                 'partop': par_top[:10].tolist(),
                 'oatop': oa_top[:10].tolist(),
-                'oacat': list(oac_mod),}
+                'oacat': list(oac_mod),
+                'oahlth': oah_mod,
+                'oaimd': imd_mod,
+                'bband': bband_mod,
+                'iuc': iuc_mod,
+                'crvul': crvul_mod,}
 
         #return data
         return HttpResponse(json.dumps(search),content_type="application/json")
@@ -189,6 +214,27 @@ def search(request):
         oac = OaNamesCat.objects.filter(surname=clean_sur).values('oagroupcd','oagroupnm')
         oac_mod = oac_stats(oac)
 
+        #statistics -- oah
+        oah = OaNamesAHAH.objects.filter(surname=clean_sur).values('surname','ahah_dec_rev')
+        oah_mod = oah_stats(oah)
+
+        #statistics -- imd
+        imd = OaNamesIMD.objects.filter(surname=clean_sur).values('surname','imd_dec')
+        imd_mod = imd_stats(imd)
+
+        #statistics -- bband
+        bband = OaNamesBBAND.objects.filter(surname=clean_sur).values('surname','bbandcd')
+        bband_mod = bband_stats(bband)
+
+        #statistics -- iuc
+        iuc = OaNamesIUC.objects.filter(surname=clean_sur).values('surname','iuccd','iucnm')
+        iuc_mod = iuc_stats(iuc)
+
+
+        #statistics -- crvul
+        crvul = OaNamesCRVUL.objects.filter(surname=clean_sur).values('surname','crvulcd','crvulnm')
+        crvul_mod = crvul_stats(crvul)
+
         #combine data
         search = {'surname': re.sub(r'[\W^0-9^]+',' ',search_sur).title(),
                 'source': source,
@@ -202,7 +248,12 @@ def search(request):
                 'forefc': fore_female_cont[:10].tolist(),
                 'partop': par_top[:10].tolist(),
                 'oatop': oa_top[:10].tolist(),
-                'oacat': list(oac_mod),}
+                'oacat': list(oac_mod),
+                'oahlth': oah_mod,
+                'oaimd': imd_mod,
+                'bband': bband_mod,
+                'iuc': iuc_mod,
+                'crvul': crvul_mod,}
 
         #save to db
         if not ren_sur:
@@ -300,16 +351,71 @@ def oac_stats(oac):
 
     #empty
     if not oac:
-        oac_sn = ['No OA classification found']
-        oac_gn = ['No OA classification found']
+        oac_sn = ['No classification found']
+        oac_gn = ['No classification found']
+        oac_sg = '9a'
     #oac
     else:
         oac_gn = oac[0]['oagroupnm']
         oac_sg = oac[0]['oagroupcd']
         oac_sn = CatLookup.objects.filter(groupcd=oac_sg).values('supergroupnm')[0]['supergroupnm']
-
     #return
     return(oac_sn,oac_gn,oac_sg)
+
+def oah_stats(oah):
+
+    #empty
+    if not oah:
+        oah_dc = 11 #data not available
+    #oah
+    else:
+        oah_dc = oah[0]['ahah_dec_rev']
+    #return
+    return(oah_dc)
+
+def imd_stats(imd):
+
+    #empty
+    if not imd:
+        imd_dc = 11 #data not available
+    #imd
+    else:
+        imd_dc = imd[0]['imd_dec']
+    #return
+    return(imd_dc)
+
+def bband_stats(bband):
+
+    #empty
+    if not bband:
+        bband_sc = 12
+    #bband
+    else:
+        bband_sc = bband[0]['bbandcd']
+    #return
+    return(bband_sc)
+
+def iuc_stats(iuc):
+
+    #empty
+    if not iuc:
+        iuc_sc = [11, 'No classification found']
+    #iuc
+    else:
+        iuc_sc = [iuc[0]['iuccd'],iuc[0]['iucnm']]
+    #return
+    return(iuc_sc)
+
+def crvul_stats(crvul):
+
+    #empty
+    if not crvul:
+        crvul_sc = [11, 'No classification found']
+    #crvul
+    else:
+        crvul_sc = [crvul[0]['crvulcd'],crvul[0]['crvulnm']]
+    #return
+    return(crvul_sc)
 
 def location(request):
 

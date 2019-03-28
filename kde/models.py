@@ -378,6 +378,7 @@ class OaNamesCat(models.Model):
 class OaNamesAHAH(models.Model):
     surname = models.TextField(primary_key=True)
     ahah_dec = models.IntegerField(blank=True,null=True)
+    ahah_dec_rev = models.IntegerField(blank=True,null=True)
 
     class Meta:
         managed = True
@@ -390,6 +391,33 @@ class OaNamesIMD(models.Model):
     class Meta:
         managed = True
         db_table = 'names_imd_oa'
+
+class OaNamesIUC(models.Model):
+    surname = models.TextField(primary_key=True)
+    iuccd = models.IntegerField(blank=True,null=True)
+    iucnm = models.TextField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'names_iuc_oa'
+
+class OaNamesBBAND(models.Model):
+    surname = models.TextField(primary_key=True)
+    bband = models.TextField(blank=True,null=True)
+    bbandcd = models.IntegerField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'names_bband_oa'
+
+class OaNamesCRVUL(models.Model):
+    surname = models.TextField(primary_key=True)
+    crvulcd = models.TextField(blank=True,null=True)
+    crvulnm = models.TextField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'names_crvul_oa'
 
 class ParishLookup(models.Model):
     conparid = models.FloatField(primary_key=True)

@@ -34,7 +34,7 @@ function populateTable(years,freqs,surname) {
 
   //set elements
   table.className = 'table table-sm m-0';
-  caption.className = 'py-0';
+  caption.className = 'py-0 mt-2';
   caption.innerHTML = 'Number of bearers of <strong>'+surname+'</strong>.';
   row1.className = 'text-center';
   row2.className = 'text-center';

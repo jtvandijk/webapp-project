@@ -2436,7 +2436,7 @@ fieldset:disabled a.btn {
 .btn-g1 {
   cursor: not-allowed;
   pointer-events: none;
-  color: #fff;;
+  color: #000;;
   background-color: #31a354;
 }
 
@@ -2447,7 +2447,7 @@ fieldset:disabled a.btn {
 .btn-g2 {
   cursor: not-allowed;
   pointer-events: none;
-  color: #fff;
+  color: #000;
   background-color: #de2d26;
 }
 
@@ -2458,7 +2458,7 @@ fieldset:disabled a.btn {
 .btn-g3 {
   cursor: not-allowed;
   pointer-events: none;
-  color: #fff;
+  color: #000;
   background-color: #BE719F;
 }
 
@@ -2469,7 +2469,7 @@ fieldset:disabled a.btn {
 .btn-g4 {
   cursor: not-allowed;
   pointer-events: none;
-  color: #fff;
+  color: #000;
   background-color: #e6550d;
 }
 
@@ -2480,7 +2480,7 @@ fieldset:disabled a.btn {
 .btn-g5 {
   cursor: not-allowed;
   pointer-events: none;
-  color: #fff;
+  color: #000;
   background-color: #AA7351;
 }
 
@@ -2491,7 +2491,7 @@ fieldset:disabled a.btn {
 .btn-g6 {
   cursor: not-allowed;
   pointer-events: none;
-  color: #fff;
+  color: #000;
   background-color: #756bb1;
 }
 
@@ -2502,7 +2502,7 @@ fieldset:disabled a.btn {
 .btn-g7 {
   cursor: not-allowed;
   pointer-events: none;
-  color: #fff;
+  color: #000;
   background-color: #3182bd;
 }
 
@@ -2513,7 +2513,7 @@ fieldset:disabled a.btn {
 .btn-g8 {
   cursor: not-allowed;
   pointer-events: none;
-  color: #fff;
+  color: #000;
   background-color: #FFBA01;
 }
 
@@ -2521,8 +2521,413 @@ fieldset:disabled a.btn {
   background-color: #FED901;
 }
 
-.btn-primary {
+.btn-g9 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #dddddd;
+}
+
+.btn-g9.sub {
+  background-color: #dddddd;
+}
+
+.btn-select {
+  border-color: #000000;
+  border-width: 5px;
+}
+
+.btn-l1 {
+  cursor: not-allowed;
+  pointer-events: none;
   color: #fff;
+  background-color: #a50026;
+  border-radius: 0 !important;
+}
+
+.btn-l2 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #fff;
+  background-color: #d73027;
+  border-radius: 0 !important;
+}
+
+.btn-l3 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #f46d43;
+  border-radius: 0 !important;
+}
+
+.btn-l4 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #fdae61;
+  border-radius: 0 !important;
+}
+
+.btn-l5 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #fee08b;
+  border-radius: 0 !important;
+}
+
+.btn-l6 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #d9ef8b;
+  border-radius: 0 !important;
+}
+
+.btn-l7 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #a6d96a;
+  border-radius: 0 !important;
+}
+
+.btn-l8 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #66bd63;
+  border-radius: 0 !important;
+}
+
+.btn-l9 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #ffffff;
+  background-color: #1a9850;
+  border-radius: 0 !important;
+}
+
+.btn-l10 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #ffffff;
+  background-color: #006837;
+  border-radius: 0 !important;
+}
+
+.btn-l11 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #dddddd;
+  border-radius: 0 !important;
+}
+
+.btn-h1 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #4575B4;
+  border-radius: 0 !important;
+}
+
+.btn-h2 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #7397B6;
+  border-radius: 0 !important;
+}
+
+.btn-h3 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #A2BAB9;
+  border-radius: 0 !important;
+}
+
+.btn-h4 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #D0DCBC;
+  border-radius: 0 !important;
+}
+
+.btn-h5 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #FFFFBF;
+  border-radius: 0 !important;
+}
+
+.btn-h6 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #FCE1A6;
+  border-radius: 0 !important;
+}
+
+.btn-h7 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #FAC48D;
+  border-radius: 0 !important;
+}
+
+.btn-h8 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #F8A774;
+  border-radius: 0 !important;
+}
+
+.btn-h9 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #F68A5B;
+  border-radius: 0 !important;
+}
+
+.btn-h10 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #F46D43;
+  border-radius: 0 !important;
+}
+
+.btn-h11 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #dddddd;
+  border-radius: 0 !important;
+}
+
+.btn-b1 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #fff;
+  background-color: #276419;
+  border-radius: 0 !important;
+}
+
+.btn-b2 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #fff;
+  background-color: #4d9221;
+  border-radius: 0 !important;
+}
+
+.btn-b3 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #7fbc41;
+  border-radius: 0 !important;
+}
+
+.btn-b4 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #b8e186;
+  border-radius: 0 !important;
+}
+
+.btn-b5 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #e6f5d0;
+  border-radius: 0 !important;
+}
+
+.btn-b6 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #f7f7f7;
+  border-radius: 0 !important;
+}
+
+.btn-b7 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #fde0ef;
+  border-radius: 0 !important;
+}
+
+.btn-b8 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #f1b6da;
+  border-radius: 0 !important;
+}
+
+.btn-b9 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #de77ae;
+  border-radius: 0 !important;
+}
+
+.btn-b10 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #ffffff;
+  background-color: #c51b7d;
+  border-radius: 0 !important;
+}
+
+.btn-b11 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #ffffff;
+  background-color: #8e0152;
+  border-radius: 0 !important;
+}
+
+.btn-b12 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #dddddd;
+  border-radius: 0 !important;
+}
+
+
+.btn-iuc1 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #ea4d78;
+}
+
+.btn-iuc2 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #f36d5a;
+}
+
+.btn-iuc3 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #e4a5d0;
+}
+
+.btn-iuc4 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #ffd39b;
+}
+
+.btn-iuc5 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #a5cfbc;
+}
+
+.btn-iuc6 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #d2d1ab;
+}
+
+.btn-iuc7 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #79cdcd;
+}
+
+.btn-iuc8 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #dd7cdc;
+}
+
+.btn-iuc9 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #808fee;
+}
+
+.btn-iuc10 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #8470ff;
+}
+
+.btn-iuc11 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #dddddd;
+}
+
+.btn-crvul1 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #4575b4;
+}
+
+.btn-crvul2 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #91bfdb;
+}
+
+.btn-crvul3 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #e0f3f8;
+}
+
+.btn-crvul4 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #fee090;
+}
+
+.btn-crvul5 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #fc8d59;
+}
+
+.btn-crvul6 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #d73027;
+}
+
+.btn-iuc7 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #dddddd;
+}
+
+.btn-primary {
+  color: #ffffff;
   background-color: #007bff;
   border-color: #007bff;
 }
