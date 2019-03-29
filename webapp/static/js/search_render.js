@@ -40,7 +40,6 @@ function renderNotFound(surname) {
 
   //replace
   pSearch.replaceWith(notFound);
-  pLocation.replaceWith(notLoc);
 };
 
 //render found
@@ -399,7 +398,7 @@ function clearPage() {
 
   //remove previous map layer if exist
   if (control != undefined) {
-      map.removeControl(control);
-      map.removeLayer(layer_rm);
+      cmap.removeControl(control);
+      cmap.removeLayer(layer_rm);
     };
   };

@@ -4,20 +4,27 @@ var $j = jQuery.noConflict();
 //update map -- search on load
 $j(document).on('submit','#initSur',function(e) {
     e.preventDefault();
-    var q = document.getElementById('init_surname').value;
-    var c = [...document.getElementsByClassName('collapse')];
-    show(c);
-    scroll(0,0);
-    get_data(q);
+    initSearch(document.getElementById('init_surname').value);
   });
 
 //update map -- search
 $j(document).on('submit','#searchSur',function(e) {
     e.preventDefault();
-    var q = document.getElementById('surname').value;
-    scroll(0,0);
-    get_data(q);
+    initSearch(document.getElementById('surname').value);
   });
+
+//initiate search
+function initSearch(q){
+
+  //lay out
+  var c = [...document.getElementsByClassName('collapse')];
+  show(c);
+  scroll(0,0);
+
+  //execute search
+  get_data(q);
+
+};
 
 //search surname
 function get_data(q) {
@@ -43,7 +50,7 @@ function get_data(q) {
 
           //render main
           renderHTML(data.surname);
-          renderMap(data.years,data.contours,map);
+          renderMap(data.years,data.contours,cmap);
 
           //render names
           renderTable(data.hr_freq,data.cr_freq,data.surname);
@@ -87,6 +94,7 @@ function startMapLoad() {
     sName.innerHTML = '...';
     //replace
     pSearch.replaceWith(sName);
+
   };
 
 //stop loading indicator

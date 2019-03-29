@@ -30,17 +30,17 @@ L.timeDimension.layer.geoJson.geometryCollection = function(layer, options) {
     return new L.TimeDimension.Layer.GeoJson.GeometryCollection(layer, options);
 };
 
-function renderMap(years,contours,map) {
+function renderMap(years,contours,cmap) {
 
   //remove previous layer
   if (control != undefined) {
-      map.removeControl(control);
-      map.removeLayer(layer_rm);
+      cmap.removeControl(control);
+      cmap.removeLayer(layer_rm);
       };
 
   //geoJSON
   var layer = renderContour(years,contours);
-  map.fitBounds(layer.getBounds());
+  cmap.fitBounds(layer.getBounds());
 
   //set up years
   var slider = '';
@@ -76,8 +76,8 @@ function renderMap(years,contours,map) {
   var timeDimensionControl = new L.Control.TimeDimension(timeDimensionControlOptions);
 
   //add to map
-  map.timeDimension = timeDimension;
-  map.addControl(timeDimensionControl);
+  cmap.timeDimension = timeDimension;
+  cmap.addControl(timeDimensionControl);
 
   //prepare layer
   var geoJsonTimeLayer = L.timeDimension.layer.geoJson.geometryCollection(layer,{
@@ -91,5 +91,5 @@ function renderMap(years,contours,map) {
   layer_rm = geoJsonTimeLayer;
 
   //add
-  geoJsonTimeLayer.addTo(map);
+  geoJsonTimeLayer.addTo(cmap);
 };

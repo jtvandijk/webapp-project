@@ -15,7 +15,7 @@ from kde import views as kde_views
 #     path('search/', kde_views.search, name='search'),
 #     path('location/', kde_views.location, name='location'),
 # ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-
+#
 urlpatterns = [
     path('udl-namekde/', views.index, name='home'),
     path('udl-namekde/admin/', admin.site.urls),

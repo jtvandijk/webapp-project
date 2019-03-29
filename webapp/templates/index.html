@@ -97,7 +97,7 @@
                       </div>
                       <canvas id="cardMap" width="100" height="650">
 
-                        <!--map-->
+                        <!--contourmap-->
 
                       </canvas>
                     </div>
@@ -427,14 +427,22 @@
                 <div class="card mb-3" >
                   <div class="card-header pl-3">
                     <h4>Area Map
-                    <button class="btn btn-light p-0 float-right" data-toggle="collapse show" data-target="#collapseLoc" aria-expanded="true" aria-controls="collapseLoc">
+                    <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseLoc" aria-expanded="true" aria-controls="collapseLoc">
                       <span class="fa fa-align-justify" style="text-decoration: none"></span>
                     </button>
                     </h4>
                   </div>
-                  <div id="collapseLoc" class="collapse" aria-labelledby="collapseLoc">
-                    <p>
-                    </p>
+                  <div id="collapseLoc" class="collapse show" aria-labelledby="collapseLoc">
+                    <div id="adminmap" class="card-body p-0">
+                      <div id="mapload" class="loading" style="display:none">
+                        <img src="{% static 'load.gif' %}" class="text-center" height="50" width="50"/>
+                      </div>
+                      <canvas id="adminMap" width="100" height="650">
+
+                        <!--adminmap-->
+
+                      </canvas>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -504,7 +512,8 @@
   <script> var ireland_gjson ="{% static 'js/ireland.geojson' %}";</script>
   <script src="{% static 'js/main.js' %}"></script>
   <script src="{% static 'js/modal.js' %}"></script>
-  <script src="{% static 'js/map.js' %}"></script>
+  <script src="{% static 'js/map_contour.js' %}"></script>
+  <script src="{% static 'js/map_admin.js' %}"></script>
   <script src="{% static 'js/table.js' %}"></script>
   <script src="{% static 'js/search.js' %}"></script>
   <script src="{% static 'js/search_render.js' %}"></script>

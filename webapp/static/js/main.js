@@ -9,9 +9,19 @@ jumboBtn.onclick = function() {
 
 //show
 function show(cards) {
+  cards.splice(0,1);
   cards.forEach(function(card){
     card.classList.add('show');
 })};
+
+//maptiles
+$("a[href='#names']").on('shown.bs.tab', function(e) {
+  cmap.invalidateSize();
+});
+
+$("a[href='#location']").on('shown.bs.tab', function(e) {
+  pmap.invalidateSize();
+});
 
 //csrf
 function getCookie(name) {
