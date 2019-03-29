@@ -36,7 +36,7 @@ function renderNotFound(surname) {
   //set elements
   notFound.className = 'p-3 mb-2 bg-orange text-dark';
   notFound.id = 'searchParam';
-  notFound.innerHTML = 'Unfortunately, <strong>'+surname+'</strong> is not in our database. Are you sure you did not make a typo?';
+  notFound.innerHTML = 'Unfortunately, <strong>'+surname.toUpperCase()+'</strong> is not in our database. Are you sure you did not make a typo?';
 
   //replace
   pSearch.replaceWith(notFound);
@@ -73,52 +73,52 @@ function renderHTML(surname) {
 function renderForenames(fmh,ffh,fmc,ffc) {
 
   //get elements
-  var foreFemale = document.getElementById('ForeNamesFemale');
-  var foreMale = document.getElementById('ForeNamesMale');
-  var fLegend = document.getElementById('foreFemaleLegend');
-  var mLegend = document.getElementById('foreMaleLegend');
+  var foreHist = document.getElementById('ForeNamesHist');
+  var foreCont = document.getElementById('ForeNamesCont');
+  var hLegend = document.getElementById('foreHistLegend');
+  var cLegend = document.getElementById('foreContLegend');
 
   //create elements
-  var foreNamesF = document.createElement('ul');
-  var foreNamesM = document.createElement('ul');
-  var foreMaleLegend = document.createElement('div');
-  var foreFemaleLegend = document.createElement('div');
+  var foreNamesHist = document.createElement('ul');
+  var foreNamesCont = document.createElement('ul');
+  var foreHistLegend = document.createElement('div');
+  var foreContLegend = document.createElement('div');
 
   //set elements
-  foreNamesF.id = 'ForeNamesFemale';
-  foreNamesF.className = 'list-inline ml-3 mt-2 mr-3 mb-3';
-  foreNamesM.id = 'ForeNamesMale';
-  foreNamesM.className = 'list-inline ml-3 mt-2 mr-3 mb-3';
+  foreNamesHist.id = 'ForeNamesHist';
+  foreNamesHist.className = 'list-inline ml-3 mt-2 mr-3 mb-3';
+  foreNamesCont.id = 'ForeNamesCont';
+  foreNamesCont.className = 'list-inline ml-3 mt-2 mr-3 mb-3';
 
-  foreFemaleLegend.id = 'foreFemaleLegend';
-  foreFemaleLegend.className = 'card-footer small text-muted text-justify p-3';
-  foreFemaleLegend.innerHTML = 'Female forenames with highest frequency in the period 1851-1911 (red) and in recent years (blue).';
-  foreMaleLegend.id = 'foreMaleLegend';
-  foreMaleLegend.className = 'card-footer small text-muted text-justify p-3';
-  foreMaleLegend.innerHTML = 'Male forenames with highest frequency in the period 1851-1911 (red) and in recent years (blue).';
+  foreHistLegend.id = 'foreHistLegend';
+  foreHistLegend.className = 'card-footer small text-muted text-justify p-3';
+  foreHistLegend.innerHTML = 'Female (red) and male (blue) forenames with highest frequency in the period 1851-1911.';
+  foreContLegend.id = 'foreContLegend';
+  foreContLegend.className = 'card-footer small text-muted text-justify p-3';
+  foreContLegend.innerHTML = 'Female (red) and male (blue) forenames with highest frequency in recent years.';;
 
   //hist buttons female
   for (var i = 0; i < ffh.length; ++i) {
     var li = document.createElement('button');
     li.innerHTML = ffh[i].toUpperCase();
     li.className = 'btn btn-historic mt-2 mr-1';
-    foreNamesF.appendChild(li);
+    foreNamesHist.appendChild(li);
   };
 
   //cont buttons female
   for (var i = 0; i < ffc.length; ++i) {
     var li = document.createElement('button');
     li.innerHTML = ffc[i].toUpperCase();
-    li.className = 'btn btn-contemporary mt-2 mr-1';
-    foreNamesF.appendChild(li);
+    li.className = 'btn btn-historic mt-2 mr-1';
+    foreNamesCont.appendChild(li);
   };
 
   //hist buttons male
   for (var i = 0; i < fmh.length; ++i) {
     var li = document.createElement('button');
     li.innerHTML = fmh[i].toUpperCase();
-    li.className = 'btn btn-historic mt-2 mr-1';
-    foreNamesM.appendChild(li);
+    li.className = 'btn btn-contemporary mt-2 mr-1';
+    foreNamesHist.appendChild(li);
   };
 
   //cont buttons female
@@ -126,14 +126,14 @@ function renderForenames(fmh,ffh,fmc,ffc) {
     var li = document.createElement('button');
     li.innerHTML = fmc[i].toUpperCase();
     li.className = 'btn btn-contemporary mt-2 mr-1';
-    foreNamesM.appendChild(li);
+    foreNamesCont.appendChild(li);
   };
 
   //replace
-  foreFemale.replaceWith(foreNamesF);
-  foreMale.replaceWith(foreNamesM);
-  fLegend.replaceWith(foreFemaleLegend);
-  mLegend.replaceWith(foreMaleLegend);
+  foreHist.replaceWith(foreNamesHist);
+  foreCont.replaceWith(foreNamesCont);
+  hLegend.replaceWith(foreHistLegend);
+  cLegend.replaceWith(foreContLegend);
 };
 
 //render top parish
@@ -330,10 +330,10 @@ function clearPage() {
 
   //get elements
   var lSearch = document.getElementById('mapLegend');
-  var foreFemale = document.getElementById('ForeNamesFemale');
-  var foreMale = document.getElementById('ForeNamesMale');
-  var fLegend = document.getElementById('foreFemaleLegend');
-  var mLegend = document.getElementById('foreMaleLegend');
+  var foreHist = document.getElementById('ForeNamesHist');
+  var foreCont = document.getElementById('ForeNamesCont');
+  var hLegend = document.getElementById('foreHistLegend');
+  var cLegend = document.getElementById('foreContLegend');
   var pPar = document.getElementById('topPar');
   var pOA = document.getElementById('topOA');
   var sgCat = document.getElementById('sgCat');
@@ -345,10 +345,10 @@ function clearPage() {
 
   //create elements
   var mapLegend = document.createElement('div');
-  var foreMaleLegend = document.createElement('div');
-  var foreFemaleLegend = document.createElement('div');
-  var foreNamesF = document.createElement('ul');
-  var foreNamesM = document.createElement('ul');
+  var foreHistLegend = document.createElement('div');
+  var foreContLegend = document.createElement('div');
+  var foreNamesHist = document.createElement('ul');
+  var foreNamesCont = document.createElement('ul');
   var topPar = document.createElement('ul');
   var topOA = document.createElement('ul');
   var sgDiv = document.createElement('div');
@@ -360,10 +360,10 @@ function clearPage() {
 
   //set elements
   mapLegend.id = 'mapLegend';
-  foreNamesF.id = 'ForeNamesFemale';
-  foreNamesM.id = 'ForeNamesMale';
-  foreFemaleLegend.id = 'foreFemaleLegend';
-  foreMaleLegend.id = 'foreMaleLegend';
+  foreNamesHist.id = 'ForeNamesHist';
+  foreNamesCont.id = 'ForeNamesCont';
+  foreHistLegend.id = 'foreHistLegend';
+  foreContLegend.id = 'foreContLegend';
   topPar.id = 'topPar';
   topOA.id = 'topOA';
   sgDiv.id = 'sgCat';
@@ -375,10 +375,10 @@ function clearPage() {
 
   //replace
   lSearch.replaceWith(mapLegend);
-  foreFemale.replaceWith(foreNamesF);
-  foreMale.replaceWith(foreNamesM);
-  fLegend.replaceWith(foreFemaleLegend);
-  mLegend.replaceWith(foreMaleLegend);
+  foreHist.replaceWith(foreNamesHist);
+  foreCont.replaceWith(foreNamesCont);
+  hLegend.replaceWith(foreHistLegend);
+  cLegend.replaceWith(foreContLegend);
   pPar.replaceWith(topPar);
   pOA.replaceWith(topOA);
   sgCat.replaceWith(sgDiv);

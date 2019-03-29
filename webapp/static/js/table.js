@@ -35,7 +35,11 @@ function populateTable(years,freqs,surname) {
   //set elements
   table.className = 'table table-sm m-0';
   caption.className = 'py-0 mt-2';
-  caption.innerHTML = 'Number of bearers of <strong>'+surname+'</strong>.';
+  if (years[0] == 1851) {
+    caption.innerHTML = 'Number of bearers of <strong>'+surname.toUpperCase()+'</strong>.';
+  } else {
+    caption.innerHTML = 'Number of adult bearers of <strong>'+surname.toUpperCase()+'</strong>.';
+  }
   row1.className = 'text-center';
   row2.className = 'text-center';
 

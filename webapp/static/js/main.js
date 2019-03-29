@@ -14,7 +14,7 @@ function show(cards) {
     card.classList.add('show');
 })};
 
-//maptiles
+//force reload maptiles
 $("a[href='#names']").on('shown.bs.tab', function(e) {
   cmap.invalidateSize();
 });

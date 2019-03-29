@@ -4,7 +4,7 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
             {attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors | \n' +
             'Map tiles by &copy; <a href="https://carto.com/attributions">CARTO</a>',
             minZoom: '6',
-            maxZoom: '10',
+            maxZoom: '9',
           }).addTo(cmap);
 
 //bounds
@@ -42,7 +42,7 @@ function renderContour(years,contours) {
   var contourJSON = L.geoJSON(layers, {
     style: function(feature) {
       if(feature.properties.time < 1990) {
-        return {color: '#FA2600',fillColor: '#FA2600',fillOpacity: .4};
+        return {color: '#d7301f',fillColor: '#ef6548',fillOpacity: .4};
       } else if (feature.properties.time > 1990) {
         return {color: '#3273d1',fillColor: '#3273d1',fillOpacity: .4};
       }

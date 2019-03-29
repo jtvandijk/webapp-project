@@ -331,17 +331,25 @@ class KdevClus2016(models.Model):
         managed = True
         db_table = 'kdef_clus2016'
 
-class ForeNames(models.Model):
+class ForeNamesHist(models.Model):
     surname = models.TextField(primary_key=True)
-    male = models.TextField(blank=True,null=True)
-    female = models.TextField(blank=True,null=True)
-    male_freq = models.IntegerField(blank=True,null=True)
-    female_freq = models.IntegerField(blank=True,null=True)
-    year = models.IntegerField(blank=True,null=True)
+    forename = models.TextField(blank=True,null=True)
+    sex = models.TextField(blank=True,null=True)
+    freq = models.IntegerField(blank=True,null=True)
 
     class Meta:
         managed = True
-        db_table = 'names_freq_forename'
+        db_table = 'names_forenames_hist'
+
+class ForeNamesCont(models.Model):
+    surname = models.TextField(primary_key=True)
+    forename = models.TextField(blank=True,null=True)
+    sex = models.TextField(blank=True,null=True)
+    freq = models.IntegerField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'names_forenames_cont'
 
 class ParishNames(models.Model):
     surname = models.TextField(primary_key=True)

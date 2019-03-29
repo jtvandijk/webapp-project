@@ -4,7 +4,7 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
             {attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors | \n' +
             'Map tiles by &copy; <a href="https://carto.com/attributions">CARTO</a>',
             minZoom: '6',
-            maxZoom: '10',
+            maxZoom: '9',
           }).addTo(pmap);
 
 //bounds
