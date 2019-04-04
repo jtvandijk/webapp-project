@@ -40,7 +40,7 @@ function renderMap(years,contours,cmap) {
 
   //geoJSON
   var layer = renderContour(years,contours);
-  cmap.fitBounds(layer.getBounds());
+  cmap.fitBounds(layer.getBounds().pad(0,1));
 
   //set up years
   var slider = '';

@@ -66,7 +66,7 @@ function renderHTML(surname) {
   lSearch.replaceWith(mapLegend);
 
   //back to names tablist
-  $('#nav-tab a[href="#names"]').tab('show');
+  $j('#nav-tab a[href="#names"]').tab('show');
 };
 
 //render forenames
@@ -146,15 +146,28 @@ function renderParish(partop) {
   topPar.className = 'list-inline ml-3 mt-2 mr-3 mb-3';
 
   //parish buttons
+  allid = [];
   for (var i = 0; i < partop.length; ++i) {
     var li = document.createElement('button');
-    li.innerHTML = partop[i];
-    li.className = 'btn btn-outline-secondary mt-2 mr-1';
+    var id = partop[i][0];
+    allid.push(parseInt(id));
+    li.innerHTML = partop[i][1];
+    li.id = id;
+    if (id == 0) {
+      li.className = 'btn btn-outline-secondary btn-deactivate mt-2 mr-1';
+    } else {
+      li.className = 'btn btn-outline-secondary mt-2 mr-1';
+    }
+    li.value = id;
+    li.onclick = function () {
+      var parid = $j(this).val();
+      showParish(parid,allid);
+    }
     topPar.appendChild(li);
-  };
 
   //replace
   pPar.replaceWith(topPar);
+  };
 };
 
 //render top oa
@@ -167,10 +180,23 @@ function renderOA(oatop) {
   topOA.className = 'list-inline ml-3 mt-2 mr-3 mb-3';
 
   //oa buttons
+  alloa = [];
   for (var i = 0; i < oatop.length; ++i) {
     var li = document.createElement('button');
-    li.innerHTML = oatop[i];
-    li.className = 'btn btn-outline-secondary mt-2 mr-1';
+    var id = oatop[i][0]
+    alloa.push(id);
+    li.innerHTML = oatop[i][1];
+    li.id = id;
+    if (id == 'No OA\'s found') {
+      li.className = 'btn btn-outline-secondary btn-deactivate mt-2 mr-1';
+    } else {
+      li.className = 'btn btn-outline-secondary mt-2 mr-1';
+    }
+    li.value = id;
+    li.onclick = function () {
+      var oaid = $j(this).val();
+      showOA(oaid,alloa);
+    }
     topOA.appendChild(li);
     };
 
@@ -394,11 +420,17 @@ function clearPage() {
   document.getElementById('BBAND').style.display='none';
 
   //back to names tablist
-  $('#nav-tab a[href="#names"]').tab('show');
+  $j('#nav-tab a[href="#names"]').tab('show');
 
-  //remove previous map layer if exist
+  //remove previous map layers if exist
   if (control != undefined) {
       cmap.removeControl(control);
       cmap.removeLayer(layer_rm);
     };
+  if (oalayer != undefined) {
+      amap.removeLayer(oalayer);
   };
+  if (parlayer != undefined) {
+      amap.removeLayer(parlayer);
+  };
+};

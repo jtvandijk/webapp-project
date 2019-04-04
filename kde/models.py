@@ -365,9 +365,8 @@ class ParishNames(models.Model):
 
 class OaNames(models.Model):
     surname = models.TextField(primary_key=True)
-    oa = models.TextField(blank=True,null=True)
+    oacd11 = models.TextField(blank=True,null=True)
     oa_freq = models.IntegerField(blank=True,null=True)
-    year = models.IntegerField(blank=True,null=True)
 
     class Meta:
         managed = True
@@ -467,6 +466,33 @@ class CatLookup(models.Model):
     class Meta:
         managed = True
         db_table = 'oa_classification'
+
+class Par51(models.Model):
+    conparid = models.FloatField(primary_key=True)
+    geom = models.MultiPolygonField(srid=27700)
+    centroid = models.PointField(srid=27700)
+
+    class Meta:
+        managed = True
+        db_table = 'conpar51'
+
+class Par01(models.Model):
+    conparid = models.FloatField(primary_key=True)
+    geom = models.MultiPolygonField(srid=27700)
+    centroid = models.PointField(srid=27700)
+
+    class Meta:
+        managed = True
+        db_table = 'conpar01'
+
+class CensusOA(models.Model):
+    oacd11 = models.TextField(primary_key=True)
+    geom = models.MultiPolygonField(srid=27700)
+    centroid = models.PointField(srid=27700)
+
+    class Meta:
+        managed = True
+        db_table = 'census_oa'
 
 class RenderedNames(models.Model):
     surname = models.TextField(primary_key=True)

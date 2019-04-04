@@ -1,6 +1,3 @@
-//jQuery
-var $j = jQuery.noConflict();
-
 //update map -- search on load
 $j(document).on('submit','#initSur',function(e) {
     e.preventDefault();
@@ -15,6 +12,9 @@ $j(document).on('submit','#searchSur',function(e) {
 
 //initiate search
 function initSearch(q){
+
+  //remove jumbotron
+  jumbotron.style.display = 'none';
 
   //lay out
   var c = [...document.getElementsByClassName('collapse')];
@@ -69,9 +69,6 @@ function get_data(q) {
           //stop map loading indicator
           stopMapLoad();
 
-          //remove jumbotron
-          jumbotron.style.display = 'none';
-
           //return
           return;
         }
@@ -92,6 +89,7 @@ function startMapLoad() {
     //create elements
     sName.id = 'searchParam';
     sName.innerHTML = '...';
+
     //replace
     pSearch.replaceWith(sName);
 

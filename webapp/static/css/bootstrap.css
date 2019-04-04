@@ -2433,6 +2433,11 @@ fieldset:disabled a.btn {
   background-color: rgba(50,115,209,0.4);
 }
 
+.btn-deactivate {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .btn-g1 {
   cursor: not-allowed;
   pointer-events: none;

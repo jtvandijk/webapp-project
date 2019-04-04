@@ -13,12 +13,14 @@ from kde import views as kde_views
 #     path('', views.index, name='home'),
 #     path('admin/', admin.site.urls,name='admin'),
 #     path('search/', kde_views.search, name='search'),
-#     path('location/', kde_views.location, name='location'),
+#     path('parish/', kde_views.locate_parish, name='parish'),
+#     path('oas/', kde_views.locate_oas, name='oa'),
 # ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 urlpatterns = [
     path('udl-namekde/', views.index, name='home'),
     path('udl-namekde/admin/', admin.site.urls),
     path('udl-namekde/search/', kde_views.search, name='search'),
-    path('udl-namekde/location/', kde_views.location, name='location'),
+    path('udl-namekde/parish/', kde_views.locate_parish, name='parish'),
+    path('udl-namekde/oas/', kde_views.locate_oas, name='oa'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

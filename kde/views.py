@@ -4,11 +4,12 @@
 from django.contrib.gis.geos import fromstr
 from django.http import HttpResponse
 from django.conf import settings
-from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, ForeNamesHist, ForeNamesCont, ParishNames, ParishLookup, OaNames, OaLookup, OaNamesCat, OaNamesAHAH, OaNamesIMD, OaNamesIUC, OaNamesBBAND, OaNamesCRVUL, CatLookup, RenderedNames
+from .models import KdeLookup, KdeGridxy, KdevClus1851, KdevClus1861, KdevClus1881, KdevClus1891, KdevClus1901, KdevClus1911, KdevClus1997, KdevClus1998, KdevClus1999, KdevClus2000, KdevClus2001, KdevClus2002, KdevClus2003, KdevClus2004, KdevClus2005, KdevClus2006, KdevClus2007, KdevClus2008, KdevClus2009, KdevClus2010, KdevClus2011, KdevClus2012, KdevClus2013, KdevClus2014, KdevClus2015, KdevClus2016, ForeNamesHist, ForeNamesCont, ParishNames, ParishLookup, OaNames, OaLookup, OaNamesCat, OaNamesAHAH, OaNamesIMD, OaNamesIUC, OaNamesBBAND, OaNamesCRVUL, CatLookup, RenderedNames, Par51, Par01, CensusOA
 from .contour import to_concave_points
 from pyproj import Proj, transform
 from sklearn.cluster import dbscan
 from shapely.geometry import Polygon,MultiPolygon
+from shapely import wkt
 from fiona.crs import from_epsg
 import json
 import pandas as pd
@@ -76,11 +77,11 @@ def search(request):
         fore_female_cont, fore_male_cont = forenames_stats(forenames_cont)
 
         #statistics -- parish
-        parishes = ParishNames.objects.filter(surname=clean_sur).values('regcnty','parish')
+        parishes = ParishNames.objects.filter(surname=clean_sur).values('regcnty','parish','conparid')
         par_top = parish_stats(parishes)
 
         #statistics -- oa
-        oas = OaNames.objects.filter(surname=clean_sur).values('oa')
+        oas = OaNames.objects.filter(surname=clean_sur).values('oacd11')
         oa_top = oa_stats(oas)
 
         #statistics -- oac
@@ -118,8 +119,8 @@ def search(request):
                 'forefh': fore_female_hist,
                 'foremc': fore_male_cont,
                 'forefc': fore_female_cont,
-                'partop': par_top[:10].tolist(),
-                'oatop': oa_top[:10].tolist(),
+                'partop': par_top,
+                'oatop': oa_top,
                 'oacat': list(oac_mod),
                 'oahlth': oah_mod,
                 'oaimd': imd_mod,
@@ -185,6 +186,7 @@ def search(request):
             contours = gpd.GeoSeries([Polygon(contour) for contour in contourp])
             contours = gpd.GeoDataFrame({'geometry': contours})
             contours.crs = from_epsg(27700)
+            print(contours)
             clp_prj = gpd.overlay(uk,contours,how='intersection')
 
             #smooth and project
@@ -207,11 +209,11 @@ def search(request):
         fore_female_cont, fore_male_cont = forenames_stats(forenames_cont)
 
         #statistics -- parish
-        parishes = ParishNames.objects.filter(surname=clean_sur).values('regcnty','parish')
+        parishes = ParishNames.objects.filter(surname=clean_sur).values('regcnty','parish','conparid')
         par_top = parish_stats(parishes)
 
         #statistics -- oa
-        oas = OaNames.objects.filter(surname=clean_sur).values('oa')
+        oas = OaNames.objects.filter(surname=clean_sur).values('oacd11')
         oa_top = oa_stats(oas)
 
         #statistics -- oac
@@ -249,8 +251,8 @@ def search(request):
                 'forefh': fore_female_hist,
                 'foremc': fore_male_cont,
                 'forefc': fore_female_cont,
-                'partop': par_top[:10].tolist(),
-                'oatop': oa_top[:10].tolist(),
+                'partop': par_top,
+                'oatop': oa_top,
                 'oacat': list(oac_mod),
                 'oahlth': oah_mod,
                 'oaimd': imd_mod,
@@ -292,7 +294,7 @@ def parish_stats(parishes):
 
     #empty
     if not parishes:
-        par_top = ['No parishes found']
+        par_top = [['0','No parishes found']]
 
     #parishes
     else:
@@ -301,18 +303,19 @@ def parish_stats(parishes):
         #regcnty, parish
         for p in parishes:
             regcnty = p['regcnty'].title()
+            parid = str(int(p['conparid']))
             parish = p['parish']
 
             #parish
+            parjoin = []
             if parish == '-':
-                parjoin = regcnty
+                parish = 'London parishes'
+                parjoin.append(parid)
+                parjoin.append(regcnty + ': ' + parish)
             else:
-                parjoin = regcnty + ': ' + parish
+                parjoin.append(parid)
+                parjoin.append(regcnty + ': ' + parish)
             par_top.append(parjoin)
-
-    #shuffle order
-    par_top = np.unique(par_top)
-    random.shuffle(par_top)
 
     #return
     return(par_top)
@@ -321,7 +324,7 @@ def oa_stats(oas):
 
     #empty
     if not oas:
-        oa_top = ['No OA\'s found']
+        oa_top = [['0','No OA\'s found']]
 
     #oas
     else:
@@ -329,13 +332,13 @@ def oa_stats(oas):
 
         #oa, lad
         for o in oas:
-            lad = OaLookup.objects.filter(oa11=o['oa']).values('ladnm')[0]
-            oajoin = lad['ladnm'] + ': ' + o['oa']
+            oajoin = []
+            oaid = o['oacd11']
+            lad = OaLookup.objects.filter(oa11=o['oacd11']).values('ladnm')[0]
+            oanm = lad['ladnm'] + ': ' + o['oacd11']
+            oajoin.append(oaid)
+            oajoin.append(oanm)
             oa_top.append(oajoin)
-
-    #shuffle order
-    oa_top = np.unique(oa_top)
-    random.shuffle(oa_top)
 
     #return
     return(oa_top)
@@ -410,39 +413,58 @@ def crvul_stats(crvul):
     #return
     return(crvul_sc)
 
-def location(request):
+def locate_parish(request):
 
-    #user location
-    lon = request.POST['longitude']
-    lat = request.POST['latitude']
+    #query db
+    parsel = request.POST['parid']
+    parls = request.POST.getlist('allid[]')
+    allpar = Par51.objects.filter(conparid__in=parls).values('conparid','centroid')
 
-    #reproject
-    inProj = Proj(init='epsg:4326')
-    outProj = Proj(init='epsg:27700')
-    locprj = list(transform(inProj,outProj,lon,lat))
-    pnt = fromstr('POINT('+str(locprj[0])+' ' +str(locprj[1])+')',srid=27700)
+    #prepare all parishes
+    allgeom = []
+    for par in allpar:
 
-    #spatial query for topnames
-    lsoa = LsoaTopnames.objects.filter(shape__contains=pnt)
+        #name
+        pname = ParishLookup.objects.filter(conparid=par['conparid']).values()[0]
 
-    #if spatial query successful
-    if lsoa:
-        div = {key: value for key, value in lsoa.values()[0].items()}
-        tnlist = [str(x).title() for x in div['topnames'][1:-1].split(',')]
-        unique = div['unique_n']
-        total = div['total_n']
-        alpha = div['diversity_a']
+        #geom
+        parishgeom = gpd.GeoSeries(wkt.loads(par['centroid'].wkt))
+        parishgeom = gpd.GeoDataFrame({'id': par['conparid'], 'geometry': parishgeom, 'parish': pname['parish'], 'regcnty': pname['regcnty'], 'cnty': pname['country']})
+        parishgeom.crs = from_epsg(27700)
+        parishgeom['geometry'] = parishgeom['geometry'].to_crs(epsg=4326)
+        allgeom.append(parishgeom)
 
-        #combine data
-        loclist = {'topnames': tnlist,
-                   'unique': unique,
-                   'total': total,
-                   'alpha': alpha
-                   }
+    #concat
+    parishes = {'parsel': parsel,
+                'parishes': pd.concat(allgeom).to_json(),}
 
-    #if spatial query unsuccesful
-    else:
-        loclist = None
+    #return
+    return HttpResponse(json.dumps(parishes),content_type="application/json")
 
-    #return data
-    return HttpResponse(json.dumps(loclist),content_type='application/json')
+def locate_oas(request):
+
+    #query db
+    oasel = request.POST['oaid']
+    oals = request.POST.getlist('alloa[]')
+    alloa = CensusOA.objects.filter(oacd11__in=oals).values('oacd11','centroid')
+
+    #prepare al oas
+    allgeom = []
+    for oa in alloa:
+
+        #name
+        oname = OaLookup.objects.filter(oa11=oa['oacd11']).values('ladnm','lsoa11nm','msoa11nm')[0]
+
+        #geom
+        oageom = gpd.GeoSeries(wkt.loads(oa['centroid'].wkt))
+        oageom = gpd.GeoDataFrame({'id': oa['oacd11'], 'geometry': oageom, 'ladnm': oname['ladnm'], 'lsoanm': oname['lsoa11nm'], 'msoanm': oname['msoa11nm']})
+        oageom.crs = from_epsg(27700)
+        oageom['geometry'] = oageom['geometry'].to_crs(epsg=4326)
+        allgeom.append(oageom)
+
+    #concat
+    oas = {'oasel': oasel,
+           'oas': pd.concat(allgeom).to_json(),}
+
+    #return
+    return HttpResponse(json.dumps(oas),content_type="application/json")
