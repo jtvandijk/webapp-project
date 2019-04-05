@@ -1,8 +1,5 @@
-#JTVD - 2019
-
-#libraries
+#django
 from django.shortcuts import render
-from kde.models import KdeLookup
 
 #index views
 def index(request):

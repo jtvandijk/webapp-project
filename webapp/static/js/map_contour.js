@@ -42,9 +42,9 @@ function renderContour(years,contours) {
   var contourJSON = L.geoJSON(layers, {
     style: function(feature) {
       if(feature.properties.time < 1990) {
-        return {color: '#d7301f',fillColor: '#ef6548',fillOpacity: .4};
+        return {color: '#73777A',fillColor: '#73777A',fillOpacity: .4};
       } else if (feature.properties.time > 1990) {
-        return {color: '#3273d1',fillColor: '#3273d1',fillOpacity: .4};
+        return {color: '#E68454',fillColor: '#E68454',fillOpacity: .4};
       }
     }});
 

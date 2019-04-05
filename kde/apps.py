@@ -1,4 +1,6 @@
+#django
 from django.apps import AppConfig
 
-class KdeConfig(AppConfig):
+#apps
+class kdeconfig(AppConfig):
     name = 'kde'

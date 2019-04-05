@@ -1,7 +1,8 @@
-#models
+#django
 from django.contrib.gis.db import models
 
-class KdeLookup(models.Model):
+#kde
+class kdelookup(models.Model):
     uid = models.AutoField(primary_key=True)
     surname = models.TextField(blank=True,null=True)
     freq1851 = models.IntegerField(blank=True,null=True)
@@ -35,7 +36,7 @@ class KdeLookup(models.Model):
         managed = True
         db_table = 'kde_lookup'
 
-class KdeGridxy(models.Model):
+class kdegridxy(models.Model):
     gid = models.IntegerField(primary_key=True)
     x = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     y = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -45,7 +46,7 @@ class KdeGridxy(models.Model):
         managed = True
         db_table = 'kde_gridxy'
 
-class KdevClus1851(models.Model):
+class kdeclus1851(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -56,7 +57,7 @@ class KdevClus1851(models.Model):
         managed = True
         db_table = 'kdef_clus1851'
 
-class KdevClus1861(models.Model):
+class kdeclus1861(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -67,7 +68,7 @@ class KdevClus1861(models.Model):
         managed = True
         db_table = 'kdef_clus1861'
 
-class KdevClus1881(models.Model):
+class kdeclus1881(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -78,7 +79,7 @@ class KdevClus1881(models.Model):
         managed = True
         db_table = 'kdef_clus1881'
 
-class KdevClus1891(models.Model):
+class kdeclus1891(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -89,7 +90,7 @@ class KdevClus1891(models.Model):
         managed = True
         db_table = 'kdef_clus1891'
 
-class KdevClus1901(models.Model):
+class kdeclus1901(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -100,7 +101,7 @@ class KdevClus1901(models.Model):
         managed = True
         db_table = 'kdef_clus1901'
 
-class KdevClus1911(models.Model):
+class kdeclus1911(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -111,7 +112,7 @@ class KdevClus1911(models.Model):
         managed = True
         db_table = 'kdef_clus1911'
 
-class KdevClus1997(models.Model):
+class kdeclus1997(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -122,7 +123,7 @@ class KdevClus1997(models.Model):
         managed = True
         db_table = 'kdef_clus1997'
 
-class KdevClus1998(models.Model):
+class kdeclus1998(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -133,7 +134,7 @@ class KdevClus1998(models.Model):
         managed = True
         db_table = 'kdef_clus1998'
 
-class KdevClus1999(models.Model):
+class kdeclus1999(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -144,7 +145,7 @@ class KdevClus1999(models.Model):
         managed = True
         db_table = 'kdef_clus1999'
 
-class KdevClus2000(models.Model):
+class kdeclus2000(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -155,7 +156,7 @@ class KdevClus2000(models.Model):
         managed = True
         db_table = 'kdef_clus2000'
 
-class KdevClus2001(models.Model):
+class kdeclus2001(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -166,7 +167,7 @@ class KdevClus2001(models.Model):
         managed = True
         db_table = 'kdef_clus2001'
 
-class KdevClus2002(models.Model):
+class kdeclus2002(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -177,7 +178,7 @@ class KdevClus2002(models.Model):
         managed = True
         db_table = 'kdef_clus2002'
 
-class KdevClus2003(models.Model):
+class kdeclus2003(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -188,7 +189,7 @@ class KdevClus2003(models.Model):
         managed = True
         db_table = 'kdef_clus2003'
 
-class KdevClus2004(models.Model):
+class kdeclus2004(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -199,7 +200,7 @@ class KdevClus2004(models.Model):
         managed = True
         db_table = 'kdef_clus2004'
 
-class KdevClus2005(models.Model):
+class kdeclus2005(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -210,7 +211,7 @@ class KdevClus2005(models.Model):
         managed = True
         db_table = 'kdef_clus2005'
 
-class KdevClus2006(models.Model):
+class kdeclus2006(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -221,7 +222,7 @@ class KdevClus2006(models.Model):
         managed = True
         db_table = 'kdef_clus2006'
 
-class KdevClus2007(models.Model):
+class kdeclus2007(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -232,7 +233,7 @@ class KdevClus2007(models.Model):
         managed = True
         db_table = 'kdef_clus2007'
 
-class KdevClus2008(models.Model):
+class kdeclus2008(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -243,7 +244,7 @@ class KdevClus2008(models.Model):
         managed = True
         db_table = 'kdef_clus2008'
 
-class KdevClus2009(models.Model):
+class kdeclus2009(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -254,7 +255,7 @@ class KdevClus2009(models.Model):
         managed = True
         db_table = 'kdef_clus2009'
 
-class KdevClus2010(models.Model):
+class kdeclus2010(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -265,7 +266,7 @@ class KdevClus2010(models.Model):
         managed = True
         db_table = 'kdef_clus2010'
 
-class KdevClus2011(models.Model):
+class kdeclus2011(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -276,7 +277,7 @@ class KdevClus2011(models.Model):
         managed = True
         db_table = 'kdef_clus2011'
 
-class KdevClus2012(models.Model):
+class kdeclus2012(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -287,7 +288,7 @@ class KdevClus2012(models.Model):
         managed = True
         db_table = 'kdef_clus2012'
 
-class KdevClus2013(models.Model):
+class kdeclus2013(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -298,7 +299,7 @@ class KdevClus2013(models.Model):
         managed = True
         db_table = 'kdef_clus2013'
 
-class KdevClus2014(models.Model):
+class kdeclus2014(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -309,7 +310,7 @@ class KdevClus2014(models.Model):
         managed = True
         db_table = 'kdef_clus2014'
 
-class KdevClus2015(models.Model):
+class kdeclus2015(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -320,7 +321,7 @@ class KdevClus2015(models.Model):
         managed = True
         db_table = 'kdef_clus2015'
 
-class KdevClus2016(models.Model):
+class kdeclus2016(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
     pop = models.DecimalField(max_digits=65535,decimal_places=65535,blank=True,null=True)
@@ -331,7 +332,21 @@ class KdevClus2016(models.Model):
         managed = True
         db_table = 'kdef_clus2016'
 
-class ForeNamesHist(models.Model):
+class names_rendered(models.Model):
+    surname = models.TextField(primary_key=True)
+    source = models.TextField(blank=True,null=True)
+    years = models.TextField(blank=True,null=True)
+    hr_freq = models.TextField(blank=True,null=True)
+    cr_freq = models.TextField(blank=True,null=True)
+    contours = models.TextField(blank=True,null=True)
+    count = models.IntegerField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'names_rendered'
+
+#stats
+class names_forenames_hist(models.Model):
     surname = models.TextField(primary_key=True)
     forename = models.TextField(blank=True,null=True)
     sex = models.TextField(blank=True,null=True)
@@ -341,7 +356,7 @@ class ForeNamesHist(models.Model):
         managed = True
         db_table = 'names_forenames_hist'
 
-class ForeNamesCont(models.Model):
+class names_forenames_cont(models.Model):
     surname = models.TextField(primary_key=True)
     forename = models.TextField(blank=True,null=True)
     sex = models.TextField(blank=True,null=True)
@@ -351,7 +366,7 @@ class ForeNamesCont(models.Model):
         managed = True
         db_table = 'names_forenames_cont'
 
-class ParishNames(models.Model):
+class names_freq_parish(models.Model):
     surname = models.TextField(primary_key=True)
     conparid = models.FloatField(blank=True,null=True)
     parish = models.TextField(blank=True,null=True)
@@ -363,7 +378,7 @@ class ParishNames(models.Model):
         managed = True
         db_table = 'names_freq_parish'
 
-class OaNames(models.Model):
+class names_freq_oa(models.Model):
     surname = models.TextField(primary_key=True)
     oacd11 = models.TextField(blank=True,null=True)
     oa_freq = models.IntegerField(blank=True,null=True)
@@ -372,7 +387,7 @@ class OaNames(models.Model):
         managed = True
         db_table = 'names_freq_oa'
 
-class OaNamesCat(models.Model):
+class names_cat_oa(models.Model):
     surname = models.TextField(primary_key=True)
     oagroupcd = models.TextField(blank=True,null=True)
     oagroupnm = models.IntegerField(blank=True,null=True)
@@ -382,7 +397,7 @@ class OaNamesCat(models.Model):
         managed = True
         db_table = 'names_cat_oa'
 
-class OaNamesAHAH(models.Model):
+class names_health_oa(models.Model):
     surname = models.TextField(primary_key=True)
     ahah_dec = models.IntegerField(blank=True,null=True)
     ahah_dec_rev = models.IntegerField(blank=True,null=True)
@@ -391,7 +406,7 @@ class OaNamesAHAH(models.Model):
         managed = True
         db_table = 'names_health_oa'
 
-class OaNamesIMD(models.Model):
+class names_imd_oa(models.Model):
     surname = models.TextField(primary_key=True)
     imd_dec = models.IntegerField(blank=True,null=True)
 
@@ -399,7 +414,7 @@ class OaNamesIMD(models.Model):
         managed = True
         db_table = 'names_imd_oa'
 
-class OaNamesIUC(models.Model):
+class names_iuc_oa(models.Model):
     surname = models.TextField(primary_key=True)
     iuccd = models.IntegerField(blank=True,null=True)
     iucnm = models.TextField(blank=True,null=True)
@@ -408,7 +423,7 @@ class OaNamesIUC(models.Model):
         managed = True
         db_table = 'names_iuc_oa'
 
-class OaNamesBBAND(models.Model):
+class names_bband_oa(models.Model):
     surname = models.TextField(primary_key=True)
     bband = models.TextField(blank=True,null=True)
     bbandcd = models.IntegerField(blank=True,null=True)
@@ -417,7 +432,7 @@ class OaNamesBBAND(models.Model):
         managed = True
         db_table = 'names_bband_oa'
 
-class OaNamesCRVUL(models.Model):
+class names_crvul_oa(models.Model):
     surname = models.TextField(primary_key=True)
     crvulcd = models.TextField(blank=True,null=True)
     crvulnm = models.TextField(blank=True,null=True)
@@ -426,7 +441,8 @@ class OaNamesCRVUL(models.Model):
         managed = True
         db_table = 'names_crvul_oa'
 
-class ParishLookup(models.Model):
+#lookup
+class lookup_parish(models.Model):
     conparid = models.FloatField(primary_key=True)
     regcnty = models.TextField(blank=True,null=True)
     parish = models.TextField(blank=True,null=True)
@@ -436,7 +452,7 @@ class ParishLookup(models.Model):
         managed = True
         db_table = 'lookup_parish'
 
-class OaLookup(models.Model):
+class lookup_oa(models.Model):
     pcdc = models.TextField(blank=True,null=True)
     oa11 = models.TextField(blank=True,null=True)
     lsoacd11 = models.TextField(blank=True,null=True)
@@ -450,7 +466,7 @@ class OaLookup(models.Model):
         managed = True
         db_table = 'lookup_oa'
 
-class CatLookup(models.Model):
+class oa_classification(models.Model):
     oa11 = models.TextField(primary_key=True)
     ladcd = models.TextField(blank=True,null=True)
     ladnm = models.TextField(blank=True,null=True)
@@ -461,13 +477,14 @@ class CatLookup(models.Model):
     groupcd = models.TextField(blank=True,null=True)
     groupnm = models.TextField(blank=True,null=True)
     subgroupcd = models.TextField(blank=True,null=True)
-    subgroupmn = models.TextField(blank=True,null=True)
+    subgroupnm = models.TextField(blank=True,null=True)
 
     class Meta:
         managed = True
         db_table = 'oa_classification'
 
-class Par51(models.Model):
+#spatial
+class conpar51(models.Model):
     conparid = models.FloatField(primary_key=True)
     geom = models.MultiPolygonField(srid=27700)
     centroid = models.PointField(srid=27700)
@@ -476,7 +493,7 @@ class Par51(models.Model):
         managed = True
         db_table = 'conpar51'
 
-class Par01(models.Model):
+class conpar01(models.Model):
     conparid = models.FloatField(primary_key=True)
     geom = models.MultiPolygonField(srid=27700)
     centroid = models.PointField(srid=27700)
@@ -485,7 +502,7 @@ class Par01(models.Model):
         managed = True
         db_table = 'conpar01'
 
-class CensusOA(models.Model):
+class census_oa(models.Model):
     oacd11 = models.TextField(primary_key=True)
     geom = models.MultiPolygonField(srid=27700)
     centroid = models.PointField(srid=27700)
@@ -493,16 +510,3 @@ class CensusOA(models.Model):
     class Meta:
         managed = True
         db_table = 'census_oa'
-
-class RenderedNames(models.Model):
-    surname = models.TextField(primary_key=True)
-    source = models.TextField(blank=True,null=True)
-    years = models.TextField(blank=True,null=True)
-    hr_freq = models.TextField(blank=True,null=True)
-    cr_freq = models.TextField(blank=True,null=True)
-    contours = models.TextField(blank=True,null=True)
-    count = models.IntegerField(blank=True,null=True)
-
-    class Meta:
-        managed = True
-        db_table = 'names_rendered'

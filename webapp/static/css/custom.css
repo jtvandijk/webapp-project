@@ -1,6 +1,6 @@
 /* body */
 .in-text-link a {
-    color: #000 !important;
+  color: #000 !important;
 }
 
 html {
@@ -54,17 +54,6 @@ body.fixed-nav {
   .card-columns {
     column-count: 2;
   }
-}
-
-/* sticky footer */
-footer.sticky-footer {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 56px;
-  background-color: #e9ecef;
-  line-height: 55px;
 }
 
 /* modal settings modal */
@@ -360,4 +349,541 @@ a.timecontrol-play.loading:before{
 }
 .leaflet-touch .timecontrol-slider .slider{
     margin-top:10px
+}
+
+/* background */
+.bg-orange {
+  background-color:	#fdcc8a !important;
+}
+
+.bg-custom {
+  background-color: #2171b5 !important;
+}
+
+.bg-notes {
+  background-color: #c6dbef !important;
+}
+
+.bg-historic {
+  background-color: rgba(250,38,0,0.4) !important;
+}
+
+.bg-contemporary {
+  background-color: rgba(50,115,209,0.4) !important;
+}
+
+.bg-white {
+  background-color: rgba(255,255,255,0) !important;
+}
+
+/* buttons */
+.btn-historic {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000000;
+  background-color: rgba(250,38,0,0.4);
+}
+
+.btn-contemporary {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000000;
+  background-color: rgba(50,115,209,0.4);
+}
+
+.btn-deactivate {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-g1 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;;
+  background-color: #31a354;
+}
+
+.btn-g1.sub {
+  background-color: #74c476;
+}
+
+.btn-g2 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #de2d26;
+}
+
+.btn-g2.sub {
+  background-color: #fb6a4a;
+}
+
+.btn-g3 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #BE719F;
+}
+
+.btn-g3.sub {
+  background-color: #D48FB0;
+}
+
+.btn-g4 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #e6550d;
+}
+
+.btn-g4.sub {
+  background-color: #fd8d3c;
+}
+
+.btn-g5 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #AA7351;
+}
+
+.btn-g5.sub {
+  background-color: #C1987E;
+}
+
+.btn-g6 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #756bb1;
+}
+
+.btn-g6.sub {
+  background-color: #9e9ac8 ;
+}
+
+.btn-g7 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #3182bd;
+}
+
+.btn-g7.sub {
+  background-color: #6baed6;
+}
+
+.btn-g8 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #FFBA01;
+}
+
+.btn-g8.sub {
+  background-color: #FED901;
+}
+
+.btn-g99 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #dddddd;
+}
+
+.btn-g99.sub {
+  background-color: #dddddd;
+}
+
+.btn-select {
+  border-color: #000000;
+  border-width: 5px;
+}
+
+.btn-l1 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #fff;
+  background-color: #a50026;
+  border-radius: 0 !important;
+}
+
+.btn-l2 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #fff;
+  background-color: #d73027;
+  border-radius: 0 !important;
+}
+
+.btn-l3 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #f46d43;
+  border-radius: 0 !important;
+}
+
+.btn-l4 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #fdae61;
+  border-radius: 0 !important;
+}
+
+.btn-l5 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #fee08b;
+  border-radius: 0 !important;
+}
+
+.btn-l6 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #d9ef8b;
+  border-radius: 0 !important;
+}
+
+.btn-l7 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #a6d96a;
+  border-radius: 0 !important;
+}
+
+.btn-l8 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #66bd63;
+  border-radius: 0 !important;
+}
+
+.btn-l9 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #ffffff;
+  background-color: #1a9850;
+  border-radius: 0 !important;
+}
+
+.btn-l10 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #ffffff;
+  background-color: #006837;
+  border-radius: 0 !important;
+}
+
+.btn-l99 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #dddddd;
+  border-radius: 0 !important;
+}
+
+.btn-h1 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #4575B4;
+  border-radius: 0 !important;
+}
+
+.btn-h2 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #7397B6;
+  border-radius: 0 !important;
+}
+
+.btn-h3 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #A2BAB9;
+  border-radius: 0 !important;
+}
+
+.btn-h4 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #D0DCBC;
+  border-radius: 0 !important;
+}
+
+.btn-h5 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #FFFFBF;
+  border-radius: 0 !important;
+}
+
+.btn-h6 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #FCE1A6;
+  border-radius: 0 !important;
+}
+
+.btn-h7 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #FAC48D;
+  border-radius: 0 !important;
+}
+
+.btn-h8 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #F8A774;
+  border-radius: 0 !important;
+}
+
+.btn-h9 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #F68A5B;
+  border-radius: 0 !important;
+}
+
+.btn-h10 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #F46D43;
+  border-radius: 0 !important;
+}
+
+.btn-h99 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #dddddd;
+  border-radius: 0 !important;
+}
+
+.btn-b1 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #fff;
+  background-color: #276419;
+  border-radius: 0 !important;
+}
+
+.btn-b2 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #fff;
+  background-color: #4d9221;
+  border-radius: 0 !important;
+}
+
+.btn-b3 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #7fbc41;
+  border-radius: 0 !important;
+}
+
+.btn-b4 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #b8e186;
+  border-radius: 0 !important;
+}
+
+.btn-b5 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #e6f5d0;
+  border-radius: 0 !important;
+}
+
+.btn-b6 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #f7f7f7;
+  border-radius: 0 !important;
+}
+
+.btn-b7 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #fde0ef;
+  border-radius: 0 !important;
+}
+
+.btn-b8 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #f1b6da;
+  border-radius: 0 !important;
+}
+
+.btn-b9 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #de77ae;
+  border-radius: 0 !important;
+}
+
+.btn-b10 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #ffffff;
+  background-color: #c51b7d;
+  border-radius: 0 !important;
+}
+
+.btn-b11 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #ffffff;
+  background-color: #8e0152;
+  border-radius: 0 !important;
+}
+
+.btn-b99 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #dddddd;
+  border-radius: 0 !important;
+}
+
+.btn-iuc1 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #ea4d78;
+}
+
+.btn-iuc2 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #f36d5a;
+}
+
+.btn-iuc3 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #e4a5d0;
+}
+
+.btn-iuc4 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #ffd39b;
+}
+
+.btn-iuc5 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #a5cfbc;
+}
+
+.btn-iuc6 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #d2d1ab;
+}
+
+.btn-iuc7 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #79cdcd;
+}
+
+.btn-iuc8 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #dd7cdc;
+}
+
+.btn-iuc9 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #808fee;
+}
+
+.btn-iuc10 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #8470ff;
+}
+
+.btn-iuc99 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #dddddd;
+}
+
+.btn-crvul1 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #4575b4;
+}
+
+.btn-crvul2 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #91bfdb;
+}
+
+.btn-crvul3 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #e0f3f8;
+}
+
+.btn-crvul4 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #fee090;
+}
+
+.btn-crvul5 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #fc8d59;
+}
+
+.btn-crvul6 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #d73027;
+}
+
+.btn-crvul99 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #dddddd;
 }

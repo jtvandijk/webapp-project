@@ -12,7 +12,7 @@ function renderNone() {
   var noText = document.createElement('p');
 
   //set elements
-  noText.className = 'p-3 mb-2 bg-orange text-dark';
+  noText.className = 'p-3 mb-3 bg-orange text-dark';
   noText.id = 'searchParam';
   noText.textContent = 'Please type in a surname before hitting submit.';
 
@@ -34,7 +34,7 @@ function renderNotFound(surname) {
   var notFound = document.createElement('p');
 
   //set elements
-  notFound.className = 'p-3 mb-2 bg-orange text-dark';
+  notFound.className = 'p-3 mb-3 bg-orange text-dark';
   notFound.id = 'searchParam';
   notFound.innerHTML = 'Unfortunately, <strong>'+surname.toUpperCase()+'</strong> is not in our database. Are you sure you did not make a typo?';
 
@@ -55,11 +55,12 @@ function renderHTML(surname) {
 
   //set elements
   foundPar.id = 'searchParam';
+  foundPar.className = 'mt-3';
   foundPar.innerHTML = surname.toUpperCase();
 
   mapLegend.id = 'mapLegend';
   mapLegend.className = 'card-footer small text-muted text-justify p-3';
-  mapLegend.innerHTML = 'The red lines enclose the areas where 50% of name bearers lived over the period 1851-1911, where we have the historic Census data. The blue lines show the much more recent distributions.';
+  mapLegend.innerHTML = 'The grey lines enclose the areas where 50% of name bearers lived over the period 1851-1911, where we have the historic Census data. The orange lines show the much more recent distributions.';
 
   //replace
   pSearch.replaceWith(foundPar);
@@ -153,7 +154,7 @@ function renderParish(partop) {
     allid.push(parseInt(id));
     li.innerHTML = partop[i][1];
     li.id = id;
-    if (id == 0) {
+    if (id == 99) {
       li.className = 'btn btn-outline-secondary btn-deactivate mt-2 mr-1';
     } else {
       li.className = 'btn btn-outline-secondary mt-2 mr-1';
@@ -161,7 +162,7 @@ function renderParish(partop) {
     li.value = id;
     li.onclick = function () {
       var parid = $j(this).val();
-      showParish(parid,allid);
+      showAdmin(parid,allid,'hr');
     }
     topPar.appendChild(li);
 
@@ -187,7 +188,7 @@ function renderOA(oatop) {
     alloa.push(id);
     li.innerHTML = oatop[i][1];
     li.id = id;
-    if (id == 'No OA\'s found') {
+    if (oatop[i][0] == 99) {
       li.className = 'btn btn-outline-secondary btn-deactivate mt-2 mr-1';
     } else {
       li.className = 'btn btn-outline-secondary mt-2 mr-1';
@@ -195,7 +196,7 @@ function renderOA(oatop) {
     li.value = id;
     li.onclick = function () {
       var oaid = $j(this).val();
-      showOA(oaid,alloa);
+      showAdmin(oaid,alloa,'cr');
     }
     topOA.appendChild(li);
     };
@@ -224,7 +225,11 @@ function renderCAT(oacat) {
   gDiv.className = 'card-body p-2';
 
   //classname
-  cls = oacat[2].slice(0,1);
+  if (oacat[2] == 99) {
+    var cls = 99;
+  } else {
+    var cls = oacat[2].slice(0,1);
+  };
 
   //values
   sgDivbtn.className = 'btn btn-g'+cls+' btn-lg btn-block';
@@ -427,10 +432,7 @@ function clearPage() {
       cmap.removeControl(control);
       cmap.removeLayer(layer_rm);
     };
-  if (oalayer != undefined) {
-      amap.removeLayer(oalayer);
-  };
-  if (parlayer != undefined) {
-      amap.removeLayer(parlayer);
+  if (adminlayer != undefined) {
+      amap.removeLayer(adminlayer);
   };
 };
