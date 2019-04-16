@@ -30,7 +30,8 @@ function get_data(q) {
   startMapLoad();
   $j.ajax({
     method: 'POST',
-    url: '../udl-namekde/search/',
+    // url: '../udl-namekde/search/',
+    url: '../gbnames/search/',
     // url: '../search/',
     data: {q: q,
            csrfmiddlewaretoken: csrftoken

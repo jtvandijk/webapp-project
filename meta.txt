@@ -26,8 +26,9 @@ V link to personal website
 
 #Development -- Bugs
 V frequencies pre-rendered names incorrect if no occurrence in historic data (e.g. musa) // update all pre-stored frequencies through kde.kde_lookup
-- forename frequencies
-- top areas (Isle of Man)
+- on the fly calculation (broken after reorganisation)
+V forename frequencies
+- top areas ('Isle of Man' large output area issue)
 
 #Development -- Server
 

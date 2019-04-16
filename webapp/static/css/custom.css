@@ -887,3 +887,7 @@ a.timecontrol-play.loading:before{
   color: #000;
   background-color: #dddddd;
 }
+
+.mb-xl {
+  margin-bottom: 4rem !important;
+}
