@@ -17,3 +17,9 @@ urlpatterns = [
 #     path('udl-namekde/search/', kde_views.search, name='search'),
 #     path('udl-namekde/location/', kde_views.locate_admin, name='location'),
 # ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+urlpatterns = [
+    path('gbnames/', views.index, name='home'),
+    path('gbnames/search/', kde_views.search, name='search'),
+    path('gbnames/location/', kde_views.locate_admin, name='location'),
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
