@@ -67,7 +67,7 @@ def search(request):
         data = kdelookup.objects.filter(surname=clean_sur).values()[0]
         source = 'found'
         available = {key: value for key, value in data.items() if value != None}
-        years = [str(year[4:]) for year in list(available.keys()) if year.startswith('freq')]
+        years = [int(str(year[4:])) for year in list(available.keys()) if year.startswith('freq')]
 
         #frequencies
         freq_chart = {key: value for key, value in data.items() if key.startswith('freq')}

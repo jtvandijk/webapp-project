@@ -17,7 +17,6 @@ backBtn.onclick = function() {
   //scroll
   var partop = document.getElementById('scroll1');
   partop.scrollIntoView();
-
 };
 
 //onload

@@ -23,7 +23,6 @@ L.TimeDimension.Layer.GeoJson.GeometryCollection = L.TimeDimension.Layer.GeoJson
          }
          return feature;
      },
-
 });
 
 L.timeDimension.layer.geoJson.geometryCollection = function(layer, options) {

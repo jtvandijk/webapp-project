@@ -22,7 +22,7 @@ uk = gpd.read_file(path).to_crs(epsg=27700)
 uk.drop(uk.columns[[0,1,2,3,4]],axis=1,inplace=True)
 
 #param
-level = 50
+level = 40
 
 #class
 def str_to_class(classname):
@@ -30,7 +30,6 @@ def str_to_class(classname):
 
 #kde
 def calculate_kde(clean_sur,years):
-
     contour_collection=[]
     for year in years:
 
@@ -39,18 +38,12 @@ def calculate_kde(clean_sur,years):
         year_data = str(kdev.objects.filter(surname=clean_sur).values('kde'))
 
         #prepare data
-        val = [int(x) for x in year_data[21:-5].split(',')]
-        spx = int((len(val)/2)+.5)
-        idx = val[:spx]
-        kdx = val[spx:]
-
-        #temp data fix // population weighted kde
-        #idx[spx-1] = int(str(val[spx-1])[:-1])
-        #kdx.insert(0,1)
+        idx = [int(x) for x in year_data.split(';')[0][21:].split(',')]
+        kdx = [int(x) for x in year_data.split(';')[1][:-5].split(',')]
 
         #pd dataframe
         kdf = pd.DataFrame({'gid':idx,'val':kdx})
-        kdf = kdf[(kdf['val'] >= level)]
+        kdf = kdf[(kdf['val'] <= level)]
 
         #add values to grid
         kde = pd.merge(gridc,kdf,on='gid',how='inner')

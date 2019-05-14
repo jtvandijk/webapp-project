@@ -29,7 +29,7 @@ function renderChart(database,freqs,maxy,surname) {
     var backgroundcolor = 'rgba(50,115,209,0.4)';
     freqDiv.id = 'cardFreqCr';
     freqCan.id = 'freqChartCr';
-  }
+  };
 
   //render absolute or surname chart
   if (surname == null && database === 'hr') {
@@ -74,5 +74,4 @@ function renderChart(database,freqs,maxy,surname) {
     var ctx = document.getElementById('freqChartCr');
     var fchart = new Chart (ctx, config)
   };
-
 };

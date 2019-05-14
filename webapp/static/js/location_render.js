@@ -1,5 +1,5 @@
 //global
-var adminlayer
+var adminlayer;
 
 //icons
 var hist = new L.Icon({
