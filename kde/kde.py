@@ -22,7 +22,7 @@ uk = gpd.read_file(path).to_crs(epsg=27700)
 uk.drop(uk.columns[[0,1,2,3,4]],axis=1,inplace=True)
 
 #param
-level = 40
+level = 25
 
 #class
 def str_to_class(classname):
@@ -57,7 +57,7 @@ def calculate_kde(clean_sur,years):
         contourp = to_concave_points(kde,coord)
 
         #clip
-        contours = gpd.GeoSeries([Polygon(contour) for contour in contourp])
+        contours = gpd.GeoSeries([Polygon(contour) for contour in contourp if len(contour) >= 3])
         contours = gpd.GeoDataFrame({'geometry': contours})
         contours.crs = from_epsg(27700)
         clp_prj = gpd.overlay(uk,contours,how='intersection')
