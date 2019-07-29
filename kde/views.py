@@ -112,7 +112,7 @@ def locate_admin(request):
         admin = conpar51.objects.filter(conparid__in=all).values('conparid','centroid')
     elif sr == 'cr':
         admin = census_msoa.objects.filter(msoa11nm__in=all).values('msoa11nm','centroid')
-
+    
     #prepare all
     allgeom = []
     for aa in admin:
@@ -123,10 +123,9 @@ def locate_admin(request):
             geom = gpd.GeoSeries(wkt.loads(aa['centroid'].wkt))
             geom = gpd.GeoDataFrame({'id': name['conparid'],'geometry': geom,'parish': name['parish'],'regcnty': name['regcnty'],'cnty': name['country']})
         elif sr == 'cr':
-            name = lookup_oa.objects.filter(oa11=aa['oacd11']).values('ladnm','lsoa11nm','msoa11nm')[0]
+            name = lookup_oa.objects.filter(msoa11nm=aa['msoa11nm']).values('ladnm','msoa11cd','msoa11nm')[0]
             geom = gpd.GeoSeries(wkt.loads(aa['centroid'].wkt))
-            geom = gpd.GeoDataFrame({'id': aa['oacd11'],'geometry': geom,'ladnm': name['ladnm'],'lsoanm': name['lsoa11nm'],'msoanm': name['msoa11nm']})
-
+            geom = gpd.GeoDataFrame({'id': name['msoa11nm'],'geometry': geom,'ladnm': name['ladnm'],'msoa11cd': name['msoa11cd'],'msoa11nm': name['msoa11nm']})
         #prepare
         geom.crs = from_epsg(27700)
         geom['geometry'] = geom['geometry'].to_crs(epsg=4326)

@@ -89,10 +89,9 @@ def oa_stats(oas):
         msoa_top = []
         for o in oas:
             msoajoin = []
-            msoaid = o['msoa11cd']
             ladnm = lookup_oa.objects.filter(msoa11cd=o['msoa11cd']).values('ladnm','msoa11nm')[0]
             msoanm = ladnm['ladnm'] + ': ' + ladnm['msoa11nm']
-            msoajoin.append(msoaid)
+            msoajoin.append(ladnm['msoa11nm'])
             msoajoin.append(msoanm)
             msoa_top.append(msoajoin)
     return(msoa_top)

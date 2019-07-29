@@ -33,14 +33,15 @@ function mapAdmin(sel,all,sr) {
   var admin = JSON.parse(all);
   for (var i=0; i < admin.features.length; ++i) {
     var aa = admin.features[i].geometry.coordinates;
-    var id = admin.features[i].properties.id;
     if (sr == 'hr') {
+      var id = admin.features[i].properties.id;
       var name = admin.features[i].properties.parish;
       var regcnty = admin.features[i].properties.regcnty;
       var cnty = admin.features[i].properties.cnty;
       var info = '<strong>'+name+'</strong><br>'+regcnty+' ('+cnty+')'
-      icon = hist;
+      var icon = hist;
     } else if (sr == 'cr') {
+      var id = admin.features[i].properties.msoa11nm;
       var name = admin.features[i].properties.ladnm;
       var info = '<strong>'+name+'</strong><br>'+id;
       var icon = cont;
@@ -58,7 +59,7 @@ function mapAdmin(sel,all,sr) {
   markers.addTo(amap);
   amap.fitBounds(markers.getBounds().pad(0.1));
   markers.eachLayer(function (layer) {
-    if (sel == layer.options.id) {
+  if (sel == layer.options.id) {
       layer.openPopup();
     };
   });
