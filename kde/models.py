@@ -455,8 +455,8 @@ class lookup_parish(models.Model):
 class lookup_oa(models.Model):
     pcdc = models.TextField(blank=True,null=True)
     oa11 = models.TextField(blank=True,null=True)
-    lsoacd11 = models.TextField(blank=True,null=True)
-    msoacd11 = models.TextField(blank=True,null=True)
+    lsoa11cd = models.TextField(blank=True,null=True)
+    msoa11cd = models.TextField(blank=True,null=True)
     ladcd = models.TextField(blank=True,null=True)
     lsoa11nm = models.TextField(blank=True,null=True)
     msoa11nm = models.TextField(blank=True,null=True)
