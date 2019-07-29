@@ -84,14 +84,14 @@ def parish_stats(parishes):
 #oa freq
 def oa_stats(oas):
     if not oas:
-        oa_top = [['99','No OA\'s found']]
+        oa_top = [['99','No MSOA\'s found']]
     else:
         oa_top = []
         for o in oas:
             oajoin = []
-            oaid = o['oacd11']
-            lad = lookup_oa.objects.filter(oa11=o['oacd11']).values('ladnm')[0]
-            oanm = lad['ladnm'] + ': ' + o['oacd11']
+            oaid = o['msoa11cd']
+            lad = lookup_oa.objects.filter(msoa11cd=o['msoa11cd']).values('msoa11nm')[0]
+            oanm = lad['msoa11nm'] + ': ' + o['msoa11cd']
             oajoin.append(oaid)
             oajoin.append(oanm)
             oa_top.append(oajoin)
