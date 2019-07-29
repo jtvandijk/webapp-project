@@ -502,11 +502,12 @@ class conpar01(models.Model):
         managed = True
         db_table = 'conpar01'
 
-class census_oa(models.Model):
-    oacd11 = models.TextField(primary_key=True)
+class census_msoa(models.Model):
+    msoa11cd = models.TextField(primary_key=True)
+    msoa11nmm = models.TextField(blank=True,null=True)
     geom = models.MultiPolygonField(srid=27700)
     centroid = models.PointField(srid=27700)
 
     class Meta:
         managed = True
-        db_table = 'census_oa'
+        db_table = 'census_msoa'
