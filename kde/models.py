@@ -504,7 +504,7 @@ class conpar01(models.Model):
 
 class census_msoa(models.Model):
     msoa11cd = models.TextField(primary_key=True)
-    msoa11nmm = models.TextField(blank=True,null=True)
+    msoa11nm = models.TextField(blank=True,null=True)
     geom = models.MultiPolygonField(srid=27700)
     centroid = models.PointField(srid=27700)
 
