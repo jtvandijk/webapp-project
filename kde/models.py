@@ -380,7 +380,7 @@ class names_freq_parish(models.Model):
 
 class names_freq_oa(models.Model):
     surname = models.TextField(primary_key=True)
-    oacd11 = models.TextField(blank=True,null=True)
+    msoa11cd = models.TextField(blank=True,null=True)
     oa_freq = models.IntegerField(blank=True,null=True)
 
     class Meta:

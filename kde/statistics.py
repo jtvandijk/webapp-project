@@ -15,7 +15,7 @@ def all_statistics(clean_sur):
     par_top = parish_stats(parishes)
 
     #statistics -- oa
-    oas = names_freq_oa.objects.filter(surname=clean_sur).values('oacd11')
+    oas = names_freq_oa.objects.filter(surname=clean_sur).values('msoa11cd')
     oa_top = oa_stats(oas)
 
     #statistics -- oac
