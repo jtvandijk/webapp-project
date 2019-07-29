@@ -385,7 +385,7 @@ class names_freq_oa(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'names_freq_oa'
+        db_table = 'names_freq_msoa'
 
 class names_cat_oa(models.Model):
     surname = models.TextField(primary_key=True)
