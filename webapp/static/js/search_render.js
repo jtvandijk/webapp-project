@@ -96,7 +96,7 @@ function renderForenames(fmh,ffh,fmc,ffc) {
   foreHistLegend.innerHTML = 'Female (red) and male (blue) forenames with highest frequency in the period 1851-1911.';
   foreContLegend.id = 'foreContLegend';
   foreContLegend.className = 'card-footer small text-muted text-justify p-3';
-  foreContLegend.innerHTML = 'Female (red) and male (blue) forenames with highest frequency in the perido 1997-2016.';;
+  foreContLegend.innerHTML = 'Female (red) and male (blue) forenames with highest frequency in the period 1997-2016.';;
 
   //hist buttons female
   for (var i = 0; i < ffh.length; ++i) {
