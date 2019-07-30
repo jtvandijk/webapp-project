@@ -49,6 +49,7 @@ function get_data(q) {
       } else if (data.source==='found') {
 
         //render main
+        clearPage();
         renderHTML(data.surname);
         renderMap(data.years,data.contours,cmap);
 
