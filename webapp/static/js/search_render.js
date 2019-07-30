@@ -354,6 +354,10 @@ function removeSelect(rem,n) {
     var remcat = document.getElementById(id);
     remcat.classList.remove('btn-select');
     };
+  //no data
+  var nd = rem+'99'
+  var remcat = document.getElementById(nd);
+  remcat.classList.remove('btn-select');
   };
 
 //clear page
