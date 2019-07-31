@@ -104,9 +104,6 @@
         <p>
           The CDRC brings together world-class researchers from the University of Leeds, University College London, University of Liverpool and the University of Oxford to offer a range of expert services to a wide range of users.
         </p>
-        <p class="p-3 mb-2 bg-orange text-dark">
-          Due to funding and staff changes there is likely to be an interregnum in administrative support for some new researcher applications after <strong>15 March 2019</strong>.
-        </p>
       </div>
       <div class="card-body card-footer float-right pr-3">
         <button type="button" class="btn btn-outline-primary float-right close-modal">Close</button>
@@ -172,10 +169,10 @@
   <div class="modal-content">
     <div class="card">
       <div class="card-header badge-dark bg-custom pl-3">
-        <h4>Contact</h4>
+        <h4>Methodology</h4>
       </div>
       <div class="card-body text-justify p-3">
-        <h5>Contour Maps</h5>
+        <h5>1. Contour Maps</h5>
         <p>
           One way to analyse and compare individual surname distributions over time without being hindered by changing administrative areas is by point pattern analysis.
           We first assign every individual found in the historic census data to the centroid of the parish with which they are associated. Similarly, we geocode all
@@ -188,17 +185,23 @@
           consisting of at least 50 individuals. This is in the first place done because KDE calculations cannot be executed if there are too few points. More importantly,
           because individual location data at postcode level are used for the KDE calculations of the Consumer Registers, we felt it was prudent to increase the minimum of occurrences slightly.
         </p>
-        <h5>Surname Statistics</h5>
-        <h6>1. Historic Forenames / Recent Forenames</h6>
+        <h5>2. Historic Forenames / Recent Forenames</h5>
         <p>
-          For your search, the Historic Forenames and Recent Forenames show the forenames with the most highest frequency in the period 1851-1911 and 1997-2016, respectively.
+          For your search, the Historic Forenames and Recent Forenames show the forenames with the highest frequency in the period 1851-1911 and 1997-2016, respectively.
           Forenames are colour coded according to their classification as male or female. Forenames that could not be classified as either male or female are excluded.
           For the Historic Census data classification as male of female is done by the gender variable. For the Consumer Registers a lookup table ("MONICA") is used to infer an individual's gender.
         </p>
-        <h6>2. Top Historic Parishes / Top Middle Layer Super Output Areas</h6>
+        <h5>3. Top Historic Parishes / Top Middle Layer Super Output Areas</h5>
         <p>
-          Top 10 of Historic Parishes or Middle Layer Super Output Areas that have the highest number of bearers for the surname that was searched for. Top 10 is calculated for the
-          entire time period (e.g. 1851-1911 and 1997-2016).
+          For your search, the Top Historic Parishes and Middle Layer Super Output Areas (MSOA) show the administrative unit in which the surname was found most frequently. The Top Historic
+          Parishes show the Registration District and the Parish, whereas the MSOAs show the Local Authority District and the name of the 2011 MSOA.
+          Rather than for individual years, the Top Historic Parishes and the Top Middle Layer Super Output Areas are taken over the entire time period (e.g. 1851-1911 and 1997-2016).
+        </p>
+        <h5>4. Output Area classification</h5>
+        <p>
+          For your search, it shows the modal value for Supergroup and Group of the 2011 Output Area Classification for the 2016 population. The 2011 OAC has been created through collaboration
+          between the Office for National Statistics (ONS) and University College London (UCL). The 2011 OAC is a hierarchical geodemographic classification of the UK consisting of 8 Supergroups,
+          26 Groups and 76 Subgroups. See for more information: <a href="http://discovery.ucl.ac.uk/1498873/">Gale et al. 2011</a>.
         </p>
       </div>
       <div class="card-body card-footer float-right pr-3">
