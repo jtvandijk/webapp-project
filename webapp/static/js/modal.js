@@ -2,15 +2,6 @@
 var searchmodal = document.getElementById('searchModal');
 var modal = document.getElementsByClassName('modal');
 
-//display onclick
-var modalBtns = [...document.getElementsByClassName('dropdown-item')];
-modalBtns.forEach(function(btn){
-  btn.onclick = function() {
-    var modal = btn.getAttribute('data-modal');
-    document.getElementById(modal).style.display = 'block';
-  }
-});
-
 //close
 var clsBtns = [...document.getElementsByClassName('close')];
 clsBtns.forEach(function(btn){

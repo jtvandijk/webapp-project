@@ -31,6 +31,11 @@ function show(cards) {
     card.classList.add('show');
 })};
 
+//popovers
+$j(function () {
+  $j('[data-toggle="popover"]').popover()
+})
+
 //force reload maptiles
 $j("a[href='#names']").on('shown.bs.tab', function(e) {
   cmap.invalidateSize();
