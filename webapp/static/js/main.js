@@ -36,6 +36,11 @@ $j(function () {
   $j('[data-toggle="popover"]').popover()
 })
 
+//dropdown
+$(document).ready(function(){
+    $('.dropdown-toggle').dropdown();
+});
+
 //force reload maptiles
 $j("a[href='#names']").on('shown.bs.tab', function(e) {
   cmap.invalidateSize();
