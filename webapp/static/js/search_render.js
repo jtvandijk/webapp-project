@@ -60,7 +60,7 @@ function renderHTML(surname) {
 
   mapLegend.id = 'mapLegend';
   mapLegend.className = 'card-footer small text-muted text-justify p-3';
-  mapLegend.innerHTML = 'The grey lines enclose the areas where 50% of name bearers lived over the period 1851-1911, where we have the historic Census data. The orange lines show the much more recent distributions.';
+  mapLegend.innerHTML = 'The grey lines enclose the areas where the population-weighted density of the surname is highest in the period 1851-1911, where we have the historic Census data. Use the slider bar to show the same metric for much more recent distributions, shown in orange.';
 
   //replace
   pSearch.replaceWith(foundPar);
@@ -244,7 +244,7 @@ function renderCAT(oacat) {
   gButton.replaceWith(gDiv);
   };
 
-//render modal oa ahah
+//render selection oa ahah
 function renderHealth(oahlth) {
 
   //remove select
@@ -261,7 +261,7 @@ function renderHealth(oahlth) {
   hlthcat.className = 'btn btn-h'+oahlth.toString()+' btn-sm btn-block btn-select p-0 m-0';
   };
 
-//render modal oa imd
+//render selection oa imd
 function renderIMD(oaimd) {
 
   //remove select
@@ -278,7 +278,7 @@ function renderIMD(oaimd) {
   imdcat.className = 'btn btn-l'+oaimd.toString()+' btn-sm btn-block btn-select p-0 m-0';
   };
 
-//render modal oa bband
+//render selection oa bband
 function renderBBAND(bband) {
 
   //remove selected
