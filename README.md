@@ -17,7 +17,6 @@ are found to be representative of the vast majority of the UK’s adult populati
 [Lansley, Li, and Longley 2019](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/rssa.12476).
 
 ## Notes
-Notes
 GB Names is intended to show interesting geographical patterns of names, rather than mapping individuals or families. 
 We do not map or show statistics for names with less than 30 occurences per year or for areas where the selected name has a 
 very small population.
