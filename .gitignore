@@ -2,6 +2,7 @@
 *.log
 *.pot
 *.pyc
+*.docx
 __pycache__/
 migrations/
 /static/
