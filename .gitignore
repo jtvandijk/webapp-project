@@ -4,6 +4,7 @@
 *.pyc
 *.docx
 __pycache__/
+misc/
 migrations/
 /static/
 local_settings.py
