@@ -10,7 +10,7 @@
     <meta name="JT van Dijk" content="">
     <link rel="icon" href="{% static 'favlogo.png' %}"/>
 
-    <title>GB Names</title>
+    <title>GBNames</title>
 
     <!--bootstrap css-->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"/>
@@ -42,22 +42,25 @@
 
         <!--search details-->
         <div class="row justify-content-center">
-          <div class="col-lg-7 col-md-8 col-sm-9">
+          <div class="col-lg-10 col-md-10 col-sm-10">
             <p class="pb-3 pt-4" id="searchParam"></p>
           </div>
         </div>
 
         <!--jumbotron-->
         <div class="row justify-content-center">
-          <div class="col-lg-7 col-md-8 col-sm-9">
+          <div class="col-lg-10 col-md-10 col-sm-10">
             <div id="jumbotron" class="jumbotron bg-notes p-3 mb-xl">
-              <h1>Welcome to GB Names
+              <h1>Welcome to GBNames
                 <button id="clsJumbo" class="btn p-0 float-right">
                   <span class="fas fa-times fa-2x pt-1"></span>
                 </button>
               </h1>
               <p class="lead text-justify">
-                Our research, carried out at the ESRC Consumer Data Research Centre and the UCL Urban Dynamics Lab, is exploring the spread of family names across Great Britain, using historic censuses and recent consumer registers.
+                Our research, carried out at the ESRC Consumer Data Research Centre (CDRC) and the UCL Urban Dynamics Lab,
+                is exploring the generational and inter-generational residential movements of family groups across Great Britain,
+                using historic censuses and recent consumer registers. The CDRC holds a number of novel consumer datasets that
+                chart recent movements and changes, including the links between geographical and social mobility.
               </p>
               <div class="mt-4 text-center">
                 <h3>What's your family name?</h3>
@@ -69,7 +72,7 @@
                 </form>
               </div>
               <div class="small text-muted text-justify">
-                GB Names records surname searches for statistical purposes. Surname searches that have not been previously executed by you or by others may take up to 30 seconds.
+                GBNames records surname searches for statistical purposes. Surname searches that have not been previously executed by you or by others may take up to 30 seconds to generate.
               </div>
             </div>
           </div>
@@ -81,14 +84,14 @@
 
             <!--map section-->
             <div class="row justify-content-center">
-              <div class="col-lg-7 col-md-8 col-sm-9">
+              <div class="col-lg-10 col-md-10 col-sm-10">
                 <div class="card mb-3" >
                   <div class="card-header pl-3 pb-1">
                     <h4>Contour Map
                       <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseMap" aria-expanded="true" aria-controls="collapseMap">
                         <span class="fa fa-align-justify fa-lg pr-1 pl-1" style="text-decoration: none"></span>
                       </button>
-                      <button type="button" class="btn btn-light p-0 float-right" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
+                      <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
                         <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"</span>
                       </button>
                     </h4>
@@ -109,17 +112,17 @@
 
             <!--forename section-->
             <div class="row justify-content-center">
-              <div class="col-lg-7 col-md-8 col-sm-9">
+              <div class="col-lg-10 col-md-10 col-sm-10">
                 <div class="row justify-content-center">
                   <!--historic forenames-->
                   <div class="col-lg-6">
                     <div class="card mb-3">
                       <div class="card-header pl-3 pb-1">
-                        <h4>Historic Forenames
+                        <h4>Historical Forenames
                         <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseForeFem" aria-expanded="false" aria-controls="collapseForeFem">
                           <span class="fa fa-align-justify fa-lg" style="text-decoration: none"></span>
                         </button>
-                        <button type="button" class="btn btn-light p-0 float-right" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
+                        <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
                           <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"</span>
                         </button>
                         </h4>
@@ -139,7 +142,7 @@
                         <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseForeMal" aria-expanded="false" aria-controls="collapseForeMal">
                           <span class="fa fa-align-justify fa-lg" style="text-decoration: none"></span>
                         </button>
-                        <button type="button" class="btn btn-light p-0 float-right" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
+                        <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
                           <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"</span>
                         </button>
                         </h4>
@@ -160,21 +163,21 @@
 
             <!--area section-->
             <div class="row justify-content-center">
-              <div class="col-lg-7 col-md-8 col-sm-9">
+              <div class="col-lg-10 col-md-10 col-sm-10">
                 <div class="row justify-content-center">
                   <!--top historic parishes-->
                   <div class="col-lg-6">
                     <div class="card mb-3">
                       <div class="card-header pl-3 pb-1">
-                        <h4>Top Historic Parishes
+                        <h4>Top Historical Parishes
                         <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapsePar" aria-expanded="false" aria-controls="collapsePar">
                           <span class="fa fa-align-justify fa-lg" style="text-decoration: none"></span>
                         </button>
-                        <button type="button" class="btn btn-light p-0 float-right" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
+                        <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
                           <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"</span>
                         </button>
                         </h4>
-                        <small>1851 - 1911</small>
+                        <small>Historical Parishes</small>
                       </div>
                       <div id="collapsePar" class="card-body p-0 collapse">
                         <ul id="topPar" class="list-inline ml-3 mt-2 mr-3 mb-3"></ul>
@@ -185,15 +188,15 @@
                   <div class="col-lg-6">
                     <div class="card mb-3">
                       <div class="card-header pl-3 pb-1">
-                        <h4>Top MSOA
+                        <h4>Top Contemporary Areas
                         <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseOA" aria-expanded="false" aria-controls="collapseOA">
                           <span class="fa fa-align-justify fa-lg" style="text-decoration: none"></span>
                         </button>
-                        <button type="button" class="btn btn-light p-0 float-right" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
+                        <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
                           <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"</span>
                         </button>
                         </h4>
-                        <small>1997 - 2016</small>
+                        <small>Middle layer Super Output Areas</small>
                       </div>
                       <div id="collapseOA" class="card-body p-0 collapse">
                         <ul id="topOA" class="list-inline ml-3 mt-2 mr-3 mb-3"></ul>
@@ -206,19 +209,19 @@
 
             <!--output area classifciation-->
             <div class="row justify-content-center">
-              <div class="col-lg-7 col-md-8 col-sm-9">
+              <div class="col-lg-10 col-md-10 col-sm-10">
                 <div class="card mb-3">
                   <div class="card-header pl-3 pb-1">
-                    <h4 class="m-0">2011 Output Area Classification
+                    <h4 class="m-0">Output Area Classification
                     <!--output areas-->
                     <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseCat" aria-expanded="false" aria-controls="collapseCat">
                       <span class="fa fa-align-justify fa-lg" style="text-decoration: none"></span>
                     </button>
-                    <button type="button" class="btn btn-light p-0 float-right" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
+                    <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
                       <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"</span>
                     </button>
                     </h4>
-                    <small>2011</small>
+                    <small>Neighbourhoods classification</small>
                   </div>
                   <div id="collapseCat" class="collapse" aria-labelledby="collapseCat">
                     <div class="card-body p-2" id="cardFreqCr">
@@ -240,21 +243,21 @@
 
             <!--health and deprivation section-->
             <div class="row justify-content-center">
-              <div class="col-lg-7 col-md-8 col-sm-9">
+              <div class="col-lg-10 col-md-10 col-sm-10">
                 <div class="row justify-content-center">
                   <div class="col-lg-6">
                     <div class="card mb-3">
                       <div class="card-header pl-3 pb-1">
-                        <h4 class="m-0">Health Access (AHAH)
+                        <h4 class="m-0">Healthy Neighbourhoods
                         <!-- Lower Layer Super Output Area -->
                         <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseAHAH" aria-expanded="false" aria-controls="collapseAHAH">
                           <span class="fa fa-align-justify fa-lg" style="text-decoration: none"></span>
                         </button>
-                        <button type="button" class="btn btn-light p-0 float-right" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
+                        <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
                           <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"</span>
                         </button>
                         </h4>
-                        <small>2016</small>
+                        <small>Access to Healthy Assets and Hazards</small>
                       </div>
                       <div id="collapseAHAH" class="card-body p-0 collapse">
                         <div class="p-3">
@@ -278,16 +281,16 @@
                   <div class="col-lg-6">
                     <div class="card mb-3">
                       <div class="card-header pl-3 pb-1">
-                        <h4 class="m-0">Deprivation Index
+                        <h4 class="m-0">Neighbourhood Deprivation
                         <!-- Lower Layer Super Output Area -->
                         <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseIMD" aria-expanded="false" aria-controls="collapseIMD">
                           <span class="fa fa-align-justify fa-lg" style="text-decoration: none"></span>
                         </button>
-                        <button type="button" class="btn btn-light p-0 float-right" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
+                        <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
                           <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"</span>
                         </button>
                         </h4>
-                        <small>2015</small>
+                        <small>Index of Multiple Deprivation</small>
                       </div>
                       <div id="collapseIMD" class="card-body p-0 collapse">
                         <div class="p-3">
@@ -314,7 +317,7 @@
 
             <!--internet and consumer section-->
             <div class="row justify-content-center">
-              <div class="col-lg-7 col-md-8 col-sm-9">
+              <div class="col-lg-10 col-md-10 col-sm-10">
                 <div class="row justify-content-center">
                   <div class="col-lg-6">
                     <div class="card mb-3">
@@ -324,11 +327,11 @@
                         <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseBBAND" aria-expanded="false" aria-controls="collapseBBAND">
                           <span class="fa fa-align-justify fa-lg" style="text-decoration: none"></span>
                         </button>
-                        <button type="button" class="btn btn-light p-0 float-right" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
+                        <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
                           <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"</span>
                         </button>
                         </h4>
-                        <small>2017</small>
+                        <small>Fixed broadband download speed</small>
                       </div>
                       <div id="collapseBBAND" class="card-body p-0 collapse">
                         <div class="p-3">
@@ -360,11 +363,11 @@
                             <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseIUC" aria-expanded="false" aria-controls="collapseIUC">
                               <span class="fa fa-align-justify fa-lg" style="text-decoration: none"></span>
                             </button>
-                            <button type="button" class="btn btn-light p-0 float-right" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
+                            <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
                               <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"</span>
                             </button>
                             </h4>
-                            <small>2018</small>
+                            <small>Internet User Classification</small>
                           </div>
                           <div id="collapseIUC" class="card-body p-0 collapse">
                             <div class="p-3">
@@ -384,11 +387,11 @@
                             <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseCRVUL" aria-expanded="false" aria-controls="collapseCRVUL">
                               <span class="fa fa-align-justify fa-lg" style="text-decoration: none"></span>
                             </button>
-                            <button type="button" class="btn btn-light p-0 float-right" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
+                            <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
                               <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"</span>
                             </button>
                             </h4>
-                            <small>2011</small>
+                            <small>Consumer vulnerability to marketing materials</small>
                           </div>
                           <div id="collapseCRVUL" class="card-body p-0 collapse">
                             <div class="p-3">
@@ -406,14 +409,14 @@
 
             <!--frequency section-->
             <div class="row justify-content-center">
-              <div class="col-lg-7 col-md-8 col-sm-9">
+              <div class="col-lg-10 col-md-10 col-sm-10">
                 <div class="card mb-3">
                   <div class="card-header pl-3 pb-1">
                     <h4 class='m-0'>Frequencies
                     <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseFreqHr" aria-expanded="false" aria-controls="collapseFreqHr">
                       <span class="fa fa-align-justify fa-lg" style="text-decoration: none"></span>
                     </button>
-                    <button type="button" class="btn btn-light p-0 float-right" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
+                    <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
                       <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"</span>
                     </button>
                     </h4>
@@ -434,14 +437,14 @@
             </div>
 
             <div class="row justify-content-center">
-              <div class="col-lg-7 col-md-8 col-sm-9">
+              <div class="col-lg-10 col-md-10 col-sm-10">
                 <div class="card mb-3">
                   <div class="card-header pl-3 pb-1">
                     <h4 class="m-0">Frequencies
                     <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseFreqCr" aria-expanded="false" aria-controls="collapseFreqCr">
                       <span class="fa fa-align-justify fa-lg" style="text-decoration: none"></span>
                     </button>
-                    <button type="button" class="btn btn-light p-0 float-right" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
+                    <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
                       <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"</span>
                     </button>
                     </h4>
@@ -467,14 +470,14 @@
 
             <!--map section-->
             <div class="row justify-content-center">
-              <div class="col-lg-7 col-md-8 col-sm-9">
+              <div class="col-lg-10 col-md-10 col-sm-10">
                 <div class="card mb-3" >
                   <div class="card-header pl-3 pb-1">
                     <h4>Top Areas
                     <button class="btn btn-light p-0 float-right" data-toggle="collapse" data-target="#collapseLoc" aria-expanded="true" aria-controls="collapseLoc">
                       <span class="fa fa-align-justify fa-lg" style="text-decoration: none"></span>
                     </button>
-                    <button type="button" class="btn btn-light p-0 float-right" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
+                    <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>About</b> >> <b>Methodology</b> for more information.">
                       <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"</span>
                     </button>
                     </h4>
@@ -490,12 +493,14 @@
 
                       </canvas>
                     </div>
+                    <div id="locLegend">
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             <div class="row justify-content-center">
-              <div class="col-lg-7 col-md-8 col-sm-9">
+              <div class="col-lg-10 col-md-10 col-sm-10">
                 <div class="card-body p-0 mb-3 float-right">
                   <button type="button" id="backNames" class="btn btn-lg btn-outline-primary">Back to family name overview</button>
                 </div>
@@ -506,11 +511,11 @@
 
         <!--worlnames-->
         <div class="row justify-content-center">
-          <div class="col-lg-7 col-md-8 col-sm-9">
+          <div class="col-lg-10 col-md-10 col-sm-10">
             <div class='alert bg-notes text-justify'>
-              <h4>Worldnames</h4>
+              <h4>Worldnames2</h4>
               <small>
-                Want more names? Have a look at our sister website on <a href="http://misc.oomap.co.uk/misc/worldnames2_dev/#">Worldnames</a>.
+                Want more names? Have a look at maps of international occurences of surnames on <a href="https://worldnames.publicprofiler.org">Worldnames2</a>. <b>COMING SOON</b>
               </small>
             </div>
           </div>
@@ -518,12 +523,12 @@
 
         <!--notes-->
         <div class="row justify-content-center">
-          <div class="col-lg-7 col-md-8 col-sm-9">
+          <div class="col-lg-10 col-md-10 col-sm-10">
             <div class='alert bg-notes mb-2 text-justify'>
               <h4>Notes</h4>
               <small>
-                GB Names is intended to show interesting geographical patterns of names, rather than mapping individuals or families. We do not map or show statistics for names with less than 30 occurences per year or for areas where the selected name has a very small population.
-                See our About pages for further information on GB Names and applied Methodology
+                GBNames is intended to show interesting geographical patterns of names, rather than mapping individuals or families. We do not map or show statistics for names with less than 30 occurences per year or for areas where the selected name has a very small population.
+                See our About pages for further information on GBNames and applied Methodology
              </small>
             </div>
           </div>
@@ -531,7 +536,7 @@
 
         <!--footer-->
         <div class="row justify-content-center mt-0">
-          <div class="col-lg-7 col-md-8 col-sm-9">
+          <div class="col-lg-10 col-md-10 col-sm-10">
             <div class="mb-3 text-justify">
               <small>
                 &copy; <a href="https://cdrc.ac.uk/">Consumer Data Research Centre</a> and <a href="https://www.ucl.ac.uk/urban-dynamics-lab">Urban Dynamics Lab</a> {% now "Y" %}.

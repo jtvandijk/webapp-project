@@ -112,7 +112,7 @@ def locate_admin(request):
         admin = conpar51.objects.filter(conparid__in=all).values('conparid','centroid')
     elif sr == 'cr':
         admin = census_msoa.objects.filter(msoa11nm__in=all).values('msoa11nm','centroid')
-    
+
     #prepare all
     allgeom = []
     for aa in admin:

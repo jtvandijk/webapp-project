@@ -5,7 +5,7 @@
 <nav class="navbar navbar-expand-md navbar-dark bg-custom fixed-top">
 
   <!--brand-->
-  <a class="navbar-brand" href="{% url 'home' %}">GB Names</a>
+  <a class="navbar-brand" href="{% url 'home' %}">GBNames</a>
 
   <!--navigation: hidden-->
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,7 +26,7 @@
           <span class="nav-link-text">About</span>
         </a>
         <div class="dropdown-menu" aria-labelledby="infodrop">
-          <a class="dropdown-item" href="#" data-toggle="modal" data-target="#aboutModal">GB Names</a>
+          <a class="dropdown-item" href="#" data-toggle="modal" data-target="#aboutModal">GBNames</a>
           <a class="dropdown-item" href="#" data-toggle="modal" data-target="#methModal">Methodology</a>
           <a class="dropdown-item" href="#" data-toggle="modal" data-target="#cdrcModal">Consumer Data Research Centre</a>
           <a class="dropdown-item" href="#" data-toggle="modal" data-target="#udlModal">Urban Dynamics Lab</a>
@@ -48,24 +48,23 @@
 <div id="aboutModal" class="modal" role="dialog">
   <div class="modal-content">
     <div class="modal-header">
-      <h4>GB Names</h4>
+      <h4>GBNames</h4>
     </div>
     <div class="modal-body text-justify">
       <h5>Data</h5>
       <p>
-        GB Names focuses upon the origins and spread of family bloodlines through surnames as manifest in the past and over more recent years.
+        GBNames traces the origins and spread of family groups as manifest through surnames over the distant and more recent past.</p>
+      <p>
+        Digitally encoded historical census data for England, Scotland, and Wales provided by the Economic and Social Research Council
+        <a href="https://www1.essex.ac.uk/history/research/icem/">I-CeM project</a> provide population-wide microdata of individuals’
+        names and addresses (following a secure data user agreement by researchers). This integrated collection of historic census
+        microdata derives from the decennial Censuses of England and Wales for 1851, 1861, 1881, 1891, 1901 and 1911,
+        and for Scotland for the period 1851 to 1901 (although we do not use the 1871 data). Addresses are georeferenced to parishes,
+        the boundaries of which have been digitised. See for more information: <a href="https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=7481">Higgs and Schürer 2014</a>.
       </p>
       <p>
-        Digitally encoded Historic Census data for England, Scotland, and Wales provide population-wide microdata of individuals’ names and addresses.
-        This integrated collection of historic census microdata covers the decennial census of England and Wales for 1851, 1861, 1881, 1891, 1901, 1911,
-        and for Scotland for the period 1851 to 1901. The addresses are linked to parishes, which have been digitised into a set of two consistent parish geographies.
-        See for more information: <a href="https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=7481">Higgs and Schürer 2014</a>.
-      </p>
-      <p>
-        Because contemporary censuses do not disclose names, extensive databases of names at the addresses-level were sought from public versions of the electoral
-        register from 1997 until 2016, with supplements from consumer data from 2002 onwards to capture those that opt-out or are not eligible to vote.
-        The ‘Consumer Registers’ are linked to bolster their coverage and are found to be representative of the vast majority of the UK’s adult population.
-        See for more information: <a href="https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/rssa.12476">Lansley, Li, and Longley 2019</a>.
+        Individual names and addresses cannot be obtained from censuses until the data are 100 years old, and so we use consumer
+        registers for the period 1997-2016: details of these data are available in <a href="https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/rssa.12476">Lansley et al. 2019</a>.
       </p>
       <h5>Funding</h5>
       <p>
@@ -82,25 +81,28 @@
 <div id="cdrcModal" class="modal" role="dialog">
   <div class="modal-content">
     <div class="modal-header">
-        <h4>Consumer Data Research Centre</h4>
+        <h4>The Consumer Data Research Centre (CDRC)</h4>
     </div>
     <div class="modal-body text-justify">
       <p>
-        Vast amounts of UK consumer data are generated each day, providing valuable insight to help organisations operate more efficiently. It’s not just businesses that benefit. Researchers can utilise
-        data to make the UK a better place. The <a href="https://www.cdrc.ac.uk/">Consumer Data Research Centre</a> (CDRC) is working with consumer-related organisations to open up their data resources; to our trusted researchers.
-        This enables them to carry out important social and economic research.
+        Vast amounts of consumer data are created every day, but are al-too-rarely reused or repurposed for the social good.
+        The <a href="https://www.cdrc.ac.uk/">Consumer Data Research Centre</a> (CDRC) works with businesses and other consumer-facing
+        organisations to make consumer data findable, accessible, interoperable and reusable to this end. This website would not
+        be possible but for collaborations with private sector organisations to make digital data available in ways that are efficient,
+        effective and safe to use.
       </p>
       <p>
-        The CDRC was established by the <a href="http://www.esrc.ac.uk/">UK Economic and Social Research Council</a> as part of <a href="https://www.cdrc.ac.uk/contact/faqs/">phase two of the Big Data Network</a> to:
+        The CDRC was established by the <a href="http://www.esrc.ac.uk/">UK Economic and Social Research Council</a> as part of its
+        Big Data Network to:
       </p>
       <ul>
-        <li>Contribute towards ensuring the future sustainability of UK research using consumer data</li>
-        <li>Support consumer related organisations to maximise their innovation potential</li>
-        <li>Drive economic growth</li>
+        <li>contribute towards ensuring the future sustainability of UK research using consumer data;</li>
+        <li>support consumer related organisations to maximise their innovation potential; and</li>
+        <li>drive economic growth</li>
       </ul>
       <p>
-        The CDRC brings together world-class researchers from the University of Leeds, University College London, University of Liverpool and the University of Oxford to offer a range of expert services to a wide range of users.
-      </p>
+        The CDRC brings together world-class researchers from University College London, the University of Liverpool,
+        the University of Oxford and the University of Leeds to offer a range of expert services to a wide range of research users.      </p>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-outline-primary float-right" data-dismiss="modal">Close</button>
@@ -112,25 +114,28 @@
 <div id="udlModal" class="modal" role="dialog">
   <div class="modal-content">
     <div class="modal-header">
-        <h4>Urban Dynamics Lab</h4>
+        <h4>The Urban Dynamics Lab (UDL)</h4>
     </div>
     <div class="modal-body text-justify">
       <p>
-        The Urban Dynamics Lab (UDL) at University College London is part of a five year EPSRC-funded research project (<a href="http://gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/M023583/1">UK Regions Digital Research Facility</a>)
-        bringing together expertise from across UCL to explore and address questions at the intersection of city and regional economic development and urban modelling, data analytics and computing:
+        The Urban Dynamics Lab (UDL) at University College London is a five year <a href="https://epsrc.ukri.org/">Engineering and Physical Sciences Research Council
+        (EPSRC)</a> initiative bringing together inter-disciplinary expertise to explore and address questions at the intersection of city and regional economic development,
+        urban modelling, data analytics and computing:
       </p>
       <ul>
         <li><a href="https://www.bartlett.ucl.ac.uk/space-syntax">Space Syntax</a></li>
         <li><a href="https://www.bartlett.ucl.ac.uk/casa">Centre for Advanced Spatial Analysis</a></li>
-        <li><a href="http://www.geog.ucl.ac.uk">Geography</a></li>
+        <li><a href="http://www.geog.ucl.ac.uk">Department of Geography Geospatial Analytics and Computing Group</a></li>
         <li><a href="http://www.cs.ucl.ac.uk/home/">Computer Science</a></li>
       </ul>
       <p>
-        The project is firmly based on a commitment to applied research and exploring avenues for policy impact within the UK regions in co-design with Local and Central Government, as well as project partners.
-      </p>
+        The UDL is firmly commited to applied research and exploring avenues for policy impact within the UK regions,
+        in co-design with Local and Central Government, as well as project partners.</p>
       <p>
-        The project is supported by a range of partners, including Bank of England, Greater London Authority, SAS, Intel, Future Cities Catapult, Core Cities, Centre for Cities, Space Syntax Limited, and will involve the
-        implementation of a policy engagement and outreach programme across the regions The UKRDRF grant is part of the RCUK's Digital Economy programme and works in conjunction with other Digital Economy Centres across the UK.
+        The work is supported by a range of partners, including the Bank of England, Greater London Authority, SAS, Intel,
+        the Future Cities Catapult, Core Cities, Centre for Cities, Space Syntax Limited. It involve the implementation of a
+        policy engagement and outreach programme across the UK regions Funding is part of the RCUK's Digital Economy
+        Programme and works in conjunction with other Digital Economy Centres across the UK.
       </p>
     </div>
     <div class="modal-footer">
@@ -148,64 +153,79 @@
     <div class="modal-body text-justify">
       <h5 id="m1">Contour Maps</h5>
       <p>
-        One way to analyse and compare individual surname distributions over time without being hindered by changing administrative areas is by point pattern analysis.
-        We first assign every individual found in the historic census data to the centroid of the parish with which they are associated. Similarly, we geocode all
-        individuals found in the Consumer Registers directly through the coordinates associated with each postcode. We subsequently map the spatial patterns of these
-        point events on a surname-by-surname basis through a process called Kernel Density Estimation (KDE). KDE is a non-parametric method that places a search window
-        (kernel) over a point and uses the information within this kernel to estimate point densities.
+        One way to analyse and compare individual surname distributions over time without needing to accommodate changing administrative
+        areas is to assign individual occurrences of names to the central point (centroid) of the parishes that existed when each of the
+        historical censuses was conducted. For the more recent past, we geocode all adult individuals found in the Consumer Registers
+        using georeferenced postcodes. We then map the over-all geographic distribution of these points on a surname-by-surname basis
+        using a technique called kernel density estimation (KDE), in effect placing a search window (kernel) over successive locations
+        and recording changes in the density of points across space. Details of the technique are available in the 6th Edition of
+        M. J. de Smith, M. F. Goodchild, and P.A. Longley (2018) Geospatial Analysis, available online at
+        <a href="https://www.spatialanalysisonline.com/HTML/index.html?density__kernels_and_occupancy.htm">www.spatialanalysisonline.com</a>.
       </p>
       <p>
-        For the historic data, KDEs are only calculated for surname populations of at least 30 individuals. For the contemporary Consumer Registers the surname populations
-        consisting of at least 50 individuals. This is in the first place done because KDE calculations cannot be executed if there are too few points. More importantly,
-        because individual location data at the postcode level are used for the KDE calculations of the Consumer Registers, we felt it was prudent to increase the minimum of occurrences slightly.
-        See for more information: <a href="http://www.newcastle.gisruk.org/proceedings/">Van Dijk et al. 2019</a>.
+        For the historical census data, KDEs are calculated only for surnames that have at least 30 individual bearers. For the more
+        contemporary Consumer Registers, a minimum threshold of 50 adults is used. The reasons for this are in part technical, because
+        KDE calculations cannot be executed for small numbers of points. When mapping consumer data, these thresholds are used also to
+        avoid the possibility of disclosing the precise areas where living individual reside. More information on these procedures is
+        available in one of our academic papers: <a href="http://www.newcastle.gisruk.org/proceedings/">Van Dijk et al. 2019</a>.
       </p>
-      <h5 id="m2">Historic Forenames / Recent Forenames</h5>
+      <h5 id="m2">Historical Forenames / Recent Forenames</h5>
       <p>
-        For your search, the Historic Forenames and Recent Forenames show the forenames with the highest frequency in the period 1851-1911 and 1997-2016, respectively.
-        Forenames are colour coded according to their classification as male or female. Forenames that could not be classified as either male or female are excluded.
-        For the Historic Census data classification as male or female is done by the gender variable. For the Consumer Registers, a lookup table ("MONICA") is used to infer an individual's gender.
+        For your selected surname, we provide the most popular associated forenames for all residents between 1851-1911 and those for
+        adults between 1997-2016. Historical forenames are classified as male or female using census returns from the period, while a
+        lookup table is used for the more recent period.
       </p>
-      <h5 id="m3">Top Historic Parishes / Top Middle Layer Super Output Areas</h5>
+      <h5 id="m3">Top Historical Parishes / Top Contemporary Areas</h5>
       <p>
-        For your search, the Top Historic Parishes and Middle Layer Super Output Areas (<a href="https://www.ons.gov.uk/methodology/geography/ukgeographies/censusgeography">MSOA</a>) show the administrative unit in which the surname was found most frequently. The Top Historic
-        Parishes show the Registration District and the Parish, whereas the MSOAs show the Local Authority District and the name of the 2011 MSOA.
-        Rather than for individual years, the Top Historic Parishes and the Top Middle Layer Super Output Areas are taken over the entire time period (e.g. 1851-1911 and 1997-2016).
+        We identify the historical and present day areas in which your selected surname occurs most frequently. The Top Historical
+        Parishes identify Registration Districts as well as Parishes, while the Top Contemporary Areas are divisions of present day (2011) Local Authority
+        Districts (Middle layer Super Output Areas). These are calculated as averages over the historical or recent periods.
       </p>
-      <h5 id="m4">2011 Output Area classification</h5>
+      <h5 id="m4">Output Area classification</h5>
       <p>
-        For your search, this statistic shows the modal value for the Supergroup and Group of the 2011 Output Area Classification in 2016. The 2011 OAC has been created through a collaboration
-        between the Office for National Statistics (ONS) and University College London (UCL). The 2011 OAC is a hierarchical geodemographic classification of the UK consisting of 8 Supergroups,
-        26 Groups and 76 Subgroups. See for more information: <a href="http://josis.org/index.php/josis/article/view/232">Gale et al. 2011</a>.
+        This is a classification of neighbourhoods, arranged into Supergroups and Groups based upon 2011 Census of Population data.
+        We created this through a collaboration with the Office for National Statistics (ONS) and plan to update it following the
+        2021 Census. We show the 2011 OAC Supergroup and Group in which your selected surname occurs most frequently. The classification
+        is described fully in <a href="http://josis.org/index.php/josis/article/view/232">Gale et al. 2011</a>.
       </p>
-      <h5 id="m5">Access to Health (AHAH)</h5>
+      <h5 id="m5">Access to Healthy Assets and Hazards (AHAH)</h5>
       <p>
-        For your search, this statistic shows the modal value of the AHAH Index decile. AHAH is a multi-dimensional index developed by the CDRC for Great Britain
-        measuring how ‘healthy’ neighbourhoods are. It combines together indicators under three different domains of accessibility: retail Environment, health services, and physical environment.
-        See for more information: <a href="https://doi.org/10.1016/j.healthplace.2018.08.019">Green et al. 2018</a>.
+        AHAH is a multi-dimensional index for Great Britain developed by the Consumer Data Research Centre (CDRC) in order to describe
+        neighbourhoods as more or less healthy places in which to live. Various data describe access to retail facilities,
+        health services, and physical features. Neighbourhoods can be ranked from best to worst and we show the decile in which your
+        selected surname occurs most frequently. The classification is fully described in <a href="https://doi.org/10.1016/j.healthplace.2018.08.019">Green et al. 2018</a>.
       </p>
-      <h5 id="m6">Index of Multiple Deprivation</h5>
+      <h5 id="m6">Index of Multiple Deprivation (IMD)</h5>
       <p>
-        For your search, this statistic shows the average score (classified in deciles) on the Index of Multiple Deprivation. See for more information:
-        <a href="https://data.cdrc.ac.uk/dataset/english-indices-of-deprivation-2010-and-2015-data-pack">English Indices of Deprivation 2010 and 2015 Data Pack</a>.
+        Indices of Multiple Deprivation (IMDs) are periodically calculated by UK governments in order to summarise prevailing physical
+        and social conditions at neighbourhood scale. Assuming equivalence between different national measures, we use the 2019 IMDs for
+        England and Wales and the 2016 Index for Scotland in order to identify the modal decile within which your selected surname falls.
+        You can read more about the calculation of the IMDs for: <a href="https://www.gov.uk/government/statistics/english-indices-of-deprivation-2019">England</a>,
+        <a href="https://gov.wales/welsh-index-multiple-deprivation">Wales</a>, and <a href="https://www2.gov.scot/Topics/Statistics/SIMD">Scotland</a>.
       </p>
       <h5 id="m7">Broadband Speed</h5>
       <p>
-        This statistic shows the modal value of the broadband speed available to the surname you searched for as the fixed broadband download speed in Mbit/s.
-        See or more information: <a href="https://data.cdrc.ac.uk/dataset/broadband-speed">Broadband Speed</a>.
+        This statistic records the modal value of the broadband speed available to bearers of your selected surname, based upon the fixed broadband download speed in Mbit/s.
+        You can find out more information at <a href="https://data.cdrc.ac.uk/dataset/broadband-speed">Broadband Speed</a>.
       </p>
       <h5 id="m8">Internet User Classification</h5>
       <p>
-        For your search, this statistic shows the modal classification of the surname you searched for in terms of its Internet User Classification (IUC).
-        The IUC is a bespoke geodemographic classification that describes how people living in different parts of Great Britain interact with the Internet.
-        See for more information: <a href="http://cdrc.ac.uk/book">Alexiou and Singleton 2018</a>.
+        The Consumer Data Research Centre Internet User Classification describes the nature and extent of Internet usage by the residents
+        of neighbourhoods across Great Britain. We show the Group into which the largest number of bearers of your selected surname fall.
+        You can read more about this classification in <a href="http://cdrc.ac.uk/book">Alexiou and Singleton 2018</a>.
       </p>
       <h5 id="m9">Consumer Vulnerability</h5>
       <p>
-        The last geodemographic classification shows the modal classification in terms of consumer vulnerability for the name you searched for.
-        Some consumers are more vulnerable to marketing practices due to their personal traits such as age, health or household makeup. This vulnerability varies by product and industry.
-        Consumer vulnerability here is defined as the risk that a consumer’s mental, physical or financial welfare may be damaged when engaging in a market interaction.
-        See for more information: <a href="https://github.com/michael-adcock/consumer_vulnerability">Adcock 2018</a>.
+        This measure, created at the University of Leeds, summarises consumer vulnerability to marketing materials, based upon data
+        such as age, health and household composition. Vulnerability varies according to product category and industry, as well as
+        consumer characteristics such as mental, physical and financial circumstances. More details are are available at
+        <a href="https://github.com/michael-adcock/consumer_vulnerability">Adcock 2018</a>.
+      </p>
+      <h5 id="m9">Frequencies</h5>
+      <p>
+        For your selected name, we show the total number of (adult and child) occurrences for 1851-1911 (excluding 1871 because of
+        non-availability of data for England and Wales and excluding unavailable data for Scotland for 1911). The corresponding
+        figures for 1997-2011 are estimated adult frequencies.
       </p>
     </div>
     <div class="modal-footer">
@@ -221,8 +241,8 @@
       <h4>Privacy Policy</h4>
     </div>
     <div class="modal-body text-justify">
-      GB Names has adopted the <a href="https://www.ucl.ac.uk/legal-services/privacy/general-privacy-policy">UCL Privacy Policy</a>.
-      Please take a look at <a href="https://www.ucl.ac.uk/legal-services/privacy/general-privacy-policy">the policy page</a> to understand what data we collect about you and how we process it.
+      GBNames has adopted the <a href="https://www.ucl.ac.uk/legal-services/privacy/general-privacy-policy">UCL Privacy Policy</a>.
+      Please take a look at <a href="https://www.ucl.ac.uk/legal-services/privacy/general-privacy-policy">the policy page</a> to understand what data we collect about you and how we process them.
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-outline-primary float-right" data-dismiss="modal">Close</button>
@@ -243,9 +263,9 @@
           <h5>Current version</h5>
         </div>
         <div class="card body p-3">
-          <h6 class="card-title">Version 0.20</h6>
-          <h7 class="card-subtitle text-muted">Released September 2019</h7>
-          UI tweaks, bug fixes.
+          <h6 class="card-title">Version 2.0</h6>
+          <h7 class="card-subtitle text-muted">Released February 2020</h7>
+          UI tweaks, bug fixes. Production version.
         </div>
       </div>
       <div class="card mb-3">
@@ -253,14 +273,39 @@
           <h5>Previous versions</h5>
         </div>
         <div class="card body p-3">
-          <h6 class="card-title">Version 0.10</h6>
-          <h7 class="card-subtitle text-muted">Released February 2019</h7>
-          Redesigned UI, more aligned to Worldnames website.
+          <h6 class="card-tittle">Version 1.3</h6>
+          <h7 class="card-subtitle text-muted">Released January 2020</h7>
+          <p class="m-0 p-0">
+            Small updates and tweaks following comments from reviewers from the <a href="https://www.tandfonline.com/loi/tjom20">Journal of Maps</a>.
+          </p>
         </div>
         <div class="card body p-3">
-          <h6 class="card-tittle">Version 0.00</h6>
+          <h6 class="card-title">Version 1.2</h6>
+          <h7 class="card-subtitle text-muted">Released February 2019</h7>
+          <p class="m-0 p-0">
+            UI tweaks, bug fixes.
+          </p>
+        </div>
+        <div class="card body p-3">
+          <h6 class="card-tittle">Version 1.1</h6>
           <h7 class="card-subtitle text-muted">Released September 2018</h7>
-          A rewrite of GB Names, completely new data set.
+          <p class="m-0 p-0">
+            Redesigned UI, more aligned to the redesigned Worldnames website.
+          </p>
+        </div>
+        <div class="card body p-3">
+          <h6 class="card-tittle">Version 1.0</h6>
+          <h7 class="card-subtitle text-muted">Released September 2018</h7>
+          <p class="m-0 p-0">
+            A rewrite of GBNames with a modern, response framework. Completely new data set.
+          </p>
+        </div>
+        <div class="card body p-3">
+          <h6 class="card-tittle">Version 0.0</h6>
+          <h7 class="card-subtitle text-muted">Released August 2018</h7>
+          <p class="m-0 p-0">
+            The first version of GBNames.
+          </p>
         </div>
        </div>
       </div>

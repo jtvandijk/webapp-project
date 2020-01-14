@@ -48,10 +48,12 @@ function renderHTML(surname) {
   //get elements
   var pSearch = document.getElementById('searchParam');
   var lSearch = document.getElementById('mapLegend');
+  var tSearch = document.getElementById('locLegend');
 
   //create elements
   var foundPar = document.createElement('h1');
   var mapLegend = document.createElement('div');
+  var locLegend = document.createElement('div');
 
   //set elements
   foundPar.id = 'searchParam';
@@ -62,9 +64,14 @@ function renderHTML(surname) {
   mapLegend.className = 'card-footer small text-muted text-justify p-3';
   mapLegend.innerHTML = 'The grey lines enclose the areas where the population-weighted density of the surname is highest in the period 1851-1911, where we have the historic Census data. Use the slider bar to show the same metric for much more recent distributions, shown in orange.';
 
+  locLegend.id = 'locLegend';
+  locLegend.className = 'card-footer small text-muted text-justify p-3';
+  locLegend.innerHTML = '';
+
   //replace
   pSearch.replaceWith(foundPar);
   lSearch.replaceWith(mapLegend);
+  tSearch.replaceWith(locLegend);
 
   //back to names tablist
   $j('#nav-tab a[href="#names"]').tab('show');
@@ -93,10 +100,10 @@ function renderForenames(fmh,ffh,fmc,ffc) {
 
   foreHistLegend.id = 'foreHistLegend';
   foreHistLegend.className = 'card-footer small text-muted text-justify p-3';
-  foreHistLegend.innerHTML = 'Female (red) and male (blue) forenames with highest frequency in the period 1851-1911.';
+  foreHistLegend.innerHTML = 'Female (red) and male (blue) forenames with highest frequencies for all residents over the period 1851-1911';
   foreContLegend.id = 'foreContLegend';
   foreContLegend.className = 'card-footer small text-muted text-justify p-3';
-  foreContLegend.innerHTML = 'Female (red) and male (blue) forenames with highest frequency in the period 1997-2016.';;
+  foreContLegend.innerHTML = 'Female (red) and male (blue) forenames with highest frequencies for adult residents over the period 1997-2016.';;
 
   //hist buttons female
   for (var i = 0; i < ffh.length; ++i) {
@@ -365,6 +372,7 @@ function clearPage() {
 
   //get elements
   var lSearch = document.getElementById('mapLegend');
+  var tSearch = document.getElementById('locLegend');
   var foreHist = document.getElementById('ForeNamesHist');
   var foreCont = document.getElementById('ForeNamesCont');
   var hLegend = document.getElementById('foreHistLegend');
@@ -380,6 +388,7 @@ function clearPage() {
 
   //create elements
   var mapLegend = document.createElement('div');
+  var locLegend = document.createElement('div');
   var foreHistLegend = document.createElement('div');
   var foreContLegend = document.createElement('div');
   var foreNamesHist = document.createElement('ul');
@@ -394,7 +403,8 @@ function clearPage() {
   var crvul = document.createElement('div');
 
   //set elements
-  mapLegend.id = 'mapLegend';
+  mapLegend.id = 'mapLegend'
+  locLegend.id = 'locLegend';
   foreNamesHist.id = 'ForeNamesHist';
   foreNamesCont.id = 'ForeNamesCont';
   foreHistLegend.id = 'foreHistLegend';
@@ -410,6 +420,7 @@ function clearPage() {
 
   //replace
   lSearch.replaceWith(mapLegend);
+  tSearch.replaceWith(locLegend);
   foreHist.replaceWith(foreNamesHist);
   foreCont.replaceWith(foreNamesCont);
   hLegend.replaceWith(foreHistLegend);

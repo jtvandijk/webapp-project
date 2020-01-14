@@ -25,7 +25,7 @@ function mapAdmin(sel,all,sr) {
 
   //remove
   if (adminlayer != undefined) {
-      amap.removeLayer(adminlayer);
+      cmap.removeLayer(adminlayer);
   };
 
   //render admin
@@ -56,8 +56,8 @@ function mapAdmin(sel,all,sr) {
 
   //map
   adminlayer = markers;
-  markers.addTo(amap);
-  amap.fitBounds(markers.getBounds().pad(0.1));
+  markers.addTo(cmap);
+  cmap.fitBounds(markers.getBounds().pad(0.1));
   markers.eachLayer(function (layer) {
   if (sel == layer.options.id) {
       layer.openPopup();
