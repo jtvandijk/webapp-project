@@ -4,7 +4,7 @@ $j(document).on('submit','#initSur',function(e) {
   initSearch(document.getElementById('init_surname').value);
 });
 
-//update map -- search
+//update map -- search menu
 $j(document).on('submit','#searchSur',function(e) {
   e.preventDefault();
   initSearch(document.getElementById('surname').value);

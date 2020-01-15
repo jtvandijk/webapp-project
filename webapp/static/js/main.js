@@ -1,22 +1,10 @@
 //jQuery
 var $j = jQuery.noConflict();
 var jumboBtn = document.getElementById('clsJumbo');
-var backBtn = document.getElementById('backNames');
 
 //jumbotron onclick
 jumboBtn.onclick = function() {
   jumbotron.style.display = 'none';
-};
-
-//back onclick
-backBtn.onclick = function() {
-
-  //names tab
-  $j('#nav-tab a[href="#names"]').tab('show');
-
-  //scroll
-  var partop = document.getElementById('scroll1');
-  partop.scrollIntoView();
 };
 
 //onload
@@ -28,22 +16,13 @@ $j(document).ready(function() {
 function show(cards) {
   cards.splice(0,1);
   cards.forEach(function(card){
-    card.classList.add('show');
+  card.classList.add('show');
 })};
 
 //popovers
 $j(function () {
   $j('[data-toggle="popover"]').popover()
 })
-
-//force reload maptiles
-$j("a[href='#names']").on('shown.bs.tab', function(e) {
-  cmap.invalidateSize();
-});
-
-$j("a[href='#location']").on('shown.bs.tab', function(e) {
-  amap.invalidateSize();
-});
 
 //csrf
 function getCookie(name) {

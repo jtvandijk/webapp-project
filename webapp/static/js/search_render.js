@@ -48,12 +48,14 @@ function renderHTML(surname) {
   //get elements
   var pSearch = document.getElementById('searchParam');
   var lSearch = document.getElementById('mapLegend');
-  var tSearch = document.getElementById('locLegend');
+  var parSearch = document.getElementById('parLegend');
+  var msoaSearch = document.getElementById('msoaLegend');
 
   //create elements
   var foundPar = document.createElement('h1');
   var mapLegend = document.createElement('div');
-  var locLegend = document.createElement('div');
+  var parLegend = document.createElement('div');
+  var msoaLegend = document.createElement('div');
 
   //set elements
   foundPar.id = 'searchParam';
@@ -64,17 +66,20 @@ function renderHTML(surname) {
   mapLegend.className = 'card-footer small text-muted text-justify p-3';
   mapLegend.innerHTML = 'The grey lines enclose the areas where the population-weighted density of the surname is highest in the period 1851-1911, where we have the historic Census data. Use the slider bar to show the same metric for much more recent distributions, shown in orange.';
 
-  locLegend.id = 'locLegend';
-  locLegend.className = 'card-footer small text-muted text-justify p-3';
-  locLegend.innerHTML = '';
+  parLegend.id = 'parLegend';
+  parLegend.className = 'card-footer small text-muted text-justify p-3';
+  parLegend.innerHTML = 'Click on any of the <b>Top Historical Parishes</b> to add these to the map. The grey pins show the centroids of the areas with the highest absolute number of bearers with the surname in the period 1851-1911.';
+
+  msoaLegend.id = 'msoaLegend';
+  msoaLegend.className = 'card-footer small text-muted text-justify p-3';
+  msoaLegend.innerHTML = 'Click on any of the <b>Top Areas</b> to add these to the map. The orange pins show the centroids of the areas with the highest absolute number of bearers with the surname for 1997-2016.';
 
   //replace
   pSearch.replaceWith(foundPar);
   lSearch.replaceWith(mapLegend);
-  tSearch.replaceWith(locLegend);
+  parSearch.replaceWith(parLegend);
+  msoaSearch.replaceWith(msoaLegend);
 
-  //back to names tablist
-  $j('#nav-tab a[href="#names"]').tab('show');
 };
 
 //render forenames
@@ -372,7 +377,8 @@ function clearPage() {
 
   //get elements
   var lSearch = document.getElementById('mapLegend');
-  var tSearch = document.getElementById('locLegend');
+  var parSearch = document.getElementById('parLegend');
+  var msoaSearch = document.getElementById('msoaLegend');
   var foreHist = document.getElementById('ForeNamesHist');
   var foreCont = document.getElementById('ForeNamesCont');
   var hLegend = document.getElementById('foreHistLegend');
@@ -388,7 +394,8 @@ function clearPage() {
 
   //create elements
   var mapLegend = document.createElement('div');
-  var locLegend = document.createElement('div');
+  var parLegend = document.createElement('div');
+  var msoaLegend = document.createElement('div');
   var foreHistLegend = document.createElement('div');
   var foreContLegend = document.createElement('div');
   var foreNamesHist = document.createElement('ul');
@@ -404,7 +411,8 @@ function clearPage() {
 
   //set elements
   mapLegend.id = 'mapLegend'
-  locLegend.id = 'locLegend';
+  parLegend.id = 'parLegend'
+  msoaLegend.id = 'msoaLegend'
   foreNamesHist.id = 'ForeNamesHist';
   foreNamesCont.id = 'ForeNamesCont';
   foreHistLegend.id = 'foreHistLegend';
@@ -420,7 +428,8 @@ function clearPage() {
 
   //replace
   lSearch.replaceWith(mapLegend);
-  tSearch.replaceWith(locLegend);
+  parSearch.replaceWith(parLegend);
+  msoaSearch.replaceWith(msoaLegend);
   foreHist.replaceWith(foreNamesHist);
   foreCont.replaceWith(foreNamesCont);
   hLegend.replaceWith(foreHistLegend);
@@ -439,15 +448,12 @@ function clearPage() {
   document.getElementById('IMD').style.display='none';
   document.getElementById('BBAND').style.display='none';
 
-  //back to names tablist
-  $j('#nav-tab a[href="#names"]').tab('show');
-
   //remove previous map layers if exist
   if (control != undefined) {
       cmap.removeControl(control);
       cmap.removeLayer(layer_rm);
     };
   if (adminlayer != undefined) {
-      amap.removeLayer(adminlayer);
+      cmap.removeLayer(adminlayer);
   };
 };

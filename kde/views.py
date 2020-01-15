@@ -10,6 +10,7 @@ from fiona.crs import from_epsg
 import pandas as pd
 import geopandas as gpd
 import json,re,ast,os
+from itertools import chain
 
 #search view
 def search(request):
@@ -109,7 +110,9 @@ def locate_admin(request):
 
     #geom
     if sr == 'hr':
-        admin = conpar51.objects.filter(conparid__in=all).values('conparid','centroid')
+        admin1 = conpar51.objects.filter(conparid__in=all).values('conparid','centroid')
+        admin2 = conpar01.objects.filter(conparid__in=all).values('conparid','centroid')
+        admin = list(chain(admin1,admin2))
     elif sr == 'cr':
         admin = census_msoa.objects.filter(msoa11nm__in=all).values('msoa11nm','centroid')
 

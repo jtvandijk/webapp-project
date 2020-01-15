@@ -50,17 +50,16 @@ function mapAdmin(sel,all,sr) {
     mrkr.addTo(markers);
     };
 
-  //move to location tablist
-  $j('#nav-tab a[href="#location"]').tab('show');
+  //scroll
   scroll(0,0);
 
   //map
   adminlayer = markers;
   markers.addTo(cmap);
-  cmap.fitBounds(markers.getBounds().pad(0.1));
+  cmap.fitBounds(markers.getBounds().pad(0.2));
   markers.eachLayer(function (layer) {
   if (sel == layer.options.id) {
-      layer.openPopup();
+    layer.openPopup();
     };
   });
 };
