@@ -8,7 +8,7 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
           }).addTo(cmap);
 
 //bounds
-var southWest = L.latLng(61.0, 4.05),
+var southWest = L.latLng(62.0, 4.05),
     northEast = L.latLng(50.0, -12,01),
     bounds = L.latLngBounds(southWest, northEast);
 
