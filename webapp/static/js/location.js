@@ -5,8 +5,8 @@ function showAdmin(id,all,sr) {
   $j.ajax({
     method: 'POST',
     // url: '../udl-namekde/location/',
-    // url: '../gbnames/location/',
-    url: '../location/',
+    url: '../gbnames/location/',
+    // url: '../location/',
     data: {id: id,
            all: all,
            sr: sr,

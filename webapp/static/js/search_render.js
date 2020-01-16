@@ -45,6 +45,9 @@ function renderNotFound(surname) {
 //render found
 function renderHTML(surname) {
 
+  //functions
+  clearPage();
+
   //get elements
   var pSearch = document.getElementById('searchParam');
   var lSearch = document.getElementById('mapLegend');

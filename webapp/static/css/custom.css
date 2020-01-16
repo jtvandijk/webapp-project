@@ -445,6 +445,11 @@ a.timecontrol-play.loading:before{
 }
 
 /* buttons */
+.btn:focus, .btn:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 .btn-historic {
   cursor: not-allowed;
   pointer-events: none;
@@ -573,7 +578,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #fff;
   background-color: #a50026;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-l2 {
@@ -581,7 +586,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #fff;
   background-color: #d73027;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-l3 {
@@ -589,7 +594,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #000;
   background-color: #f46d43;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-l4 {
@@ -597,7 +602,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #000;
   background-color: #fdae61;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-l5 {
@@ -605,7 +610,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #000;
   background-color: #fee08b;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-l6 {
@@ -613,7 +618,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #000;
   background-color: #d9ef8b;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-l7 {
@@ -621,7 +626,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #000;
   background-color: #a6d96a;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-l8 {
@@ -629,7 +634,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #000;
   background-color: #66bd63;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-l9 {
@@ -637,7 +642,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #ffffff;
   background-color: #1a9850;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-l10 {
@@ -645,7 +650,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #ffffff;
   background-color: #006837;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-l99 {
@@ -653,85 +658,85 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #000;
   background-color: #dddddd;
-  border-radius: 0 !important;
-}
-
-.btn-h1 {
-  cursor: not-allowed;
-  pointer-events: none;
-  background-color: #4575B4;
-  border-radius: 0 !important;
-}
-
-.btn-h2 {
-  cursor: not-allowed;
-  pointer-events: none;
-  background-color: #7397B6;
-  border-radius: 0 !important;
-}
-
-.btn-h3 {
-  cursor: not-allowed;
-  pointer-events: none;
-  background-color: #A2BAB9;
-  border-radius: 0 !important;
-}
-
-.btn-h4 {
-  cursor: not-allowed;
-  pointer-events: none;
-  color: #000;
-  background-color: #D0DCBC;
-  border-radius: 0 !important;
-}
-
-.btn-h5 {
-  cursor: not-allowed;
-  pointer-events: none;
-  background-color: #FFFFBF;
-  border-radius: 0 !important;
-}
-
-.btn-h6 {
-  cursor: not-allowed;
-  pointer-events: none;
-  background-color: #FCE1A6;
-  border-radius: 0 !important;
-}
-
-.btn-h7 {
-  cursor: not-allowed;
-  pointer-events: none;
-  background-color: #FAC48D;
-  border-radius: 0 !important;
-}
-
-.btn-h8 {
-  cursor: not-allowed;
-  pointer-events: none;
-  background-color: #F8A774;
-  border-radius: 0 !important;
-}
-
-.btn-h9 {
-  cursor: not-allowed;
-  pointer-events: none;
-  background-color: #F68A5B;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-h10 {
   cursor: not-allowed;
   pointer-events: none;
+  background-color: #4575B4;
+  border-radius: 0;
+}
+
+.btn-h9 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #7397B6;
+  border-radius: 0;
+}
+
+.btn-h8 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #A2BAB9;
+  border-radius: 0;
+}
+
+.btn-h7 {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #000;
+  background-color: #D0DCBC;
+  border-radius: 0;
+}
+
+.btn-h6 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #FFFFBF;
+  border-radius: 0;
+}
+
+.btn-h5 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #FCE1A6;
+  border-radius: 0;
+}
+
+.btn-h4 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #FAC48D;
+  border-radius: 0;
+}
+
+.btn-h3 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #F8A774;
+  border-radius: 0;
+}
+
+.btn-h2 {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #F68A5B;
+  border-radius: 0;
+}
+
+.btn-h1 {
+  cursor: not-allowed;
+  pointer-events: none;
   background-color: #F46D43;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-h99 {
   cursor: not-allowed;
   pointer-events: none;
   background-color: #dddddd;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-b1 {
@@ -739,7 +744,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #fff;
   background-color: #276419;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-b2 {
@@ -747,7 +752,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #fff;
   background-color: #4d9221;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-b3 {
@@ -755,7 +760,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #000;
   background-color: #7fbc41;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-b4 {
@@ -763,7 +768,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #000;
   background-color: #b8e186;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-b5 {
@@ -771,7 +776,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #000;
   background-color: #e6f5d0;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-b6 {
@@ -779,7 +784,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #000;
   background-color: #f7f7f7;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-b7 {
@@ -787,7 +792,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #000;
   background-color: #fde0ef;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-b8 {
@@ -795,7 +800,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #000;
   background-color: #f1b6da;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-b9 {
@@ -803,7 +808,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #000;
   background-color: #de77ae;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-b10 {
@@ -811,7 +816,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #ffffff;
   background-color: #c51b7d;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-b11 {
@@ -819,7 +824,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #ffffff;
   background-color: #8e0152;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-b99 {
@@ -827,7 +832,7 @@ a.timecontrol-play.loading:before{
   pointer-events: none;
   color: #000;
   background-color: #dddddd;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn-iuc1 {
@@ -957,5 +962,5 @@ a.timecontrol-play.loading:before{
 }
 
 .mb-xl {
-  margin-bottom: 4rem !important;
+  margin-bottom: 4rem ;
 }

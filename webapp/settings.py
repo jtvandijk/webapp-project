@@ -11,12 +11,14 @@ SECRET_KEY = 'SECRET KEY'
 DEBUG = True
 ALLOWED_HOSTS = []
 X_FRAME_OPTIONS = 'DENY'
-CSRF_COOKIE_SECURE = False #True
+CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = None
 SESSION_COOKIE_SAMESITE = None
-SESSION_COOKIE_SECURE = False #True
+SESSION_COOKIE_SECURE = True #
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
+
+#secure cookies = False for local deployment
 
 #applications
 INSTALLED_APPS = [
@@ -104,9 +106,9 @@ STATICFILES_DIRS = [
         os.path.join(BASE_DIR,'webapp/media')
         ]
 
-STATIC_URL = '/static/'
+#STATIC_URL = '/static/'
 #STATIC_URL = '/udl-namekde/static/'
-#STATIC_URL = '/gbnames/static/'
+STATIC_URL = '/gbnames/static/'
 STATIC_ROOT = os.path.join(BASE_DIR,'static')
 
 #local settings
