@@ -31,8 +31,8 @@ function get_data(q) {
   $j.ajax({
     method: 'POST',
     // url: '../udl-namekde/search/',
-    url: '../gbnames/search/',
-    // url: '../search/',
+    // url: '../gbnames/search/',
+    url: '../search/',
     data: {q: q,
            csrfmiddlewaretoken: csrftoken
           },
@@ -50,7 +50,7 @@ function get_data(q) {
 
         //render main
         renderHTML(data.surname);
-        renderMap(data.years,data.contours,cmap);
+        renderMap(data.years,data.contours,data.nireland,cmap);
 
         //render names
         renderTable(data.hr_freq,data.cr_freq,data.surname);

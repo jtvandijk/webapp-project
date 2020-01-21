@@ -29,7 +29,7 @@ L.timeDimension.layer.geoJson.geometryCollection = function(layer, options) {
     return new L.TimeDimension.Layer.GeoJson.GeometryCollection(layer, options);
 };
 
-function renderMap(years,contours,cmap) {
+function renderMap(years,contours,nireland,cmap) {
 
   //remove previous layer
   if (control != undefined) {
@@ -38,7 +38,7 @@ function renderMap(years,contours,cmap) {
       };
 
   //geoJSON
-  var layer = renderContour(years,contours);
+  var layer = renderContour(years,contours,nireland);
   cmap.fitBounds(layer.getBounds().pad(0,1));
 
   //set up years

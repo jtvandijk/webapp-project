@@ -21,7 +21,7 @@ cmap.addControl(new L.Control.Fullscreen());
 $j.getJSON(ireland_gjson, function (data) {L.geoJSON(data, {weight:0,fillColor:'#DCDCDC',fillOpacity:'.8'}).addTo(cmap);});
 
 //render geoJSON layer
-function renderContour(years,contours) {
+function renderContour(years,contours,nireland) {
 
   //individual features
   var layers = [];
@@ -32,7 +32,16 @@ function renderContour(years,contours) {
     //individual polygons
     for (var j = 0, flen = cont.features.length; j < flen; j++) {
       cont.features[j].properties.time = time;
+      cont.features[j].properties.type = 'contour';
       };
+
+    //northern ireland
+    if(years[i] < 1990) {
+      var ni = JSON.parse(nireland)
+      ni.features[0].properties.time = time;
+      ni.features[0].properties.type = 'nireland';
+      layers.push(ni);
+    };
 
     //combine
     layers.push(cont);
@@ -41,12 +50,13 @@ function renderContour(years,contours) {
   //leaflet layer
   var contourJSON = L.geoJSON(layers, {
     style: function(feature) {
-      if(feature.properties.time < 1990) {
+      if(feature.properties.time < 1990 && feature.properties.type == 'contour') {
         return {color: '#73777A',fillColor: '#73777A',fillOpacity: .4};
-      } else if (feature.properties.time > 1990) {
+      } else if (feature.properties.time > 1990 && feature.properties.type == 'contour') {
         return {color: '#E68454',fillColor: '#E68454',fillOpacity: .4};
-      }
-    }});
+      } else if (feature.properties.time < 1990 && feature.properties.type == 'nireland') {
+        return {weight:0,fillColor:'#DCDCDC',fillOpacity:'.8'};
+      }}});
 
   //return
   return contourJSON;

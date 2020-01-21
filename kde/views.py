@@ -20,6 +20,7 @@ def search(request):
     clean_sur = re.sub(r'[\W^0-9^\s]+','',search_sur)
     db_sur = kdelookup.objects.filter(surname=clean_sur)
     ren_sur = names_rendered.objects.filter(surname=clean_sur)
+    nireland = names_rendered.objects.filter(surname='nireland')
 
     #empty search
     if len(search_sur) == 0:
@@ -53,7 +54,7 @@ def search(request):
                 'foremc': fore_male_cont,'forefc': fore_female_cont,
                 'partop': par_top,'oatop': oa_top,'oacat': oac_mod,
                 'oahlth': oah_mod,'oaimd': imd_mod,'bband': bband_mod,
-                'iuc': iuc_mod,'crvul': crvul_mod,}
+                'iuc': iuc_mod,'crvul': crvul_mod,'nireland': nireland.values()[0].get('contours'),}
 
         #return data
         return HttpResponse(json.dumps(search),content_type="application/json")
@@ -91,7 +92,7 @@ def search(request):
                 'foremc': fore_male_cont,'forefc': fore_female_cont,
                 'partop': par_top,'oatop': oa_top,'oacat': oac_mod,
                 'oahlth': oah_mod,'oaimd': imd_mod,'bband': bband_mod,
-                'iuc': iuc_mod,'crvul': crvul_mod,}
+                'iuc': iuc_mod,'crvul': crvul_mod,'nireland': nireland.values()[0].get('contours'),}
 
         #save to db
         if not ren_sur:
