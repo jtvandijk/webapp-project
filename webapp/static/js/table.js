@@ -1,4 +1,4 @@
-//surname frequency chart
+//surname frequency table
 function renderTable(freqhr,freqcr,surname) {
 
   //years

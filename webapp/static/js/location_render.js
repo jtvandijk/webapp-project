@@ -5,22 +5,22 @@ var adminlayer;
 var hist = new L.Icon({
   iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
+  iconSize: [25,41],
+  iconAnchor: [12,41],
+  popupAnchor: [1,-34],
+  shadowSize: [41,41]
 });
 
 var cont = new L.Icon({
   iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
+  iconSize: [25,41],
+  iconAnchor: [12,41],
+  popupAnchor: [1,-34],
+  shadowSize: [41,41]
 });
 
-//top admin areas
+//top administrative areas
 function mapAdmin(sel,all,sr) {
 
   //remove
@@ -46,7 +46,7 @@ function mapAdmin(sel,all,sr) {
       var info = '<strong>'+name+'</strong><br>'+id;
       var icon = cont;
     };
-    var mrkr = L.marker([aa[1],aa[0]], {icon: icon, id: id}).bindPopup(info);
+    var mrkr = L.marker([aa[1],aa[0]],{icon: icon,id: id}).bindPopup(info);
     mrkr.addTo(markers);
     };
 

@@ -39,7 +39,7 @@ function renderMap(years,contours,nireland,cmap) {
 
   //geoJSON
   var layer = renderContour(years,contours,nireland);
-  cmap.fitBounds(layer.getBounds().pad(0,1));
+  cmap.setView([54.505, -4], 6);
 
   //set up years
   var slider = '';

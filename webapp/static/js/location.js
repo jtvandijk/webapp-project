@@ -1,10 +1,9 @@
-//show parishes
+//show top administrative areas
 function showAdmin(id,all,sr) {
 
   //post
   $j.ajax({
     method: 'POST',
-    // url: '../udl-namekde/location/',
     // url: '../gbnames/location/',
     url: '../location/',
     data: {id: id,
