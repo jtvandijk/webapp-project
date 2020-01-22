@@ -1,5 +1,5 @@
-# GB Names Website
-[GB Names](https://data.cdrc.ac.uk/gbnames/) focuses upon the origins and spread of family bloodlines through surnames as manifest in the past and over 
+# GBNames Website
+[GBNames](https://data.cdrc.ac.uk/gbnames/) focuses upon the origins and spread of family bloodlines through surnames as manifest in the past and over 
 more recent years. Under development. This repository contains all code for the website to run -- not the code for generating the statistics and measures
 that are presented on the website.
 
