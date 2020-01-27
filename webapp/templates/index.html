@@ -23,13 +23,12 @@
     <!--custom css-->
     <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
 
-    <!--include navigation-->
-    {% include "nav.html"%}
-    
   </head>
 
 <body class="fixed-nav">
 
+  <!--include navigation-->
+  {% include "nav.html"%}
   {% block nav %}
   {% endblock %}
 
