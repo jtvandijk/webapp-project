@@ -123,13 +123,16 @@ def locate_admin(request):
 
         #name
         if sr == 'hr':
-            name = lookup_parish.objects.filter(conparid=aa['conparid']).values()[0]
-            geom = gpd.GeoSeries(wkt.loads(aa['centroid'].wkt))
-            geom = gpd.GeoDataFrame({'id': name['conparid'],'geometry': geom,'parish': name['parish'],'regcnty': name['regcnty'],'cnty': name['country']})
+            if lookup_parish.objects.filter(conparid=aa['conparid']).values():
+                name = lookup_parish.objects.filter(conparid=aa['conparid']).values()[0]
+                geom = gpd.GeoSeries(wkt.loads(aa['centroid'].wkt))
+                geom = gpd.GeoDataFrame({'id': name['conparid'],'geometry': geom,'parish': name['parish'],'regcnty': name['regcnty'],'cnty': name['country']})
         elif sr == 'cr':
-            name = lookup_oa.objects.filter(msoa11nm=aa['msoa11nm']).values('ladnm','msoa11cd','msoa11nm')[0]
-            geom = gpd.GeoSeries(wkt.loads(aa['centroid'].wkt))
-            geom = gpd.GeoDataFrame({'id': name['msoa11nm'],'geometry': geom,'ladnm': name['ladnm'],'msoa11cd': name['msoa11cd'],'msoa11nm': name['msoa11nm']})
+            if lookup_oa.objects.filter(msoa11nm=aa['msoa11nm']).values():
+                name = lookup_oa.objects.filter(msoa11nm=aa['msoa11nm']).values('ladnm','msoa11cd','msoa11nm')[0]
+                geom = gpd.GeoSeries(wkt.loads(aa['centroid'].wkt))
+                geom = gpd.GeoDataFrame({'id': name['msoa11nm'],'geometry': geom,'ladnm': name['ladnm'],'msoa11cd': name['msoa11cd'],'msoa11nm': name['msoa11nm']})
+
         #prepare
         geom.crs = from_epsg(27700)
         geom['geometry'] = geom['geometry'].to_crs(epsg=4326)
