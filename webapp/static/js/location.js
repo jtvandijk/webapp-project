@@ -5,7 +5,7 @@ function showAdmin(id,all,sr) {
   $j.ajax({
     method: 'POST',
     url: '../gbnames/location/',
-    //url: '../location/',
+    // url: '../location/',
     data: {id: id,
            all: all,
            sr: sr,

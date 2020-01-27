@@ -46,7 +46,7 @@ function mapAdmin(sel,all,sr) {
       var info = '<strong>'+name+'</strong><br>'+id;
       var icon = cont;
     };
-    var mrkr = L.marker([aa[1],aa[0]],{icon: icon,id: id}).bindPopup(info);
+    var mrkr = L.marker([aa[1],aa[0]],{icon: icon,id: id}).bindPopup(info,{autoPan: false});
     mrkr.addTo(markers);
     };
 
@@ -56,7 +56,6 @@ function mapAdmin(sel,all,sr) {
   //map
   adminlayer = markers;
   markers.addTo(cmap);
-  cmap.fitBounds(markers.getBounds().pad(0.2));
   markers.eachLayer(function (layer) {
   if (sel == layer.options.id) {
     layer.openPopup();

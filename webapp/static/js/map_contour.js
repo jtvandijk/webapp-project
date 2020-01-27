@@ -14,8 +14,10 @@ var southWest = L.latLng(62.0,4.05),
 
 cmap.setMaxBounds(bounds);
 
-//fullscreen
-cmap.addControl(new L.Control.Fullscreen());
+//zoom
+L.easyButton('fas fa-arrows-alt', function(btn, map){
+    cmap.setView([54.505,-4], 6);
+}).addTo(cmap)
 
 //countries
 $j.getJSON(ireland_gjson,function (data) {L.geoJSON(data,{weight:0,fillColor:'#DCDCDC',fillOpacity:'.8'}).addTo(cmap);});
