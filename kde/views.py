@@ -128,7 +128,6 @@ def locate_admin(request):
                 geom = gpd.GeoSeries(wkt.loads(aa['centroid'].wkt))
                 geom = gpd.GeoDataFrame({'id': name['conparid'],'geometry': geom,'parish': name['parish'],'regcnty': name['regcnty'],'cnty': name['country']})
         elif sr == 'cr':
-            if lookup_oa.objects.filter(msoa11nm=aa['msoa11nm']).values():
                 name = lookup_oa.objects.filter(msoa11nm=aa['msoa11nm']).values('ladnm','msoa11cd','msoa11nm')[0]
                 geom = gpd.GeoSeries(wkt.loads(aa['centroid'].wkt))
                 geom = gpd.GeoDataFrame({'id': name['msoa11nm'],'geometry': geom,'ladnm': name['ladnm'],'msoa11cd': name['msoa11cd'],'msoa11nm': name['msoa11nm']})
