@@ -31,7 +31,6 @@ function get_data(q) {
   $j.ajax({
     method: 'POST',
     url: '../gbnames/search/',
-    //url: '../search/',
     data: {q: q,
            csrfmiddlewaretoken: csrftoken
           },

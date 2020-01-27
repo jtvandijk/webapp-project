@@ -53,7 +53,7 @@ function populateTable(years,freqs,surname) {
   //table data
   for (var i = 0; i < freqs.length; ++i) {
     var th = document.createElement('td');
-    th.innerHTML = freqs[i];
+    th.innerHTML = freqs[i].toLocaleString('en');
     row2.appendChild(th);
   };
 
