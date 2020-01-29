@@ -15,24 +15,23 @@
   <!--navigation: elements-->
   <div class="collapse navbar-collapse" id="navbarSupportedContent" role="tablist">
     <ul class="navbar-nav mr-auto nav" id="nav-tab" role="tablist">
-      <li class="nav-item dropdown">
+      <li class="nav-item px-1">
+        <a class="nav-link" href="#" data-toggle="modal" data-target="#methModal">Methodology</a>
+      </li>
+      <li class="nav-item px-1">
+        <a class="nav-link" href="#" data-toggle="modal" data-target="#dataModal">CDRC Data</a>
+      </li>
+      <li class="nav-item px-1 dropdown">
         <a href="#" class="nav-link dropdown-toggle" id="infodrop" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button">
           <span class="nav-link-text">About</span>
         </a>
         <div class="dropdown-menu" aria-labelledby="infodrop">
-          <a class="dropdown-item" href="#" data-toggle="modal" data-target="#aboutModal">GBNames</a>
           <a class="dropdown-item" href="#" data-toggle="modal" data-target="#cdrcModal">Consumer Data Research Centre</a>
           <a class="dropdown-item" href="#" data-toggle="modal" data-target="#udlModal">Urban Dynamics Lab</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="#" data-toggle="modal" data-target="#privModal">Privacy Policy</a>
           <a class="dropdown-item" href="#" data-toggle="modal" data-target="#versionModal">Version history</a>
         </div>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" data-toggle="modal" data-target="#methModal">Methodology</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" data-toggle="modal" data-target="#dataModal">CDRC Data</a>
       </li>
     </ul>
     <form class="form-inline my-lg-0" method="post" id="searchSur">
@@ -42,39 +41,6 @@
 		</form>
   </div>
 </nav>
-
-<!--about-->
-<div id="aboutModal" class="modal" role="dialog">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h4>GBNames</h4>
-    </div>
-    <div class="modal-body text-justify">
-      <h5>Data</h5>
-      <p>
-        GBNames traces the origins and spread of family groups as manifest through surnames over the distant and more recent past.</p>
-      <p>
-        Digitally encoded historical census data for England, Scotland, and Wales provided by the Economic and Social Research Council
-        <a href="https://www1.essex.ac.uk/history/research/icem/">I-CeM project</a> provide population-wide microdata of individuals’
-        names and addresses (following a secure data user agreement by researchers). This integrated collection of historic census
-        microdata derives from the decennial Censuses of England and Wales for 1851, 1861, 1881, 1891, 1901 and 1911,
-        and for Scotland for the period 1851 to 1901 (although we do not use the 1871 data). Addresses are georeferenced to parishes,
-        the boundaries of which have been digitised. See for more information: <a href="https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=7481">Higgs and Schürer (2014)</a>.
-      </p>
-      <p>
-        Individual names and addresses cannot be obtained from censuses until the data are 100 years old, and so we use consumer
-        registers for the period 1997-2016: details of these data are available in <a href="https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/rssa.12476">Lansley <em>et al.</em> (2019)</a>.
-      </p>
-      <h5>Funding</h5>
-      <p class="mb-0">
-        This work is funded by the UK ESRC Consumer Data Research Centre (CDRC) grant reference ES/L011840/1 and EPSRC grant EP/M023583/1 (‘UK Regions Digital Research Facility’).
-      </p>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline-primary float-right" data-dismiss="modal">Close</button>
-    </div>
-  </div>
-</div>
 
 <!--cdrc-->
 <div id="cdrcModal" class="modal" role="dialog">
@@ -151,7 +117,25 @@
         <h4>Methodology</h4>
     </div>
     <div class="modal-body text-justify">
-      <h5 id="m1">Contour Maps</h5>
+      <h5>Data</h5>
+      <p>
+        GBNames traces the origins and spread of family groups as manifest through surnames over the distant and more recent past.
+        Digitally encoded historical census data for England, Scotland, and Wales provided by the Economic and Social Research Council
+        <a href="https://www1.essex.ac.uk/history/research/icem/">I-CeM project</a> provide population-wide microdata of individuals’
+        names and addresses (following a secure data user agreement by researchers). This integrated collection of historic census
+        microdata derives from the decennial Censuses of England and Wales for 1851, 1861, 1881, 1891, 1901 and 1911,
+        and for Scotland for the period 1851 to 1901 (although we do not use the 1871 data). Addresses are georeferenced to parishes,
+        the boundaries of which have been digitised. See for more information: <a href="https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=7481">Higgs and Schürer (2014)</a>.
+      </p>
+      <p>
+        Individual names and addresses cannot be obtained from censuses until the data are 100 years old, and so we use consumer
+        registers for the period 1997-2016: details of these data are available in <a href="https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/rssa.12476">Lansley <em>et al.</em> (2019)</a>.
+      </p>
+      <h5>Funding</h5>
+      <p>
+        This work is funded by the UK ESRC Consumer Data Research Centre (CDRC) grant reference ES/L011840/1 and EPSRC grant EP/M023583/1 (‘UK Regions Digital Research Facility’).
+      </p>
+      <h5 id="m1">Maps</h5>
       <p>
         One way to analyse and compare individual surname distributions over time without needing to accommodate changing administrative
         areas is to assign individual occurrences of names to the central point (centroid) of the parishes that existed when each of the
