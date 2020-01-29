@@ -108,10 +108,10 @@ function renderForenames(fmh,ffh,fmc,ffc) {
 
   foreHistLegend.id = 'foreHistLegend';
   foreHistLegend.className = 'card-footer small text-muted text-justify p-3';
-  foreHistLegend.innerHTML = 'Female (red) and male (blue) forenames with highest frequencies for all residents over the period 1851-1911';
+  foreHistLegend.innerHTML = 'Female and male forenames with highest frequencies for all residents over the period 1851-1911.';
   foreContLegend.id = 'foreContLegend';
   foreContLegend.className = 'card-footer small text-muted text-justify p-3';
-  foreContLegend.innerHTML = 'Female (red) and male (blue) forenames with highest frequencies for adult residents over the period 1997-2016.';;
+  foreContLegend.innerHTML = 'Female and male forenames with highest frequencies for adult residents over the period 1997-2016.';;
 
   //hist buttons female
   for (var i = 0; i < ffh.length; ++i) {

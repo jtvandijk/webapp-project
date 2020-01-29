@@ -12,6 +12,10 @@ body.fixed-nav {
   padding-top: 56px;
 }
 
+.nav-link {
+  color: #ffffff !important;
+}
+
 /* viewport */
 .content-wrapper {
   min-height: calc(100vh - 56px);
@@ -408,27 +412,15 @@ a.timecontrol-play.loading:before{
 
 /* background */
 .bg-orange {
-  background-color:	#fdcc8a !important;
+  background-color:	#fdae6b;
 }
 
 .bg-custom {
-  background-color: #2171b5 !important;
+  background-color: #08306b;
 }
 
 .bg-notes {
-  background-color: #c6dbef !important;
-}
-
-.bg-historic {
-  background-color: rgba(250,38,0,0.4) !important;
-}
-
-.bg-contemporary {
-  background-color: rgba(50,115,209,0.4) !important;
-}
-
-.bg-white {
-  background-color: rgba(255,255,255,0) !important;
+  background-color: #c6dbef;
 }
 
 /* buttons */
@@ -440,15 +432,15 @@ a.timecontrol-play.loading:before{
 .btn-historic {
   cursor: not-allowed;
   pointer-events: none;
-  color: #000000;
-  background-color: rgba(250,38,0,0.4);
+  color: #ffffff;
+  background-color: rgba(27,158,119,0.8);
 }
 
 .btn-contemporary {
   cursor: not-allowed;
   pointer-events: none;
-  color: #000000;
-  background-color: rgba(50,115,209,0.4);
+  color: #ffffff;
+  background-color: rgba(117,112,179,0.8);
 }
 
 .btn-deactivate {

@@ -21,13 +21,15 @@
         </a>
         <div class="dropdown-menu" aria-labelledby="infodrop">
           <a class="dropdown-item" href="#" data-toggle="modal" data-target="#aboutModal">GBNames</a>
-          <a class="dropdown-item" href="#" data-toggle="modal" data-target="#methModal">Methodology</a>
           <a class="dropdown-item" href="#" data-toggle="modal" data-target="#cdrcModal">Consumer Data Research Centre</a>
           <a class="dropdown-item" href="#" data-toggle="modal" data-target="#udlModal">Urban Dynamics Lab</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="#" data-toggle="modal" data-target="#privModal">Privacy Policy</a>
           <a class="dropdown-item" href="#" data-toggle="modal" data-target="#versionModal">Version history</a>
         </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-toggle="modal" data-target="#methModal">Methodology</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="#" data-toggle="modal" data-target="#dataModal">CDRC Data</a>
@@ -57,11 +59,11 @@
         names and addresses (following a secure data user agreement by researchers). This integrated collection of historic census
         microdata derives from the decennial Censuses of England and Wales for 1851, 1861, 1881, 1891, 1901 and 1911,
         and for Scotland for the period 1851 to 1901 (although we do not use the 1871 data). Addresses are georeferenced to parishes,
-        the boundaries of which have been digitised. See for more information: <a href="https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=7481">Higgs and Schürer 2014</a>.
+        the boundaries of which have been digitised. See for more information: <a href="https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=7481">Higgs and Schürer (2014)</a>.
       </p>
       <p>
         Individual names and addresses cannot be obtained from censuses until the data are 100 years old, and so we use consumer
-        registers for the period 1997-2016: details of these data are available in <a href="https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/rssa.12476">Lansley et al. 2019</a>.
+        registers for the period 1997-2016: details of these data are available in <a href="https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/rssa.12476">Lansley <em>et al.</em> (2019)</a>.
       </p>
       <h5>Funding</h5>
       <p class="mb-0">
@@ -99,7 +101,8 @@
       </ul>
       <p class="mb-0">
         The CDRC brings together world-class researchers from University College London, the University of Liverpool,
-        the University of Oxford and the University of Leeds to offer a range of expert services to a wide range of research users.      </p>
+        the University of Oxford and the University of Leeds to offer a range of expert services to a wide range of research users.
+      </p>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-outline-primary float-right" data-dismiss="modal">Close</button>
@@ -157,7 +160,8 @@
         using a technique called kernel density estimation (KDE), in effect placing a search window (kernel) over successive locations
         and recording changes in the density of points across space. Details of the technique are available in the 6th Edition of
         M. J. de Smith, M. F. Goodchild, and P.A. Longley (2018) Geospatial Analysis, available online at
-        <a href="https://www.spatialanalysisonline.com/HTML/index.html?density__kernels_and_occupancy.htm">www.spatialanalysisonline.com</a>.
+        <a href="https://www.spatialanalysisonline.com/HTML/index.html?density__kernels_and_occupancy.htm">www.spatialanalysisonline.com</a>,
+        and in <a href="https://doi.org/10.1080/13658816.2011.591291">Cheshire and Longley (2011)</a>.
       </p>
       <p>
         For the historical census data, KDEs are calculated only for surnames that have at least 30 individual bearers. For the more
@@ -165,7 +169,8 @@
         KDE calculations cannot be executed for small numbers of points. When mapping consumer data, these thresholds are used also to
         avoid the possibility of disclosing the precise areas where living individual reside. The KDE calculations are parallelised
         through <a href="https://www.gnu.org/software/parallel/">GNU Parallel</a> and executed using the <a href="https://www.r-project.org/">R</a>
-        scripting language (with the <a href="https://doi.org/10.1002/sim.7577">Sparr</a> library). More information on these procedures is available in one of our academic papers: <a href="http://www.newcastle.gisruk.org/proceedings/">Van Dijk et al. 2019</a>.
+        scripting language (with the <a href="https://doi.org/10.1002/sim.7577">Sparr</a> library). More information on these procedures
+        is available in one of our academic papers: <a href="http://www.newcastle.gisruk.org/proceedings/">Van Dijk <em>et al.</em> (2019)</a>.
       </p>
       <p>
         This website is powered by the Python-based open source web framework <a href="https://www.djangoproject.com/">Django</a>. <a href="https://leafletjs.com/">
@@ -188,14 +193,14 @@
         This is a classification of neighbourhoods, arranged into Supergroups and Groups based upon 2011 Census of Population data.
         We created this through a collaboration with the Office for National Statistics (ONS) and plan to update it following the
         2021 Census. We show the 2011 OAC Supergroup and Group in which your selected surname occurs most frequently. The classification
-        is described fully in <a href="http://josis.org/index.php/josis/article/view/232">Gale et al. 2011</a>.
+        is described fully in <a href="http://josis.org/index.php/josis/article/view/232">Gale <em>et al.</em> (2011)</a>.
       </p>
       <h5 id="m5">Access to Healthy Assets and Hazards (AHAH)</h5>
       <p>
         AHAH is a multi-dimensional index for Great Britain developed by the Consumer Data Research Centre (CDRC) in order to describe
         neighbourhoods as more or less healthy places in which to live. Various data describe access to retail facilities,
         health services, and physical features. Neighbourhoods can be ranked from best to worst and we show the decile in which your
-        selected surname occurs most frequently. The classification is fully described in <a href="https://doi.org/10.1016/j.healthplace.2018.08.019">Green et al. 2018</a>.
+        selected surname occurs most frequently. The classification is fully described in <a href="https://doi.org/10.1016/j.healthplace.2018.08.019">Green <em>et al.</em> (2018)</a>.
       </p>
       <h5 id="m6">Index of Multiple Deprivation (IMD)</h5>
       <p>
@@ -214,14 +219,14 @@
       <p>
         The Consumer Data Research Centre Internet User Classification describes the nature and extent of Internet usage by the residents
         of neighbourhoods across Great Britain. We show the Group into which the largest number of bearers of your selected surname fall.
-        You can read more about this classification in <a href="http://cdrc.ac.uk/book">Alexiou and Singleton 2018</a>.
+        You can read more about this classification in <a href="http://cdrc.ac.uk/book">Alexiou and Singleton (2018)</a>.
       </p>
       <h5 id="m9">Consumer Vulnerability</h5>
       <p>
         This measure, created at the University of Leeds, summarises consumer vulnerability to marketing materials, based upon data
         such as age, health and household composition. Vulnerability varies according to product category and industry, as well as
         consumer characteristics such as mental, physical and financial circumstances. More details are are available at
-        <a href="https://github.com/michael-adcock/consumer_vulnerability">Adcock 2018</a>.
+        <a href="https://github.com/michael-adcock/consumer_vulnerability">Adcock (2018)</a>.
       </p>
       <h5 id="m10">Frequencies</h5>
       <p class="mb-0">
