@@ -32,7 +32,6 @@ def search(request):
         search = {'source':'none','surname': search_sur}
         return HttpResponse(json.dumps(search),content_type="application/json")
 
-    #if pre-rendered
     elif ren_sur:
 
         #pre-rendered data
@@ -56,6 +55,7 @@ def search(request):
                 'oahlth': oah_mod,'oaimd': imd_mod,'bband': bband_mod,
                 'iuc': iuc_mod,'crvul': crvul_mod,'nireland': nireland.values()[0].get('contours'),}
 
+        print(ast.literal_eval(data.get('contours'))[0])
         #return data
         return HttpResponse(json.dumps(search),content_type="application/json")
 
@@ -96,8 +96,8 @@ def search(request):
 
         #save to db
         if not ren_sur:
-            rendered = names_rendered(clean_sur,source,years,hr_freq,cr_freq,contour_collection,1)
-            rendered.save()
+           rendered = names_rendered(clean_sur,source,years,hr_freq,cr_freq,contour_collection,1)
+           rendered.save()
 
         #return data
         return HttpResponse(json.dumps(search),content_type="application/json")

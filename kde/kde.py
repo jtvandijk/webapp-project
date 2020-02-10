@@ -22,7 +22,7 @@ uk = gpd.read_file(path).to_crs(epsg=27700)
 uk.drop(uk.columns[[0,1,2,3,4]],axis=1,inplace=True)
 
 #param
-level = 25
+level = 90
 
 #class
 def str_to_class(classname):

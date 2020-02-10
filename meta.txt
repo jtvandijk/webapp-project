@@ -1,0 +1,13 @@
+#Deployment
+1 Set up Nginx
+2a Check vulnerabilities: python manage.py check --deploy 
+2b Check vulnerabilities: https://www.ponycheckup.com/
+
+#Temp deployment:Start
+source activate webapp
+cd /home/justin/webapp-project
+gunicorn --bind 0.0.0.0:8080 webapp.wsgi
+
+#Temp deployment:Stop
+ps aux // ps aux | grep 'gunicorn'
+kill <PID>
