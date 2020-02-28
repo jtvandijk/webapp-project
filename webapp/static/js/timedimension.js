@@ -14,7 +14,7 @@
  * git://github.com/socib/Leaflet.TimeDimension.git
  *
  */
- 
+
 L.TimeDimension = (L.Layer || L.Class).extend({
     includes: L.Evented || L.Mixin.Events,
     initialize: function(a) {
@@ -434,126 +434,6 @@ L.TimeDimension.Layer = (L.Layer || L.Class).extend({
 L.timeDimension.layer = function(a, b) {
     return new L.TimeDimension.Layer(a,b)
 },
-L.TimeDimension.Layer.GeoJson = L.TimeDimension.Layer.extend({
-    initialize: function(a, b) {
-        L.TimeDimension.Layer.prototype.initialize.call(this, a, b),
-        this._updateTimeDimension = this.options.updateTimeDimension || !1,
-        this._updateTimeDimensionMode = this.options.updateTimeDimensionMode || "extremes",
-        this._duration = this.options.duration || null,
-        this._addlastPoint = this.options.addlastPoint || !1,
-        this._waitForReady = this.options.waitForReady || !1,
-        this._defaultTime = 0,
-        this._availableTimes = [],
-        this._loaded = !1,
-        0 == this._baseLayer.getLayers().length ? this._waitForReady ? this._baseLayer.on("ready", this._onReadyBaseLayer, this) : this._loaded = !0 : (this._loaded = !0,
-        this._setAvailableTimes()),
-        this._baseLayer.on("layeradd", function() {
-            this._loaded && this._setAvailableTimes()
-        }
-        .bind(this))
-    },
-    onAdd: function(a) {
-        L.TimeDimension.Layer.prototype.onAdd.call(this, a),
-        this._loaded && this._setAvailableTimes()
-    },
-    eachLayer: function(a, b) {
-        return this._currentLayer && a.call(b, this._currentLayer),
-        L.TimeDimension.Layer.prototype.eachLayer.call(this, a, b)
-    },
-    isReady: function(a) {
-        return this._loaded
-    },
-    _update: function() {
-        if (this._map && this._loaded) {
-            var a = (this._timeDimension.getCurrentTime(),
-            this._timeDimension.getCurrentTime())
-              , b = 0;
-            if (this._duration) {
-                var c = new Date(a);
-                L.TimeDimension.Util.subtractTimeDuration(c, this._duration, !0),
-                b = c.getTime()
-            }
-            for (var d = L.geoJson(null, this._baseLayer.options), e = this._baseLayer.getLayers(), f = 0, g = e.length; g > f; f++) {
-                var h = this._getFeatureBetweenDates(e[f].feature, b, a);
-                if (h && (d.addData(h),
-                this._addlastPoint && "LineString" == h.geometry.type && h.geometry.coordinates.length > 0)) {
-                    var i = h.properties;
-                    i.last = !0,
-                    d.addData({
-                        type: "Feature",
-                        properties: i,
-                        geometry: {
-                            type: "Point",
-                            coordinates: h.geometry.coordinates[h.geometry.coordinates.length - 1]
-                        }
-                    })
-                }
-            }
-            this._currentLayer && this._map.removeLayer(this._currentLayer),
-            d.getLayers().length && (d.addTo(this._map),
-            this._currentLayer = d
-            //map.fitBounds(layer.getBounds())
-          )
-        }
-    },
-    _setAvailableTimes: function() {
-        var a = [];
-        this._availableTimes = [];
-        for (var b = this._baseLayer.getLayers(), c = 0, d = b.length; d > c; c++)
-            b[c].feature && (a = L.TimeDimension.Util.union_arrays(a, this._getFeatureTimes(b[c].feature)));
-        for (var c = 0, d = a.length; d > c; c++) {
-            var e = a[c];
-            ("string" == typeof e || e instanceof String) && (e = Date.parse(e.trim())),
-            this._availableTimes.push(e)
-        }
-        this._timeDimension && (this._updateTimeDimension || 0 == this._timeDimension.getAvailableTimes().length) && this._timeDimension.setAvailableTimes(this._availableTimes, this._updateTimeDimensionMode)
-    },
-    _getFeatureTimes: function(a) {
-        return a.properties ? a.properties.hasOwnProperty("coordTimes") ? a.properties.coordTimes : a.properties.hasOwnProperty("times") ? a.properties.times : a.properties.hasOwnProperty("linestringTimestamps") ? a.properties.linestringTimestamps : a.properties.hasOwnProperty("time") ? [a.properties.time] : [] : []
-    },
-    _getFeatureBetweenDates: function(a, b, c) {
-        var d = this._getFeatureTimes(a);
-        if (0 == d.length)
-            return a;
-        for (var e = [], f = 0, g = d.length; g > f; f++) {
-            var h = d[f];
-            ("string" == typeof h || h instanceof String) && (h = Date.parse(h.trim())),
-            e.push(h)
-        }
-        if (e[0] > c || e[g - 1] < b)
-            return null;
-        var i = null
-          , j = null
-          , g = e.length;
-        if (e[g - 1] > b)
-            for (var f = 0; g > f; f++)
-                if (null === i && e[f] > b && (i = f),
-                e[f] > c) {
-                    j = f;
-                    break
-                }
-        null === i && (i = 0),
-        null === j && (j = g);
-        var k = [];
-        return k = a.geometry.coordinates[0].length ? a.geometry.coordinates.slice(i, j) : a.geometry.coordinates,
-        {
-            type: "Feature",
-            properties: a.properties,
-            geometry: {
-                type: a.geometry.type,
-                coordinates: k
-            }
-        }
-    },
-    _onReadyBaseLayer: function() {
-        this._loaded = !0,
-        this._setAvailableTimes(),
-        this._update()
-    }
-}),
-L.timeDimension.layer.geoJson = function(a, b) {
-    return new L.TimeDimension.Layer.GeoJson(a,b)
-},
 L.TimeDimension.Player = (L.Layer || L.Class).extend({
     includes: L.Evented || L.Mixin.Events,
     initialize: function(a, b) {
@@ -861,6 +741,8 @@ L.Control.TimeDimension = L.Control.extend({
                 this._displayDate && (L.DomUtil.removeClass(this._displayDate, "loading"),
                 this._displayDate.innerHTML = this._getDisplayDateFormat(a)),
                 this._sliderTime && !this._slidingTimeSlider && this._sliderTime.setValue(this._timeDimension.getCurrentTimeIndex())
+                var event = new CustomEvent("slide",{"detail": a.getFullYear()});
+                document.dispatchEvent(event);
             } else
                 this._displayDate && (this._displayDate.innerHTML = this._getDisplayNoTimeError())
     },

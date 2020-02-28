@@ -1,5 +1,5 @@
 //surname frequency table
-function renderTable(freqhr,freqcr,surname) {
+function renderTable(surname,freqs) {
 
   //years
   var yearshr = ['1851','1861','1881','1891','1901','1911'];
@@ -10,8 +10,8 @@ function renderTable(freqhr,freqcr,surname) {
   var tableCR = document.getElementById('tableCR');
 
   //create elements
-  var hrfreq = populateTable(yearshr,freqhr,surname);
-  var crfreq = populateTable(yearscr,freqcr,surname);
+  var hrfreq = populateTable(yearshr,surname,freqs.slice(0,6),);
+  var crfreq = populateTable(yearscr,surname,freqs.slice(6,27),);
 
   //set elements
   hrfreq.id = 'tableHR';
@@ -22,7 +22,7 @@ function renderTable(freqhr,freqcr,surname) {
   tableCR.replaceWith(crfreq);
 };
 
-function populateTable(years,freqs,surname) {
+function populateTable(years,surname,freqs) {
 
   //create elements
   var table = document.createElement('table');
@@ -44,7 +44,7 @@ function populateTable(years,freqs,surname) {
   row2.className = 'text-center';
 
   //table header
-  for (var i = 0; i < years.length; ++i) {
+  for (var i = 0; i < freqs.length; ++i) {
     var yr = document.createElement('th');
     yr.innerHTML = years[i];
     row1.appendChild(yr);

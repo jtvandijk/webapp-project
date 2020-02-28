@@ -891,55 +891,6 @@ a.timecontrol-play.loading:before{
   background-color: #dddddd;
 }
 
-.btn-crvul1 {
-  cursor: not-allowed;
-  pointer-events: none;
-  color: #000;
-  background-color: #4575b4;
-}
-
-.btn-crvul2 {
-  cursor: not-allowed;
-  pointer-events: none;
-  color: #000;
-  background-color: #91bfdb;
-}
-
-.btn-crvul3 {
-  cursor: not-allowed;
-  pointer-events: none;
-  color: #000;
-  background-color: #e0f3f8;
-}
-
-.btn-crvul4 {
-  cursor: not-allowed;
-  pointer-events: none;
-  color: #000;
-  background-color: #fee090;
-}
-
-.btn-crvul5 {
-  cursor: not-allowed;
-  pointer-events: none;
-  color: #000;
-  background-color: #fc8d59;
-}
-
-.btn-crvul6 {
-  cursor: not-allowed;
-  pointer-events: none;
-  color: #000;
-  background-color: #d73027;
-}
-
-.btn-crvul99 {
-  cursor: not-allowed;
-  pointer-events: none;
-  color: #000;
-  background-color: #dddddd;
-}
-
 .mb-xl {
   margin-bottom: 4rem ;
 }

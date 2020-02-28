@@ -8,7 +8,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 #security
 SECRET_KEY = 'SECRET KEY'
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = []
 X_FRAME_OPTIONS = 'DENY'
 CSRF_COOKIE_SECURE = True
@@ -20,14 +20,13 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 
 #applications
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    'kde.apps.kdeconfig',
+    'webapp.apps.kdeconfig',
 ]
 
 MIDDLEWARE = [
@@ -75,22 +74,6 @@ DATABASES = {
 
 POSTGIS_VERSION = (2,1,4)
 
-#password validation
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
 #internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Europe/London'
@@ -99,10 +82,7 @@ USE_L10N = True
 USE_TZ = True
 
 #static files (CSS, JavaScript, Images)
-STATICFILES_DIRS = [
-        os.path.join(BASE_DIR,'webapp/static'),
-        os.path.join(BASE_DIR,'webapp/media')
-        ]
+STATICFILES_DIRS = [os.path.join(BASE_DIR,'webapp/static'),os.path.join(BASE_DIR,'webapp/media'),os.path.join(BASE_DIR,'webapp/kde')]
 STATIC_URL = '/gbnames/static/'
 STATIC_ROOT = os.path.join(BASE_DIR,'static')
 

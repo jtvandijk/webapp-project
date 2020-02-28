@@ -11,7 +11,7 @@ $j(document).on('submit','#searchSur',function(e) {
 });
 
 //initiate search
-function initSearch(q) {
+function initSearch(surname) {
 
   //remove jumbotron
   jumbotron.style.display = 'none';
@@ -22,47 +22,46 @@ function initSearch(q) {
   scroll(0,0);
 
   //execute search
-  get_data(q);
+  get_data(surname);
 };
 
 //search surname
-function get_data(q) {
+function get_data(surname) {
   startMapLoad();
   $j.ajax({
     method: 'POST',
     url: '../gbnames/search/',
-    data: {q: q,
+    data: {surname: surname,
            csrfmiddlewaretoken: csrftoken
           },
     success: function (data) {
-      // no data entered
-      if (data.source==='empty') {
+      //no data entered
+      if (data.surname==='empty') {
         renderNone();
         return;
-      // no data found
-      } else if (data.source==='none') {
+      //no data found
+      } else if (data.surname==='none') {
         renderNotFound(data.surname);
         return;
-      // data found
-      } else if (data.source==='found') {
+      //data found
+      } else {
 
         //render main
         renderHTML(data.surname);
-        renderMap(data.years,data.contours,data.nireland,cmap);
+        loadControl(data.surname,data.years,map);
 
         //render names
-        renderTable(data.hr_freq,data.cr_freq,data.surname);
-        renderForenames(data.foremh,data.forefh,data.foremc,data.forefc);
-        renderParish(data.partop);
-        renderOA(data.oatop);
-        renderCAT(data.oacat);
+        renderTable(data.surname,data.freqs);
+        renderForenames(data.stats[0],data.stats[1],data.stats[2],data.stats[3]);
+        renderParish(data.stats[4]);
+        renderOA(data.stats[5]);
+        renderCAT(data.stats[6]);
 
         //render consumer statistics
-        renderHealth(data.oahlth);
-        renderIMD(data.oaimd);
-        renderBBAND(data.bband);
-        renderIUC(data.iuc);
-        renderCRVUL(data.crvul);
+        renderHealth(data.stats[7]);
+        renderIMD(data.stats[8]);
+        renderBBAND(data.stats[9]);
+        renderIUC(data.stats[10]);
 
         //stop map loading indicator
         stopMapLoad();
@@ -70,6 +69,23 @@ function get_data(q) {
         //return
         return;
       }
+    }
+  })
+};
+
+//search top administrative areas
+function showAdmin(id,all,sr) {
+  $j.ajax({
+    method: 'POST',
+    url: '../gbnames/location/',
+    data: {id: id,
+           all: all,
+           sr: sr,
+           csrfmiddlewaretoken: csrftoken
+        },
+    success: function (data) {
+      mapAdmin(data.sel,data.all,data.sr)
+      return;
     }
   })
 };
