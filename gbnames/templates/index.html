@@ -3,7 +3,7 @@
 
   <head>
 
-    {% load staticfiles %}
+    {% load static %}
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -66,12 +66,12 @@
             </div>
             <div class="mt-4 text-center p-1 mb-3">
               <form class="form-inline justify-content-center" method="post" id="initSur">
-                <input class="form-control mr-sm-2 mb-2" type="text" placeholder="Family name" name="q" id="init_surname" maxlength="50">
+                <input class="form-control mr-sm-2 mb-2" type="text" placeholder="Family name" name="surname" id="init_surname" maxlength="50">
                 <button class="btn btn-outline-primary mb-2" type="submit">Search</button>
               </form>
             </div>
             <div class="text-muted text-justify">
-              GBNames records surname searches for statistical purposes. Surname searches that have not been previously executed by you or by others may take up to 30 seconds to generate.
+              GBNames records surname searches for statistical purposes. Surnames that have many bearers may take up to 30 seconds to be retrieved from our database.
               Visit the website of the <a href="https://www.cdrc.ac.uk/">Consumer Data Research Centre</a> to find out more about
               our available data products, related maps, and details on how to gain access to our open, safeguared, and secure data sets.
             </div>
@@ -348,28 +348,6 @@
                   </div>
                 </div>
               </div>
-
-              <!--consumer vulnerability-->
-              <div class="row justify-content-center">
-                <div class="col-lg-12">
-                  <div class="card mb-3">
-                    <div class="card-header pl-3 pr-2 pb-1">
-                      <h4 class="m-0">Consumer Vulnerability
-                      <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>Methodology</b> for more information.">
-                        <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"></span>
-                      </button>
-                      </h4>
-                      <small>Consumer vulnerability to marketing materials</small>
-                    </div>
-                    <div id="collapseCRVUL" class="card-body p-0 collapse">
-                      <div class="p-3">
-                        <div id="CRVUL">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -453,8 +431,7 @@
             <h4>Notes</h4>
             <p class="text-muted pt-2">
               GBNames is intended to show interesting geographical patterns of names, rather than mapping individuals or families.
-              We do not map or show statistics for names with less than 30 occurences per year or for areas where the selected name
-              has a very small population. See our About pages for further information on GBNames and applied Methodology.
+              We do not map or show statistics for names with less than 100 occurences per year. See our About pages for further information on GBNames and applied Methodology.
            </p>
           </div>
         </div>
@@ -494,32 +471,26 @@
   <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
 
   <!--custom js-->
-  <script> var ireland_gjson ="{% static 'js/ireland.geojson' %}";</script>
-  <script> var n_ireland_gjson ="{% static 'js/n_ireland.geojson' %}";</script>
-  <script src="{% static 'js/modal.js' %}"></script>
   <script src="{% static 'js/main.js' %}"></script>
-  <script src="{% static 'js/map_contour.js' %}"></script>
-  <script src="{% static 'js/table.js' %}"></script>
   <script src="{% static 'js/search.js' %}"></script>
-  <script src="{% static 'js/search_render.js' %}"></script>
-  <script src="{% static 'js/location.js' %}"></script>
-  <script src="{% static 'js/location_render.js' %}"></script>
+  <script src="{% static 'js/modal.js' %}"></script>
+  <script src="{% static 'js/table.js' %}"></script>
+  <script src="{% static 'js/render.js' %}"></script>
   <script src="{% static 'js/timedimension.js' %}"></script>
-  <script src="{% static 'js/slider.js' %}"></script>
+  <script src="{% static 'js/map.js' %}"></script>
 
   <!-- boostrap js-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
   <!--tracking-->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-157283744-1"></script>
+  <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=UA-157283744-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'UA-157283744-1');
-  </script>
+  </script> -->
 
 </body>
 </html>
