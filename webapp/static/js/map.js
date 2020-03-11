@@ -83,19 +83,24 @@ document.addEventListener("slide", function(e) {
 //KDE
 function slideKDE(surname,year,map) {
 
+  //remove previous layer if exist
+  if (layer_rm != undefined) {
+      map.removeLayer(layer_rm);
+      };
+
   //add layer
   var fld =  surname.slice(0,1).toLowerCase(),
       png = 'static/kde/' + fld + '/' + surname.toLowerCase() + '/kde' + year + '.png',
       imageBounds = [[61.07083,3.181498],[49.55891,-9.806102]];
 
   var name_layer = L.imageOverlay(png,imageBounds,
-                {opacity: 0.1,
+                {opacity: 0.8,
                  minZoom: 6,
-                 maxZoom: 7,
+                 maxZoom: 10,
   }).addTo(map);
 
   //increase opacity
-  increase_opacity(name_layer)
+  //increase_opacity(name_layer)
 
   //name layer
   layer_rm = name_layer;
