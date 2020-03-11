@@ -55,7 +55,6 @@ def search(request):
                 'oahlth': oah_mod,'oaimd': imd_mod,'bband': bband_mod,
                 'iuc': iuc_mod,'crvul': crvul_mod,'nireland': nireland.values()[0].get('contours'),}
 
-        print(ast.literal_eval(data.get('contours'))[0])
         #return data
         return HttpResponse(json.dumps(search),content_type="application/json")
 
