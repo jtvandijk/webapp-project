@@ -45,7 +45,7 @@ def search(request):
         #names_kde.objects.filter(surname=name_search).update(count=count+1)
 
         #available years
-        years = [1851,1861,*range(1881,1911,10),*range(1997,2016,1)]
+        years = [1851,1861,*range(1881,1921,10),*range(1997,2017,1)]
         avbls = search_data.values('year','freq')
         freqs = [0 for f in range(0,26)]
         for a in avbls:

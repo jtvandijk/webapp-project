@@ -1,111 +1,91 @@
+//global
+var control;
+var layer_rm;
+var adminlayer;
+
+//icons
+var hist = new L.Icon({
+  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25,41],
+  iconAnchor: [12,41],
+  popupAnchor: [1,-34],
+  shadowSize: [41,41]
+});
+
+var cont = new L.Icon({
+  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25,41],
+  iconAnchor: [12,41],
+  popupAnchor: [1,-34],
+  shadowSize: [41,41]
+});
+
 //basemap
-var cmap = L.map('kdemap').setView([54.505,-4],6);
+var map = L.map('kdemap').setView([54.505,-4],6);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
             {attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors | \n' +
             'Map tiles by &copy; <a href="https://carto.com/attributions">CARTO</a>',
             minZoom: '6',
             maxZoom: '11',
-          }).addTo(cmap);
+          }).addTo(map);
 
 //bounds
 var southWest = L.latLng(62.0,4.05),
     northEast = L.latLng(50.0,-12,01),
     bounds = L.latLngBounds(southWest,northEast);
 
-cmap.setMaxBounds(bounds);
+map.setMaxBounds(bounds);
 
 //zoom
 L.easyButton('fas fa-arrows-alt', function(btn, map){
-    cmap.setView([54.505,-4], 6);
-}).addTo(cmap)
-
-//countries
-//$j.getJSON(ireland_gjson,function (data) {L.geoJSON(data,{weight:0,fillColor:'#DCDCDC',fillOpacity:'.8'}).addTo(cmap);});
+    map.setView([54.505,-4], 6);
+}).addTo(map)
 
 //render geoJSON layer
-function renderContour(years,contours,nireland) {
+function renderContour(years,kdes) {
 
   //individual features
   var layers = [];
-  for (var i = 0, clen = contours.length; i < clen; i++) {
-    var time = new Date (years[i].toString()).getTime();
-    var cont = JSON.parse(contours[i][1])
+  for (var i = 0, klen = kdes.length; i < klen; i++) {
+
+    var year = new Date (years[i].toString()).getTime();
+    var kde = JSON.parse(kdes[i].kde)
 
     //individual polygons
-    for (var j = 0, flen = cont.features.length; j < flen; j++) {
-      cont.features[j].properties.time = time;
-      cont.features[j].properties.type = 'contour';
-      };
-
-    //northern ireland
-    if(years[i] < 1990) {
-      var ni = JSON.parse(nireland)
-      ni.features[0].properties.time = time;
-      ni.features[0].properties.type = 'nireland';
-      layers.push(ni);
-    };
+    for (var p = 0, plen = kde.features.length; p < plen; p++) {
+      kde.features[p].properties.time = year};
 
     //combine
-    layers.push(cont);
-    };
+    layers.push(kde)};
 
   //leaflet layer
   var contourJSON = L.geoJSON(layers, {
     style: function(feature) {
-      if(feature.properties.time < 1990 && feature.properties.type == 'contour') {
-        return {color: '#73777A',fillColor: '#73777A',fillOpacity: .4};
-      } else if (feature.properties.time > 1990 && feature.properties.type == 'contour') {
-        return {color: '#E68454',fillColor: '#E68454',fillOpacity: .4};
-      } else if (feature.properties.time < 1990 && feature.properties.type == 'nireland') {
-        return {weight:0,fillColor:'#DCDCDC',fillOpacity:'.8'};
+      if (feature.properties.level == 1) {
+        return {weight:0,color:'#6baed6',fillColor:'#6baed6',fillOpacity:.7,opacity:1};
+      } else if (feature.properties.level == 2) {
+        return {weight:0,color:'#4292c6',fillColor:'#4292c6',fillOpacity:.7,opacity:1};
+      } else if (feature.properties.level == 3) {
+        return {weight:0,color:'#2171b5',fillColor:'#2171b5',fillOpacity:.7,opacity:1};
       }}});
 
   //return
   return contourJSON;
 };
 
-//global
-var control;
-var layer_rm;
-
-L.TimeDimension.Layer.GeoJson.GeometryCollection = L.TimeDimension.Layer.GeoJson.extend({
-
-  _getFeatureBetweenDates: function(feature, minTime, maxTime) {
-      var featureStringTimes = this._getFeatureTimes(feature);
-         if (featureStringTimes.length == 0) {
-             return feature;
-         }
-         var featureTimes = [];
-         for (var i = 0, l = featureStringTimes.length; i < l; i++) {
-             var time = featureStringTimes[i]
-             if (typeof time == 'string' || time instanceof String) {
-                 time = Date.parse(time.trim());
-             }
-             featureTimes.push(time);
-         }
-
-         if (featureTimes[0] > maxTime || featureTimes[l - 1] < minTime) {
-             return null;
-         }
-         return feature;
-     },
-});
-
-L.timeDimension.layer.geoJson.geometryCollection = function(layer, options) {
-    return new L.TimeDimension.Layer.GeoJson.GeometryCollection(layer, options);
-};
-
-function renderMap(years,contours,nireland,cmap) {
+function renderMap(years,kdes,map) {
 
   //remove previous layer
   if (control != undefined) {
-      cmap.removeControl(control);
-      cmap.removeLayer(layer_rm);
+      map.removeControl(control);
+      map.removeLayer(layer_rm);
       };
 
   //geoJSON
-  var layer = renderContour(years,contours,nireland);
-  cmap.setView([54.505, -4], 6);
+  var layer = renderContour(years,kdes);
+  map.setView([54.505, -4], 6);
 
   //set up years
   var slider = '';
@@ -141,8 +121,8 @@ function renderMap(years,contours,nireland,cmap) {
   var timeDimensionControl = new L.Control.TimeDimension(timeDimensionControlOptions);
 
   //add to map
-  cmap.timeDimension = timeDimension;
-  cmap.addControl(timeDimensionControl);
+  map.timeDimension = timeDimension;
+  map.addControl(timeDimensionControl);
 
   //prepare layer
   var geoJsonTimeLayer = L.timeDimension.layer.geoJson.geometryCollection(layer,{
@@ -156,5 +136,48 @@ function renderMap(years,contours,nireland,cmap) {
   layer_rm = geoJsonTimeLayer;
 
   //add
-  geoJsonTimeLayer.addTo(cmap);
+  geoJsonTimeLayer.addTo(map);
+};
+
+//top administrative areas
+function mapAdmin(sel,all,sr) {
+
+  //remove
+  if (adminlayer != undefined) {
+      cmap.removeLayer(adminlayer);
+  };
+
+  //render admin
+  var markers = new L.featureGroup();
+  var admin = JSON.parse(all);
+  for (var i=0; i < admin.features.length; ++i) {
+    var aa = admin.features[i].geometry.coordinates;
+    if (sr == 'hr') {
+      var id = admin.features[i].properties.id;
+      var name = admin.features[i].properties.parish;
+      var regcnty = admin.features[i].properties.regcnty;
+      var cnty = admin.features[i].properties.cnty;
+      var info = '<strong>'+name+'</strong><br>'+regcnty+' ('+cnty+')'
+      var icon = hist;
+    } else if (sr == 'cr') {
+      var id = admin.features[i].properties.msoa11nm;
+      var name = admin.features[i].properties.ladnm;
+      var info = '<strong>'+name+'</strong><br>'+id;
+      var icon = cont;
+    };
+    var mrkr = L.marker([aa[1],aa[0]],{icon: icon,id: id}).bindPopup(info,{autoPan: false});
+    mrkr.addTo(markers);
+    };
+
+  //scroll
+  scroll(0,0);
+
+  //map
+  adminlayer = markers;
+  markers.addTo(map);
+  markers.eachLayer(function (layer) {
+  if (sel == layer.options.id) {
+    layer.openPopup();
+    };
+  });
 };
