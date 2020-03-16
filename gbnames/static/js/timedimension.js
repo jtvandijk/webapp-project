@@ -492,7 +492,6 @@ L.TimeDimension.Layer.GeoJson = L.TimeDimension.Layer.extend({
             this._currentLayer && this._map.removeLayer(this._currentLayer),
             d.getLayers().length && (d.addTo(this._map),
             this._currentLayer = d
-            //map.fitBounds(layer.getBounds())
           )
         }
     },

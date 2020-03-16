@@ -5,6 +5,7 @@ from .models import *
 from .statistics import *
 from re import sub
 import json
+import zlib
 
 from shapely import wkt
 from fiona.crs import from_epsg

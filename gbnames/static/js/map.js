@@ -27,8 +27,8 @@ var map = L.map('kdemap').setView([54.505,-4],6);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
             {attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors | \n' +
             'Map tiles by &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            minZoom: '6',
-            maxZoom: '11',
+            minZoom: 6,
+            maxZoom: 12,
           }).addTo(map);
 
 //bounds
@@ -42,6 +42,14 @@ map.setMaxBounds(bounds);
 L.easyButton('fas fa-arrows-alt', function(btn, map){
     map.setView([54.505,-4], 6);
 }).addTo(map)
+
+//cover mask
+L.tileLayer('https://julie.geog.ucl.ac.uk/~ucfajtv/tiles/gbnames/out/{z}/{x}/{y}.png',
+  {maxZoom: 12,
+   minZoom: 6,
+   bounds: bounds,
+   zIndex: 600,
+}).addTo(map);
 
 //render geoJSON layer
 function renderContour(years,kdes) {
@@ -64,12 +72,14 @@ function renderContour(years,kdes) {
   var contourJSON = L.geoJSON(layers, {
     style: function(feature) {
       if (feature.properties.level == 1) {
-        return {weight:0,color:'#6baed6',fillColor:'#6baed6',fillOpacity:.7,opacity:1};
+        return {weight:0,color:'#6baed6',fillColor:'#6baed6',fillOpacity:.7,opacity:.2};
       } else if (feature.properties.level == 2) {
-        return {weight:0,color:'#4292c6',fillColor:'#4292c6',fillOpacity:.7,opacity:1};
+        return {weight:0,color:'#4292c6',fillColor:'#4292c6',fillOpacity:.7,opacity:.2};
       } else if (feature.properties.level == 3) {
-        return {weight:0,color:'#2171b5',fillColor:'#2171b5',fillOpacity:.7,opacity:1};
-      }}});
+        return {weight:0,color:'#2171b5',fillColor:'#2171b5',fillOpacity:.7,opacity:.2};
+      }},
+    smoothFactor: 0
+    });
 
   //return
   return contourJSON;
@@ -137,6 +147,7 @@ function renderMap(years,kdes,map) {
 
   //add
   geoJsonTimeLayer.addTo(map);
+  map.fitBounds(geoJsonTimeLayer.getBounds())
 };
 
 //top administrative areas
@@ -144,7 +155,7 @@ function mapAdmin(sel,all,sr) {
 
   //remove
   if (adminlayer != undefined) {
-      cmap.removeLayer(adminlayer);
+      map.removeLayer(adminlayer);
   };
 
   //render admin
