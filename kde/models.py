@@ -376,7 +376,7 @@ class names_freq_parish(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'names_freq_parish'
+        db_table = 'names_location_hist'
 
 class names_freq_oa(models.Model):
     surname = models.TextField(primary_key=True)
@@ -385,7 +385,7 @@ class names_freq_oa(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'names_freq_msoa'
+        db_table = 'names_location_cont'
 
 class names_cat_oa(models.Model):
     surname = models.TextField(primary_key=True)
@@ -395,16 +395,15 @@ class names_cat_oa(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'names_cat_oa'
+        db_table = 'names_oac'
 
 class names_health_oa(models.Model):
     surname = models.TextField(primary_key=True)
     ahah_dec = models.IntegerField(blank=True,null=True)
-    ahah_dec_rev = models.IntegerField(blank=True,null=True)
 
     class Meta:
         managed = True
-        db_table = 'names_health_oa'
+        db_table = 'names_ahah'
 
 class names_imd_oa(models.Model):
     surname = models.TextField(primary_key=True)
@@ -412,7 +411,7 @@ class names_imd_oa(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'names_imd_oa'
+        db_table = 'names_imd'
 
 class names_iuc_oa(models.Model):
     surname = models.TextField(primary_key=True)
@@ -421,7 +420,7 @@ class names_iuc_oa(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'names_iuc_oa'
+        db_table = 'names_iuc'
 
 class names_bband_oa(models.Model):
     surname = models.TextField(primary_key=True)
@@ -430,7 +429,7 @@ class names_bband_oa(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'names_bband_oa'
+        db_table = 'names_bband'
 
 class names_crvul_oa(models.Model):
     surname = models.TextField(primary_key=True)
@@ -439,7 +438,7 @@ class names_crvul_oa(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'names_crvul_oa'
+        db_table = 'names_crvul'
 
 #lookup
 class lookup_parish(models.Model):

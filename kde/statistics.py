@@ -23,7 +23,7 @@ def all_statistics(clean_sur):
     oac_mod = oac_stats(oac)
 
     #statistics -- oah
-    oah = names_health_oa.objects.filter(surname=clean_sur).values('surname','ahah_dec_rev')
+    oah = names_health_oa.objects.filter(surname=clean_sur).values('surname','ahah_dec')
     oah_mod = oah_stats(oah)
 
     #statistics -- imd
@@ -113,7 +113,7 @@ def oah_stats(oah):
     if not oah:
         oah_dc = 99
     else:
-        oah_dc = oah[0]['ahah_dec_rev']
+        oah_dc = oah[0]['ahah_dec']
     return(oah_dc)
 
 #oa imd
