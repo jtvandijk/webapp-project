@@ -23,12 +23,37 @@
     <!--custom css-->
     <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
 
-    <!-- csrf token -->
-   {% csrf_token %}
+    <!-- csrf token-->
+    {% csrf_token %}
 
   </head>
 
-<body class="fixed-nav">
+<body>
+
+  <!--logo and search-->
+  <div class="navigation-wrapper">
+    <div class="container-fluid">
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-10 col-sm-10 my-3">
+          <div class="row justify-content-center">
+
+            <!--logo-->
+            <div class="col-lg-6 branding">
+              <a href="https://www.cdrc.ac.uk/"><img src="{% static 'cdrc_logo_top.png' %}" class="text-center" height="72" width="250" alt="cdrc logo"/></a>
+            </div>
+
+            <!--search-->
+            <div class="col-lg-6">
+              <form class="form-inline justify-content-center mt-3 branding-form" method="post" id="searchSur">
+                <input class="form-control mr-sm-2 mb-2" type="text" placeholder="Family name" name="surname" id="surname" maxlength="50">
+                <button class="btn btn-outline-primary mb-2" type="submit">Search</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!--include navigation-->
   {% include "nav.html"%}
@@ -70,7 +95,7 @@
                 <button class="btn btn-outline-primary mb-2" type="submit">Search</button>
               </form>
             </div>
-            <div class="text-muted text-justify">
+            <div class="text-muted text-small text-justify">
               GBNames records surname searches for statistical purposes. Surnames that have many bearers may take up to 30 seconds to be retrieved from our database.
               Visit the website of the <a href="https://www.cdrc.ac.uk/">Consumer Data Research Centre</a> to find out more about
               our available data products, related maps, and details on how to gain access to our open, safeguared, and secure data sets.
@@ -158,9 +183,9 @@
                   <small>Historical Parishes</small>
                 </div>
                 <div id="collapsePar" class="card-body p-0 collapse">
-                  <ul id="topPar" class="list-inline ml-3 mt-2 mr-3 mb-3"></ul>
-                </div>
-                <div id="parLegend">
+                  <div class="table-fixed p-3 m-0" style="width:98%">
+                    <table id='topPar'></table>
+                  </div>
                 </div>
               </div>
             </div>
@@ -176,10 +201,10 @@
                   </h4>
                   <small>Middle layer Super Output Areas</small>
                 </div>
-                <div id="collapseOA" class="card-body p-0 collapse">
-                  <ul id="topOA" class="list-inline ml-3 mt-2 mr-3 mb-3"></ul>
-                </div>
-                <div id="msoaLegend">
+                <div id="collapseMSOA" class="card-body p-0 collapse">
+                  <div class="table-fixed p-3 m-0" style="width:98%">
+                    <table id='topMSOA'></table>
+                  </div>
                 </div>
               </div>
             </div>
@@ -190,24 +215,28 @@
       <!--output area classifciation-->
       <div class="row justify-content-center">
         <div class="col-lg-10 col-md-10 col-sm-10">
-          <div class="card mb-3">
-            <div class="card-header pl-3 pr-2 pb-1">
-              <h4 class="m-0">Output Area Classification
-              <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>Methodology</b> for more information.">
-                <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"></span>
-              </button>
-              </h4>
-              <small>Neighbourhoods classification</small>
-            </div>
-            <div id="collapseCat" class="collapse" aria-labelledby="collapseCat">
-              <div class="card-body p-2" id="cardCat">
-                <div class="row justify-content-center">
-                  <div class="col-lg-6">
-                    <div id="sgCat">
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div id="gCat">
+          <div class="row justify-content-center">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+              <div class="card mb-3">
+                <div class="card-header pl-3 pr-2 pb-1">
+                  <h4 class="m-0">Output Area Classification
+                  <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>Methodology</b> for more information.">
+                    <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"></span>
+                  </button>
+                  </h4>
+                  <small>Neighbourhoods classification</small>
+                </div>
+                <div id="collapseCat" class="collapse" aria-labelledby="collapseCat">
+                  <div class="card-body p-2" id="cardCat">
+                    <div class="row justify-content-center">
+                      <div class="col-lg-6">
+                        <div id="sgCat">
+                        </div>
+                      </div>
+                      <div class="col-lg-6">
+                        <div id="gCat">
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -431,7 +460,7 @@
             <h4>Notes</h4>
             <p class="text-muted pt-2">
               GBNames is intended to show interesting geographical patterns of names, rather than mapping individuals or families.
-              We do not map or show statistics for names with less than 100 occurences per year. See our About pages for further information on GBNames and applied Methodology.
+              We do not map or show statistics for names with less than 100 occurences per year. See our Methodology page for further information on GBNames and applied Methodology.
            </p>
           </div>
         </div>

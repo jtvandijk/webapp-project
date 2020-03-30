@@ -1,4 +1,4 @@
-//update map -- search on load
+//update map -- search through jumbotron
 $j(document).on('submit','#initSur',function(e) {
   e.preventDefault();
   initSearch(document.getElementById('init_surname').value);
@@ -41,7 +41,7 @@ function searchSurname(surname) {
         return;
       //no data found
       } else if (data.surname==='none') {
-        renderNotFound(data.surname);
+        renderNotFound(surname);
         return;
       //data found
       } else {
@@ -54,14 +54,14 @@ function searchSurname(surname) {
         renderTable(data.surname,data.freqs);
         renderForenames(data.stats[0],data.stats[1],data.stats[2],data.stats[3]);
         renderParish(data.stats[4]);
-        renderOA(data.stats[5]);
-        renderCAT(data.stats[6]);
+        renderMSOA(data.stats[5]);
 
         //render consumer statistics
-        renderHealth(data.stats[7]);
-        renderIMD(data.stats[8]);
-        renderBBAND(data.stats[9]);
-        renderIUC(data.stats[10]);
+        renderOAC(data.stats[6]);
+        // renderHealth(data.stats[7]);
+        // renderIMD(data.stats[8]);
+        // renderBBAND(data.stats[9]);
+        // renderIUC(data.stats[10]);
 
         //stop map loading indicator
         stopMapLoad();
@@ -69,24 +69,6 @@ function searchSurname(surname) {
         //return
         return;
       }
-    }
-  })
-};
-
-//show top administrative areas
-function searchLocation(id,all,sr) {
-
-  //post
-  $j.ajax({
-    method: 'POST',
-    url: '../gbnames/location/',
-    data: {id: id,
-           all: all,
-           sr: sr,
-           csrfmiddlewaretoken: csrftoken
-        },
-    success: function (data) {
-      mapAdmin(data.sel,data.all,data.sr)
     }
   })
 };

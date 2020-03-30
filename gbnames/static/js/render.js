@@ -14,7 +14,7 @@ function renderNone() {
   //set elements
   noText.className = 'p-3 mb-3 bg-orange text-dark';
   noText.id = 'searchParam';
-  noText.textContent = 'Please type in a surname before hitting submit.';
+  noText.textContent = 'Please type in a surname.';
 
   //replace
   pSearch.replaceWith(noText);
@@ -36,7 +36,7 @@ function renderNotFound(surname) {
   //set elements
   notFound.className = 'p-3 mb-3 bg-orange text-dark';
   notFound.id = 'searchParam';
-  notFound.innerHTML = 'Unfortunately, <strong>'+surname.toUpperCase()+'</strong> is not in our database. Are you sure you did not make a typo?';
+  notFound.innerHTML = 'Unfortunately, your search for <strong>'+surname.toUpperCase()+'</strong> did not yield any results.';
 
   //replace
   pSearch.replaceWith(notFound);
@@ -51,14 +51,10 @@ function renderHTML(surname) {
   //get elements
   var pSearch = document.getElementById('searchParam');
   var lSearch = document.getElementById('mapLegend');
-  var parSearch = document.getElementById('parLegend');
-  var msoaSearch = document.getElementById('msoaLegend');
 
   //create elements
   var foundPar = document.createElement('h1');
   var mapLegend = document.createElement('div');
-  var parLegend = document.createElement('div');
-  var msoaLegend = document.createElement('div');
 
   //set elements
   foundPar.id = 'searchParam';
@@ -67,22 +63,11 @@ function renderHTML(surname) {
 
   mapLegend.id = 'mapLegend';
   mapLegend.className = 'card-footer small text-muted text-justify p-3';
-  mapLegend.innerHTML = 'The grey lines enclose the areas where the population-weighted density of the surname is highest in the period 1851-1911, where we have the historic Census data. Use the slider bar to show the same metric for much more recent distributions, shown in orange.';
-
-  parLegend.id = 'parLegend';
-  parLegend.className = 'card-footer small text-muted text-justify p-3';
-  parLegend.innerHTML = 'Click on any of the <b>Top Historical Parishes</b> to add these to the map. The grey pins show the centroids of the areas with the highest absolute number of bearers with the surname in the period 1851-1911.';
-
-  msoaLegend.id = 'msoaLegend';
-  msoaLegend.className = 'card-footer small text-muted text-justify p-3';
-  msoaLegend.innerHTML = 'Click on any of the <b>Top Areas</b> to add these to the map. The orange pins show the centroids of the areas with the highest absolute number of bearers with the surname for 1997-2016.';
+  mapLegend.innerHTML = 'The blue contours enclose areas where the population-weighted density of the surname is highest.';
 
   //replace
   pSearch.replaceWith(foundPar);
   lSearch.replaceWith(mapLegend);
-  parSearch.replaceWith(parLegend);
-  msoaSearch.replaceWith(msoaLegend);
-
 };
 
 //render forenames
@@ -108,10 +93,10 @@ function renderForenames(fmh,ffh,fmc,ffc) {
 
   foreHistLegend.id = 'foreHistLegend';
   foreHistLegend.className = 'card-footer small text-muted text-justify p-3';
-  foreHistLegend.innerHTML = 'Female and male forenames with highest frequencies for all residents over the period 1851-1911.';
+  foreHistLegend.innerHTML = 'Most common female and male forenames for your search over the period 1851-1911.';
   foreContLegend.id = 'foreContLegend';
   foreContLegend.className = 'card-footer small text-muted text-justify p-3';
-  foreContLegend.innerHTML = 'Female and male forenames with highest frequencies for adult residents over the period 1997-2016.';;
+  foreContLegend.innerHTML = 'Most common female and male forenames for your search over the period 1997-2016.';;
 
   //hist buttons female
   for (var i = 0; i < ffh.length; ++i) {
@@ -155,73 +140,93 @@ function renderForenames(fmh,ffh,fmc,ffc) {
 //render top parish
 function renderParish(partop) {
 
-  //get, create, set, elements
+  //create elements
   var pPar = document.getElementById('topPar');
-  var topPar = document.createElement('ul');
-  topPar.id = 'topPar';
-  topPar.className = 'list-inline ml-3 mt-2 mr-3 mb-3';
+  var topPar = document.createElement('table');
+  var head = document.createElement('thead');
+  var body = document.createElement('tbody');
 
-  //parish buttons
-  allid = [];
+  //set elements
+  topPar.id = 'topPar';
+  topPar.className = 'table table-sm m-0';
+
+  //header
+  var row = document.createElement('tr');
+  var ds = document.createElement('th');
+  var nm = document.createElement('th');
+  ds.innerHTML = 'District name';
+  nm.innerHTML = 'Parish name';
+  row.appendChild(ds);
+  row.appendChild(nm);
+  head.appendChild(row);
+
+  //rows
   for (var i = 0; i < partop.length; ++i) {
-    var li = document.createElement('button');
-    var id = partop[i][0];
-    allid.push(parseInt(id));
-    li.innerHTML = partop[i][1];
-    li.id = id;
-    if (id == 99) {
-      li.className = 'btn btn-outline-secondary btn-deactivate mt-2 mr-1';
-    } else {
-      li.className = 'btn btn-outline-secondary mt-2 mr-1';
-    }
-    li.value = id;
-    li.onclick = function () {
-      var parid = $j(this).val();
-      searchLocation(parid,allid,'hr');
-    }
-    topPar.appendChild(li);
+    var row = document.createElement('tr');
+    var ds = document.createElement('td');
+    var nm = document.createElement('td');
+    ds.innerHTML = partop[i][0];
+    nm.innerHTML = partop[i][1];
+    row.appendChild(ds);
+    row.appendChild(nm);
+    body.appendChild(row);
+  };
+
+  //append
+  topPar.appendChild(head);
+  topPar.appendChild(body);
 
   //replace
   pPar.replaceWith(topPar);
-  };
+
 };
 
 //render top oa
-function renderOA(oatop) {
+function renderMSOA(msoatop) {
 
-  //get, create, set, elements
-  var pOA = document.getElementById('topOA');
-  var topOA = document.createElement('ul');
-  topOA.id = 'topOA';
-  topOA.className = 'list-inline ml-3 mt-2 mr-3 mb-3';
+  //create elements
+  var pMSOA = document.getElementById('topMSOA');
+  var topMSOA = document.createElement('table');
+  var head = document.createElement('thead');
+  var body = document.createElement('tbody');
 
-  //oa buttons
-  alloa = [];
-  for (var i = 0; i < oatop.length; ++i) {
-    var li = document.createElement('button');
-    var id = oatop[i][0]
-    alloa.push(id);
-    li.innerHTML = oatop[i][1];
-    li.id = id;
-    if (oatop[i][0] == 99) {
-      li.className = 'btn btn-outline-secondary btn-deactivate mt-2 mr-1';
-    } else {
-      li.className = 'btn btn-outline-secondary mt-2 mr-1';
-    }
-    li.value = id;
-    li.onclick = function () {
-      var oaid = $j(this).val();
-      searchLocation(oaid,alloa,'cr');
-    };
-    topOA.appendChild(li);
-    };
+  //set elements
+  topMSOA.id = 'topMSOA';
+  topMSOA.className = 'table table-sm m-0';
+
+  //header
+  var row = document.createElement('tr');
+  var ds = document.createElement('th');
+  var ms = document.createElement('th');
+  ds.innerHTML ='District name';
+  ms.innerHTML = 'Area name';
+  row.appendChild(ds);
+  row.appendChild(ms);
+  head.appendChild(row);
+
+  //rows
+  for (var i = 0; i < msoatop.length; ++i) {
+    var row = document.createElement('tr');
+    var ds = document.createElement('td');
+    var ms = document.createElement('td');
+    ds.innerHTML = msoatop[i][0];
+    ms.innerHTML = msoatop[i][1];
+    row.appendChild(ds);
+    row.appendChild(ms);
+    body.appendChild(row);
+  };
+
+  //append
+  topMSOA.appendChild(head);
+  topMSOA.appendChild(body);
 
   //replace
-  pOA.replaceWith(topOA);
+  pMSOA.replaceWith(topMSOA);
+
   };
 
 //render modal oa cat
-function renderCAT(oacat) {
+function renderOAC(oac) {
 
   //get elements
   var sgButton = document.getElementById('sgCat');
@@ -240,17 +245,17 @@ function renderCAT(oacat) {
   gDiv.className = 'card-body p-2';
 
   //classname
-  if (oacat[2] == 99) {
+  if (oac[2] == 99) {
     var cls = 99;
   } else {
-    var cls = oacat[2].slice(0,1);
+    var cls = oac[2].slice(0,1);
   };
 
   //values
   sgDivbtn.className = 'btn btn-g'+cls+' btn-lg btn-block';
   gDivbtn.className = 'btn btn-g'+cls+' sub btn-lg btn-block';
-  sgDivbtn.innerHTML = oacat[0];
-  gDivbtn.innerHTML = oacat[1];
+  sgDivbtn.innerHTML = oac[0];
+  gDivbtn.innerHTML = oac[1];
   sgDiv.appendChild(sgDivbtn);
   gDiv.appendChild(gDivbtn);
 
@@ -355,14 +360,12 @@ function clearPage() {
 
   //get elements
   var lSearch = document.getElementById('mapLegend');
-  var parSearch = document.getElementById('parLegend');
-  var msoaSearch = document.getElementById('msoaLegend');
   var foreHist = document.getElementById('ForeNamesHist');
   var foreCont = document.getElementById('ForeNamesCont');
   var hLegend = document.getElementById('foreHistLegend');
   var cLegend = document.getElementById('foreContLegend');
   var pPar = document.getElementById('topPar');
-  var pOA = document.getElementById('topOA');
+  var pMSOA = document.getElementById('topMSOA');
   var sgCat = document.getElementById('sgCat');
   var gCat = document.getElementById('gCat');
   var tableHR = document.getElementById('tableHR');
@@ -371,14 +374,12 @@ function clearPage() {
 
   //create elements
   var mapLegend = document.createElement('div');
-  var parLegend = document.createElement('div');
-  var msoaLegend = document.createElement('div');
   var foreHistLegend = document.createElement('div');
   var foreContLegend = document.createElement('div');
   var foreNamesHist = document.createElement('ul');
   var foreNamesCont = document.createElement('ul');
-  var topPar = document.createElement('ul');
-  var topOA = document.createElement('ul');
+  var topPar = document.createElement('table');
+  var topMSOA = document.createElement('table');
   var sgDiv = document.createElement('div');
   var gDiv = document.createElement('div');
   var hrFreq = document.createElement('table');
@@ -387,14 +388,12 @@ function clearPage() {
 
   //set elements
   mapLegend.id = 'mapLegend'
-  parLegend.id = 'parLegend'
-  msoaLegend.id = 'msoaLegend'
   foreNamesHist.id = 'ForeNamesHist';
   foreNamesCont.id = 'ForeNamesCont';
   foreHistLegend.id = 'foreHistLegend';
   foreContLegend.id = 'foreContLegend';
   topPar.id = 'topPar';
-  topOA.id = 'topOA';
+  topMSOA.id = 'topMSOA';
   sgDiv.id = 'sgCat';
   gDiv.id = 'gCat';
   hrFreq.id = 'tableHR';
@@ -403,14 +402,12 @@ function clearPage() {
 
   //replace
   lSearch.replaceWith(mapLegend);
-  parSearch.replaceWith(parLegend);
-  msoaSearch.replaceWith(msoaLegend);
   foreHist.replaceWith(foreNamesHist);
   foreCont.replaceWith(foreNamesCont);
   hLegend.replaceWith(foreHistLegend);
   cLegend.replaceWith(foreContLegend);
   pPar.replaceWith(topPar);
-  pOA.replaceWith(topOA);
+  pMSOA.replaceWith(topMSOA);
   sgCat.replaceWith(sgDiv);
   gCat.replaceWith(gDiv);
   tableHR.replaceWith(hrFreq);
@@ -423,11 +420,8 @@ function clearPage() {
   document.getElementById('BBAND').style.display='none';
 
   //remove previous map layers if exist
-  if (control != undefined) {
-      map.removeControl(control);
-      map.removeLayer(layer_rm);
+  if (mapcontrol != undefined) {
+      map.removeControl(mapcontrol);
+      map.removeLayer(maplayer);
     };
-  if (adminlayer != undefined) {
-      map.removeLayer(adminlayer);
-  };
 };

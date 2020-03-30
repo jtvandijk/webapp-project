@@ -5,41 +5,41 @@ from .models import *
 def surname_statistics(name_search):
 
     #statistics -- forename
-    forenames_hist = names_forenames_hist.objects.filter(surname=name_search).values('forename','sex')
-    forenames_cont = names_forenames_cont.objects.filter(surname=name_search).values('forename','sex')
+    forenames_hist = names_fns_hist.objects.filter(surname=name_search).values('forename','sex')
+    forenames_cont = names_fns_cont.objects.filter(surname=name_search).values('forename','sex')
     fore_female_hist, fore_male_hist = forenames_stats(forenames_hist)
     fore_female_cont, fore_male_cont = forenames_stats(forenames_cont)
 
     #statistics -- parish
-    parishes = names_freq_parish.objects.filter(surname=name_search).values('regcnty','parish','conparid')
+    parishes = names_loc_hist.objects.filter(surname=name_search).values('regcnty','parish')
     par_top = parish_stats(parishes)
 
-    #statistics -- oa
-    oas = names_freq_oa.objects.filter(surname=name_search).values('msoa11cd')
-    oa_top = oa_stats(oas)
+    #statistics -- msoa
+    msoas = names_loc_cont.objects.filter(surname=name_search).values('msoa11cd')
+    msoa_top = msoa_stats(msoas)
 
     #statistics -- oac
-    oac = names_cat_oa.objects.filter(surname=name_search).values('oagroupcd','oagroupnm')
+    oac = names_oac.objects.filter(surname=name_search,type='mode').values('oaccd','oacnm')
     oac_mod = oac_stats(oac)
 
-    #statistics -- oah
-    oah = names_health_oa.objects.filter(surname=name_search).values('surname','ahah_dec_rev')
-    oah_mod = oah_stats(oah)
-
-    #statistics -- imd
-    imd = names_imd_oa.objects.filter(surname=name_search).values('surname','imd_dec')
-    imd_mod = imd_stats(imd)
-
-    #statistics -- bband
-    bband = names_bband_oa.objects.filter(surname=name_search).values('surname','bbandcd')
-    bband_mod = bband_stats(bband)
-
-    #statistics -- iuc
-    iuc = names_iuc_oa.objects.filter(surname=name_search).values('surname','iuccd','iucnm')
-    iuc_mod = iuc_stats(iuc)
+    # #statistics -- ahah
+    # oah = names_ahah.objects.filter(surname=name_search).values('surname','ahah_dec_rev')
+    # oah_mod = oah_stats(oah)
+    #
+    # #statistics -- imd
+    # imd = names_imd.objects.filter(surname=name_search).values('surname','imd_dec')
+    # imd_mod = imd_stats(imd)
+    #
+    # #statistics -- bbs
+    # bbs = names_bbs.objects.filter(surname=name_search).values('surname','bbs')
+    # bbs_mod = bband_stats(bbs)
+    #
+    # #statistics -- iuc
+    # iuc = names_iuc.objects.filter(surname=name_search).values('surname','iuccd','iucnm')
+    # iuc_mod = iuc_stats(iuc)
 
     #return
-    return([fore_female_hist,fore_male_hist,fore_female_cont,fore_male_cont,par_top,oa_top,oac_mod,oah_mod,imd_mod,bband_mod,iuc_mod])
+    return([fore_female_hist,fore_male_hist,fore_female_cont,fore_male_cont,par_top,msoa_top,oac_mod])#,oah_mod,imd_mod,bbs_mod,iuc_mod])
 
 #forenames
 def forenames_stats(forenames):
@@ -47,62 +47,34 @@ def forenames_stats(forenames):
         fore_female = ['No forenames found']
         fore_male = ['No forenames found']
     else:
-        fore_female = []
-        fore_male = []
-        for f in forenames:
-            if(f['sex'] == 'F'):
-                fore_female.append(f['forename'])
-            else:
-                fore_male.append(f['forename'])
+        fore_female = [f['forename'] for f in forenames if f['sex'] == 'F']
+        fore_male = [f['forename'] for f in forenames if f['sex'] == 'M']
     return(fore_female,fore_male)
 
 #parish frequencies
 def parish_stats(parishes):
     if not parishes:
-        par_top = [['99','No parishes found']]
+        par_top = [['No data','No data']]
     else:
-        par_top = []
-        for p in parishes:
-            regcnty = p['regcnty'].title()
-            parid = str(int(p['conparid']))
-            parish = p['parish']
-            parjoin = []
-            if parish == '-':
-                parish = 'London parishes'
-                parjoin.append(parid)
-                parjoin.append(regcnty + ': ' + parish)
-            else:
-                parjoin.append(parid)
-                parjoin.append(regcnty + ': ' + parish)
-            par_top.append(parjoin)
-    return(par_top)
+        par_top = list(map(list, set(map(lambda i: tuple(i), [[p['regcnty'].title(),p['parish']] for p in parishes]))))
+    return(par_top[:5])
 
-#output area frequencies
-def oa_stats(oas):
-    if not oas:
-        msoa_top = [['99','No MSOA\'s found']]
+#msoa frequencies
+def msoa_stats(msoas):
+    if not msoas:
+        msoa_top = [['No data','No data']]
     else:
-        msoa_top = []
-        for o in oas:
-            msoajoin = []
-            ladnm = lookup_oa.objects.filter(msoa11cd=o['msoa11cd']).values('ladnm','msoa11nm')[0]
-            msoanm = ladnm['ladnm'] + ': ' + ladnm['msoa11nm']
-            msoajoin.append(ladnm['msoa11nm'])
-            msoajoin.append(msoanm)
-            msoa_top.append(msoajoin)
-    return(msoa_top)
+        msoa_top = [[lookup_loc_cont.objects.filter(msoa11cd=o['msoa11cd']).values('ladnm')[0]['ladnm'], \
+                    lookup_loc_cont.objects.filter(msoa11cd=o['msoa11cd']).values('msoa11nm')[0]['msoa11nm']] for o in msoas]
+    return(msoa_top[:5])
 
 #output area classification
 def oac_stats(oac):
     if not oac:
-        oac_sn = ['No classification found']
-        oac_gn = ['No classification found']
-        oac_sg = '99'
+        oac_sn = ['No data','No data','99']
     else:
-        oac_gn = oac[0]['oagroupnm']
-        oac_sg = oac[0]['oagroupcd']
-        oac_sn = oa_classification.objects.filter(groupcd=oac_sg).values('supergroupnm')[0]['supergroupnm']
-    return([oac_sn,oac_gn,oac_sg])
+        oac_sn = [lookup_oac.objects.filter(groupcd=oac[0]['oaccd']).values('supergroupnm')[0]['supergroupnm'],oac[0]['oacnm'],oac[0]['oaccd']]
+    return(oac_sn)
 
 #access to health and hazards
 def oah_stats(oah):

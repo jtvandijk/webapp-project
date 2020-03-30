@@ -2,45 +2,49 @@
 {% load static %}
 
 <!--navigation-->
-<nav class="navbar navbar-expand-md navbar-dark bg-custom fixed-top">
+<div class="row justify-content-center bg-custom navigation-wrapper">
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-md-10 col-sm-10">
 
-  <!--brand-->
-  <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'favlogo.png' %}" class="text-center mr-3" height="25" width="25" alt="favicon menubar"/>GBNames</a>
+        <nav class="navbar navbar-expand-md navbar-dark bg-custom">
 
-  <!--navigation: hidden-->
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
+          <!--brand-->
+          <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'favlogo.png' %}" class="text-center mr-3" height="25" width="25" alt="favicon menubar"/>GBNames</a>
 
-  <!--navigation: elements-->
-  <div class="collapse navbar-collapse" id="navbarSupportedContent" role="tablist">
-    <ul class="navbar-nav mr-auto nav" id="nav-tab" role="tablist">
-      <li class="nav-item px-1">
-        <a class="nav-link" href="#" data-toggle="modal" data-target="#methModal">Methodology</a>
-      </li>
-      <li class="nav-item px-1">
-        <a class="nav-link" href="#" data-toggle="modal" data-target="#dataModal">CDRC Data</a>
-      </li>
-      <li class="nav-item px-1 dropdown">
-        <a href="#" class="nav-link dropdown-toggle" id="infodrop" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button">
-          <span class="nav-link-text">About</span>
-        </a>
-        <div class="dropdown-menu" aria-labelledby="infodrop">
-          <a class="dropdown-item" href="#" data-toggle="modal" data-target="#cdrcModal">Consumer Data Research Centre</a>
-          <a class="dropdown-item" href="#" data-toggle="modal" data-target="#udlModal">Urban Dynamics Lab</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="#" data-toggle="modal" data-target="#privModal">Privacy Policy</a>
-          <a class="dropdown-item" href="#" data-toggle="modal" data-target="#versionModal">Version history</a>
-        </div>
-      </li>
-    </ul>
-    <form class="form-inline my-lg-0" method="post" id="searchSur">
-      <input class="form-control mr-sm-2" type="text" placeholder="Family name" name="q" id="surname" maxlength="50">
-      <input class="btn btn-outline-light my-2 my-sm-0 mr-sm-2" type="reset" value="Reset">
-		  <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
-		</form>
+          <!--navigation: hidden-->
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          <!--navigation: elements-->
+          <div class="collapse navbar-collapse" id="navbarSupportedContent" role="tablist">
+            <ul class="navbar-nav mr-auto nav" id="nav-tab" role="tablist">
+              <li class="nav-item px-1">
+                <a class="nav-link" href="#" data-toggle="modal" data-target="#methModal">Methodology</a>
+              </li>
+              <li class="nav-item px-1">
+                <a class="nav-link" href="#" data-toggle="modal" data-target="#dataModal">CDRC Data</a>
+              </li>
+              <li class="nav-item px-1 dropdown">
+                <a href="#" class="nav-link dropdown-toggle" id="infodrop" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button">
+                  <span class="nav-link-text">About</span>
+                </a>
+                <div class="dropdown-menu" aria-labelledby="infodrop">
+                  <a class="dropdown-item" href="#" data-toggle="modal" data-target="#cdrcModal">Consumer Data Research Centre</a>
+                  <a class="dropdown-item" href="#" data-toggle="modal" data-target="#udlModal">Urban Dynamics Lab</a>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="#" data-toggle="modal" data-target="#privModal">Privacy Policy</a>
+                  <a class="dropdown-item" href="#" data-toggle="modal" data-target="#versionModal">Version history</a>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </div>
   </div>
-</nav>
+</div>
 
 <!--cdrc-->
 <div id="cdrcModal" class="modal" role="dialog">
@@ -256,16 +260,23 @@
           <h5>Current version</h5>
         </div>
         <div class="card body p-3">
-          <h6 class="card-title">Version 2.3.0</h6>
-          <h6 class="card-subtitle text-muted">Released February 2020</h6>
+          <h6 class="card-title">Version 3.0.0</h6>
+          <h6 class="card-subtitle text-muted">Released April 2020</h6>
             <p class="m-0 p-0">
-              UI tweaks, bug fixes. Beta version.
+              UI redesign, updated contours following improved methodology.
             </p>
         </div>
       </div>
       <div class="card mb-3">
         <div class="card-header pl-3 pb-1">
           <h5>Previous versions</h5>
+        </div>
+        <div class="card body p-3">
+          <h6 class="card-title">Version 2.3.0</h6>
+          <h6 class="card-subtitle text-muted">Released February 2020</h6>
+            <p class="m-0 p-0">
+              UI tweaks, bug fixes. Beta version.
+            </p>
         </div>
         <div class="card body p-3">
           <h6 class="card-tittle">Version 2.2.0</h6>
