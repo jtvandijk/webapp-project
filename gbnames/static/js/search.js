@@ -16,9 +16,7 @@ function initSearch(surname) {
   //remove jumbotron
   jumbotron.style.display = 'none';
 
-  //lay out
-  var cards = [...document.getElementsByClassName('collapse')];
-  show(cards);
+  //scroll
   scroll(0,0);
 
   //execute search
@@ -58,10 +56,10 @@ function searchSurname(surname) {
 
         //render consumer statistics
         renderOAC(data.stats[6]);
-        // renderHealth(data.stats[7]);
-        // renderIMD(data.stats[8]);
-        // renderBBAND(data.stats[9]);
-        // renderIUC(data.stats[10]);
+        renderIUC(data.stats[7]);
+        renderHealth(data.stats[8]);
+        renderIMD(data.stats[9]);
+        renderBBAND(data.stats[10]);
 
         //stop map loading indicator
         stopMapLoad();

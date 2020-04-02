@@ -1,5 +1,6 @@
 #django
 from .models import *
+import pandas as pd
 
 #combine statistics
 def surname_statistics(name_search):
@@ -22,24 +23,24 @@ def surname_statistics(name_search):
     oac = names_oac.objects.filter(surname=name_search,type='mode').values('oaccd','oacnm')
     oac_mod = oac_stats(oac)
 
+    #statistics -- iuc
+    iuc = names_iuc.objects.filter(surname=name_search).values('iuccd','iucnm')
+    iuc_mod = iuc_stats(iuc)
+
     # #statistics -- ahah
-    # oah = names_ahah.objects.filter(surname=name_search).values('surname','ahah_dec_rev')
-    # oah_mod = oah_stats(oah)
-    #
-    # #statistics -- imd
-    # imd = names_imd.objects.filter(surname=name_search).values('surname','imd_dec')
-    # imd_mod = imd_stats(imd)
-    #
-    # #statistics -- bbs
-    # bbs = names_bbs.objects.filter(surname=name_search).values('surname','bbs')
-    # bbs_mod = bband_stats(bbs)
-    #
-    # #statistics -- iuc
-    # iuc = names_iuc.objects.filter(surname=name_search).values('surname','iuccd','iucnm')
-    # iuc_mod = iuc_stats(iuc)
+    ahah = names_ahah.objects.filter(surname=name_search,type='distribution').values('ahahdec','score')
+    ahah_dst = ahah_stats(ahah)
+
+    #statistics -- imd
+    imd = names_imd.objects.filter(surname=name_search,type='distribution').values('imddec','score')
+    imd_dst = imd_stats(imd)
+
+    #statistics -- bbs
+    bbs = names_bbs.objects.filter(surname=name_search).values('surname','bbs')
+    bbs_mod = bband_stats(bbs)
 
     #return
-    return([fore_female_hist,fore_male_hist,fore_female_cont,fore_male_cont,par_top,msoa_top,oac_mod])#,oah_mod,imd_mod,bbs_mod,iuc_mod])
+    return([fore_female_hist,fore_male_hist,fore_female_cont,fore_male_cont,par_top,msoa_top,oac_mod,iuc_mod,ahah_dst,imd_dst,bbs_mod])
 
 #forenames
 def forenames_stats(forenames):
@@ -71,39 +72,47 @@ def msoa_stats(msoas):
 #output area classification
 def oac_stats(oac):
     if not oac:
-        oac_sn = ['No data','No data','99']
+        oac_mod = ['No data','No data','','','99']
     else:
-        oac_sn = [lookup_oac.objects.filter(groupcd=oac[0]['oaccd']).values('supergroupnm')[0]['supergroupnm'],oac[0]['oacnm'],oac[0]['oaccd']]
-    return(oac_sn)
-
-#access to health and hazards
-def oah_stats(oah):
-    if not oah:
-        oah_dc = 99
-    else:
-        oah_dc = oah[0]['ahah_dec_rev']
-    return(oah_dc)
-
-#index of multiple deprivation
-def imd_stats(imd):
-    if not imd:
-        imd_dc = 99
-    else:
-        imd_dc = imd[0]['imd_dec']
-    return(imd_dc)
-
-#broadband speed
-def bband_stats(bband):
-    if not bband:
-        bband_sc = 99
-    else:
-        bband_sc = bband[0]['bbandcd']
-    return(bband_sc)
+        oac_sg = lookup_oac.objects.filter(groupcd=oac[0]['oaccd']).values('supergroupnm')[0]['supergroupnm']
+        oac_sg_desc = lookup_oac_desc.objects.filter(code=oac[0]['oaccd'][0]).values('desc')[0]['desc']
+        oac_sn = oac[0]['oacnm']
+        oac_sn_desc = lookup_oac_desc.objects.filter(code=oac[0]['oaccd']).values('desc')[0]['desc']
+        oac_mod = [oac_sg,oac_sn,oac_sg_desc,oac_sn_desc,oac[0]['oaccd']]
+    return(oac_mod)
 
 #internet user classification
 def iuc_stats(iuc):
     if not iuc:
-        iuc_sc = [99,'No classification found']
+        iuc_mod = ['99','No data','']
     else:
-        iuc_sc = [iuc[0]['iuccd'],iuc[0]['iucnm']]
-    return(iuc_sc)
+        iuc_dsc = lookup_iuc.objects.filter(iuccd=iuc[0]['iuccd']).values('iucdesc')[0]['iucdesc']
+        iuc_mod = [iuc[0]['iuccd'],iuc[0]['iucnm'],iuc_dsc,]
+    return(iuc_mod)
+
+#access to health and hazards
+def ahah_stats(ahah):
+    if not ahah:
+        ahah_dst = ['No data']
+    else:
+        ahah_dst = sorted([[list(ahah)[dec]['ahahdec'],list(ahah)[dec]['score']] for dec in range(0,len(ahah))],key=lambda x: int(x[0]))
+    return(ahah_dst)
+
+#index of multiple deprivation
+def imd_stats(imd):
+    if not imd:
+        imd_dst = ['No data']
+    else:
+        imd_scr = pd.DataFrame([[list(imd)[dec]['imddec'],list(imd)[dec]['score']*100] for dec in range(0,len(imd))])
+        imd_scr.columns = ['key','imd']
+        imd_dst = pd.DataFrame({'key':[1,2,3,4,5,6,7,8,9,10]})
+        imd_dst = imd_dst.set_index('key').join(imd_scr.set_index('key'),on='key').fillna(0.05).values.tolist()
+    return(imd_dst)
+
+#broadband speed
+def bband_stats(bbs):
+    if not bbs:
+        bbs_mod = ['No data']
+    else:
+        bbs_mod = bbs[0]['bbs']
+    return(bbs_mod)

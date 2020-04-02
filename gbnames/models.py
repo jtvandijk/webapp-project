@@ -8,7 +8,7 @@ class names_kde(models.Model):
     freq = models.IntegerField(blank=True,null=True)
     bw = models.IntegerField(blank=True,null=True)
     kde = models.TextField(blank=True,null=True)
-    
+
     class Meta:
         managed = True
         db_table = 'names_kde'
@@ -78,6 +78,8 @@ class names_imd(models.Model):
 class names_ahah(models.Model):
     surname = models.TextField(primary_key=True)
     ahahdec = models.IntegerField(blank=True,null=True)
+    score = models.FloatField(blank=True,null=True)
+    type = models.TextField(blank=True,null=True)
 
     class Meta:
         managed = True
@@ -125,6 +127,14 @@ class lookup_loc_cont(models.Model):
         managed = True
         db_table = 'lookup_loc_cont'
 
+class lookup_iuc(models.Model):
+    iuccd = models.TextField(primary_key=True)
+    iucdesc = models.TextField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'lookup_iuc'
+
 class lookup_oac(models.Model):
     oa11cd = models.TextField(primary_key=True)
     ladcd = models.TextField(blank=True,null=True)
@@ -141,6 +151,19 @@ class lookup_oac(models.Model):
     class Meta:
         managed = True
         db_table = 'lookup_oac'
+
+class lookup_oac_desc(models.Model):
+    type = models.TextField(blank=True,null=True)
+    code = models.TextField(primary_key=True)
+    colour = models.TextField(blank=True,null=True)
+    names = models.TextField(blank=True,null=True)
+    order1 = models.TextField(blank=True,null=True)
+    order2 = models.TextField(blank=True,null=True)
+    desc = models.TextField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'lookup_oac_desc'
 
 class spatial_conpar51(models.Model):
     conparid = models.FloatField(primary_key=True)

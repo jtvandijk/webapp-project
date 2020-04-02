@@ -23,9 +23,6 @@
               <li class="nav-item px-1">
                 <a class="nav-link" href="#" data-toggle="modal" data-target="#methModal">Methodology</a>
               </li>
-              <li class="nav-item px-1">
-                <a class="nav-link" href="#" data-toggle="modal" data-target="#dataModal">CDRC Data</a>
-              </li>
               <li class="nav-item px-1 dropdown">
                 <a href="#" class="nav-link dropdown-toggle" id="infodrop" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button">
                   <span class="nav-link-text">About</span>
@@ -152,13 +149,12 @@
         and in <a href="https://doi.org/10.1080/13658816.2011.591291">Cheshire and Longley (2011)</a>.
       </p>
       <p>
-        For the historical census data, KDEs are calculated only for surnames that have at least 30 individual bearers. For the more
-        contemporary Consumer Registers, a minimum threshold of 50 adults is used. The reasons for this are in part technical, because
-        KDE calculations cannot be executed for small numbers of points. When mapping consumer data, these thresholds are used also to
+        For all data, KDEs are calculated only for surnames that have at least 100 individual bearers. The reasons for this are in part technical,
+        because KDE calculations cannot be executed for small numbers of points. When mapping consumer data, these thresholds are used also to
         avoid the possibility of disclosing the precise areas where living individual reside. The KDE calculations are parallelised
         through <a href="https://www.gnu.org/software/parallel/">GNU Parallel</a> and executed using the <a href="https://www.r-project.org/">R</a>
         scripting language (with the <a href="https://doi.org/10.1002/sim.7577">Sparr</a> library). More information on these procedures
-        is available in one of our academic papers: <a href="http://www.newcastle.gisruk.org/proceedings/">Van Dijk <em>et al.</em> (2019)</a>.
+        is available in one of our academic papers: <a href="https://doi.org/10.1080/17445647.2020.1746418">Van Dijk and Longley (2020)</a>.
       </p>
       <p>
         This website is powered by the Python-based open source web framework <a href="https://www.djangoproject.com/">Django</a>. <a href="https://leafletjs.com/">
@@ -194,9 +190,9 @@
       <p>
         Indices of Multiple Deprivation (IMDs) are periodically calculated by UK governments in order to summarise prevailing physical
         and social conditions at neighbourhood scale. Assuming equivalence between different national measures, we use the 2019 IMDs for
-        England and Wales and the 2016 Index for Scotland in order to identify the modal decile within which your selected surname falls.
+        England and Wales and the 2020 Index for Scotland in order to identify the modal decile within which your selected surname falls.
         You can read more about the calculation of the IMDs for: <a href="https://www.gov.uk/government/statistics/english-indices-of-deprivation-2019">England</a>,
-        <a href="https://gov.wales/welsh-index-multiple-deprivation">Wales</a>, and <a href="https://www2.gov.scot/Topics/Statistics/SIMD">Scotland</a>.
+        <a href="https://gov.wales/welsh-index-multiple-deprivation">Wales</a>, and <a href="https://www.gov.scot/collections/scottish-index-of-multiple-deprivation-2020/">Scotland</a>.
       </p>
       <h5 id="m7">Broadband Speed</h5>
       <p>
@@ -209,14 +205,7 @@
         of neighbourhoods across Great Britain. We show the Group into which the largest number of bearers of your selected surname fall.
         You can read more about this classification in <a href="http://cdrc.ac.uk/book">Alexiou and Singleton (2018)</a>.
       </p>
-      <h5 id="m9">Consumer Vulnerability</h5>
-      <p>
-        This measure, created at the University of Leeds, summarises consumer vulnerability to marketing materials, based upon data
-        such as age, health and household composition. Vulnerability varies according to product category and industry, as well as
-        consumer characteristics such as mental, physical and financial circumstances. More details are are available at
-        <a href="https://github.com/michael-adcock/consumer_vulnerability">Adcock (2018)</a>.
-      </p>
-      <h5 id="m10">Frequencies</h5>
+      <h5 id="m9">Frequencies</h5>
       <p class="mb-0">
         For your selected name, we show the total number of (adult and child) occurrences for 1851-1911 (excluding 1871 because of
         non-availability of data for England and Wales and excluding unavailable data for Scotland for 1911). The corresponding
@@ -314,24 +303,6 @@
           </p>
         </div>
        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline-primary float-right" data-dismiss="modal">Close</button>
-    </div>
-  </div>
-</div>
-
-<!--data-->
-<div id="dataModal" class="modal" role="dialog">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h4>CDRC Data</h4>
-    </div>
-    <div class="modal-body text-justify">
-      <div>
-        Visit the website of the <a href="https://www.cdrc.ac.uk/">Consumer Data Research Centre</a> to find out more about
-        our available data products, related maps, and details on how to gain access to our open, safeguared, and secure data sets.
       </div>
     </div>
     <div class="modal-footer">

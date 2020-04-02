@@ -18,11 +18,13 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous"/>
     <!--leaflet css-->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.3/dist/leaflet.css" integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ==" crossorigin="anonymous"/>
-    <!--leaflet easy button js-->
+    <!--leaflet easy button css-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css"/>
+    <!--chart js-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"  crossorigin="anonymous"></script>
+
     <!--custom css-->
     <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
-
     <!-- csrf token-->
     {% csrf_token %}
 
@@ -131,15 +133,11 @@
             <div class="col-lg-6">
               <div class="card mb-3">
                 <div class="card-header pl-3 pr-2 pb-1">
-                  <h4>Historical Forenames
-                  <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>Methodology</b> for more information.">
-                    <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"></span>
-                  </button>
-                  </h4>
+                  <h4>Historical Forenames</h4>
                 </div>
-                <div id="collapseForeFem" class="collapse" aria-labelledby="collapseForeFem">
+                <div id="collapseForeFem" class="collapse show" aria-labelledby="collapseForeFem">
                   <ul id="ForeNamesHist" class="list-inline ml-3 mt-2 mr-3 mb-3"></ul>
-                  <div id="foreHistLegend">
+                  <div id="foreHistLegend" class="p-2">
                   </div>
                 </div>
               </div>
@@ -149,15 +147,11 @@
             <div class="col-lg-6">
               <div class="card mb-3">
                 <div class="card-header pl-3 pr-2 pb-1">
-                  <h4>Recent Forenames
-                  <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>Methodology</b> for more information.">
-                    <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"></span>
-                  </button>
-                  </h4>
+                  <h4>Recent Forenames</h4>
                 </div>
-                <div id="collapseForeMal" class="collapse" aria-labelledby="collapseForeMal">
+                <div id="collapseForeMal" class="collapse show" aria-labelledby="collapseForeMal">
                   <ul id="ForeNamesCont" class="list-inline ml-3 mt-2 mr-3 mb-3"></ul>
-                  <div id="foreContLegend">
+                  <div id="foreContLegend" class="p-2">
                   </div>
                 </div>
               </div>
@@ -175,14 +169,10 @@
             <div class="col-lg-6">
               <div class="card mb-3">
                 <div class="card-header pl-3 pr-2 pb-1">
-                  <h4 class="m-0">Top Historical Parishes
-                  <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>Methodology</b> for more information.">
-                    <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"></span>
-                  </button>
-                  </h4>
+                  <h4 class="m-0">Top Historical Parishes</h4>
                   <small>Historical Parishes</small>
                 </div>
-                <div id="collapsePar" class="card-body p-0 collapse">
+                <div id="collapsePar" class="card-body p-0 collapse show">
                   <div class="table-fixed p-3 m-0" style="width:98%">
                     <table id='topPar'></table>
                   </div>
@@ -194,14 +184,10 @@
             <div class="col-lg-6">
               <div class="card mb-3">
                 <div class="card-header pl-3 pr-2 pb-1">
-                  <h4 class="m-0">Top Contemporary Areas
-                  <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>Methodology</b> for more information.">
-                    <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"></span>
-                  </button>
-                  </h4>
+                  <h4 class="m-0">Top Contemporary Areas</h4>
                   <small>Middle layer Super Output Areas</small>
                 </div>
-                <div id="collapseMSOA" class="card-body p-0 collapse">
+                <div id="collapseMSOA" class="card-body p-0 collapse show">
                   <div class="table-fixed p-3 m-0" style="width:98%">
                     <table id='topMSOA'></table>
                   </div>
@@ -215,28 +201,39 @@
       <!--output area classifciation-->
       <div class="row justify-content-center">
         <div class="col-lg-10 col-md-10 col-sm-10">
-          <div class="row justify-content-center">
-            <div class="col-lg-12 col-md-12 col-sm-12">
-              <div class="card mb-3">
-                <div class="card-header pl-3 pr-2 pb-1">
-                  <h4 class="m-0">Output Area Classification
-                  <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>Methodology</b> for more information.">
-                    <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"></span>
-                  </button>
-                  </h4>
-                  <small>Neighbourhoods classification</small>
+          <div class="card mb-3">
+            <div class="card-header pl-3 pr-2 pb-1">
+              <h4 class="m-0">Output Area Classification</h4>
+              <small>Neighbourhoods classification</small>
+            </div>
+            <div id="collapseCat" class="collapse show" aria-labelledby="collapseCat">
+              <div class="card-body p-3" id="cardCat">
+                <div class="row justify-content-center">
+                  <div class="col-lg-6">
+                    <div id="sgCat">
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div id="gCat">
+                    </div>
+                  </div>
+                  <div>
+                    <div id="dscCat">
+                    </div>
+                  </div>
                 </div>
-                <div id="collapseCat" class="collapse" aria-labelledby="collapseCat">
-                  <div class="card-body p-2" id="cardCat">
-                    <div class="row justify-content-center">
-                      <div class="col-lg-6">
-                        <div id="sgCat">
-                        </div>
-                      </div>
-                      <div class="col-lg-6">
-                        <div id="gCat">
-                        </div>
-                      </div>
+                <div class="row justify-content-center">
+                  <div class="col-lg-2 col-md-3 m-0 my-auto">
+                    <div class="card-body p-2 thumbnail text-center">
+                      <a href="{% static 'OAC.pdf' %}"><img src="{% static 'OAC_thumb.png' %}" class="img-responsive border" height="150" width="100" alt="oac thumbnail" target="_blank"/></a>
+                    </div>
+                  </div>
+                  <div class="col-lg-10 col-md-9 m-0 my-auto">
+                    <div class="card-body p-2 text-justify">
+                      <strong>ABOUT</strong> The Output Area Classicication is a classification of neighbourhoods, arranged into Supergroups and
+                      Groups based upon 2011 Census of Population data. We created this through a collaboration with the Office for National Statistics
+                      (ONS) and plan to update it following the 2021 Census. We show the 2011 OAC Supergroup and Group in which your selected surname
+                      occurs most frequently.
                     </div>
                   </div>
                 </div>
@@ -246,133 +243,105 @@
         </div>
       </div>
 
-      <!--health and deprivation section-->
+      <!--access to health and hazards section-->
       <div class="row justify-content-center">
         <div class="col-lg-10 col-md-10 col-sm-10">
-          <div class="row justify-content-center">
-
-            <!--healthy neighbourhoods index-->
-            <div class="col-lg-6">
-              <div class="card mb-3">
-                <div class="card-header pl-3 pr-2 pb-1">
-                  <h4 class="m-0">Healthy Neighbourhoods
-                  <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>Methodology</b> for more information.">
-                    <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"></span>
-                  </button>
-                  </h4>
-                  <small>Access to Healthy Assets and Hazards</small>
+          <div class="card mb-3">
+            <div class="card-header pl-3 pr-2 pb-1">
+              <h4 class="m-0">Healthy Neighbourhoods</h4>
+              <small>Access to Healthy Assets and Hazards</small>
+            </div>
+            <div id="collapseAHAH" class="card-body p-0 collapse show">
+              <div class="p-3">
+                <div id="AHAH">
                 </div>
-                <div id="collapseAHAH" class="card-body p-0 collapse">
-                  <div class="p-3">
-                    <div id="AHAH" style="display:none">
-                    <button id="hlth1" class="btn btn-h1 btn-sm btn-block p-0 m-0">Worst perfoming decile</button>
-                    <button id="hlth2" class="btn btn-h2 btn-sm btn-block p-0 m-0">2nd</button>
-                    <button id="hlth3" class="btn btn-h3 btn-sm btn-block p-0 m-0">3rd</button>
-                    <button id="hlth4" class="btn btn-h4 btn-sm btn-block p-0 m-0">4th</button>
-                    <button id="hlth5" class="btn btn-h5 btn-sm btn-block p-0 m-0">5th</button>
-                    <button id="hlth6" class="btn btn-h6 btn-sm btn-block p-0 m-0">6th</button>
-                    <button id="hlth7" class="btn btn-h7 btn-sm btn-block p-0 m-0">7th</button>
-                    <button id="hlth8" class="btn btn-h8 btn-sm btn-block p-0 m-0">8th</button>
-                    <button id="hlth9" class="btn btn-h9 btn-sm btn-block p-0 m-0">9th</button>
-                    <button id="hlth10" class="btn btn-h10 btn-sm btn-block p-0 m-0">Best performing decile</button>
-                    <button id="hlth99" class="btn btn-h99 btn-sm btn-block p-0 m-0">Data missing</button>
+                <div class="row justify-content-center">
+                  <div class="col-lg-2 col-md-3 m-0 my-auto">
+                    <div class="card-body p-2 thumbnail text-center">
+                      <a href="{% static 'AHAH.pdf' %}"><img src="{% static 'AHAH_thumb.png' %}" class="img-responsive border" height="150" width="100" alt="ahah thumbnail" target="_blank"/></a>
+                    </div>
+                  </div>
+                  <div class="col-lg-10 col-md-9 m-0 my-auto">
+                    <div class="card-body p-2 text-justify">
+                      <strong>ABOUT</strong> Access to Healthy Assets and Hazards (AHAH) is a multi-dimensional index for Great Britain developed by the
+                      Consumer Data Research Centre (CDRC in order to describe neighbourhoods as more or less healthy places in which to live.
+                      Various data describe access to retail facilities, health services, and physical features. Neighbourhoods can be ranked from best
+                      to worst and we show the decile in which your surname occurs most frequently.
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!--internet user classification-->
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-10 col-sm-10">
+          <div class="card mb-3">
+              <div class="card-header pl-3 pr-2 pb-1">
+                <h4 class="m-0">Internet Use and Engagement</button>
+              </h4>
+              <small>Internet User Classification</small>
+            </div>
+            <div id="collapseIUC" class="card-body p-0 collapse show">
+              <div class="p-3">
+                <div id="IUC">
+                </div>
+                <div id="dscIUC">
+                </div>
+                <div class="row justify-content-center">
+                  <div class="col-lg-2 col-md-3 m-0 my-auto">
+                    <div class="card-body p-2 thumbnail text-center">
+                      <a href="{% static 'IUC.pdf' %}"><img src="{% static 'IUC_thumb.png' %}" class="img-responsive border" height="150" width="100" alt="iuc thumbnail" target="_blank"/></a>
+                    </div>
+                  </div>
+                  <div class="col-lg-10 col-md-9 m-0 my-auto">
+                    <div class="card-body p-2 text-justify">
+                      <strong>ABOUT</strong> The Consumer Data Research Centre Internet User Classification describes the nature and extent of
+                      Internet usage by the residents of neighbourhoods across Great Britain. We show the Group into which the largest number
+                      of bearers of your selected surname fall.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!--index of multiple deprivation and broadband speed-->
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-10 col-sm-10">
+          <div class="row justify-content-center">
 
             <!--index of multiple deprivation deciles-->
             <div class="col-lg-6">
               <div class="card mb-3">
                 <div class="card-header pl-3 pr-2 pb-1">
-                  <h4 class="m-0">Neighbourhood Deprivation
-                  <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>Methodology</b> for more information.">
-                    <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"></span>
-                  </button>
-                  </h4>
+                  <h4 class="m-0">Neighbourhood Deprivation</h4>
                   <small>Index of Multiple Deprivation</small>
                 </div>
-                <div id="collapseIMD" class="card-body p-0 collapse">
+                <div id="collapseIMD" class="card-body p-0 collapse show">
                   <div class="p-3">
-                    <div id="IMD" style="display:none">
-                    <button id="imd1" class="btn btn-l1 btn-sm btn-block p-0 m-0">Most deprived decile</button>
-                    <button id="imd2" class="btn btn-l2 btn-sm btn-block p-0 m-0">2nd</button>
-                    <button id="imd3" class="btn btn-l3 btn-sm btn-block p-0 m-0">3rd</button>
-                    <button id="imd4" class="btn btn-l4 btn-sm btn-block p-0 m-0">4th</button>
-                    <button id="imd5" class="btn btn-l5 btn-sm btn-block p-0 m-0">5th</button>
-                    <button id="imd6" class="btn btn-l6 btn-sm btn-block p-0 m-0">6th</button>
-                    <button id="imd7" class="btn btn-l7 btn-sm btn-block p-0 m-0">7th</button>
-                    <button id="imd8" class="btn btn-l8 btn-sm btn-block p-0 m-0">8th</button>
-                    <button id="imd9" class="btn btn-l9 btn-sm btn-block p-0 m-0">9th</button>
-                    <button id="imd10" class="btn btn-l10 btn-sm btn-block p-0 m-0">Least deprived decile</button>
-                    <button id="imd99" class="btn btn-l99 btn-sm btn-block p-0 m-0">Data missing</button>
+                    <div id="IMD">
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!--internet usage and consumer vulnerability-->
-      <div class="row justify-content-center">
-        <div class="col-lg-10 col-md-10 col-sm-10">
-          <div class="row justify-content-center">
 
             <!--broadband speed-->
             <div class="col-lg-6">
               <div class="card mb-3">
                 <div class="card-header pl-3 pr-2 pb-1">
-                  <h4 class="m-0">Broadband Speed
-                  <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>Methodology</b> for more information.">
-                    <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"></span>
-                  </button>
-                  </h4>
+                  <h4 class="m-0">Broadband Speed</h4>
                   <small>Fixed broadband download speed</small>
                 </div>
-                <div id="collapseBBAND" class="card-body p-0 collapse">
+                <div id="collapseBBAND" class="card-body p-0 collapse show">
                   <div class="p-3">
-                    <div id="BBAND" style="display:none">
-                      <button id="bband11" class="btn btn-b11 btn-sm btn-block p-0 m-0">Under 5 mbt/s</button>
-                      <button id="bband10" class="btn btn-b10 btn-sm btn-block p-0 m-0">5-10 mbt/s</button>
-                      <button id="bband9" class="btn btn-b9 btn-sm btn-block p-0 m-0">10-15 mbt/s</button>
-                      <button id="bband8" class="btn btn-b8 btn-sm btn-block p-0 m-0">15-20 mbt/s</button>
-                      <button id="bband7" class="btn btn-b7 btn-sm btn-block p-0 m-0">20-25 mbt/s</button>
-                      <button id="bband6" class="btn btn-b6 btn-sm btn-block p-0 m-0">25-30 mbt/s</button>
-                      <button id="bband5" class="btn btn-b5 btn-sm btn-block p-0 m-0">30-40 mbt/s</button>
-                      <button id="bband4" class="btn btn-b4 btn-sm btn-block p-0 m-0">40-50 mbt/s</button>
-                      <button id="bband3" class="btn btn-b3 btn-sm btn-block p-0 m-0">50-60 mbt/s</button>
-                      <button id="bband2" class="btn btn-b2 btn-sm btn-block p-0 m-0">60-70 mbt/s</button>
-                      <button id="bband1" class="btn btn-b1 btn-sm btn-block p-0 m-0">Over 70 mbt/s</button>
-                      <button id="bband99" class="btn btn-b99 btn-sm btn-block p-0 m-0">Data missing</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- internet user classification and consumer vulnerability-->
-            <div class="col-lg-6">
-
-              <!--internet user classification-->
-              <div class="row justify-content-center">
-                <div class="col-lg-12">
-                  <div class="card mb-3">
-                    <div class="card-header pl-3 pr-2 pb-1">
-                      <h4 class="m-0">Internet Use and Engagement
-                      <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>Methodology</b> for more information.">
-                        <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"></span>
-                      </button>
-                      </h4>
-                      <small>Internet User Classification</small>
-                    </div>
-                    <div id="collapseIUC" class="card-body p-0 collapse">
-                      <div class="p-3">
-                        <div id="IUC">
-                        </div>
-                      </div>
+                    <div id="BBAND">
                     </div>
                   </div>
                 </div>
@@ -387,14 +356,10 @@
         <div class="col-lg-10 col-md-10 col-sm-10">
           <div class="card mb-3">
             <div class="card-header pl-3 pr-2 pb-1">
-              <h4 class='m-0'>Frequencies
-              <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>Methodology</b> for more information.">
-                <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"></span>
-              </button>
-              </h4>
+              <h4 class='m-0'>Frequencies</h4>
               <small>1851-1911</small>
             </div>
-            <div id="collapseFreqHr" class="collapse" aria-labelledby="collapseFreqHr">
+            <div id="collapseFreqHr" class="collapse show" aria-labelledby="collapseFreqHr">
               <div class="card-body p-0" id="cardFreqHr">
                 <div class="table-responsive p-3 m-0" style="width:98%">
                   <table id='tableHR'></table>
@@ -410,14 +375,10 @@
         <div class="col-lg-10 col-md-10 col-sm-10">
           <div class="card mb-3">
             <div class="card-header pl-3 pr-2 pb-1">
-              <h4 class="m-0">Frequencies
-              <button type="button" class="btn btn-light p-0 float-right" data-trigger="focus" data-toggle="popover" data-container="body" data-placement="bottom" data-html="true" data-content="See <b>Methodology</b> for more information.">
-                <span class="fas fa-info-circle fa-lg pr-1 pl-1" style="text-decoration: none"></span>
-              </button>
-              </h4>
+              <h4 class="m-0">Frequencies</h4>
               <small>1997-2016</small>
             </div>
-            <div id="collapseFreqCr" class="collapse" aria-labelledby="collapseFreqCr">
+            <div id="collapseFreqCr" class="collapse show" aria-labelledby="collapseFreqCr">
               <div class="card-body p-0" id="cardFreqCr">
                 <div class="table-responsive p-3 m-0" style="width:98%">
                   <table id='tableCR'></table>

@@ -76,6 +76,7 @@ function renderMap(years,kdes,map) {
 
   //geoJSON
   var layer = renderContour(years,kdes);
+  console.log(layer);
 
   //set up years
   var slider = '';
@@ -127,6 +128,6 @@ function renderMap(years,kdes,map) {
   maplayer = geoJsonTimeLayer;
 
   //add
+  map.fitBounds(layer.getBounds())
   geoJsonTimeLayer.addTo(map);
-  map.fitBounds(geoJsonTimeLayer.getBounds())
 };
