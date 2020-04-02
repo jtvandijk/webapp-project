@@ -97,6 +97,7 @@ class names_iuc(models.Model):
 class names_bbs(models.Model):
     surname = models.TextField(primary_key=True)
     bbs = models.TextField(blank=True,null=True)
+    bbsdec = models.IntegerField(blank=True,null=True)
 
     class Meta:
         managed = True

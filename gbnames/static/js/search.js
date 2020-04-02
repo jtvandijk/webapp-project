@@ -25,7 +25,12 @@ function initSearch(surname) {
 
 //search surname
 function searchSurname(surname) {
+
+  //functions
   startMapLoad();
+  clearPage();
+
+  //search
   $j.ajax({
     method: 'POST',
     url: '../gbnames/search/',

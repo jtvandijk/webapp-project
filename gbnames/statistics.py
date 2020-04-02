@@ -28,19 +28,19 @@ def surname_statistics(name_search):
     iuc_mod = iuc_stats(iuc)
 
     # #statistics -- ahah
-    ahah = names_ahah.objects.filter(surname=name_search,type='distribution').values('ahahdec','score')
-    ahah_dst = ahah_stats(ahah)
+    ahah = names_ahah.objects.filter(surname=name_search,type='mode').values('ahahdec')
+    ahah_mod = ahah_stats(ahah)
 
     #statistics -- imd
-    imd = names_imd.objects.filter(surname=name_search,type='distribution').values('imddec','score')
-    imd_dst = imd_stats(imd)
+    imd = names_imd.objects.filter(surname=name_search,type='mode').values('imddec')
+    imd_mod = imd_stats(imd)
 
     #statistics -- bbs
-    bbs = names_bbs.objects.filter(surname=name_search).values('surname','bbs')
+    bbs = names_bbs.objects.filter(surname=name_search).values('bbsdec','bbs')
     bbs_mod = bband_stats(bbs)
 
     #return
-    return([fore_female_hist,fore_male_hist,fore_female_cont,fore_male_cont,par_top,msoa_top,oac_mod,iuc_mod,ahah_dst,imd_dst,bbs_mod])
+    return([fore_female_hist,fore_male_hist,fore_female_cont,fore_male_cont,par_top,msoa_top,oac_mod,iuc_mod,ahah_mod,imd_mod,bbs_mod])
 
 #forenames
 def forenames_stats(forenames):
@@ -93,26 +93,24 @@ def iuc_stats(iuc):
 #access to health and hazards
 def ahah_stats(ahah):
     if not ahah:
-        ahah_dst = ['No data']
+        ahah_mod = ['No data']
     else:
-        ahah_dst = sorted([[list(ahah)[dec]['ahahdec'],list(ahah)[dec]['score']] for dec in range(0,len(ahah))],key=lambda x: int(x[0]))
-    return(ahah_dst)
+        ahah_mod = ahah[0]['ahahdec']
+    return(ahah_mod)
 
 #index of multiple deprivation
 def imd_stats(imd):
     if not imd:
-        imd_dst = ['No data']
+        imd_mod = ['No data']
     else:
-        imd_scr = pd.DataFrame([[list(imd)[dec]['imddec'],list(imd)[dec]['score']*100] for dec in range(0,len(imd))])
-        imd_scr.columns = ['key','imd']
-        imd_dst = pd.DataFrame({'key':[1,2,3,4,5,6,7,8,9,10]})
-        imd_dst = imd_dst.set_index('key').join(imd_scr.set_index('key'),on='key').fillna(0.05).values.tolist()
-    return(imd_dst)
+        imd_mod = imd[0]['imddec']
+    return(imd_mod)
 
 #broadband speed
 def bband_stats(bbs):
     if not bbs:
-        bbs_mod = ['No data']
+        bbs_mod = ['99','No data']
     else:
-        bbs_mod = bbs[0]['bbs']
+        bbs_mod = [bbs[0]['bbsdec'],bbs[0]['bbs']]
+        print(bbs_mod)
     return(bbs_mod)

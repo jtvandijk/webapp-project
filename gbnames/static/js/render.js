@@ -3,7 +3,6 @@ function renderNone() {
 
   //functions
   stopMapLoad();
-  clearPage();
 
   //get elements
   var pSearch = document.getElementById('searchParam');
@@ -25,7 +24,6 @@ function renderNotFound(surname) {
 
   //functions
   stopMapLoad();
-  clearPage();
 
   //get elements
   var pSearch = document.getElementById('searchParam');
@@ -44,9 +42,6 @@ function renderNotFound(surname) {
 
 //render found
 function renderHTML(surname) {
-
-  //functions
-  clearPage();
 
   //get elements
   var pSearch = document.getElementById('searchParam');
@@ -293,56 +288,49 @@ function renderOAC(oac) {
   dscDiv.replaceWith(descDiv);
   };
 
-//render ahah distribution
+//render modal ahah
 function renderHealth(ahah) {
 
-  console.log(ahah)
+  //remove select
+  removeSelect('ahah')
+
+  //colour ramp
+  document.getElementById('AHAH').style.display='block';
+
+  //selection
+  var ahahsel = document.getElementById('ahah' + ahah);
+  ahahsel.className = 'ramp a'+ ahah + ' mode-select';
+
   };
 
-//render imd distribution
+//render modal imd
 function renderIMD(imd) {
 
-  console.log(imd);
+  //remove select
+  removeSelect('imd')
 
-  //get, set, create elements
-  var imdDiv = document.getElementById('IMD');
-  var chartIMD = document.createElement('div');
-  var canvasIMD = document.createElement('canvas');
-  chartIMD.id = 'IMD';
-  canvasIMD.id = 'chartIMD';
-  canvasIMD.setAttribute('height','50px');
-  canvasIMD.setAttribute('width','400px');
-  chartIMD.appendChild(canvasIMD);
-  imdDiv.replaceWith(chartIMD);
+  //colour ramp
+  document.getElementById('IMD').style.display='block';
 
-  //chart
-  var ctx = document.getElementById('chartIMD');
-  var myChart = new Chart(ctx, {
-      type: 'horizontalBar',
-      data: {datasets: [
-              {label: 'Low',data: imd[0],backgroundColor: '#a50026',hoverBackgroundColor: '#a50026'},
-              {label: 'Low',data: imd[1],backgroundColor: '#d73027',hoverBackgroundColor: '#d73027'},
-              {label: 'Low',data: imd[2],backgroundColor: '#f46d43',hoverBackgroundColor: '#f46d43'},
-              {label: 'Low',data: imd[3],backgroundColor: '#fdae61',hoverBackgroundColor: '#fdae61'},
-              {label: 'Low',data: imd[4],backgroundColor: '#fee08b',hoverBackgroundColor: '#fee08b'},
-              {label: 'Low',data: imd[5],backgroundColor: '#d9ef8b',hoverBackgroundColor: '#d9ef8b'},
-              {label: 'Low',data: imd[6],backgroundColor: '#a6d96a',hoverBackgroundColor: '#a6d96a'},
-              {label: 'Low',data: imd[7],backgroundColor: '#66bd63',hoverBackgroundColor: '#66bd63'},
-              {label: 'Low',data: imd[8],backgroundColor: '#1a9850',hoverBackgroundColor: '#1a9850'},
-              {label: 'Low',data: imd[9],backgroundColor: '#006837',hoverBackgroundColor: '#006837'},
-              ]},
-      options: {tooltips: {enabled: false},
-      highlights: {enabled: false},
-      scales: {xAxes: [{stacked: true,gridLines: {display: false},ticks: {display: false}}],
-               yAxes: [{stacked: true,gridLines: {display: false},ticks: {display: false}}]},
-      legend: {display: false,},}}
-    );
+  //selection
+  var imdsel = document.getElementById('imd' + imd);
+  imdsel.className = 'ramp i'+ imd + ' mode-select';
+
   };
 
 //render modal bbs
 function renderBBAND(bbs) {
 
-  console.log(bbs);
+  //remove select
+  removeSelect('bbs')
+
+  //colour ramp
+  document.getElementById('BBS').style.display='block';
+
+  //selection
+  var bbssel = document.getElementById('bbs' + bbs[0]);
+  bbssel.className = 'ramp b'+ bbs[0] + ' mode-select';
+
   };
 
 //render modal iuc
@@ -389,6 +377,17 @@ function renderIUC(iuc) {
   //replace
   iucEl.replaceWith(iucDiv);
   dscDiv.replaceWith(descDiv);
+};
+
+//remove select
+function removeSelect(rem) {
+
+  //loop
+  for (var i = 1; i < 11; ++i) {
+    var id = rem+i.toString();
+    var remcat = document.getElementById(id);
+    remcat.classList.remove('mode-select');
+    };
 };
 
 //clear page
@@ -465,7 +464,7 @@ function clearPage() {
   //hide
   document.getElementById('AHAH').style.display='none';
   document.getElementById('IMD').style.display='none';
-  document.getElementById('BBAND').style.display='none';
+  document.getElementById('BBS').style.display='none';
 
   //remove previous map layers if exist
   if (mapcontrol != undefined) {
