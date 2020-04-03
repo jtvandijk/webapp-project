@@ -33,7 +33,7 @@ L.tileLayer('https://julie.geog.ucl.ac.uk/~ucfajtv/tiles/gbnames/out/{z}/{x}/{y}
 }).addTo(map);
 
 //render geoJSON layer
-function renderContour(years,kdes) {
+function renderContour(years,kdes,scotland) {
 
   //individual features
   var layers = [];
@@ -44,15 +44,29 @@ function renderContour(years,kdes) {
 
     //individual polygons
     for (var p = 0, plen = kde.features.length; p < plen; p++) {
-      kde.features[p].properties.time = year};
+      kde.features[p].properties.time = year;
+    };
 
     //combine
-    layers.push(kde)};
+    layers.push(kde);
+  };
+
+  //scotland
+  if (scotland != 'empty') {
+    scotland = JSON.parse(scotland.kde);
+    for (var s = 0, slen = scotland.features.length; s < slen; s++) {
+      scotland.features[s].properties.time = -1861920000000;
+      scotland.features[s].properties.level = 0;
+    };
+    layers.push(scotland);
+  };
 
   //leaflet layer
   var contourJSON = L.geoJSON(layers, {
     style: function(feature) {
-      if (feature.properties.level == 1) {
+      if (feature.properties.level == 0) {
+        return {weight:0,fillColor:'#DCDCDC',fillOpacity:'.7'};
+      } else if (feature.properties.level == 1) {
         return {weight:0,color:'#6baed6',fillColor:'#6baed6',fillOpacity:.7,opacity:.2};
       } else if (feature.properties.level == 2) {
         return {weight:0,color:'#4292c6',fillColor:'#4292c6',fillOpacity:.7,opacity:.2};
@@ -66,7 +80,7 @@ function renderContour(years,kdes) {
   return contourJSON;
 };
 
-function renderMap(years,kdes,map) {
+function renderMap(years,kdes,scotland,map) {
 
   //remove previous layer
   if (mapcontrol != undefined) {
@@ -75,8 +89,7 @@ function renderMap(years,kdes,map) {
       };
 
   //geoJSON
-  var layer = renderContour(years,kdes);
-  console.log(layer);
+  var layer = renderContour(years,kdes,scotland);
 
   //set up years
   var slider = '';
@@ -128,6 +141,6 @@ function renderMap(years,kdes,map) {
   maplayer = geoJsonTimeLayer;
 
   //add
-  map.fitBounds(layer.getBounds())
+  map.setView([54.505,-4], 6);
   geoJsonTimeLayer.addTo(map);
 };

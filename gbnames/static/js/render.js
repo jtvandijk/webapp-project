@@ -58,7 +58,8 @@ function renderHTML(surname) {
 
   mapLegend.id = 'mapLegend';
   mapLegend.className = 'card-footer small text-muted text-justify p-3';
-  mapLegend.innerHTML = 'The blue contours enclose areas where the population-weighted density of the surname is highest.';
+  mapLegend.innerHTML = 'The blue contours enclose areas where the population-weighted density of the surname is highest, i.e. \
+                         where most people with this surname reside. Use the slider bar to see the surname population change through time.';
 
   //replace
   pSearch.replaceWith(foundPar);
@@ -294,12 +295,40 @@ function renderHealth(ahah) {
   //remove select
   removeSelect('ahah')
 
+  //get elements
+  var dscDiv = document.getElementById('dscAHAH');
+
+  //create elements
+  var descDiv = document.createElement('div');
+
+  //set elements
+  descDiv.id = 'dscAHAH';
+  descDiv.className = 'text-justify pt-4 px-4 mb-0';
+
   //colour ramp
   document.getElementById('AHAH').style.display='block';
 
-  //selection
-  var ahahsel = document.getElementById('ahah' + ahah);
-  ahahsel.className = 'ramp a'+ ahah + ' mode-select';
+  if (ahah != 'No data') {
+
+    //selection
+    var ahahsel = document.getElementById('ahah' + ahah);
+    var decile = document.createTextNode(ahah);
+    ahahsel.className = 'ramp a'+ ahah + ' mode-select';
+    ahahsel.appendChild(decile);
+
+    //text
+    descDiv.innerHTML = 'Your selected surname occurs most frequently in decile number <strong>' + ahah + '</strong> of the Access to Healthy \
+                         Assets and Hazards index. The first decile is the worst performing decile wereas the tenth decile is the best performing decile.'
+
+  } else {
+
+    //text
+    descDiv.innerHTML = '<strong>No data</strong> found for your search.'
+
+  };
+
+  //replace
+  dscDiv.replaceWith(descDiv);
 
   };
 
@@ -309,12 +338,40 @@ function renderIMD(imd) {
   //remove select
   removeSelect('imd')
 
+  //get elements
+  var dscDiv = document.getElementById('dscIMD');
+
+  //create elements
+  var descDiv = document.createElement('div');
+
+  //set elements
+  descDiv.id = 'dscIMD';
+  descDiv.className = 'text-justify pt-4 px-2 mb-0';
+
   //colour ramp
   document.getElementById('IMD').style.display='block';
 
-  //selection
-  var imdsel = document.getElementById('imd' + imd);
-  imdsel.className = 'ramp i'+ imd + ' mode-select';
+  if (imd != 'No data') {
+
+    //selection
+    var imdsel = document.getElementById('imd' + imd);
+    var decile = document.createTextNode(imd);
+    imdsel.className = 'ramp i'+ imd + ' mode-select';
+    imdsel.appendChild(decile);
+
+    //text
+    descDiv.innerHTML = 'Your selected surname occurs most frequently in decile number <strong>' + imd + '</strong> of the Index of Multiple Deprivation. \
+                         The first decile is the worst performing decile wereas the tenth decile is the best performing decile.'
+
+  } else {
+
+    //text
+    descDiv.innerHTML = '<strong>No data</strong> found for your search.'
+
+  };
+
+  //replace
+  dscDiv.replaceWith(descDiv);
 
   };
 
@@ -324,12 +381,40 @@ function renderBBAND(bbs) {
   //remove select
   removeSelect('bbs')
 
+  //get elements
+  var dscDiv = document.getElementById('dscBBS');
+
+  //create elements
+  var descDiv = document.createElement('div');
+
+  //set elements
+  descDiv.id = 'dscBBS';
+  descDiv.className = 'text-justify pt-4 px-2 mb-0';
+
   //colour ramp
   document.getElementById('BBS').style.display='block';
 
-  //selection
-  var bbssel = document.getElementById('bbs' + bbs[0]);
-  bbssel.className = 'ramp b'+ bbs[0] + ' mode-select';
+  if (bbs[0] != 99) {
+
+    //selection
+    var bbssel = document.getElementById('bbs' + bbs[0]);
+    var decile = document.createTextNode(bbs[0]);
+    bbssel.className = 'ramp b'+ bbs[0] + ' mode-select';
+    bbssel.appendChild(decile);
+
+    //text
+    descDiv.innerHTML = 'Your selected surname surname falls in group <strong>' + bbs[0] + '</strong>, which suggests \
+                         a modal fixed broadband download speed of <strong>' + bbs[1] + '</strong>.'
+
+  } else {
+
+    //text
+    descDiv.innerHTML = '<strong>No data</strong> found for your search.'
+
+  };
+
+  //replace
+  dscDiv.replaceWith(descDiv);
 
   };
 
@@ -387,6 +472,7 @@ function removeSelect(rem) {
     var id = rem+i.toString();
     var remcat = document.getElementById(id);
     remcat.classList.remove('mode-select');
+    remcat.innerHTML = '';
     };
 };
 
@@ -407,7 +493,10 @@ function clearPage() {
   var tableHR = document.getElementById('tableHR');
   var tableCR = document.getElementById('tableCR');
   var iucEl = document.getElementById('IUC');
-  var iucDsc = document.getElementById('dscIUC')
+  var iucDsc = document.getElementById('dscIUC');
+  var imdDsc = document.getElementById('dscIMD');
+  var ahahDsc = document.getElementById('dscAHAH');
+  var bbsDsc = document.getElementById('dscBBS');
 
   //create elements
   var mapLegend = document.createElement('div');
@@ -424,6 +513,9 @@ function clearPage() {
   var crFreq = document.createElement('table');
   var iuc = document.createElement('div');
   var dscIUC = document.createElement('div');
+  var dscIMD = document.createElement('div');
+  var dscAHAH = document.createElement('div');
+  var dscBBS = document.createElement('div');
 
   //set elements
   mapLegend.id = 'mapLegend'
@@ -440,6 +532,9 @@ function clearPage() {
   crFreq.id = 'tableCR';
   iuc.id = 'IUC';
   dscIUC.id = 'dscIUC';
+  dscIMD.id = 'dscIMD';
+  dscAHAH.id = 'dscAHAH';
+  dscBBS.id = 'dscBBS';
 
   //pretty
   foreNamesHist.className= 'p-2';
@@ -460,6 +555,9 @@ function clearPage() {
   tableCR.replaceWith(crFreq);
   iucEl.replaceWith(iuc);
   iucDsc.replaceWith(dscIUC);
+  imdDsc.replaceWith(dscIMD);
+  ahahDsc.replaceWith(dscAHAH);
+  bbsDsc.replaceWith(dscBBS);
 
   //hide
   document.getElementById('AHAH').style.display='none';

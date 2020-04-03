@@ -22,6 +22,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css"/>
     <!--chart js-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"  crossorigin="anonymous"></script>
+    <!--cookie alert css-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Wruczek/Bootstrap-Cookie-Alert@gh-pages/cookiealert.css">
 
     <!--custom css-->
     <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
@@ -225,7 +227,7 @@
                 <div class="row justify-content-center">
                   <div class="col-lg-2 col-md-3 m-0 my-auto">
                     <div class="card-body p-2 thumbnail text-center">
-                      <a href="{% static 'OAC.pdf' %}"><img src="{% static 'OAC_thumb.png' %}" class="img-responsive border" height="150" width="100" alt="oac thumbnail" target="_blank"/></a>
+                      <a href="{% static 'OAC.pdf' %}" target="_blank"><img src="{% static 'OAC_thumb.png' %}" class="img-responsive border" height="150" width="100" alt="oac thumbnail"/></a>
                     </div>
                   </div>
                   <div class="col-lg-10 col-md-9 m-0 my-auto">
@@ -254,23 +256,25 @@
             <div id="collapseAHAH" class="card-body p-0 collapse show">
               <div id="AHAH" style="display:none" class="pb-2">
                 <div class= "ramp_class py-3 px-4">
-                  <div id='ahah1' class="ramp a1" style="border-radius:.25rem 0 0 0.25rem">1</div>
-                  <div id='ahah2' class="ramp a2">2</div>
-                  <div id='ahah3' class="ramp a3">3</div>
-                  <div id='ahah4' class="ramp a4">4</div>
-                  <div id='ahah5' class="ramp a5">5</div>
-                  <div id='ahah6' class="ramp a6">6</div>
-                  <div id='ahah7' class="ramp a7">7</div>
-                  <div id='ahah8' class="ramp a8">8</div>
-                  <div id='ahah9' class="ramp a9">9</div>
-                  <div id='ahah10' class="ramp a10" style="border-radius:0 .25rem .25rem 0">10</div>
+                  <div id='ahah1' class="ramp a1" style="border-radius:.25rem 0 0 0.25rem"></div>
+                  <div id='ahah2' class="ramp a2"></div>
+                  <div id='ahah3' class="ramp a3"></div>
+                  <div id='ahah4' class="ramp a4"></div>
+                  <div id='ahah5' class="ramp a5"></div>
+                  <div id='ahah6' class="ramp a6"></div>
+                  <div id='ahah7' class="ramp a7"></div>
+                  <div id='ahah8' class="ramp a8"></div>
+                  <div id='ahah9' class="ramp a9"></div>
+                  <div id='ahah10' class="ramp a10" style="border-radius:0 .25rem .25rem 0"></div>
                 </div>
+              </div>
+              <div id="dscAHAH">
               </div>
               <div class="p-3">
                 <div class="row justify-content-center">
                   <div class="col-lg-2 col-md-3 m-0 my-auto">
                     <div class="card-body p-2 thumbnail text-center">
-                      <a href="{% static 'AHAH.pdf' %}"><img src="{% static 'AHAH_thumb.png' %}" class="img-responsive border" height="150" width="100" alt="ahah thumbnail" target="_blank"/></a>
+                      <a href="{% static 'AHAH.pdf' %}" target="_blank"><img src="{% static 'AHAH_thumb.png' %}" class="img-responsive border" height="150" width="100" alt="ahah thumbnail"/></a>
                     </div>
                   </div>
                   <div class="col-lg-10 col-md-9 m-0 my-auto">
@@ -306,7 +310,7 @@
                 <div class="row justify-content-center">
                   <div class="col-lg-2 col-md-3 m-0 my-auto">
                     <div class="card-body p-2 thumbnail text-center">
-                      <a href="{% static 'IUC.pdf' %}"><img src="{% static 'IUC_thumb.png' %}" class="img-responsive border" height="150" width="100" alt="iuc thumbnail" target="_blank"/></a>
+                      <a href="{% static 'IUC.pdf' %}" target="_blank"><img src="{% static 'IUC_thumb.png' %}" class="img-responsive border" height="150" width="100" alt="iuc thumbnail"/></a>
                     </div>
                   </div>
                   <div class="col-lg-10 col-md-9 m-0 my-auto">
@@ -338,17 +342,19 @@
                 <div id="collapseIMD" class="card-body p-3 collapse show">
                   <div id="IMD" style="display:none">
                     <div class= "ramp_class p-2">
-                      <div id="imd1" class="ramp i1" style="border-radius:.25rem 0 0 0.25rem">1</div>
-                      <div id="imd2" class="ramp i2">2</div>
-                      <div id="imd3" class="ramp i3">3</div>
-                      <div id="imd4" class="ramp i4">4</div>
-                      <div id="imd5" class="ramp i5">5</div>
-                      <div id="imd6" class="ramp i6">6</div>
-                      <div id="imd7" class="ramp i7">7</div>
-                      <div id="imd8" class="ramp i8">8</div>
-                      <div id="imd9" class="ramp i9">9</div>
-                      <div id="imd10" class="ramp i10" style="border-radius:0 .25rem .25rem 0">10</div>
+                      <div id="imd1" class="ramp i1" style="border-radius:.25rem 0 0 0.25rem"></div>
+                      <div id="imd2" class="ramp i2"></div>
+                      <div id="imd3" class="ramp i3"></div>
+                      <div id="imd4" class="ramp i4"></div>
+                      <div id="imd5" class="ramp i5"></div>
+                      <div id="imd6" class="ramp i6"></div>
+                      <div id="imd7" class="ramp i7"></div>
+                      <div id="imd8" class="ramp i8"></div>
+                      <div id="imd9" class="ramp i9"></div>
+                      <div id="imd10" class="ramp i10" style="border-radius:0 .25rem .25rem 0"></div>
                     </div>
+                  </div>
+                  <div id="dscIMD">
                   </div>
                 </div>
               </div>
@@ -364,17 +370,19 @@
                 <div id="collapseBBAND" class="card-body p-3 collapse show">
                   <div id="BBS" style="display:none">
                     <div class= "ramp_class p-2">
-                      <div id="bbs1" class="ramp b1" style="border-radius:.25rem 0 0 0.25rem">1</div>
-                      <div id="bbs2" class="ramp b2">2</div>
-                      <div id="bbs3" class="ramp b3">3</div>
-                      <div id="bbs4" class="ramp b4">4</div>
-                      <div id="bbs5" class="ramp b5">5</div>
-                      <div id="bbs6" class="ramp b6">6</div>
-                      <div id="bbs7" class="ramp b7">7</div>
-                      <div id="bbs8" class="ramp b8">8</div>
-                      <div id="bbs9" class="ramp b9">9</div>
-                      <div id="bbs10" class="ramp b10" style="border-radius:0 .25rem .25rem 0">10</div>
+                      <div id="bbs1" class="ramp b1" style="border-radius:.25rem 0 0 0.25rem"></div>
+                      <div id="bbs2" class="ramp b2"></div>
+                      <div id="bbs3" class="ramp b3"></div>
+                      <div id="bbs4" class="ramp b4"></div>
+                      <div id="bbs5" class="ramp b5"></div>
+                      <div id="bbs6" class="ramp b6"></div>
+                      <div id="bbs7" class="ramp b7"></div>
+                      <div id="bbs8" class="ramp b8"></div>
+                      <div id="bbs9" class="ramp b9"></div>
+                      <div id="bbs10" class="ramp b10" style="border-radius:0 .25rem .25rem 0"></div>
                     </div>
+                  </div>
+                  <div id="dscBBS">
                   </div>
                 </div>
               </div>
@@ -480,6 +488,13 @@
     </div>
   </div>
 
+  <!--cookie alert-->
+  <div class="alert text-center cookiealert" role="alert">
+    By using our site, you acknowledge that you have read and understand UCL's <a href="https://www.ucl.ac.uk/legal-services/privacy/cookie-policy" target="_blank">Cookie Policy</a>
+    and <a href="https://www.ucl.ac.uk/legal-services/privacy/general-privacy-policy">Privacy Policy</a>.
+    <button class="btn m-0 p-0 acceptcookies float-right" style="color:white" aria-label="Close"><span class="fas fa-times fa-lg"></span</button>
+  </div>
+
   <!-- jQuery-->
   <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 
@@ -491,6 +506,9 @@
 
   <!--leaflet easy button js-->
   <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+
+  <!--cookie alert js-->
+  <script src="https://cdn.jsdelivr.net/gh/Wruczek/Bootstrap-Cookie-Alert@gh-pages/cookiealert.js"></script>
 
   <!--custom js-->
   <script src="{% static 'js/main.js' %}"></script>

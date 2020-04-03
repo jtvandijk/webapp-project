@@ -51,7 +51,7 @@ function searchSurname(surname) {
 
         //render main
         renderHTML(data.surname);
-        renderMap(data.years,data.kdes,map);
+        renderMap(data.years,data.kdes,data.scotland,map);
 
         //render names
         renderTable(data.surname,data.freqs);

@@ -35,7 +35,7 @@ def search(request):
     elif name_found:
 
         #surname data
-        search_data = names_kde.objects.filter(surname=name_search).order_by('year').values()
+        search_data = names_kde.objects.filter(surname=name_search).exclude(year=0).order_by('year').values()
 
         #available years
         years = [1851,1861,*range(1881,1921,10),*range(1997,2017,1)]
@@ -49,8 +49,14 @@ def search(request):
         name_stats = surname_statistics(name_search)
         name_kde = [kde for kde in search_data.values('kde')]
 
+        #scotland
+        if any(d['year'] == 1911 for d in avbls):
+            scotland = names_kde.objects.filter(surname='scotland',year=0).values('kde')[0]
+        else:
+            scotland = 'empty'
+
         #output
-        search = {'surname': name_input.title(),'years': years,'freqs': freqs,'kdes': name_kde,'stats': name_stats}
+        search = {'surname': name_input.title(),'years': years,'freqs': freqs,'kdes': name_kde,'stats': name_stats,'scotland': scotland}
 
         #return data
         return HttpResponse(json.dumps(search),content_type="application/json")

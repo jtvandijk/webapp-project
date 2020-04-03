@@ -112,5 +112,4 @@ def bband_stats(bbs):
         bbs_mod = ['99','No data']
     else:
         bbs_mod = [bbs[0]['bbsdec'],bbs[0]['bbs']]
-        print(bbs_mod)
     return(bbs_mod)
