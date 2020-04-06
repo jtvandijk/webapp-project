@@ -8,8 +8,6 @@ ROOT_URLCONF = 'gbnames.urls'
 
 #security
 SECRET_KEY = 'SECRET KEY'
-DEBUG = True
-ALLOWED_HOSTS = []
 X_FRAME_OPTIONS = 'DENY'
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_SAMESITE = None
@@ -20,13 +18,11 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 
 #applications
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.gis',
     'gbnames.apps.gbnamesconfig',
 ]
 
@@ -40,7 +36,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
 
 TEMPLATES = [
     {

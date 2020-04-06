@@ -1,5 +1,4 @@
 //modals
-var searchmodal = document.getElementById('searchModal');
 var modal = document.getElementsByClassName('modal');
 
 //close

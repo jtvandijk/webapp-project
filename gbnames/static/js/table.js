@@ -39,7 +39,7 @@ function populateTable(years,surname,freqs) {
     caption.innerHTML = 'Number of bearers of <strong>'+surname.toUpperCase()+'</strong>.';
   } else {
     caption.innerHTML = 'Number of adult bearers of <strong>'+surname.toUpperCase()+'</strong>.';
-  }
+  };
   row1.className = 'text-center';
   row2.className = 'text-center';
 

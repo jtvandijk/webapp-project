@@ -42,7 +42,7 @@ def surname_statistics(name_search):
     #return
     return([fore_female_hist,fore_male_hist,fore_female_cont,fore_male_cont,par_top,msoa_top,oac_mod,iuc_mod,ahah_mod,imd_mod,bbs_mod])
 
-#forenames
+#forenames (freqs)
 def forenames_stats(forenames):
     if not forenames:
         fore_female = ['No forenames found']
@@ -52,7 +52,7 @@ def forenames_stats(forenames):
         fore_male = [f['forename'] for f in forenames if f['sex'] == 'M']
     return(fore_female,fore_male)
 
-#parish frequencies
+#parish frequencies (freqs)
 def parish_stats(parishes):
     if not parishes:
         par_top = [['No data','No data']]
@@ -60,7 +60,7 @@ def parish_stats(parishes):
         par_top = list(map(list, set(map(lambda i: tuple(i), [[p['regcnty'].title(),p['parish']] for p in parishes]))))
     return(par_top[:5])
 
-#msoa frequencies
+#msoa frequencies (freqs)
 def msoa_stats(msoas):
     if not msoas:
         msoa_top = [['No data','No data']]
@@ -69,7 +69,7 @@ def msoa_stats(msoas):
                     lookup_loc_cont.objects.filter(msoa11cd=o['msoa11cd']).values('msoa11nm')[0]['msoa11nm']] for o in msoas]
     return(msoa_top[:5])
 
-#output area classification
+#output area classification (mode)
 def oac_stats(oac):
     if not oac:
         oac_mod = ['No data','No data','','','99']
@@ -81,7 +81,7 @@ def oac_stats(oac):
         oac_mod = [oac_sg,oac_sn,oac_sg_desc,oac_sn_desc,oac[0]['oaccd']]
     return(oac_mod)
 
-#internet user classification
+#internet user classification (mode)
 def iuc_stats(iuc):
     if not iuc:
         iuc_mod = ['99','No data','']
@@ -90,7 +90,7 @@ def iuc_stats(iuc):
         iuc_mod = [iuc[0]['iuccd'],iuc[0]['iucnm'],iuc_dsc,]
     return(iuc_mod)
 
-#access to health and hazards
+#access to health and hazards (mode)
 def ahah_stats(ahah):
     if not ahah:
         ahah_mod = ['No data']
@@ -98,7 +98,7 @@ def ahah_stats(ahah):
         ahah_mod = ahah[0]['ahahdec']
     return(ahah_mod)
 
-#index of multiple deprivation
+#index of multiple deprivation (mode)
 def imd_stats(imd):
     if not imd:
         imd_mod = ['No data']
@@ -106,7 +106,7 @@ def imd_stats(imd):
         imd_mod = imd[0]['imddec']
     return(imd_mod)
 
-#broadband speed
+#broadband speed (mode)
 def bband_stats(bbs):
     if not bbs:
         bbs_mod = ['99','No data']

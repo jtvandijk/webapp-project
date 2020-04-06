@@ -17,12 +17,12 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png
              minZoom: 6,
              maxZoom: 12,
              bounds: bounds
-          }).addTo(map);
+            }).addTo(map);
 
 //zoom
-L.easyButton('fas fa-arrows-alt', function(btn, map){
-    map.setView([54.505,-4], 6);
-}).addTo(map)
+L.easyButton('fas fa-arrows-alt', function(btn,map){
+  map.setView([54.505,-4], 6);
+}).addTo(map);
 
 //cover mask
 L.tileLayer('https://julie.geog.ucl.ac.uk/~ucfajtv/tiles/gbnames/out/{z}/{x}/{y}.png',
@@ -40,7 +40,7 @@ function renderContour(years,kdes,scotland) {
   for (var i = 0, klen = kdes.length; i < klen; i++) {
 
     var year = new Date (years[i].toString()).getTime();
-    var kde = JSON.parse(kdes[i].kde)
+    var kde = JSON.parse(kdes[i].kde);
 
     //individual polygons
     for (var p = 0, plen = kde.features.length; p < plen; p++) {

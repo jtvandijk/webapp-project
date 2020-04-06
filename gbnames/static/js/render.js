@@ -92,7 +92,7 @@ function renderForenames(fmh,ffh,fmc,ffc) {
   foreHistLegend.innerHTML = 'Most common female and male forenames for your search over the period 1851-1911.';
   foreContLegend.id = 'foreContLegend';
   foreContLegend.className = 'card-footer small text-muted text-justify p-3';
-  foreContLegend.innerHTML = 'Most common female and male forenames for your search over the period 1997-2016.';;
+  foreContLegend.innerHTML = 'Most common female and male forenames for your search over the period 1997-2016.';
 
   //hist buttons female
   for (var i = 0; i < ffh.length; ++i) {
@@ -136,8 +136,10 @@ function renderForenames(fmh,ffh,fmc,ffc) {
 //render top parish
 function renderParish(partop) {
 
-  //create elements
+  //get elements
   var pPar = document.getElementById('topPar');
+
+  //create elements
   var topPar = document.createElement('table');
   var head = document.createElement('thead');
   var body = document.createElement('tbody');
@@ -146,7 +148,7 @@ function renderParish(partop) {
   topPar.id = 'topPar';
   topPar.className = 'table table-sm m-0';
 
-  //header
+  //table header
   var row = document.createElement('tr');
   var ds = document.createElement('th');
   var nm = document.createElement('th');
@@ -156,7 +158,7 @@ function renderParish(partop) {
   row.appendChild(nm);
   head.appendChild(row);
 
-  //rows
+  //table rows
   for (var i = 0; i < partop.length; ++i) {
     var row = document.createElement('tr');
     var ds = document.createElement('td');
@@ -174,14 +176,15 @@ function renderParish(partop) {
 
   //replace
   pPar.replaceWith(topPar);
-
 };
 
 //render top oa
 function renderMSOA(msoatop) {
 
-  //create elements
+  //set elements
   var pMSOA = document.getElementById('topMSOA');
+
+  //create elements
   var topMSOA = document.createElement('table');
   var head = document.createElement('thead');
   var body = document.createElement('tbody');
@@ -190,7 +193,7 @@ function renderMSOA(msoatop) {
   topMSOA.id = 'topMSOA';
   topMSOA.className = 'table table-sm m-0';
 
-  //header
+  //table header
   var row = document.createElement('tr');
   var ds = document.createElement('th');
   var ms = document.createElement('th');
@@ -200,7 +203,7 @@ function renderMSOA(msoatop) {
   row.appendChild(ms);
   head.appendChild(row);
 
-  //rows
+  //table rows
   for (var i = 0; i < msoatop.length; ++i) {
     var row = document.createElement('tr');
     var ds = document.createElement('td');
@@ -218,8 +221,7 @@ function renderMSOA(msoatop) {
 
   //replace
   pMSOA.replaceWith(topMSOA);
-
-  };
+};
 
 //render modal oac
 function renderOAC(oac) {
@@ -240,9 +242,9 @@ function renderOAC(oac) {
   sgDiv.id = 'sgCat';
   gDiv.id = 'gCat';
   descDiv.id = 'dscCat';
-  sgDiv.className = 'card-body p-2';
-  gDiv.className = 'card-body p-2';
-  descDiv.className = 'text-justify pb-0 m-0 pl-4 pr-4 pt-2';
+  sgDiv.className = 'card-body p-0';
+  gDiv.className = 'card-body p-0';
+  descDiv.className = 'text-justify pb-0 m-0 pl-3 pr-3 pt-3';
 
   //classname and text
   if (oac[4] == 99) {
@@ -287,13 +289,13 @@ function renderOAC(oac) {
   sgButton.replaceWith(sgDiv);
   gButton.replaceWith(gDiv);
   dscDiv.replaceWith(descDiv);
-  };
+};
 
 //render modal ahah
-function renderHealth(ahah) {
+function renderAHAH(ahah) {
 
   //remove select
-  removeSelect('ahah')
+  removeSelect('ahah');
 
   //get elements
   var dscDiv = document.getElementById('dscAHAH');
@@ -303,11 +305,10 @@ function renderHealth(ahah) {
 
   //set elements
   descDiv.id = 'dscAHAH';
-  descDiv.className = 'text-justify pt-4 px-4 mb-0';
+  descDiv.className = 'text-justify pt-4 px-3 mb-0';
 
   //colour ramp
   document.getElementById('AHAH').style.display='block';
-
   if (ahah != 'No data') {
 
     //selection
@@ -318,25 +319,24 @@ function renderHealth(ahah) {
 
     //text
     descDiv.innerHTML = 'Your selected surname occurs most frequently in decile number <strong>' + ahah + '</strong> of the Access to Healthy \
-                         Assets and Hazards index. The first decile is the worst performing decile wereas the tenth decile is the best performing decile.'
+                         Assets and Hazards index. The first decile is the worst performing decile wereas the tenth decile is the best performing decile.';
 
   } else {
 
     //text
-    descDiv.innerHTML = '<strong>No data</strong> found for your search.'
+    descDiv.innerHTML = '<strong>No data</strong> found for your search.';
 
   };
 
   //replace
   dscDiv.replaceWith(descDiv);
-
-  };
+};
 
 //render modal imd
 function renderIMD(imd) {
 
   //remove select
-  removeSelect('imd')
+  removeSelect('imd');
 
   //get elements
   var dscDiv = document.getElementById('dscIMD');
@@ -346,11 +346,10 @@ function renderIMD(imd) {
 
   //set elements
   descDiv.id = 'dscIMD';
-  descDiv.className = 'text-justify pt-4 px-2 mb-0';
+  descDiv.className = 'text-justify pt-3 px-0 mb-0';
 
   //colour ramp
   document.getElementById('IMD').style.display='block';
-
   if (imd != 'No data') {
 
     //selection
@@ -361,25 +360,24 @@ function renderIMD(imd) {
 
     //text
     descDiv.innerHTML = 'Your selected surname occurs most frequently in decile number <strong>' + imd + '</strong> of the Index of Multiple Deprivation. \
-                         The first decile is the worst performing decile wereas the tenth decile is the best performing decile.'
+                         The first decile is the worst performing decile wereas the tenth decile is the best performing decile.';
 
   } else {
 
     //text
-    descDiv.innerHTML = '<strong>No data</strong> found for your search.'
+    descDiv.innerHTML = '<strong>No data</strong> found for your search.';
 
   };
 
   //replace
   dscDiv.replaceWith(descDiv);
-
-  };
+};
 
 //render modal bbs
-function renderBBAND(bbs) {
+function renderBBS(bbs) {
 
   //remove select
-  removeSelect('bbs')
+  removeSelect('bbs');
 
   //get elements
   var dscDiv = document.getElementById('dscBBS');
@@ -389,11 +387,10 @@ function renderBBAND(bbs) {
 
   //set elements
   descDiv.id = 'dscBBS';
-  descDiv.className = 'text-justify pt-4 px-2 mb-0';
+  descDiv.className = 'text-justify pt-3 px-0 mb-0';
 
   //colour ramp
   document.getElementById('BBS').style.display='block';
-
   if (bbs[0] != 99) {
 
     //selection
@@ -404,37 +401,36 @@ function renderBBAND(bbs) {
 
     //text
     descDiv.innerHTML = 'Your selected surname surname falls in group <strong>' + bbs[0] + '</strong>, which suggests \
-                         a modal fixed broadband download speed of <strong>' + bbs[1] + '</strong>.'
+                         a modal fixed broadband download speed of <strong>' + bbs[1] + '</strong>.';
 
   } else {
 
     //text
-    descDiv.innerHTML = '<strong>No data</strong> found for your search.'
+    descDiv.innerHTML = '<strong>No data</strong> found for your search.';
 
   };
 
   //replace
   dscDiv.replaceWith(descDiv);
-
-  };
+};
 
 //render modal iuc
 function renderIUC(iuc) {
 
   //get elements
   var iucEl = document.getElementById('IUC');
-  var dscDiv = document.getElementById('dscIUC')
+  var dscDiv = document.getElementById('dscIUC');
 
   //create elements
   var iucDiv = document.createElement('div');
   var iucBtn = document.createElement('button');
-  var descDiv = document.createElement('div')
+  var descDiv = document.createElement('div');
 
   //set elements
   iucDiv.id = 'IUC';
   descDiv.id = 'dscIUC';
-  iucDiv.className = 'card-body p-2';
-  descDiv.className = 'collapse text-justify pb-0 m-0 pl-2 pr-2 pt-2';
+  iucDiv.className = 'card-body px-0 py-0 pb-3';
+  descDiv.className = 'collapse text-justify pb-0 m-0 px-0 pt-1';
 
   //classname and text
   if (iuc[0] != 99) {
@@ -518,7 +514,7 @@ function clearPage() {
   var dscBBS = document.createElement('div');
 
   //set elements
-  mapLegend.id = 'mapLegend'
+  mapLegend.id = 'mapLegend';
   foreNamesHist.id = 'ForeNamesHist';
   foreNamesCont.id = 'ForeNamesCont';
   foreHistLegend.id = 'foreHistLegend';

@@ -4,7 +4,7 @@ $j(document).on('submit','#initSur',function(e) {
   initSearch(document.getElementById('init_surname').value);
 });
 
-//update map -- search menu
+//update map -- search through menu
 $j(document).on('submit','#searchSur',function(e) {
   e.preventDefault();
   initSearch(document.getElementById('surname').value);
@@ -62,9 +62,9 @@ function searchSurname(surname) {
         //render consumer statistics
         renderOAC(data.stats[6]);
         renderIUC(data.stats[7]);
-        renderHealth(data.stats[8]);
+        renderAHAH(data.stats[8]);
         renderIMD(data.stats[9]);
-        renderBBAND(data.stats[10]);
+        renderBBS(data.stats[10]);
 
         //stop map loading indicator
         stopMapLoad();
