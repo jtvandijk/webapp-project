@@ -65,5 +65,5 @@ USE_TZ = True
 
 #static files
 STATICFILES_DIRS = [os.path.join(BASE_DIR,'gbnames/static'),os.path.join(BASE_DIR,'gbnames/media')]
-STATIC_URL = '/gbnames/static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR,'static')
