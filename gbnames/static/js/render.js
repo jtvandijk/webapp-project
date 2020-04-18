@@ -58,8 +58,9 @@ function renderHTML(surname) {
 
   mapLegend.id = 'mapLegend';
   mapLegend.className = 'card-footer small text-muted text-justify p-3';
-  mapLegend.innerHTML = 'The blue contours enclose areas where the population-weighted density of the surname is highest, i.e. \
-                         where most people with this surname reside. Use the slider bar to see the surname population change through time.';
+  mapLegend.innerHTML = 'The blue contours enclose areas where bearers of the name were most concentrated, measured as where \
+                         the population-weighted density of the surname is highest. Use the slider bar to see where the name \
+                         was found over historical (1851, 1861 and 1881-1911) and more recent (1997-2016) time periods.';
 
   //replace
   pSearch.replaceWith(foundPar);
