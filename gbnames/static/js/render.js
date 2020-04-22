@@ -57,7 +57,7 @@ function renderDBFound(surname) {
   notFound.id = 'searchParam';
   notFound.innerHTML = 'We do have records available for your search for <strong>'+surname.toUpperCase()+'</strong>. Unfortunately, \
                         this name does not have more than 100 bearers at any point in time and therefore no data are shown. This \
-                        thresholds is used to avoid disclosing information about indivduals.';
+                        threshold is used to avoid disclosing information about indivduals.';
 
   //replace
   pSearch.replaceWith(notFound);
