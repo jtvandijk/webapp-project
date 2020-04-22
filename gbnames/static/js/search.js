@@ -46,6 +46,10 @@ function searchSurname(surname) {
       } else if (data.surname==='none') {
         renderNotFound(surname);
         return;
+      //db entry found
+      } else if (data.surname==='db') {
+        renderDBFound(surname);
+        return;
       //data found
       } else {
 

@@ -13,6 +13,14 @@ class names_kde(models.Model):
         managed = True
         db_table = 'names_kde'
 
+class names_all(models.Model):
+    surname = models.TextField(primary_key=True)
+    period = models.TextField(blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'names_all'
+
 #statistics
 class names_fns_hist(models.Model):
     surname = models.TextField(primary_key=True)

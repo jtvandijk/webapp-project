@@ -25,7 +25,7 @@
     <!--custom css-->
     <link rel="stylesheet" href="{% static 'css/custom.css' %}" crossorigin="anonymous"/>
     <!--open sans-->
-    <link href='https://fonts.googleapis.com/css?family=Open Sans' rel='stylesheet'>
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans::400,300,700" media="all" type="text/css"/>
     <!-- csrf token-->
     {% csrf_token %}
 
@@ -456,7 +456,9 @@
             <h4>Notes</h4>
             <p class="text-muted pt-2">
               GBNames is intended to show interesting geographical patterns of names, rather than mapping individuals or families.
-              We do not map or show statistics for names with less than 100 occurences per year. See our Methodology page for further information on GBNames and methodology that we use.
+              We do not map or show statistics for names with less than 100 occurences per year. Frequencies of surnames that at any
+              given point in time have less than 100 bearers default to 0. See our Methodology page for further information on GBNames
+              and methodology that we use.
            </p>
           </div>
         </div>

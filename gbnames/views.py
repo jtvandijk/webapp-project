@@ -28,8 +28,17 @@ def search(request):
 
     #search: not found
     elif not name_found:
-        search = {'surname':'none'}
-        return HttpResponse(json.dumps(search),content_type="application/json")
+
+        #search: in db
+        name_db = names_all.objects.filter(surname=name_search).values('period')
+        if name_db:
+            search = {'surname':'db'}
+            return HttpResponse(json.dumps(search),content_type="application/json")
+
+        #search: not found
+        elif not name_db:
+            search = {'surname':'none'}
+            return HttpResponse(json.dumps(search),content_type="application/json")
 
     #search: found
     elif name_found:

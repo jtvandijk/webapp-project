@@ -34,11 +34,35 @@ function renderNotFound(surname) {
   //set elements
   notFound.className = 'p-3 mb-3 bg-orange text-dark';
   notFound.id = 'searchParam';
-  notFound.innerHTML = 'Unfortunately, your search for <strong>'+surname.toUpperCase()+'</strong> did not yield any results.';
+  notFound.innerHTML = 'Unfortunately, your search for <strong>'+surname.toUpperCase()+'</strong> did not match any of our available records.'
 
   //replace
   pSearch.replaceWith(notFound);
 };
+
+//render not found
+function renderDBFound(surname) {
+
+  //functions
+  stopMapLoad();
+
+  //get elements
+  var pSearch = document.getElementById('searchParam');
+
+  //create elements
+  var notFound = document.createElement('p');
+
+  //set elements
+  notFound.className = 'p-3 mb-3 bg-notes text-dark';
+  notFound.id = 'searchParam';
+  notFound.innerHTML = 'We do have records available for your search for <strong>'+surname.toUpperCase()+'</strong>. Unfortunately, \
+                        this name does not have more than 100 bearers at any point in time and therefore no data are shown. This \
+                        thresholds is used to avoid disclosing information about indivduals.';
+
+  //replace
+  pSearch.replaceWith(notFound);
+};
+
 
 //render found
 function renderHTML(surname) {
