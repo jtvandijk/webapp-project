@@ -10,7 +10,7 @@ class names_kde(models.Model):
     kde = models.TextField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'names_kde'
 
 class names_all(models.Model):
@@ -18,8 +18,17 @@ class names_all(models.Model):
     period = models.TextField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'names_all'
+
+class names_frq(models.Model):
+    surname = models.TextField(primary_key=True)
+    year = models.IntegerField(blank=True,null=True)
+    freq = models.IntegerField(blank=True,null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'names_frq'
 
 #statistics
 class names_fns_hist(models.Model):
@@ -29,7 +38,7 @@ class names_fns_hist(models.Model):
     freq = models.IntegerField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'names_fns_hist'
 
 class names_fns_cont(models.Model):
@@ -39,7 +48,7 @@ class names_fns_cont(models.Model):
     freq = models.IntegerField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'names_fns_cont'
 
 class names_loc_hist(models.Model):
@@ -50,7 +59,7 @@ class names_loc_hist(models.Model):
     freq = models.IntegerField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'names_loc_hist'
 
 class names_loc_cont(models.Model):
@@ -59,7 +68,7 @@ class names_loc_cont(models.Model):
     oa_freq = models.IntegerField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'names_loc_cont'
 
 class names_oac(models.Model):
@@ -70,7 +79,7 @@ class names_oac(models.Model):
     type = models.TextField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'names_oac'
 
 class names_imd(models.Model):
@@ -80,7 +89,7 @@ class names_imd(models.Model):
     type = models.TextField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'names_imd'
 
 class names_ahah(models.Model):
@@ -90,7 +99,7 @@ class names_ahah(models.Model):
     type = models.TextField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'names_ahah'
 
 class names_iuc(models.Model):
@@ -99,7 +108,7 @@ class names_iuc(models.Model):
     iucnm = models.TextField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'names_iuc'
 
 class names_bbs(models.Model):
@@ -108,7 +117,7 @@ class names_bbs(models.Model):
     bbsdec = models.IntegerField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'names_bbs'
 
 #lookup tables
@@ -119,7 +128,7 @@ class lookup_loc_hist(models.Model):
     country = models.TextField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'lookup_loc_hist'
 
 class lookup_loc_cont(models.Model):
@@ -133,7 +142,7 @@ class lookup_loc_cont(models.Model):
     ladnm = models.TextField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'lookup_loc_cont'
 
 class lookup_iuc(models.Model):
@@ -141,7 +150,7 @@ class lookup_iuc(models.Model):
     iucdesc = models.TextField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'lookup_iuc'
 
 class lookup_oac(models.Model):
@@ -158,7 +167,7 @@ class lookup_oac(models.Model):
     subgroupnm = models.TextField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'lookup_oac'
 
 class lookup_oac_desc(models.Model):
@@ -171,7 +180,7 @@ class lookup_oac_desc(models.Model):
     desc = models.TextField(blank=True,null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'lookup_oac_desc'
 
 class spatial_conpar51(models.Model):
@@ -180,7 +189,7 @@ class spatial_conpar51(models.Model):
     centroid = models.PointField(srid=27700)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'spatial_conpar51'
 
 class spatial_conpar01(models.Model):
@@ -189,7 +198,7 @@ class spatial_conpar01(models.Model):
     centroid = models.PointField(srid=27700)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'spatial_conpar01'
 
 class spatial_msoa(models.Model):
@@ -199,5 +208,5 @@ class spatial_msoa(models.Model):
     centroid = models.PointField(srid=27700)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'spatial_msoa'

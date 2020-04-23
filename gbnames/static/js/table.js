@@ -36,9 +36,9 @@ function populateTable(years,surname,freqs) {
   table.className = 'table table-sm m-0';
   caption.className = 'py-0 mt-2';
   if (years[0] == 1851) {
-    caption.innerHTML = 'Number of bearers of <strong>'+surname.toUpperCase()+'</strong> (1911 counts exclude Scotland).';
+    caption.innerHTML = 'Number of bearers of <strong>'+surname.toUpperCase()+'</strong> (1911 counts exclude Scotland) in our database.';
   } else {
-    caption.innerHTML = 'Number of adult bearers of <strong>'+surname.toUpperCase()+'</strong>.';
+    caption.innerHTML = 'Number of adult bearers of <strong>'+surname.toUpperCase()+'</strong> in our database.';
   };
   row1.className = 'text-center';
   row2.className = 'text-center';
