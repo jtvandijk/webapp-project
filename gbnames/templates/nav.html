@@ -155,7 +155,9 @@
       <p>
         For all data, KDEs are calculated only for surnames that have at least 100 individual bearers. The reasons for this are in part technical,
         because KDE calculations cannot be executed for small numbers of points. When mapping consumer data, these thresholds are used also to
-        avoid the possibility of disclosing the precise areas where living individual reside. The KDE calculations are parallelised
+        avoid the possibility of disclosing the precise areas where living individual reside. Because data for Scotland are not available for 1911,
+        KDEs for this year for names that are highly concentrated in Scotland are replaced by the 1901 KDEs (only England and Wales). This is done
+        to avoid creating the false impression that these surnames' centres have significantly changed. The KDE calculations are parallelised
         through <a href="https://www.gnu.org/software/parallel/" target="_blank">GNU Parallel</a> and executed using the <a href="https://www.r-project.org/" target="_blank">R</a>
         scripting language (with the <a href="https://doi.org/10.1002/sim.7577" target="_blank">Sparr</a> library). More information on these procedures
         is available in one of our academic papers: <a href="https://doi.org/10.1080/17445647.2020.1746418" target="_blank">Van Dijk and Longley (2020)</a>.
