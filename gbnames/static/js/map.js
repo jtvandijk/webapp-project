@@ -11,7 +11,7 @@ var map = L.map('kdemap').setView([54.505,-4],6);
 map.setMaxBounds(bounds);
 
 //basemap
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
             {attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors | \n' +
             'Map tiles by &copy; <a href="https://carto.com/attributions">CARTO</a>',
              minZoom: 6,
