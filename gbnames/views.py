@@ -44,7 +44,8 @@ def search(request):
     elif name_found:
 
         #surname data
-        search_data = names_kde.objects.filter(surname=name_search).exclude(year=0).order_by('year').values()
+        year_selection=[0,*range(1998,2016,1)]
+        search_data = names_kde.objects.filter(surname=name_search).exclude(year__in=year_selection).order_by('year').values()
 
         #available years with kde
         avbls = search_data.values('year','freq')

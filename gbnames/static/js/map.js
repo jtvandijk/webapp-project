@@ -12,34 +12,21 @@ map.setMaxBounds(bounds);
 
 //basemap
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
-            {attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors | \n' +
-            'Map tiles by &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            {attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
              minZoom: 6,
              maxZoom: 12,
              bounds: bounds
             }).addTo(map);
 
-// //label zIndex
-// map.createPane('labels');
-// map.getPane('labels').style.zIndex = 400;
-//
-// //labels
-// L.tileLayer('https://julie.geog.ucl.ac.uk/~ucfajtv/tiles/lab/{z}/{x}/{y}.png',
-//   {maxZoom: 12,
-//    minZoom: 7,
-//    bounds: bounds,
-//    pane: 'labels',
-// }).addTo(map);
-//
-// //zoom
-// L.easyButton('fas fa-arrows-alt', function(btn,map){
-//   map.setView([54.505,-4], 6);
-// }).addTo(map);
+//zoom
+L.easyButton('fas fa-arrows-alt', function(btn,map){
+  map.setView([54.505,-4], 6);
+}).addTo(map);
 
 //cover mask
 L.tileLayer('https://julie.geog.ucl.ac.uk/~ucfajtv/tiles/gbnames/out/{z}/{x}/{y}.png',
-  {maxZoom: 12,
-   minZoom: 6,
+  {minZoom: 6,
+   maxZoom: 12,
    bounds: bounds,
    zIndex: 600,
 }).addTo(map);
