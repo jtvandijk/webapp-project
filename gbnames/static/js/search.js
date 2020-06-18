@@ -33,7 +33,7 @@ function searchSurname(surname) {
   //search
   $j.ajax({
     method: 'POST',
-    url: '../search/',
+    url: '../gbnames/search/',
     data: {surname: surname,
            csrfmiddlewaretoken: csrftoken
           },
