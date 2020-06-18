@@ -84,7 +84,7 @@ function renderHTML(surname) {
   mapLegend.className = 'card-footer small text-muted text-justify p-3';
   mapLegend.innerHTML = 'The blue contours enclose areas where bearers of the name were most concentrated, measured as where \
                          the population-weighted density of the surname is highest. Use the slider bar to see where the name \
-                         was found over historical (1851, 1861, 1881, and 1901) and more recent (1997 and 2016) time periods.';
+                         was found over historical (1851, 1861, 1881, 1901, and 1911) and more recent (1997, 2006 and 2016) time periods.';
 
   //replace
   pSearch.replaceWith(foundPar);
