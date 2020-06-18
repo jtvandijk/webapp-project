@@ -47,7 +47,7 @@ def search(request):
 
             #surname data
             year_exclusion=[0,1997,*range(1999,2006,1),*range(2007,2016,1)]
-            #search_data = names_kde.objects.filter(surname=name_search).exclude(year__in=year_exclusion).order_by('year').values()
+            search_data = names_kde.objects.filter(surname=name_search).exclude(year__in=year_exclusion).order_by('year').values()
 
             #if empty due to year selection
             if not search_data:
