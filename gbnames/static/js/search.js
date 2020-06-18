@@ -37,6 +37,10 @@ function searchSurname(surname) {
     data: {surname: surname,
            csrfmiddlewaretoken: csrftoken
           },
+    statusCode: {
+     500: function() {
+       window.location.href = '../static/html/500.html';
+    }},
     success: function (data) {
       //no data entered
       if (data.surname==='empty') {
