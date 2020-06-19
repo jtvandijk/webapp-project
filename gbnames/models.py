@@ -6,8 +6,6 @@ class names_kde(models.Model):
     surname = models.TextField(primary_key=True)
     year = models.TextField(blank=True,null=True)
     freq = models.IntegerField(blank=True,null=True)
-    bw = models.IntegerField(blank=True,null=True)
-    kde = models.TextField(blank=True,null=True)
 
     class Meta:
         managed = False

@@ -37,10 +37,12 @@ function searchSurname(surname) {
     data: {surname: surname,
            csrfmiddlewaretoken: csrftoken
           },
+    //server error
     statusCode: {
      500: function() {
        window.location.href = '../static/html/500.html';
     }},
+    //success
     success: function (data) {
       //no data entered
       if (data.surname==='empty') {
@@ -59,7 +61,7 @@ function searchSurname(surname) {
 
         //render main
         renderHTML(data.surname);
-        renderMap(data.years,data.kdes,data.scotland,map);
+        renderMap(data.surname,data.years,map);
 
         //render names
         renderTable(data.surname,data.freqs);

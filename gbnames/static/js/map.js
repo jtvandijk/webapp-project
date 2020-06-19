@@ -31,34 +31,64 @@ L.tileLayer('https://julie.geog.ucl.ac.uk/~ucfajtv/tiles/gbnames/out/{z}/{x}/{y}
    zIndex: 600,
 }).addTo(map);
 
-//render geoJSON layer
-function renderContour(years,kdes,scotland) {
+//load layers
+async function renderLayers(surname,years) {
+
+  //layers
+  var layers = [];
 
   //individual features
-  var layers = [];
-  for (var i = 0, klen = kdes.length; i < klen; i++) {
+  for (var i = 0, klen = years.length; i < klen; i++) {
 
+    //files
+    var fld = surname.slice(0,2).toLowerCase(),
+        path = '/static/kde/' + fld + '/' + surname.toLowerCase() + '/' + surname.toLowerCase() + '_' + years[i] + '.geojson';
     var year = new Date (years[i].toString()).getTime();
-    var kde = JSON.parse(kdes[i].kde);
 
-    //individual polygons
-    for (var p = 0, plen = kde.features.length; p < plen; p++) {
-      kde.features[p].properties.time = year;
-    };
+    //parse
+    var layer = await $j.getJSON(path,function(kde) {
 
-    //combine
-    layers.push(kde);
+      //individual polygons
+      for (var p = 0, plen = kde.features.length; p < plen; p++) {
+        kde.features[p].properties.time = year;
+      };
+
+      //return
+      return kde;
+    });
+
+    //push
+    layers.push(layer);
   };
 
   //scotland
-  if (scotland != 'empty') {
-    scotland = JSON.parse(scotland.kde);
-    for (var s = 0, slen = scotland.features.length; s < slen; s++) {
-      scotland.features[s].properties.time = -1861920000000;
-      scotland.features[s].properties.level = 0;
-    };
-    layers.push(scotland);
+  if (years.includes(1911)) {
+    var path = '/static/kde/sc/scotland/scotland_0.geojson';
+    var scotland = await $j.getJSON(path,function(sct) {
+
+      //individual polygons
+      for (var s = 0, slen = sct.features.length; s < slen; s++) {
+        sct.features[s].properties.time = -1861920000000;
+        sct.features[s].properties.level = 0;
+      };
+
+      //return
+      return sct;
+  });
+
+  //push
+  layers.push(scotland);
   };
+
+  //return
+  return layers;
+};
+
+//render contour
+async function renderContour(surname,years) {
+
+  //individual layers
+  var layers = await renderLayers(surname,years);
 
   //leaflet layer
   var contourJSON = L.geoJSON(layers, {
@@ -79,7 +109,8 @@ function renderContour(years,kdes,scotland) {
   return contourJSON;
 };
 
-function renderMap(years,kdes,scotland,map) {
+//render map
+async function renderMap(surname,years,map) {
 
   //remove previous layer
   if (mapcontrol != undefined) {
@@ -88,7 +119,7 @@ function renderMap(years,kdes,scotland,map) {
       };
 
   //geoJSON
-  var layer = renderContour(years,kdes,scotland);
+  var layer = await renderContour(surname,years);
 
   //set up years
   var slider = '';

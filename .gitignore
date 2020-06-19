@@ -6,7 +6,7 @@
 __pycache__/
 misc/
 migrations/
-/static/
+/static/**
 local_settings.py
 
 #misc

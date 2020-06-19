@@ -47,7 +47,7 @@ def search(request):
 
             #surname data
             year_exclusion=[0,1997,*range(1999,2006,1),*range(2007,2016,1)]
-            search_data = names_kde.objects.filter(surname=name_search).exclude(year__in=year_exclusion).order_by('year').values()
+            search_data = names_kde.objects.filter(surname=name_search).exclude(year__in=year_exclusion).order_by('year').values('year','freq')
 
             #if empty due to year selection
             if not search_data:
@@ -55,8 +55,7 @@ def search(request):
                 return HttpResponse(json.dumps(search),content_type="application/json")
 
             #available years with kde
-            avbls = search_data.values('year','freq')
-            kdeyears = [y.get('year') for y in avbls]
+            kdeyears = [y.get('year') for y in search_data]
 
             #actual frequencies
             years = [1851,1861,*range(1881,1921,10),*range(1997,2017,1)]
@@ -67,16 +66,9 @@ def search(request):
 
             #surname statistics
             name_stats = surname_statistics(name_search)
-            name_kde = [kde for kde in search_data.values('kde')]
-
-            #scotland
-            if 1911 in kdeyears:
-                scotland = names_kde.objects.filter(surname='scotland',year=0).values('kde')[0]
-            else:
-                scotland = 'empty'
 
             #output
-            search = {'surname': name_input.title(),'years': kdeyears,'freqs': freqs,'kdes': name_kde,'stats': name_stats,'scotland': scotland}
+            search = {'surname': name_input.title(),'years': kdeyears,'freqs': freqs,'stats': name_stats}
 
             #return data
             return HttpResponse(json.dumps(search),content_type="application/json")
