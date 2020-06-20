@@ -55,9 +55,6 @@ TEMPLATES = [
     },
 ]
 
-CACHE_MIDDLEWARE_ALIAS = 'default'
-CACHE_MIDDLEWARE_SECONDS = '600'
-
 WSGI_APPLICATION = 'gbnames.wsgi.application'
 POSTGIS_VERSION = (2,1,4)
 
