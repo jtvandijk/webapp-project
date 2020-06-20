@@ -42,6 +42,11 @@ function searchSurname(surname) {
      500: function() {
        window.location.href = '../static/html/500.html';
     }},
+    //page error
+    statusCode: {
+     404: function() {
+       window.location.href = '../static/html/404.html';
+    }},
     //success
     success: function (data) {
       //no data entered

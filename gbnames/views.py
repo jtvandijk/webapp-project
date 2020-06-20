@@ -30,7 +30,7 @@ def search(request):
     elif not name_found:
 
         #search: in db
-        name_db = names_all.objects.filter(surname=name_search).values('period')
+        name_db = names_all.objects.filter(surname=name_search)
         if name_db:
             search = {'surname':'db'}
             return HttpResponse(json.dumps(search),content_type="application/json")
