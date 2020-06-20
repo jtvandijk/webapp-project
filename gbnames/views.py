@@ -18,6 +18,7 @@ def search(request):
 
     #query
     name_input = (request.POST['surname']).lower()
+    name_input = sub(r'['\W^0-9']+)','',name_input)
     name_search = sub(r'[\W^0-9^\s]+','',name_input)
     name_found = names_kde.objects.filter(surname=name_search)
 
