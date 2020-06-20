@@ -42,7 +42,8 @@ async function renderLayers(surname,years) {
 
     //files
     var fld = surname.slice(0,2).toLowerCase(),
-        path = '/static/kde/' + fld + '/' + surname.toLowerCase() + '/' + surname.toLowerCase() + '_' + years[i] + '.geojson';
+        name = surname.toLowerCase().replace(/[\W^0-9^\s]+/g,'')
+        path = '/static/kde/' + fld + '/' + name + '/' + name + '_' + years[i] + '.geojson';
     var year = new Date (years[i].toString()).getTime();
 
     //parse
@@ -172,7 +173,7 @@ async function renderMap(surname,years,map) {
 
   //functions
   stopMapLoad();
-  
+
   //add
   map.setView([54.505,-4], 6);
   geoJsonTimeLayer.addTo(map);
