@@ -81,8 +81,7 @@ function searchSurname(surname) {
         renderIMD(data.stats[9]);
         renderBBS(data.stats[10]);
 
-        //stop map loading indicator
-        stopMapLoad();
+        //map load stopped in renderMap function
 
         //return
         return;
