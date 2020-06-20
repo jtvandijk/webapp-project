@@ -41,8 +41,8 @@ async function renderLayers(surname,years) {
   for (var i = 0, klen = years.length; i < klen; i++) {
 
     //files
-    var fld = surname.slice(0,2).toLowerCase(),
-        name = surname.toLowerCase().replace(/[\W^0-9^\s]+/g,'')
+    var name = surname.toLowerCase().replace(/[\W^0-9^\s]+/g,''),
+        fld = name.slice(0,2).toLowerCase(),
         path = '/static/kde/' + fld + '/' + name + '/' + name + '_' + years[i] + '.geojson';
     var year = new Date (years[i].toString()).getTime();
 
