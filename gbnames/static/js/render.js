@@ -43,9 +43,6 @@ function renderNotFound(surname) {
 //render not found
 function renderDBFound(surname) {
 
-  //functions
-  stopMapLoad();
-
   //get elements
   var pSearch = document.getElementById('searchParam');
 

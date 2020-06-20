@@ -170,6 +170,9 @@ async function renderMap(surname,years,map) {
   mapcontrol = timeDimensionControl;
   maplayer = geoJsonTimeLayer;
 
+  //functions
+  stopMapLoad();
+  
   //add
   map.setView([54.505,-4], 6);
   geoJsonTimeLayer.addTo(map);
