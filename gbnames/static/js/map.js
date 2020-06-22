@@ -3,7 +3,7 @@ var mapcontrol;
 var maplayer;
 
 //map settings
-var southWest = L.latLng(62,  4),
+var southWest = L.latLng(62, 4),
     northEast = L.latLng(50,-12),
     bounds = L.latLngBounds(southWest,northEast);
 
@@ -11,7 +11,7 @@ var map = L.map('kdemap').setView([54.505,-4],6);
 map.setMaxBounds(bounds);
 
 //basemap
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
+L.tileLayer('https://maps.cdrc.ac.uk/tiles/shine_urbanmask_light/{z}/{x}/{y}.png',
             {attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
              minZoom: 6,
              maxZoom: 12,
@@ -23,8 +23,8 @@ L.easyButton('fas fa-arrows-alt', function(btn,map){
   map.setView([54.505,-4], 6);
 }).addTo(map);
 
-//cover mask
-L.tileLayer('https://julie.geog.ucl.ac.uk/~ucfajtv/tiles/gbnames/out/{z}/{x}/{y}.png',
+//labels
+L.tileLayer('https://maps.cdrc.ac.uk/tiles/shine_labels_gbnames/{z}/{x}/{y}.png',
   {minZoom: 6,
    maxZoom: 12,
    bounds: bounds,
