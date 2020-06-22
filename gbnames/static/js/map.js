@@ -65,7 +65,7 @@ async function renderLayers(surname,years) {
 
   //scotland
   if (years.includes(1911)) {
-    var path = '/static/kde/sc/scotland/scotland_0.geojson';
+    var path = '/static/kde/sc/scotland/scotland_0.json';
     var scotland = await $j.getJSON(path,function(sct) {
 
       //individual polygons
