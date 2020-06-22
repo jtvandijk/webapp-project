@@ -9,26 +9,27 @@ var southWest = L.latLng(62, 4),
 
 var map = L.map('kdemap').setView([54.505,-4],6);
 map.setMaxBounds(bounds);
+map.createPane('labels');
+map.getPane('labels').style.zIndex = 600;
 
 //basemap
 L.tileLayer('https://maps.cdrc.ac.uk/tiles/shine_urbanmask_light/{z}/{x}/{y}.png',
-            {attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+            {attribution: 'Contains Ordnance Survey data &copy Crown Copyright'  ,
              minZoom: 6,
              maxZoom: 12,
              bounds: bounds
+            }).addTo(map);
+//labels
+L.tileLayer('https://maps.cdrc.ac.uk/tiles/shine_labels_gbnames/{z}/{x}/{y}.png',
+            {minZoom: 6,
+             maxZoom: 12,
+             bounds: bounds,
+             pane: 'labels',
             }).addTo(map);
 
 //zoom
 L.easyButton('fas fa-arrows-alt', function(btn,map){
   map.setView([54.505,-4], 6);
-}).addTo(map);
-
-//labels
-L.tileLayer('https://maps.cdrc.ac.uk/tiles/shine_labels_gbnames/{z}/{x}/{y}.png',
-  {minZoom: 6,
-   maxZoom: 12,
-   bounds: bounds,
-   zIndex: 600,
 }).addTo(map);
 
 //load layers

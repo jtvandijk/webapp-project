@@ -8,6 +8,7 @@ misc/
 migrations/
 /static/**
 local_settings.py
+/gbnames/static/kde/**
 
 #misc
 .Rhistory
