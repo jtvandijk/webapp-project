@@ -3,8 +3,8 @@ var mapcontrol;
 var maplayer;
 
 //map settings
-var southWest = L.latLng(62, 4),
-    northEast = L.latLng(50,-12),
+var southWest = L.latLng(62, 20),
+    northEast = L.latLng(50,-28),
     bounds = L.latLngBounds(southWest,northEast);
 
 var map = L.map('kdemap').setView([54.505,-4],6);
