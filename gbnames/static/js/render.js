@@ -57,7 +57,7 @@ function renderDBFound(surname) {
   notFound.id = 'searchParam';
   notFound.innerHTML = 'We do have records available for your search for <strong>'+surname.toUpperCase()+'</strong>. Unfortunately, \
                         this name does not have more than 100 bearers at any point in time and therefore no maps or statistics are \
-                        shown. This threshold is used to avoid disclosing information about individuals and to comply with our
+                        shown. This threshold is used to avoid disclosing information about individuals and to comply with our \
                         data licensing agreements.';
 
   //replace
