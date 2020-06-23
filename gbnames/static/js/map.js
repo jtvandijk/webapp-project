@@ -2,28 +2,33 @@
 var mapcontrol;
 var maplayer;
 
-//map settings
+//basemap settings
 var southWest = L.latLng(62, 20),
     northEast = L.latLng(50,-28),
-    bounds = L.latLngBounds(southWest,northEast);
+    bbounds = L.latLngBounds(southWest,northEast);
+
+//basemap settings
+var southWest = L.latLng(62, 4),
+    northEast = L.latLng(50,-12),
+    lbounds = L.latLngBounds(southWest,northEast);
 
 var map = L.map('kdemap').setView([54.505,-4],6);
-map.setMaxBounds(bounds);
+map.setMaxBounds(bbounds);
 map.createPane('labels');
 map.getPane('labels').style.zIndex = 600;
 
 //basemap
 L.tileLayer('https://maps.cdrc.ac.uk/tiles/shine_urbanmask_light/{z}/{x}/{y}.png',
-            {attribution: 'Contains Ordnance Survey data &copy Crown Copyright'  ,
+            {attribution: 'Contains Ordnance Survey Data &copy Crown Copyright'  ,
              minZoom: 6,
              maxZoom: 12,
-             bounds: bounds
+             bounds: bbounds
             }).addTo(map);
 //labels
 L.tileLayer('https://maps.cdrc.ac.uk/tiles/shine_labels_gbnames/{z}/{x}/{y}.png',
             {minZoom: 6,
              maxZoom: 12,
-             bounds: bounds,
+             bounds: lbounds,
              pane: 'labels',
             }).addTo(map);
 
@@ -165,7 +170,7 @@ async function renderMap(surname,years,map) {
     updateTimeDimension: true,
     updateTimeDimensionMode: 'replace',
     duration: 'PT20S',
-    bounds: bounds,
+    bounds: lbounds,
   });
 
   //manage
