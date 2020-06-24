@@ -23,6 +23,10 @@ def surname_statistics(name_search):
     oac = names_oac.objects.filter(surname=name_search,type='mode').values('oaccd','oacnm')
     oac_mod = oac_stats(oac)
 
+    #statistics -- loac
+    loac = names_loac.objects.filter(surname=name_search,type='mode').values('loaccd','loacnm')
+    loac_mod = loac_stats(loac)
+
     #statistics -- iuc
     iuc = names_iuc.objects.filter(surname=name_search).values('iuccd','iucnm')
     iuc_mod = iuc_stats(iuc)
@@ -40,7 +44,7 @@ def surname_statistics(name_search):
     bbs_mod = bband_stats(bbs)
 
     #return
-    return([fore_female_hist,fore_male_hist,fore_female_cont,fore_male_cont,par_top,msoa_top,oac_mod,iuc_mod,ahah_mod,imd_mod,bbs_mod])
+    return([fore_female_hist,fore_male_hist,fore_female_cont,fore_male_cont,par_top,msoa_top,oac_mod,loac_mod,iuc_mod,ahah_mod,imd_mod,bbs_mod])
 
 #forenames (freqs)
 def forenames_stats(forenames):
@@ -80,6 +84,18 @@ def oac_stats(oac):
         oac_sn_desc = lookup_oac_desc.objects.filter(code=oac[0]['oaccd']).values('desc')[0]['desc']
         oac_mod = [oac_sg,oac_sn,oac_sg_desc,oac_sn_desc,oac[0]['oaccd']]
     return(oac_mod)
+
+#london output area classification (mode)
+def loac_stats(loac):
+    if not loac:
+        loac_mod = ['No data','No data','','','99']
+    else:
+        loac_sg = lookup_loac.objects.filter(groupcd=loac[0]['loaccd']).values('supergroupnm')[0]['supergroupnm']
+        loac_sg_desc = lookup_loac_desc.objects.filter(code=loac[0]['loaccd'][0]).values('desc')[0]['desc']
+        loac_sn = loac[0]['loacnm']
+        loac_sn_desc = lookup_loac_desc.objects.filter(code=loac[0]['loaccd']).values('desc')[0]['desc']
+        loac_mod = [loac_sg,loac_sn,loac_sg_desc,loac_sn_desc,loac[0]['loaccd']]
+    return(loac_mod)
 
 #internet user classification (mode)
 def iuc_stats(iuc):

@@ -76,10 +76,11 @@ function searchSurname(surname) {
 
         //render consumer statistics
         renderOAC(data.stats[6]);
-        renderIUC(data.stats[7]);
-        renderAHAH(data.stats[8]);
-        renderIMD(data.stats[9]);
-        renderBBS(data.stats[10]);
+        renderLOAC(data.stats[7]);
+        renderIUC(data.stats[8]);
+        renderAHAH(data.stats[9]);
+        renderIMD(data.stats[10]);
+        renderBBS(data.stats[11]);
 
         //map load stopped in renderMap function
 

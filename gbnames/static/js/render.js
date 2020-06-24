@@ -317,6 +317,75 @@ function renderOAC(oac) {
   dscDiv.replaceWith(descDiv);
 };
 
+//render modal oac
+function renderLOAC(loac) {
+
+  //get elements
+  var sgButton = document.getElementById('sgLCat');
+  var gButton = document.getElementById('gLCat');
+  var dscDiv = document.getElementById('dscLCat')
+
+  //create elements
+  var sgDiv = document.createElement('div');
+  var gDiv = document.createElement('div');
+  var sgDivbtn = document.createElement('button');
+  var gDivbtn = document.createElement('button');
+  var descDiv = document.createElement('div')
+
+  //set elements
+  sgDiv.id = 'sgLCat';
+  gDiv.id = 'gLCat';
+  descDiv.id = 'dscLCat';
+  sgDiv.className = 'card-body p-0';
+  gDiv.className = 'card-body p-0';
+  descDiv.className = 'text-justify pb-0 m-0 pl-3 pr-3 pt-3';
+
+  //classname and text
+  if (loac[4] == 99) {
+    var cls = 99;
+  } else {
+    var cls = loac[4].slice(0,1);
+
+    //supergroup
+    var sgTxt = document.createElement('div');
+    sgTxt.id = 'sgLTxt';
+    sgTxt.className = 'collapse text-justify pb-2 mb-2'
+    sgTxt.innerHTML = '<strong>' + loac[0].toUpperCase() + '</strong> ' + loac[2];
+    descDiv.appendChild(sgTxt);
+
+    //group
+    var gTxt = document.createElement('div');
+    gTxt.id = 'gLTxt';
+    gTxt.className = 'collapse text-justify pb-2 mb-0'
+    gTxt.innerHTML = '<strong>' + loac[1].toUpperCase() + '</strong> ' + loac[3];
+    descDiv.appendChild(gTxt);
+
+  };
+
+  //values and attributes
+  sgDivbtn.className = 'btn btn-l'+cls+' btn-lg btn-block';
+  gDivbtn.className = 'btn btn-l'+cls+' sub btn-lg btn-block';
+  sgDivbtn.setAttribute('data-toggle','collapse');
+  sgDivbtn.setAttribute('data-target','#sgLTxt');
+  sgDivbtn.setAttribute('aria-expanded','false');
+  sgDivbtn.setAttribute('aria-controls','sgLTxt');
+  gDivbtn.setAttribute('data-toggle','collapse');
+  gDivbtn.setAttribute('data-target','#gLTxt');
+  gDivbtn.setAttribute('aria-expanded','false');
+  gDivbtn.setAttribute('aria-controls','sLTxt');
+  sgDivbtn.innerHTML = loac[0] + '<span class="fas fa-angle-double-down fa-md p-2 float-right"></span>' +
+                                '<span class="fas fa-angle-double-up fa-md p-2 float-right id="test1"></span>';
+  gDivbtn.innerHTML = loac[1] +  '<span class="fas fa-angle-double-down p-2 float-right"></span>' +
+                                '<span class="fas fa-angle-double-up fa-md p-2 float-right"></span>';
+  sgDiv.appendChild(sgDivbtn);
+  gDiv.appendChild(gDivbtn);
+
+  //replace
+  sgButton.replaceWith(sgDiv);
+  gButton.replaceWith(gDiv);
+  dscDiv.replaceWith(descDiv);
+};
+
 //render modal ahah
 function renderAHAH(ahah) {
 

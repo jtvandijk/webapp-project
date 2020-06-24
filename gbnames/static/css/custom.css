@@ -525,6 +525,7 @@ a.timecontrol-play.loading:before {
   box-shadow: none !important;
 }
 
+/* forenames */
 .btn-historic {
   pointer-events: none;
   color: #ffffff;
@@ -537,6 +538,7 @@ a.timecontrol-play.loading:before {
   background-color: rgba(117,112,179,0.8);
 }
 
+/* expandable text  */
 button[aria-expanded=true] .fa-angle-double-down {
    display: none;
 }
@@ -544,6 +546,7 @@ button[aria-expanded=false] .fa-angle-double-up {
    display: none;
 }
 
+/* output area classification */
 .btn-g1 {
   color: #000;;
   background-color: #31a354;
@@ -625,6 +628,89 @@ button[aria-expanded=false] .fa-angle-double-up {
   background-color: #dddddd;
 }
 
+/* london output area classifciation */
+.btn-lA {
+  color: #000;;
+  background-color: #66C2A5;
+}
+
+.btn-lA.sub {
+  background-color: #97C3B5;
+}
+
+.btn-lB {
+  color: #000;;
+  background-color: #FC8D62;
+}
+
+.btn-lB.sub {
+  background-color: #FDAF91;
+}
+
+.btn-lC {
+  color: #000;;
+  background-color: #8DA0CB;
+}
+
+.btn-lC.sub {
+  background-color: #A4B3D5;
+}
+
+.btn-lD {
+  color: #000;;
+  background-color: #E78AC3;
+}
+
+.btn-lD.sub {
+  background-color: #EEADD5;
+}
+
+.btn-lE {
+  color: #000;;
+  background-color: #A6D854;
+}
+
+.btn-lE.sub {
+  background-color: #CAE898;
+}
+
+.btn-lF {
+  color: #000;;
+  background-color: #FFD92F;
+}
+
+.btn-lF.sub {
+  background-color: #FFE882;
+}
+
+.btn-lG {
+  color: #000;;
+  background-color: #E5C494;
+}
+
+.btn-lG.sub {
+  background-color: #EDD6B4;
+}
+
+.btn-lH {
+  color: #000;;
+  background-color: #B3B3B3;
+}
+
+.btn-lH.sub {
+  background-color: #D1D1D1;
+}
+
+.btn-l99 {
+  color: #000;
+  background-color: #dddddd;
+}
+
+.btn-l99.sub {
+  background-color: #dddddd;
+}
+
+/* internet user classification */
 .btn-iuc1 {
   color: #000;
   background-color: #ea4d78;

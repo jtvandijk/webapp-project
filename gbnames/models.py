@@ -66,12 +66,22 @@ class names_loc_cont(models.Model):
 class names_oac(models.Model):
     surname = models.TextField(primary_key=True)
     oaccd = models.TextField(blank=True,null=True)
-    oacnm = models.IntegerField(blank=True,null=True)
+    oacnm = models.TextField(blank=True,null=True)
     type = models.TextField(blank=True,null=True)
 
     class Meta:
         managed = False
         db_table = 'names_oac'
+
+class names_loac(models.Model):
+    surname = models.TextField(primary_key=True)
+    loaccd = models.TextField(blank=True,null=True)
+    loacnm = models.TextField(blank=True,null=True)
+    type = models.TextField(blank=True,null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'names_loac'
 
 class names_imd(models.Model):
     surname = models.TextField(primary_key=True)
@@ -142,3 +152,19 @@ class lookup_oac_desc(models.Model):
     class Meta:
         managed = False
         db_table = 'lookup_oac_desc'
+
+class lookup_loac(models.Model):
+    supergroupnm = models.TextField(blank=True,null=True)
+    groupcd = models.TextField(blank=True,null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'lookup_loac'
+
+class lookup_loac_desc(models.Model):
+    code = models.TextField(primary_key=True)
+    desc = models.TextField(blank=True,null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'lookup_loac_desc'
