@@ -581,6 +581,9 @@ function clearPage() {
   var sgCat = document.getElementById('sgCat');
   var gCat = document.getElementById('gCat');
   var dscCat = document.getElementById('dscCat');
+  var sgLCat = document.getElementById('sgLCat');
+  var gLCat = document.getElementById('gLCat');
+  var dscLCat = document.getElementById('dscLCat');
   var tableHR = document.getElementById('tableHR');
   var tableCR = document.getElementById('tableCR');
   var iucEl = document.getElementById('IUC');
@@ -600,6 +603,9 @@ function clearPage() {
   var sgDiv = document.createElement('div');
   var gDiv = document.createElement('div');
   var dscDiv = document.createElement('div');
+  var sgLDiv = document.createElement('div');
+  var gLDiv = document.createElement('div');
+  var dscLDiv = document.createElement('div');
   var hrFreq = document.createElement('table');
   var crFreq = document.createElement('table');
   var iuc = document.createElement('div');
@@ -619,6 +625,9 @@ function clearPage() {
   sgDiv.id = 'sgCat';
   gDiv.id = 'gCat';
   dscDiv.id = 'dscCat';
+  sgLDiv.id = 'sgLCat';
+  gLDiv.id = 'gLCat';
+  dscLDiv.id = 'dscLCat';
   hrFreq.id = 'tableHR';
   crFreq.id = 'tableCR';
   iuc.id = 'IUC';
@@ -642,6 +651,9 @@ function clearPage() {
   sgCat.replaceWith(sgDiv);
   gCat.replaceWith(gDiv);
   dscCat.replaceWith(dscDiv);
+  sgLCat.replaceWith(sgLDiv);
+  gLCat.replaceWith(gLDiv);
+  dscLCat.replaceWith(dscLDiv);
   tableHR.replaceWith(hrFreq);
   tableCR.replaceWith(crFreq);
   iucEl.replaceWith(iuc);
