@@ -119,6 +119,15 @@ class names_bbs(models.Model):
         managed = False
         db_table = 'names_bbs'
 
+class names_eee(models.Model):
+    surname = models.TextField(primary_key=True)
+    code = models.IntegerField(blank=True,null=True)
+    eee = models.TextField(blank=True,null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'names_eee'
+
 #lookup tables
 class lookup_loc_cont(models.Model):
     msoa11cd = models.TextField(blank=True,null=True)

@@ -136,11 +136,7 @@
         Individual names and addresses cannot be obtained from censuses until the data are 100 years old, and so we use consumer
         registers for the period 1997-2016: details of these data are available in <a href="https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/rssa.12476" target="_blank">Lansley <em>et al.</em> (2019)</a>.
       </p>
-      <strong>Funding</strong>
-      <p>
-        This work is funded by the UK ESRC Consumer Data Research Centre (CDRC) grant reference ES/L011840/1 and EPSRC grant EP/M023583/1 (‘UK Regions Digital Research Facility’).
-      </p>
-      <strong id="m1">Maps</strong>
+      <strong>Maps</strong>
       <p>
         One way to analyse and compare individual surname distributions over time without needing to accommodate changing administrative
         areas is to assign individual occurrences of names to the central point (centroid) of the parishes that existed when each of the
@@ -153,9 +149,8 @@
         and in <a href="https://doi.org/10.1080/13658816.2011.591291" target="_blank">Cheshire and Longley (2011)</a>.
       </p>
       <p>
-        For all data, KDEs for selected years are calculated only for surnames that have at least 100 individual bearers. The reasons for this are in part technical,
-        because KDE calculations cannot be executed for small numbers of points. When mapping consumer data, these thresholds are used also to
-        avoid the possibility of disclosing the precise areas where living individual reside. Because data for Scotland are not available for 1911,
+        For all data, KDEs for selected years are calculated only for surnames that have at least 100 individual bearers. This threshold is used to avoid disclosing
+        information about living individuals and to comply with our data licensing agreements. Because data for Scotland are not available for 1911,
         KDEs for this year for names that are highly concentrated in Scotland are replaced by their corresponding 1901 KDEs (only England and Wales). This is done
         to avoid creating the false impression that these surnames' centres have significantly changed. The KDE calculations are parallelised
         through <a href="https://www.gnu.org/software/parallel/" target="_blank">GNU Parallel</a> and executed using the <a href="https://www.r-project.org/" target="_blank">R</a>
@@ -168,46 +163,53 @@
         This website is powered by the Python-based open source web framework <a href="https://www.djangoproject.com/" target="_blank">Django</a>. <a href="https://leafletjs.com/" target="_blank">
         Leaflet.js</a> has been used for creating the interactive maps. Website design is facilitated by by <a href="https://getbootstrap.com/" target="_blank">Bootstrap 4</a>.
       </p>
-      <strong id="m2">Historical Forenames / Recent Forenames</strong>
+      <strong>Historical Forenames / Recent Forenames</strong>
       <p>
         For your selected surname, we provide the most popular associated forenames for all residents between 1851-1911 and those for
         adults between 1997-2016. Historical forenames are classified as male or female using census returns from the period, while a
         lookup table is used for the more recent period.
       </p>
-      <strong id="m3">Top Historical Parishes / Top Contemporary Areas</strong>
+      <strong>Top Historical Parishes / Top Contemporary Areas</strong>
       <p>
         We identify the historical and present day areas in which your selected surname occurs most frequently. The Top Historical
         Parishes identify Registration Districts as well as Parishes, while the Top Contemporary Areas are divisions of present day (2011) Local Authority
         Districts (Middle layer Super Output Areas). These are calculated as the highest frequencies over the historical or recent periods.
       </p>
-      <strong id="m4">Output Area classification</strong>
+      <strong>Ethnicity Estimation</strong>
+      <p>
+        Given and family names provide clues as to ethnicity. We provid a rough estimate of the probable ethnicity of the surname that you entered.
+        Better estimates can be obtained using CDRC and other full names classification software, for more details on CDRC's Ethnicity Estimator
+        software that uses family naming practices, please refer to <a href="https://doi.org/10.1371/journal.pone.0201774" target="_blank">
+        Kandt and Longley (2018)</a>.
+      </p>
+      <strong>Output Area classification</strong>
       <p>
         This is a classification of neighbourhoods, arranged into Supergroups and Groups based upon 2011 Census of Population data.
         We created this through a collaboration with the Office for National Statistics (ONS) and plan to update it following the
         2021 Census. We show the 2011 OAC Supergroup and Group in which your selected surname occurs most frequently. The classification
         is described fully in <a href="http://josis.org/index.php/josis/article/view/232" target="_blank">Gale <em>et al.</em> (2011)</a>.
       </p>
-      <strong id="m5">London Output Area classification</strong>
+      <strong>London Output Area classification</strong>
       <p>
         This is a classification of London's neighbourhoods, arranged into Supergroups and Groups based upon 2011 Census of Population data.
         LOAC was created on behalf of the Office for National Statistics (ONS). We show the 2011 LOAC Supergroup and Group in which your
         selected surname occurs most frequently. For more details on this classification, the classification is fully described in
         <a href="https://rgs-ibg.onlinelibrary.wiley.com/doi/full/10.1002/geo2.7" target="_blank">Singleton and Longley (2015)</a>.
       </p>
-      <strong id="m6">Access to Healthy Assets and Hazards (AHAH)</strong>
+      <strong>Access to Healthy Assets and Hazards (AHAH)</strong>
       <p>
         AHAH is a multi-dimensional index for Great Britain developed by the Consumer Data Research Centre (CDRC) in order to describe
         neighbourhoods as more or less healthy places in which to live. Various data describe access to retail facilities,
         health services, and physical features. Neighbourhoods can be ranked from best to worst and we show the decile in which your
         selected surname occurs most frequently. The classification is fully described in <a href="https://doi.org/10.1016/j.healthplace.2018.08.019" target="_blank">Green <em>et al.</em> (2018)</a>.
       </p>
-      <strong id="m7">Internet User Classification</strong>
+      <strong>Internet User Classification</strong>
       <p>
         The Consumer Data Research Centre Internet User Classification describes the nature and extent of Internet usage by the residents
         of neighbourhoods across Great Britain. We show the Group into which the largest number of bearers of your selected surname fall.
         You can read more about this classification in <a href="https://doi.org/10.1016/j.compenvurbsys.2020.101486" target="_blank">Singleton <em>et al.</em> (2020)</a>.
       </p>
-      <strong id="m8">Index of Multiple Deprivation (IMD)</strong>
+      <strong>Index of Multiple Deprivation (IMD)</strong>
       <p>
         Indices of Multiple Deprivation (IMDs) are periodically calculated by UK governments in order to summarise prevailing physical
         and social conditions at neighbourhood scale. Assuming equivalence between different national measures, we use the 2019 IMDs for
@@ -215,16 +217,20 @@
         You can read more about the calculation of the IMDs for: <a href="https://www.gov.uk/government/statistics/english-indices-of-deprivation-2019" target="_blank">England</a>,
         <a href="https://gov.wales/welsh-index-multiple-deprivation" target="_blank">Wales</a>, and <a href="https://www.gov.scot/collections/scottish-index-of-multiple-deprivation-2020/" target="_blank">Scotland</a>.
       </p>
-      <strong id="m9">Broadband Speed</strong>
+      <strong>Broadband Speed</strong>
       <p>
         This statistic records the modal value of the broadband speed available to bearers of your selected surname, based upon the fixed broadband download speed in Mbit/s.
         You can find out more information at <a href="https://data.cdrc.ac.uk/dataset/broadband-speed" target="_blank">Broadband Speed</a>.
       </p>
-      <strong id="m10">Frequencies</strong>
-      <p class="mb-0">
+      <strong>Frequencies</strong>
+      <p>
         For your selected name, we show the total number of (adult and child) occurrences for 1851-1911 (excluding 1871 because of
         non-availability of data for England and Wales and excluding unavailable data for Scotland for 1911). The corresponding
         figures for 1997-2016 are estimated adult frequencies.
+      </p>
+      <strong>Funding</strong>
+      <p class="mb-0">
+        This work is funded by the UK ESRC Consumer Data Research Centre (CDRC) grant reference ES/L011840/1 and EPSRC grant EP/M023583/1 (‘UK Regions Digital Research Facility’).
       </p>
     </div>
     <div class="modal-footer">
@@ -264,16 +270,23 @@
           <h5>Current version</h5>
         </div>
         <div class="card body p-3">
-          <h6 class="card-title">Version 3.1.0</h6>
-          <h6 class="card-subtitle text-muted">Released June 2020</h6>
+          <h6 class="card-title">Version 3.1.1</h6>
+          <h6 class="card-subtitle text-muted">Released July 2020</h6>
             <p class="m-0 p-0">
-              UI tweaks, bug fixes. Serve GeoJSONs through file system. Production version.
+              Addition of new consumer statistics on Ethnicity and the London Output Area Classification.
             </p>
         </div>
       </div>
       <div class="card mb-3">
         <div class="card-header pl-3 pb-1">
           <h5>Previous versions</h5>
+        </div>
+        <div class="card body p-3">
+          <h6 class="card-title">Version 3.1.0</h6>
+          <h6 class="card-subtitle text-muted">Released June 2020</h6>
+            <p class="m-0 p-0">
+              UI tweaks, bug fixes. Serve GeoJSONs through file system. Production version.
+            </p>
         </div>
         <div class="card body p-3">
           <h6 class="card-title">Version 3.0.0</h6>

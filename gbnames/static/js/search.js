@@ -81,6 +81,7 @@ function searchSurname(surname) {
         renderAHAH(data.stats[9]);
         renderIMD(data.stats[10]);
         renderBBS(data.stats[11]);
+        renderEEE(data.stats[12]);
 
         //map load stopped in renderMap function
 

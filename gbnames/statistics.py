@@ -43,8 +43,12 @@ def surname_statistics(name_search):
     bbs = names_bbs.objects.filter(surname=name_search).values('bbsdec','bbs')
     bbs_mod = bband_stats(bbs)
 
+    #statistics -- eee
+    eee = names_eee.objects.filter(surname=name_search).values('code','eee')
+    eee_mod = eee_stats(eee)
+
     #return
-    return([fore_female_hist,fore_male_hist,fore_female_cont,fore_male_cont,par_top,msoa_top,oac_mod,loac_mod,iuc_mod,ahah_mod,imd_mod,bbs_mod])
+    return([fore_female_hist,fore_male_hist,fore_female_cont,fore_male_cont,par_top,msoa_top,oac_mod,loac_mod,iuc_mod,ahah_mod,imd_mod,bbs_mod,eee_mod])
 
 #forenames (freqs)
 def forenames_stats(forenames):
@@ -129,3 +133,11 @@ def bband_stats(bbs):
     else:
         bbs_mod = [bbs[0]['bbsdec'],bbs[0]['bbs']]
     return(bbs_mod)
+
+#ethnicity estimator
+def eee_stats(eee):
+    if not eee:
+        eee_mod = ['99','No data']
+    else:
+        eee_mod = [eee[0]['code'],eee[0]['eee']]
+    return(eee_mod)

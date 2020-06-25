@@ -509,6 +509,32 @@ function renderBBS(bbs) {
   dscDiv.replaceWith(descDiv);
 };
 
+//render ethnicity
+function renderEEE(eee) {
+
+  //get elements
+  var eeeEl = document.getElementById('EEE');
+
+  //create elements
+  var eeeDiv = document.createElement('div');
+  var eeeBtn = document.createElement('button');
+
+  //set elements
+  eeeDiv.id = 'EEE';
+  eeeDiv.className = 'card-body px-0 py-0 pb-3';
+
+  //classname
+  cls = eee[0];
+
+  //values and attributes
+  eeeBtn.className = 'btn btn-eee'+cls+' btn-lg btn-block';
+  eeeBtn.innerHTML = eee[1];
+  eeeDiv.appendChild(eeeBtn);
+
+  //replace
+  eeeEl.replaceWith(eeeDiv);
+};
+
 //render modal iuc
 function renderIUC(iuc) {
 
@@ -588,6 +614,7 @@ function clearPage() {
   var tableCR = document.getElementById('tableCR');
   var iucEl = document.getElementById('IUC');
   var iucDsc = document.getElementById('dscIUC');
+  var eeeEl = document.getElementById('EEE');
   var imdDsc = document.getElementById('dscIMD');
   var ahahDsc = document.getElementById('dscAHAH');
   var bbsDsc = document.getElementById('dscBBS');
@@ -610,6 +637,7 @@ function clearPage() {
   var crFreq = document.createElement('table');
   var iuc = document.createElement('div');
   var dscIUC = document.createElement('div');
+  var eee = document.createElement('div');
   var dscIMD = document.createElement('div');
   var dscAHAH = document.createElement('div');
   var dscBBS = document.createElement('div');
@@ -631,6 +659,7 @@ function clearPage() {
   hrFreq.id = 'tableHR';
   crFreq.id = 'tableCR';
   iuc.id = 'IUC';
+  eee.id = 'EEE';
   dscIUC.id = 'dscIUC';
   dscIMD.id = 'dscIMD';
   dscAHAH.id = 'dscAHAH';
@@ -659,6 +688,7 @@ function clearPage() {
   iucEl.replaceWith(iuc);
   iucDsc.replaceWith(dscIUC);
   imdDsc.replaceWith(dscIMD);
+  eeeEl.replaceWith(eee);
   ahahDsc.replaceWith(dscAHAH);
   bbsDsc.replaceWith(dscBBS);
 

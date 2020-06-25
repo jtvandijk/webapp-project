@@ -199,6 +199,38 @@
         </div>
       </div>
 
+      <!--internet user classification-->
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-10 col-sm-10">
+          <div class="card mb-3">
+              <div class="card-header pl-3 pr-2 pb-1">
+                <h4 class="m-0">Ethnicity Estimator</button>
+              </h4>
+              <small>Surname Roots</small>
+            </div>
+            <div class="card-body p-0">
+              <div class="p-3">
+                <div id="EEE">
+                </div>
+                <div class="row justify-content-center">
+                  <div class="col-lg-2 col-md-3 m-0 my-auto">
+                    <div class="card-body p-1 thumbnail text-center">
+                      <a href="{% static 'EEE.pdf' %}" target="_blank"><img src="{% static 'EEE_thumb.jpg' %}" class="img-responsive border" height="150" width="100" alt="eee thumbnail"/></a>
+                    </div>
+                  </div>
+                  <div class="col-lg-10 col-md-9 m-0 my-auto">
+                    <div class="card-body p-0 text-justify">
+                      <strong>ABOUT</strong> Given and family names provide clues as to ethnicity. We show a rough estimate of the probable ethnicity of the surname
+                        that you entered. Better estimates can be obtained using CDRC and other full names classification software.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!--output area classifciation-->
       <div class="row justify-content-center">
         <div class="col-lg-10 col-md-10 col-sm-10">
@@ -537,7 +569,7 @@
               &copy; <a href="https://cdrc.ac.uk/">Consumer Data Research Centre</a> and <a href="https://www.ucl.ac.uk/urban-dynamics-lab">Urban Dynamics Lab</a> {% now "Y" %}.
               All rights reserved. Project led by <a href="http://paul-longley.com/">Prof Paul Longley</a>.
               Data science and website by <a href="https://www.mappingdutchman.com">Dr Justin van Dijk</a>.
-              Questions or feedback? Please contact <a href="">info [at] cdrc.ac.uk</a>.
+              Questions or feedback? Please contact <a href="https://cdrc.ac.uk/">info [at] cdrc.ac.uk</a>.
             </small>
           </div>
           <div class="text-center">
