@@ -565,7 +565,7 @@ function renderIUC(iuc) {
 
   //classname
   cls = iuc[0];
-  console.log(cls);
+
   //values and attributes
   iucBtn.className = 'btn btn-iuc'+cls+' btn-lg btn-block';
   iucBtn.setAttribute('data-toggle','collapse');
