@@ -39,6 +39,10 @@ def surname_statistics(name_search):
     imd = names_imd.objects.filter(surname=name_search,type='mode').values('imddec')
     imd_mod = imd_stats(imd)
 
+    #statistics -- imd // avg, sd
+    imd_std = names_imd_std.objects.filter(surname=name_search).values('avg','sd')
+    imd_mod_std = imd_std_stats(imd_std)
+
     #statistics -- bbs
     bbs = names_bbs.objects.filter(surname=name_search).values('bbsdec','bbs')
     bbs_mod = bband_stats(bbs)
@@ -48,7 +52,7 @@ def surname_statistics(name_search):
     eee_mod = eee_stats(eee)
 
     #return
-    return([fore_female_hist,fore_male_hist,fore_female_cont,fore_male_cont,par_top,msoa_top,oac_mod,loac_mod,iuc_mod,ahah_mod,imd_mod,bbs_mod,eee_mod])
+    return([fore_female_hist,fore_male_hist,fore_female_cont,fore_male_cont,par_top,msoa_top,oac_mod,loac_mod,iuc_mod,ahah_mod,imd_mod,bbs_mod,eee_mod,imd_mod_std])
 
 #forenames (freqs)
 def forenames_stats(forenames):
@@ -125,6 +129,14 @@ def imd_stats(imd):
     else:
         imd_mod = imd[0]['imddec']
     return(imd_mod)
+
+#index of multiple deprivation (avg, sd)
+def imd_std_stats(imd_std):
+    if not imd_std:
+        imd_std = ['No data','No data']
+    else:
+        imd_std = [imd_std[0]['avg'],imd_std[0]['sd']]
+    return(imd_std)
 
 #broadband speed (mode)
 def bband_stats(bbs):

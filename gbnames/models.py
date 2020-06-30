@@ -92,6 +92,15 @@ class names_imd(models.Model):
         managed = False
         db_table = 'names_imd'
 
+class names_imd_std(models.Model):
+    surname = models.TextField(primary_key=True)
+    avg = models.FloatField(blank=True,null=True)
+    sd = models.FloatField(blank=True,null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'names_imd_std'
+
 class names_ahah(models.Model):
     surname = models.TextField(primary_key=True)
     ahahdec = models.IntegerField(blank=True,null=True)

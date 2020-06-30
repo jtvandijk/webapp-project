@@ -581,6 +581,45 @@ function renderIUC(iuc) {
   dscDiv.replaceWith(descDiv);
 };
 
+//render detailed IMD
+function renderSTD(STD) {
+
+    //get elements
+    var avgButton = document.getElementById('avgSTD');
+    var sdButton = document.getElementById('sdSTD');
+
+    //create elements
+    var avgDiv = document.createElement('div');
+    var sdDiv = document.createElement('div');
+    var avgDivbtn = document.createElement('button');
+    var sdDivbtn = document.createElement('button');
+
+    //set elements
+    avgDiv.id = 'avgSTD';
+    sdDiv.id = 'sdSTD';
+    avgDiv.className = 'card-body p-0';
+    sdDiv.className = 'card-body p-0';
+
+    //average and sd
+    if (isNaN(STD[0])){
+      avgDivbtn.innerHTML = STD[0];
+      sdDivbtn.innerHTML = STD[1];
+    } else {
+      avgDivbtn.innerHTML = STD[0].toFixed(2);
+      sdDivbtn.innerHTML = STD[1].toFixed(2);
+    };
+
+    //values and attributes
+    avgDivbtn.className = 'btn btn-avg btn-lg btn-block';
+    sdDivbtn.className = 'btn btn-sd btn-lg btn-block';
+    avgDiv.appendChild(avgDivbtn);
+    sdDiv.appendChild(sdDivbtn);
+
+    //replace
+    avgButton.replaceWith(avgDiv);
+    sdButton.replaceWith(sdDiv);
+};
+
 //remove select
 function removeSelect(rem) {
 
@@ -618,6 +657,8 @@ function clearPage() {
   var imdDsc = document.getElementById('dscIMD');
   var ahahDsc = document.getElementById('dscAHAH');
   var bbsDsc = document.getElementById('dscBBS');
+  var avgSTD = document.getElementById('avgSTD');
+  var sdSTD = document.getElementById('sdSTD');
 
   //create elements
   var mapLegend = document.createElement('div');
@@ -641,6 +682,8 @@ function clearPage() {
   var dscIMD = document.createElement('div');
   var dscAHAH = document.createElement('div');
   var dscBBS = document.createElement('div');
+  var avgDiv = document.createElement('div');
+  var sdDiv = document.createElement('div');
 
   //set elements
   mapLegend.id = 'mapLegend';
@@ -664,6 +707,8 @@ function clearPage() {
   dscIMD.id = 'dscIMD';
   dscAHAH.id = 'dscAHAH';
   dscBBS.id = 'dscBBS';
+  avgDiv.id = 'avgSTD';
+  sdDiv.id = 'sdSTD';
 
   //pretty
   foreNamesHist.className= 'p-2';
@@ -691,6 +736,8 @@ function clearPage() {
   eeeEl.replaceWith(eee);
   ahahDsc.replaceWith(dscAHAH);
   bbsDsc.replaceWith(dscBBS);
+  avgSTD.replaceWith(avgDiv);
+  sdSTD.replaceWith(sdDiv);
 
   //hide
   document.getElementById('AHAH').style.display='none';

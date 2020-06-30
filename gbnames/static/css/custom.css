@@ -587,16 +587,20 @@ button[aria-expanded=false] .fa-angle-double-up {
 .btn-iuc99 {background-color: #dddddd;}
 
 /* ethnicity estimator */
-.btn-eee1 {background-color: #fccde5;}
-.btn-eee2 {background-color: #b3de69;}
-.btn-eee3 {background-color: #fdb462;}
-.btn-eee4 {background-color: #ffffb3;}
-.btn-eee5 {background-color: #bebada;}
-.btn-eee6 {background-color: #fb8072;}
-.btn-eee7 {background-color: #80b1d3;}
-.btn-eee8 {background-color: #8dd3c7;}
-.btn-eee9 {background-color: #d9d9d9;}
-.btn-eee99 {background-color: #d9d9d9;}
+.btn-eee1 {background-color: #fccde5; pointer-events: none;}
+.btn-eee2 {background-color: #b3de69; pointer-events: none;}
+.btn-eee3 {background-color: #fdb462; pointer-events: none;}
+.btn-eee4 {background-color: #ffffb3; pointer-events: none;}
+.btn-eee5 {background-color: #bebada; pointer-events: none;}
+.btn-eee6 {background-color: #fb8072; pointer-events: none;}
+.btn-eee7 {background-color: #80b1d3; pointer-events: none;}
+.btn-eee8 {background-color: #8dd3c7; pointer-events: none;}
+.btn-eee9 {background-color: #d9d9d9; pointer-events: none;}
+.btn-eee99 {background-color: #d9d9d9; pointer-events: none;}
+
+/* std */
+.btn-avg {background-color: #8dd3c7; pointer-events: none;}
+.btn-sd {background-color: #8dd3c7; pointer-events: none;}
 
 /* colour ramps */
 .ramp_class {
