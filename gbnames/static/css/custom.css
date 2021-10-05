@@ -660,9 +660,5 @@ button[aria-expanded=false] .fa-angle-double-up {
 .ramp.b9 {background: #c51b7d;}
 .ramp.b10 {background: #8e0152;}
 
-/* cookie alert */
-.cookiealert {z-index: 9999;}
-.cookiealert a {color: white;}
-
 /* footer xl */
 .mb-xl {margin-bottom: 4rem ;}

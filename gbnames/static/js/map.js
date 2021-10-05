@@ -24,6 +24,7 @@ L.tileLayer('https://maps.cdrc.ac.uk/tiles/shine_urbanmask_light/{z}/{x}/{y}.png
              maxZoom: 12,
              bounds: bbounds
             }).addTo(map);
+            
 //labels
 L.tileLayer('https://maps.cdrc.ac.uk/tiles/shine_labels_gbnames/{z}/{x}/{y}.png',
             {minZoom: 6,
