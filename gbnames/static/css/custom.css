@@ -599,8 +599,8 @@ button[aria-expanded=false] .fa-angle-double-up {
 .btn-eee99 {background-color: #d9d9d9; pointer-events: none;}
 
 /* std */
-.btn-avg {background-color: #8dd3c7; pointer-events: none;}
-.btn-sd {background-color: #8dd3c7; pointer-events: none;}
+.btn-avg {background-color: #fc8d62; pointer-events: none;}
+.btn-sd {background-color: #8da0cb; pointer-events: none;}
 
 /* colour ramps */
 .ramp_class {
