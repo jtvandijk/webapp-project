@@ -1,5 +1,5 @@
 #libraries
-from django.contrib.gis.db import models
+from django.db import models
 
 #kde
 class names_kde(models.Model):
@@ -71,7 +71,7 @@ class names_oac(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'names_oac'
+        db_table = 'names_oac21'
 
 class names_loac(models.Model):
     surname = models.TextField(primary_key=True)
@@ -81,7 +81,7 @@ class names_loac(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'names_loac'
+        db_table = 'names_loac21'
 
 class names_imd(models.Model):
     surname = models.TextField(primary_key=True)
@@ -161,7 +161,7 @@ class lookup_oac(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'lookup_oac'
+        db_table = 'lookup_oac21'
 
 class lookup_oac_desc(models.Model):
     code = models.TextField(primary_key=True)
@@ -169,7 +169,7 @@ class lookup_oac_desc(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'lookup_oac_desc'
+        db_table = 'lookup_oac21_desc'
 
 class lookup_loac(models.Model):
     supergroupnm = models.TextField(blank=True,null=True)
@@ -177,7 +177,7 @@ class lookup_loac(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'lookup_loac'
+        db_table = 'lookup_loac21'
 
 class lookup_loac_desc(models.Model):
     code = models.TextField(primary_key=True)
@@ -185,4 +185,4 @@ class lookup_loac_desc(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'lookup_loac_desc'
+        db_table = 'lookup_loac21_desc'

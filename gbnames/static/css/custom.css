@@ -534,22 +534,22 @@ button[aria-expanded=false] .fa-angle-double-up {
 }
 
 /* output area classification */
-.btn-g1 {background-color: #31a354;}
-.btn-g1.sub {background-color: #74c476;}
-.btn-g2 {background-color: #de2d26;}
-.btn-g2.sub {background-color: #fb6a4a;}
-.btn-g3 {background-color: #BE719F;}
-.btn-g3.sub {background-color: #D48FB0;}
-.btn-g4 {background-color: #e6550d;}
-.btn-g4.sub {background-color: #fd8d3c;}
-.btn-g5 {background-color: #AA7351;}
-.btn-g5.sub {background-color: #C1987E;}
-.btn-g6 {background-color: #756bb1;}
-.btn-g6.sub {background-color: #9e9ac8 ;}
-.btn-g7 {background-color: #3182bd;}
-.btn-g7.sub {background-color: #6baed6;}
-.btn-g8 {background-color: #FFBA01;}
-.btn-g8.sub {background-color: #FED901;}
+.btn-g1 {background-color: #ccbb99;}
+.btn-g1.sub {background-color: #dbcfb8;}
+.btn-g2 {background-color: #4daf4a;}
+.btn-g2.sub {background-color: #81c97f;}
+.btn-g3 {background-color: #ff0000;}
+.btn-g3.sub {background-color: #ff4d4d;}
+.btn-g4 {background-color: #f781bf;}
+.btn-g4.sub {background-color: #f9a7d2;}
+.btn-g5 {background-color: #ff7f00;}
+.btn-g5.sub {background-color: #ffa54d;}
+.btn-g6 {background-color: #ffcb1f;}
+.btn-g6.sub {background-color: #ffdb62 ;}
+.btn-g7 {background-color: #377eff;}
+.btn-g7.sub {background-color: #73a5ff;}
+.btn-g8 {background-color: #984ea3;}
+.btn-g8.sub {background-color: #b980c2;}
 .btn-g99 {background-color: #dddddd;}
 .btn-g99.sub {background-color: #dddddd;}
 
@@ -566,10 +566,8 @@ button[aria-expanded=false] .fa-angle-double-up {
 .btn-lE.sub {background-color: #CAE898;}
 .btn-lF {background-color: #FFD92F;}
 .btn-lF.sub {background-color: #FFE882;}
-.btn-lG {background-color: #E5C494;}
-.btn-lG.sub {background-color: #EDD6B4;}
-.btn-lH {background-color: #B3B3B3;}
-.btn-lH.sub {background-color: #D1D1D1;}
+.btn-lG {background-color: #D9dddf;}
+.btn-lG.sub {background-color: #e4e7e9;}
 .btn-l99 {background-color: #dddddd;}
 .btn-l99.sub {background-color: #dddddd;}
 

@@ -54,7 +54,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'gbnames.wsgi.application'
-POSTGIS_VERSION = (2,1,4)
 
 #internationalization
 LANGUAGE_CODE = 'en-us'

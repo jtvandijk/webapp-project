@@ -414,7 +414,7 @@ function renderAHAH(ahah) {
 
     //text
     descDiv.innerHTML = 'Your selected surname occurs most frequently in decile number <strong>' + ahah + '</strong> of the Access to Healthy \
-                         Assets and Hazards index. The first decile is the worst performing decile wereas the tenth decile is the best performing decile.';
+                         Assets and Hazards index. The first decile is the worst performing decile whereas the tenth decile is the best performing decile.';
 
   } else {
 
@@ -455,7 +455,7 @@ function renderIMD(imd) {
 
     //text
     descDiv.innerHTML = 'Your selected surname occurs most frequently in decile number <strong>' + imd + '</strong> of the Index of Multiple Deprivation. \
-                         The first decile is the worst performing decile wereas the tenth decile is the best performing decile.';
+                         The first decile is the worst performing decile whereas the tenth decile is the best performing decile.';
 
   } else {
 
@@ -605,8 +605,10 @@ function renderSTD(STD) {
       avgDivbtn.innerHTML = STD[0];
       sdDivbtn.innerHTML = STD[1];
     } else {
-      avgDivbtn.innerHTML = STD[0].toFixed(2);
-      sdDivbtn.innerHTML = STD[1].toFixed(2);
+      STD[0] = parseFloat(STD[0]).toFixed(2);
+      STD[1] = parseFloat(STD[1]).toFixed(2);
+      avgDivbtn.innerHTML = STD[0];
+      sdDivbtn.innerHTML = STD[1];
     };
 
     //values and attributes

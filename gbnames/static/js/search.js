@@ -33,20 +33,10 @@ function searchSurname(surname) {
   //search
   $j.ajax({
     method: 'POST',
-    url: '../gbnames/search/',
+    url: '../search/',
     data: {surname: surname,
            csrfmiddlewaretoken: csrftoken
           },
-    //server error
-    statusCode: {
-     500: function() {
-       window.location.href = '../static/html/500.html';
-    }},
-    //page error
-    statusCode: {
-     404: function() {
-       window.location.href = '../static/html/404.html';
-    }},
     //success
     success: function (data) {
       //no data entered

@@ -1,6 +1,7 @@
 #libraries
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.http import JsonResponse
 from .models import *
 from .statistics import *
 from re import sub
@@ -21,7 +22,7 @@ def search(request):
     name_input = sub(r'[^A-Za-z\']+','',name_input)
     name_search = sub(r'[\W^0-9^\s]+','',name_input)
     name_found = names_kde.objects.filter(surname=name_search)
-
+    
     #search: emtpy
     if len(name_input) == 0:
         search = {'surname':'empty'}
@@ -49,7 +50,7 @@ def search(request):
             #surname data
             year_exclusion=[0,1997,*range(1999,2006,1),*range(2007,2016,1)]
             search_data = names_kde.objects.filter(surname=name_search).exclude(year__in=year_exclusion).order_by('year').values('year','freq')
-
+            
             #if empty due to year selection
             if not search_data:
                 search = {'surname':'db'}
@@ -72,7 +73,7 @@ def search(request):
             search = {'surname': name_input.title(),'years': kdeyears,'freqs': freqs,'stats': name_stats}
 
             #return data
-            return HttpResponse(json.dumps(search),content_type="application/json")
+            return JsonResponse(search)
 
         except:
             return HttpResponse(status=500)

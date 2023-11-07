@@ -10,7 +10,7 @@ def surname_statistics(name_search):
     forenames_cont = names_fns_cont.objects.filter(surname=name_search).values('forename','sex')
     fore_female_hist, fore_male_hist = forenames_stats(forenames_hist)
     fore_female_cont, fore_male_cont = forenames_stats(forenames_cont)
-
+    
     #statistics -- parish
     parishes = names_loc_hist.objects.filter(surname=name_search).values('regcnty','parish')
     par_top = parish_stats(parishes)
@@ -26,14 +26,16 @@ def surname_statistics(name_search):
     #statistics -- loac
     loac = names_loac.objects.filter(surname=name_search,type='mode').values('loaccd','loacnm')
     loac_mod = loac_stats(loac)
-
+  
     #statistics -- iuc
     iuc = names_iuc.objects.filter(surname=name_search).values('iuccd','iucnm')
     iuc_mod = iuc_stats(iuc)
+    
 
     # #statistics -- ahah
     ahah = names_ahah.objects.filter(surname=name_search,type='mode').values('ahahdec')
     ahah_mod = ahah_stats(ahah)
+    
 
     #statistics -- imd
     imd = names_imd.objects.filter(surname=name_search,type='mode').values('imddec')
