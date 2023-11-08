@@ -8,6 +8,7 @@ misc/
 migrations/
 /static/**
 local_settings.py
+local_settings_server.py
 /gbnames/static/kde/**
 
 #misc
