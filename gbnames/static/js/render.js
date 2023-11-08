@@ -284,14 +284,14 @@ function renderOAC(oac) {
     sgTxt.id = 'sgTxt';
     sgTxt.className = 'collapse text-justify pb-2 mb-2'
     sgTxt.innerHTML = '<strong>' + oac[0].toUpperCase() + '</strong> ' + oac[2];
-    descDiv.appendChild(sgTxt);
+    //descDiv.appendChild(sgTxt);
 
     //group
     var gTxt = document.createElement('div');
     gTxt.id = 'gTxt';
     gTxt.className = 'collapse text-justify pb-2 mb-0'
     gTxt.innerHTML = '<strong>' + oac[1].toUpperCase() + '</strong> ' + oac[3];
-    descDiv.appendChild(gTxt);
+    //descDiv.appendChild(gTxt);
   };
 
   //values and attributes
