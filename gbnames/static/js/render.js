@@ -277,7 +277,8 @@ function renderOAC(oac) {
     var cls = 99;
   } else {
     var cls = oac[4].slice(0,1);
-
+    var sb = oac[4].slice(1,2);
+ 
     //supergroup
     var sgTxt = document.createElement('div');
     sgTxt.id = 'sgTxt';
@@ -295,7 +296,7 @@ function renderOAC(oac) {
 
   //values and attributes
   sgDivbtn.className = 'btn btn-g'+cls+' btn-lg btn-block';
-  gDivbtn.className = 'btn btn-g'+cls+' sub btn-lg btn-block';
+  gDivbtn.className = 'btn btn-g'+cls+' sub'+sb+' btn-lg btn-block';
   sgDivbtn.setAttribute('data-toggle','collapse');
   sgDivbtn.setAttribute('data-target','#sgTxt');
   sgDivbtn.setAttribute('aria-expanded','false');
@@ -345,6 +346,7 @@ function renderLOAC(loac) {
     var cls = 99;
   } else {
     var cls = loac[4].slice(0,1);
+    var sb = loac[4].slice(1,2);
 
     //supergroup
     var sgTxt = document.createElement('div');
@@ -364,7 +366,7 @@ function renderLOAC(loac) {
 
   //values and attributes
   sgDivbtn.className = 'btn btn-l'+cls+' btn-lg btn-block';
-  gDivbtn.className = 'btn btn-l'+cls+' sub btn-lg btn-block';
+  gDivbtn.className = 'btn btn-l'+cls+' sub'+sb+' btn-lg btn-block';
   sgDivbtn.setAttribute('data-toggle','collapse');
   sgDivbtn.setAttribute('data-target','#sgLTxt');
   sgDivbtn.setAttribute('aria-expanded','false');

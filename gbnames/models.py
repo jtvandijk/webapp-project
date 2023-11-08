@@ -108,7 +108,7 @@ class names_ahah(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'names_ahah'
+        db_table = 'names_ahah22'
 
 class names_iuc(models.Model):
     surname = models.TextField(primary_key=True)

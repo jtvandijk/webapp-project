@@ -535,39 +535,61 @@ button[aria-expanded=false] .fa-angle-double-up {
 
 /* output area classification */
 .btn-g1 {background-color: #ccbb99;}
-.btn-g1.sub {background-color: #dbcfb8;}
+.btn-g1.suba {background-color: #ccbb99;}
+.btn-g1.subb {background-color: #e4d3b1;}
+.btn-g1.subc {background-color: #ffeecc;}
 .btn-g2 {background-color: #4daf4a;}
-.btn-g2.sub {background-color: #81c97f;}
+.btn-g2.suba {background-color: #2d7f2a;}
+.btn-g2.subb {background-color: #4daf4a;}
+.btn-g2.subc {background-color: #8def8a;}
 .btn-g3 {background-color: #ff0000;}
-.btn-g3.sub {background-color: #ff4d4d;}
+.btn-g3.suba {background-color: #ff0000;}
+.btn-g3.subb {background-color: #cc0000;}
+.btn-g3.subc {background-color: #990000;}
 .btn-g4 {background-color: #f781bf;}
-.btn-g4.sub {background-color: #f9a7d2;}
+.btn-g4.suba {background-color: #f781bf;}
+.btn-g4.subb {background-color: #f761af;}
+.btn-g4.subc {background-color: #f7419f;}
 .btn-g5 {background-color: #ff7f00;}
-.btn-g5.sub {background-color: #ffa54d;}
+.btn-g5.suba {background-color: #ff7f00;}
+.btn-g5.subb {background-color: #ffaf00;}
 .btn-g6 {background-color: #ffcb1f;}
-.btn-g6.sub {background-color: #ffdb62 ;}
+.btn-g6.suba {background-color: #ffcb1f ;}
+.btn-g6.subb {background-color: #cc9b1f ;}
+.btn-g6.subc {background-color: #996b1f ;}
 .btn-g7 {background-color: #377eff;}
-.btn-g7.sub {background-color: #73a5ff;}
+.btn-g7.suba {background-color: #377eff;}
+.btn-g7.subb {background-color: #77aeff;}
 .btn-g8 {background-color: #984ea3;}
-.btn-g8.sub {background-color: #b980c2;}
+.btn-g8.suba {background-color: #984ea3;}
+.btn-g8.subb {background-color: #b784bf;}
 .btn-g99 {background-color: #dddddd;}
 .btn-g99.sub {background-color: #dddddd;}
 
 /* london output area classifciation */
 .btn-lA {background-color: #66C2A5;}
-.btn-lA.sub {background-color: #97C3B5;}
+.btn-lA.sub1 {background-color: #539B84;}
+.btn-lA.sub2 {background-color: #97C3B5;}
+.btn-lA.sub3 {background-color: #C5FFEC;}
 .btn-lB {background-color: #FC8D62;}
-.btn-lB.sub {background-color: #FDAF91;}
+.btn-lB.sub1 {background-color: #CA714E;}
+.btn-lB.sub2 {background-color: #FC9872;}
 .btn-lC {background-color: #8DA0CB;}
-.btn-lC.sub {background-color: #A4B3D5;}
+.btn-lC.sub1 {background-color: #63708E;}
+.btn-lC.sub2 {background-color: #C6D0E5;}
 .btn-lD {background-color: #E78AC3;}
-.btn-lD.sub {background-color: #EEADD5;}
+.btn-lD.sub1 {background-color: #B96E9C;}
+.btn-lD.sub2 {background-color: #EEADD5;}
+.btn-lD.sub3 {background-color: #FFB9DA;}
 .btn-lE {background-color: #A6D854;}
-.btn-lE.sub {background-color: #CAE898;}
+.btn-lE.sub1 {background-color: #74973B;}
+.btn-lE.sub2 {background-color: #CAE898;}
 .btn-lF {background-color: #FFD92F;}
-.btn-lF.sub {background-color: #FFE882;}
+.btn-lF.sub1 {background-color: #CCAE26;}
+.btn-lF.sub2 {background-color: #FFE882;}
 .btn-lG {background-color: #D9dddf;}
-.btn-lG.sub {background-color: #e4e7e9;}
+.btn-lG.sub1 {background-color: #7D7D7D;}
+.btn-lG.sub2 {background-color: #D1D1D1;}
 .btn-l99 {background-color: #dddddd;}
 .btn-l99.sub {background-color: #dddddd;}
 
