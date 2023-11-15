@@ -305,10 +305,10 @@ function renderOAC(oac) {
   gDivbtn.setAttribute('data-target','#gTxt');
   gDivbtn.setAttribute('aria-expanded','false');
   gDivbtn.setAttribute('aria-controls','sTxt');
-  sgDivbtn.innerHTML = oac[0] //+ '<span class="fas fa-angle-double-down fa-md p-2 float-right"></span>' +
-                              //  '<span class="fas fa-angle-double-up fa-md p-2 float-right"></span>';
-  gDivbtn.innerHTML = oac[1]  //+  '<span class="fas fa-angle-double-down p-2 float-right"></span>' +
-                              //  '<span class="fas fa-angle-double-up fa-md p-2 float-right"></span>';
+  sgDivbtn.innerHTML = oac[0] + '<span class="fas fa-angle-double-down fa-md p-2 float-right"></span>' +
+                                '<span class="fas fa-angle-double-up fa-md p-2 float-right"></span>';
+  gDivbtn.innerHTML = oac[1]  + '<span class="fas fa-angle-double-down p-2 float-right"></span>' +
+                                '<span class="fas fa-angle-double-up fa-md p-2 float-right"></span>';
   sgDiv.appendChild(sgDivbtn);
   gDiv.appendChild(gDivbtn);
 
