@@ -14,3 +14,6 @@ local_settings_server.py
 #misc
 .Rhistory
 _meta.txt
+
+#legacy data preparation code and working data (2 GB, not part of the website)
+/data-prep/

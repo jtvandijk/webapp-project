@@ -1,0 +1,158 @@
+{
+  "schema": 1,
+  "release": {
+    "version": "4.0.0-dev",
+    "date": "2026-09-21",
+    "synthetic": true,
+    "note": "Sample data: the map shapes are real, everything else is made up for development."
+  },
+  "threshold": 100,
+  "sources": {
+    "census": {
+      "label": "Historical censuses",
+      "short": "Census",
+      "counts": "All residents",
+      "coverage": [
+        1851,
+        1911
+      ]
+    },
+    "register": {
+      "label": "Consumer registers",
+      "short": "Registers",
+      "counts": "Adults (estimated)",
+      "coverage": [
+        1997,
+        2016
+      ]
+    }
+  },
+  "periods": [
+    {
+      "id": "1851",
+      "year": 1851,
+      "source": "census"
+    },
+    {
+      "id": "1861",
+      "year": 1861,
+      "source": "census"
+    },
+    {
+      "id": "1881",
+      "year": 1881,
+      "source": "census"
+    },
+    {
+      "id": "1891",
+      "year": 1891,
+      "source": "census"
+    },
+    {
+      "id": "1901",
+      "year": 1901,
+      "source": "census"
+    },
+    {
+      "id": "1911",
+      "year": 1911,
+      "source": "census",
+      "mask": "scotland",
+      "note": "The 1911 census data for Scotland are not available."
+    },
+    {
+      "id": "1998",
+      "year": 1998,
+      "source": "register"
+    },
+    {
+      "id": "2006",
+      "year": 2006,
+      "source": "register"
+    },
+    {
+      "id": "2016",
+      "year": 2016,
+      "source": "register"
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "label": "Concentrated",
+      "colour": "#6baed6"
+    },
+    {
+      "level": 2,
+      "label": "More concentrated",
+      "colour": "#4292c6"
+    },
+    {
+      "level": 3,
+      "label": "Most concentrated",
+      "colour": "#2171b5"
+    }
+  ],
+  "masks": {
+    "scotland": {
+      "url": "masks/scotland.json",
+      "colour": "#dcdcdc",
+      "opacity": 0.7,
+      "label": "No data for Scotland"
+    }
+  },
+  "basemap": {
+    "center": [
+      54.505,
+      -4
+    ],
+    "zoom": 6,
+    "minZoom": 6,
+    "maxZoom": 12,
+    "maxBounds": [
+      [
+        50,
+        -28
+      ],
+      [
+        62,
+        20
+      ]
+    ],
+    "tiles": [
+      {
+        "url": "https://maps.cdrc.ac.uk/tiles/shine_urbanmask_light/{z}/{x}/{y}.png",
+        "attribution": "Contains Ordnance Survey data © Crown copyright",
+        "bounds": [
+          [
+            50,
+            -28
+          ],
+          [
+            62,
+            20
+          ]
+        ]
+      },
+      {
+        "url": "https://maps.cdrc.ac.uk/tiles/shine_labels_gbnames/{z}/{x}/{y}.png",
+        "labels": true,
+        "bounds": [
+          [
+            50,
+            -12
+          ],
+          [
+            62,
+            4
+          ]
+        ]
+      }
+    ]
+  },
+  "examples": [
+    "juszczyk",
+    "sion",
+    "smith"
+  ]
+}
