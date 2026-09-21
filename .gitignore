@@ -17,3 +17,6 @@ _meta.txt
 
 #legacy data preparation code and working data (2 GB, not part of the website)
 /data-prep/
+
+#pipeline working files (fake database, counts, maps)
+/work/

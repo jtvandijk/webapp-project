@@ -147,7 +147,7 @@ index that did not match) and the validator caught every one.
 ## Sample data and size
 
 `python3 tools/build_sample_data.py` builds a working sample in `site/data/`. The map shapes are the
-real ones from the three surnames stored locally (smith, juszczyk, sion). **Everything else in it is
+real ones from the KDE files stored locally (smith, juszczyk and sion; the sion file is an identical copy of the juszczyk file). **Everything else in it is
 made up** (counts, forenames, places, classifications) and flagged `synthetic`.
 
 Measured on that sample:
@@ -183,7 +183,7 @@ before the long run starts.
 | Item | How it was done before | To decide |
 |---|---|---|
 | `counts` | Census: all residents per name per year (1911 without Scotland). Registers: people with `first_im <= year <= last_im`. | Which years; do register counts stay "adults (estimated)". |
-| `maps` | Kernel density on a 1 km grid, bandwidth 8 to 18 km depending on name size and spread, weighted by population, cut into 3 levels, outlines smoothed and clipped to the coast. | Method (a faster equivalent is fine); the threshold and where it is applied. Periods are decided: 18, see [pipeline.md](pipeline.md). |
+| `maps` | Kernel density on a 1 km grid, bandwidth 8 to 18 km depending on name size and spread, weighted by population, cut into 3 levels, outlines smoothed and clipped to the coast. | Decided: 18 periods and the method (see [pipeline.md](pipeline.md)); the threshold counts rows, 100 per name and year. Open: how widespread names should look. |
 | `forenames` | Top 10 per sex. Census pooled over 1851 to 1911. Registers: no year filter, so pooled. | Pooled or latest year. |
 | `places` | Top 10 parishes (1851 or 1901 boundaries); top 10 2011 MSOAs (at least 3 people). | Boundaries for 1921; MSOA version. Fix the 1911 join bug. |
 | `oac`, `loac` | Most common group among register addresses (2021 versions). | Which years of addresses. |

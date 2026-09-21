@@ -1,0 +1,12 @@
+# Packages the pipeline needs (all are on PyPI, so Artifactory can supply them).
+numpy
+scipy
+shapely>=2.0
+pyproj
+contourpy
+
+# Only for a real run in the TRE, to talk to Postgres (either one is fine):
+psycopg2-binary
+
+# Only to remake pipeline/reference/gb_outline.geojson from a shapefile (rarely needed):
+# pyshp
