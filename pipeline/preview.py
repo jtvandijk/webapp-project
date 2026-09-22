@@ -161,6 +161,8 @@ def main():
     parser.add_argument("--periods", nargs="*", default=["1851", "1901", "1911", "1921", "2000", "2020", "2026"])
     parser.add_argument("--variants", nargs="*", help="settings to compare, as <power>/<mode>, e.g. 0.5/mass 1/peak")
     parser.add_argument("--min-area", type=float, help="drop blobs and holes smaller than this many km2 (config MIN_AREA_KM2)")
+    parser.add_argument("--smooth", type=float, help="metres to fill gaps/notches narrower than 2x this (config SMOOTH_M) - the old "
+                                                       "pipeline's equivalent step used 10000 (this is 5000 by default)")
     parser.add_argument("--min-blob-share", type=float, help="drop a separate blob holding less than this share of the name's total (config MIN_BLOB_SHARE)")
     parser.add_argument("--auto-level-mass", action="store_true",
                         help="per-name LEVEL_MASS from kde.size_level_mass() (exploratory - see its docstring) instead of --variants")
@@ -171,6 +173,8 @@ def main():
         config.MIN_AREA_KM2 = args.min_area
     if args.min_blob_share is not None:
         config.MIN_BLOB_SHARE = args.min_blob_share
+    if args.smooth is not None:
+        config.SMOOTH_M = args.smooth
 
     variants = []
     for spec in args.variants or [f"{config.WEIGHT_POWER}/{config.LEVEL_MODE}"]:
@@ -224,9 +228,10 @@ def main():
                                              key=lambda pc: pc[1][2].sum())
             second = kde.second_blob_share(kde.to_grid(*biggest_cells), bandwidth, pop_surfaces[biggest_pid],
                                            land, config.WEIGHT_POWER)
-            auto_levels = kde.size_level_mass(int(biggest_cells[2].sum()), second)
+            biggest_n = int(biggest_cells[2].sum())
+            auto_levels = kde.size_level_mass(biggest_n, second)
             name_variants = [(config.WEIGHT_POWER, "mass", auto_levels)]
-            name_labels = [f"auto (second blob {second:.2f}): power {config.WEIGHT_POWER:g}, mass "
+            name_labels = [f"auto ({biggest_n:,} bearers, second blob {second:.2f}): power {config.WEIGHT_POWER:g}, mass "
                           + ",".join(f"{x:g}" for x in auto_levels)]
         else:
             name_variants, name_labels = variants, variant_labels

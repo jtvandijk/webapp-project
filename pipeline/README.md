@@ -97,8 +97,11 @@ lookup holds latitude and longitude instead, tell me and I will add the conversi
   dropped together, not compared to each other. Tested on synthetic data only so far.
 - `LEVEL_MASS`: the share of a name's density that levels 1, 2 and 3 hold (now 85%, 65%, 40%). `LEVEL_MODE = "peak"` uses `LEVEL_PEAK` instead.
 - `SCOTLAND_MAX_SHARE`: when a Scottish name's 1911/1921 map is copied from 1901 instead of built (now more than 30% in Scotland in 1901).
-- `SMOOTH_M`, `SIMPLIFY_M`, `MIN_AREA_KM2`: how tidy the outlines are, and how large the files get. `MIN_AREA_KM2` removes
-  tiny specks (`preview --min-area 400` to try); the preview table shows how many separate areas each map has.
+- `SMOOTH_M`, `SIMPLIFY_M`, `MIN_AREA_KM2`: how tidy the outlines are, and how large the files get. `SMOOTH_M` (now
+  5000, `preview --smooth 10000` to try) closes gaps/notches narrower than 2x itself - the old pipeline's
+  equivalent step (`data-prep/py/fn_prerender.py`) used 10000, twice this, which is a plausible reason its
+  outlines read as more solid/concentric than this pipeline's can look at a tight `LEVEL_MASS`. `MIN_AREA_KM2`
+  removes tiny specks (`preview --min-area 400` to try); the preview table shows how many separate areas each map has.
 
 `preview.py --min-blob-share 0.05` (etc.) tries a different share without editing `config.py`.
 
