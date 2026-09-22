@@ -304,6 +304,27 @@ def concentration(grid, bandwidth_m, pop_smooth, land, power=None, min_share=Non
     return level_cutoffs(surface, mode="mass", levels=(share,))[0]
 
 
+def second_blob_share(grid, bandwidth_m, pop_smooth, land, power=None, min_share=None):
+    """How big a SECOND separate concentration is, relative to the biggest one, after
+    drop_minor_blobs(): 0 if there is only one (surviving) blob, up to just under 1 if there are two
+    of nearly equal size. Exploratory, like concentration() above, but answers a different question:
+    concentration cannot tell "one tall peak" apart from "two comparably tall peaks", since both
+    pile mass close to their own peak value - this can, since it looks at separate blobs' masses
+    directly rather than the shape of the whole value histogram. Candidate explanation for why Smith
+    (highest concentration of the names tried, 2026-09-23) wanted the LOOSEST LEVEL_MASS rather than
+    the tightest: tightening a name with two comparably strong regions can carve a gap between them
+    (the "holes" seen on real data) even though each region on its own is highly concentrated."""
+    surface = weigh(smooth(grid, bandwidth_m), pop_smooth, land.grid, power)
+    surface = drop_minor_blobs(surface, min_share)
+    if not surface.any():
+        return None
+    labels, count = ndimage.label(surface > 0)
+    if count < 2:
+        return 0.0
+    totals = np.sort(ndimage.sum(surface, labels, index=np.arange(1, count + 1)))[::-1]
+    return float(totals[1] / totals[0])
+
+
 # ---------------------------------------------------------------------------
 # 8. output
 # ---------------------------------------------------------------------------
