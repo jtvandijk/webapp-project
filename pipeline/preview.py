@@ -20,10 +20,12 @@ map instead, since Scotland is missing from both censuses; the caption says so.
 Only connects to the database(s) that `--periods` actually needs - a register-only `--periods`
 (e.g. `1997 2000 2005 2010 2015 2020 2025 2026`) works with no working census connection at all.
 
-What is fetched from the database (which names, in which periods) is cached in work/cache/, since
-comparing KDE settings (bandwidth, weighting, levels, blob share) re-draws the same data without
-re-fetching it. Add `--refresh-cache` once the underlying data has actually changed - a different
-`--names`/`--periods` is picked up automatically, a new register or census load is not.
+What is fetched from the database is cached in work/cache/ (per period: the names asked for so
+far, and the population surface), since comparing KDE settings (bandwidth, weighting, levels, blob
+share) re-draws the same data without re-fetching it. Adding a name to `--names` fetches only that
+name - names already cached from an earlier run are not fetched again. Add `--refresh-cache` once
+the underlying data has actually changed (a new register or census load), since nothing here
+notices that on its own.
 """
 import argparse
 import csv
@@ -48,12 +50,21 @@ TOP = 1235                                   # km, for flipping y so that north 
 CACHE_DIR = config.WORK / "cache"
 
 
-def _cache_path(period, surnames):
-    """One file per (profile, source, year, exact set of names asked for) - changing a KDE setting
-    (bandwidth, weighting, levels, blob share) never changes what would be fetched, so those runs
-    can all share a cache entry; asking for a different set of names cannot."""
-    key = f"{config.PROFILE}|{period['source']}|{period['year']}|{','.join(sorted(surnames or []))}"
-    return CACHE_DIR / f"{hashlib.sha1(key.encode()).hexdigest()[:16]}.pkl"
+def _cache_stem(period):
+    return f"{config.PROFILE}-{period['source']}-{period['year']}"
+
+
+def _load(path):
+    if path.exists():
+        with path.open("rb") as f:
+            return pickle.load(f)
+    return None
+
+
+def _save(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("wb") as f:
+        pickle.dump(value, f)
 
 
 def fetch_period(connect, cfg, period, surnames=None, use_cache=True, refresh_cache=False):
@@ -63,22 +74,36 @@ def fetch_period(connect, cfg, period, surnames=None, use_cache=True, refresh_ca
 
     connect: a zero-argument function that opens the database connection, called only on a cache
     miss - so that once every needed period is cached, comparing KDE settings needs no database
-    connection at all. Cached under work/cache/; pass --refresh-cache once the underlying data has
-    actually changed (a new register or census load), since nothing here notices that on its own."""
-    cache_path = _cache_path(period, surnames) if use_cache else None
-    if cache_path and cache_path.exists() and not refresh_cache:
-        with cache_path.open("rb") as f:
-            return pickle.load(f)
-    conn = connect()
+    connection at all.
+
+    Cached under work/cache/, as two separate files per period so that adding a name to --names
+    only fetches that name, not everything again: the "everybody" population surface (does not
+    depend on which names are asked for, so it is fetched once ever, however many names later runs
+    add) and a per-name store that only grows (a name already in it from an earlier run is not
+    re-fetched; a new one is fetched alone and added). Pass --refresh-cache once the underlying data
+    has actually changed (a new register or census load), since nothing here notices that on its
+    own - it starts both files over from empty."""
+    stem = _cache_stem(period)
+    names_path = CACHE_DIR / f"{stem}-names.pkl" if use_cache else None
+    pop_path = CACHE_DIR / f"{stem}-population.pkl" if use_cache else None
     make = sql.register_cells if period["source"] == "register" else sql.census_cells
-    by_name = kde.group_by_name(db.fetch(conn, make(cfg, period["year"], surnames=surnames)))
-    ix, iy, n = (np.array(c) for c in zip(*db.fetch(conn, make(cfg, period["year"], by_surname=False))))
-    result = (by_name, kde.population_surface(ix.astype(int), iy.astype(int), n.astype(float)))
-    if cache_path:
-        cache_path.parent.mkdir(parents=True, exist_ok=True)
-        with cache_path.open("wb") as f:
-            pickle.dump(result, f)
-    return result
+
+    by_name = ({} if refresh_cache else _load(names_path)) if names_path else {}
+    by_name = by_name if by_name is not None else {}
+    missing = sorted(set(surnames or []) - by_name.keys())
+    if missing or not names_path:
+        by_name.update(kde.group_by_name(db.fetch(connect(), make(cfg, period["year"], surnames=missing or surnames))))
+        if names_path:
+            _save(names_path, by_name)
+
+    population = None if refresh_cache else (_load(pop_path) if pop_path else None)
+    if population is None:
+        ix, iy, n = (np.array(c) for c in zip(*db.fetch(connect(), make(cfg, period["year"], by_surname=False))))
+        population = kde.population_surface(ix.astype(int), iy.astype(int), n.astype(float))
+        if pop_path:
+            _save(pop_path, population)
+
+    return by_name, population
 
 
 def path(geometry):
