@@ -154,6 +154,34 @@ class MapCalculation(unittest.TestCase):
         self.assertLess(per_map, 5.0)
 
 
+class SizeLevelMass(unittest.TestCase):
+    """kde.size_level_mass(): the exploratory, per-name LEVEL_MASS curve (2026-09-23 calibration)."""
+
+    def test_the_smallest_names_get_the_configured_default_unchanged(self):
+        self.assertEqual(kde.size_level_mass(100), config.LEVEL_MASS)
+
+    def test_tightest_in_the_middle_of_the_range(self):
+        # an inverted U: both a small and a large name are looser than one in the low thousands
+        self.assertGreater(kde.size_level_mass(100)[0], kde.size_level_mass(2_000)[0])
+        self.assertGreater(kde.size_level_mass(300_000)[0], kde.size_level_mass(2_000)[0])
+
+    def test_each_level_stays_below_the_one_before_it(self):
+        for n in (100, 500, 2_000, 35_000, 300_000, 1_000_000):
+            level1, level2, level3 = kde.size_level_mass(n)
+            self.assertGreater(level1, level2)
+            self.assertGreater(level2, level3)
+
+    def test_a_large_second_blob_overrides_towards_the_loosest_anchor(self):
+        tight = kde.size_level_mass(35_000, second_share=0.0)
+        loose = kde.size_level_mass(35_000, second_share=0.5)
+        self.assertLess(tight[0], loose[0])
+        self.assertEqual(loose, (0.85, 0.60, 0.30))
+
+    def test_a_small_second_blob_is_not_enough_to_override(self):
+        self.assertEqual(kde.size_level_mass(35_000, second_share=0.1),
+                         kde.size_level_mass(35_000, second_share=0.0))
+
+
 class MinorBlobs(unittest.TestCase):
     """drop_minor_blobs(): a handful of people on their own somewhere should not show as if they
     were a real concentration, even though at these bandwidths their own smoothed "bump" easily

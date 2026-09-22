@@ -325,6 +325,41 @@ def second_blob_share(grid, bandwidth_m, pop_smooth, land, power=None, min_share
     return float(totals[1] / totals[0])
 
 
+def size_level_mass(n, second_share=0.0):
+    """A first-draft LEVEL_MASS triple for a name with n bearers (its biggest year) and the given
+    second_blob_share (from that year's own surface) - NOT a fitted regression, a rough
+    log-interpolated curve through where eight real names' hand-picked verdicts seemed to peak
+    (2026-09-23: Smith, Jones, Davies, Obrien, Macdonald, Longley, Cheshire, Van Dijk at four
+    LEVEL_MASS settings each - the anchor triples below are close to the actual settings that were
+    judged "good" for names near each anchor's bearer count). Expect the anchor points to move as
+    more names are checked - this exists to be tested against real verdicts, not trusted as settled.
+    Each level is interpolated on its own (not one triple scaled by a single factor), since the
+    tested "good" settings did not keep the same shape (ratio between levels) at every size.
+
+    Shaped like an inverted U, tightest for names in the low thousands to tens of thousands of
+    bearers, loosest at both ends: very large names often turn out to have more than one comparably
+    strong region (Smith, in this data - checked via second_share below) where tightening carves a
+    visible gap rather than cleanly isolating one; very small names (Van Dijk, ~150 bearers) may
+    have too little real signal for any tight cut to reliably separate a genuine concentration from
+    a few coincidentally close individuals, so forcing one is not obviously more honest than the
+    untightened original - the smallest anchor is simply config.LEVEL_MASS itself, unchanged.
+
+    Longley and Cheshire share the same anchor point (~2,000 bearers) but wanted visibly different
+    settings (Longley looser, Cheshire tighter) - a real residual this curve cannot capture since it
+    is a function of n (and second_share) alone; it lands between the two rather than matching
+    either, which is expected, not a bug to chase with this measure.
+
+    second_share above 0.35 (a second concentration at least a third the size of the biggest one)
+    overrides every level towards its loosest anchor regardless of n, for the same reason as Smith."""
+    anchors_n = np.log10([100, 2_000, 35_000, 300_000, 500_000])
+    anchor_triples = [config.LEVEL_MASS, (0.40, 0.20, 0.10), (0.50, 0.25, 0.10), (0.75, 0.50, 0.25), (0.85, 0.60, 0.30)]
+    x = np.log10(max(n, 1))
+    levels = tuple(float(np.interp(x, anchors_n, [t[i] for t in anchor_triples])) for i in range(3))
+    if second_share and second_share > 0.35:
+        levels = tuple(max(a, b) for a, b in zip(levels, anchor_triples[-1]))
+    return tuple(round(v, 3) for v in levels)
+
+
 # ---------------------------------------------------------------------------
 # 8. output
 # ---------------------------------------------------------------------------

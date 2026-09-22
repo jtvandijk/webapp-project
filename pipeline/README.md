@@ -32,6 +32,12 @@ Run everything from the project folder (the one that contains `pipeline/`, `docs
 and years. `--variants 0/mass 0.5/mass 1/mass` or `--variants 0.5/mass:0.85,0.65,0.4 0.5/mass:0.75,0.5,0.25`
 shows several settings side by side, without editing anything (`<weighting power>/<level mode>[:<level shares>]`). The page is a single file, so it also opens in the TRE, which has no internet.
 
+`--auto-level-mass` replaces `--variants` with one setting per name, from `kde.size_level_mass()` -
+a first-draft, exploratory curve (see its docstring) trying to reproduce by eye what real names
+seem to need without hand-picking a triple for each one. Each name's own resolved setting (and its
+`second_blob_share`, the measure the curve uses to spot a name with more than one comparably strong
+region) is labelled under its maps.
+
 What is fetched from the database is cached in `work/cache/`, since comparing KDE settings re-draws
 the same data without re-fetching it - a real database query dominates the runtime (minutes), the
 drawing itself does not (tens of seconds even for many maps, though many names x many periods x

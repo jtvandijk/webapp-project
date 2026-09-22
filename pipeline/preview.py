@@ -162,6 +162,8 @@ def main():
     parser.add_argument("--variants", nargs="*", help="settings to compare, as <power>/<mode>, e.g. 0.5/mass 1/peak")
     parser.add_argument("--min-area", type=float, help="drop blobs and holes smaller than this many km2 (config MIN_AREA_KM2)")
     parser.add_argument("--min-blob-share", type=float, help="drop a separate blob holding less than this share of the name's total (config MIN_BLOB_SHARE)")
+    parser.add_argument("--auto-level-mass", action="store_true",
+                        help="per-name LEVEL_MASS from kde.size_level_mass() (exploratory - see its docstring) instead of --variants")
     parser.add_argument("--refresh-cache", action="store_true", help="ignore work/cache/ and re-query, e.g. after a new register or census load")
     parser.add_argument("--out", default=str(config.WORK / "preview.html"))
     args = parser.parse_args()
@@ -214,8 +216,22 @@ def main():
             continue
         bandwidth = kde.choose_bandwidth(have)
         pop_surfaces = {pid: data[pid][1] for pid in data}
+        if args.auto_level_mass:
+            # --auto-level-mass replaces --variants entirely (one setting per name, not several to
+            # compare) - the biggest year decides n and second_share, the same year choose_bandwidth()
+            # itself uses
+            biggest_pid, biggest_cells = max(((pid, c) for pid, c in by_period.items() if c is not None),
+                                             key=lambda pc: pc[1][2].sum())
+            second = kde.second_blob_share(kde.to_grid(*biggest_cells), bandwidth, pop_surfaces[biggest_pid],
+                                           land, config.WEIGHT_POWER)
+            auto_levels = kde.size_level_mass(int(biggest_cells[2].sum()), second)
+            name_variants = [(config.WEIGHT_POWER, "mass", auto_levels)]
+            name_labels = [f"auto (second blob {second:.2f}): power {config.WEIGHT_POWER:g}, mass "
+                          + ",".join(f"{x:g}" for x in auto_levels)]
+        else:
+            name_variants, name_labels = variants, variant_labels
         rows = []
-        for (power, mode, levels), variant_label in zip(variants, variant_labels):
+        for (power, mode, levels), variant_label in zip(name_variants, name_labels):
             timings = {}
             resolved = rules.build_maps(periods, by_period, bandwidth, pop_surfaces, land, power, mode, levels, timings)
             row = []
@@ -244,7 +260,7 @@ def main():
                 stats.append((key, variant_tag, p["id"], total, bandwidth / 1000, ms, r.action, areas, vertices,
                               size / 1024, conc, second))
                 row.append(panel(bands, land_path, caption))
-            tag = f"<div class='variant'>{variant_label}</div>" if len(variants) > 1 else ""
+            tag = f"<div class='variant'>{variant_label}</div>" if len(name_variants) > 1 or args.auto_level_mass else ""
             rows.append(f"<div>{tag}<div class='row'>{''.join(row)}</div></div>")
         blocks.append(f"<h2>{html.escape(key)} <small>{label}</small></h2><div class='groups'>{''.join(rows)}</div>")
 
@@ -267,8 +283,10 @@ figure{{margin:0}}figcaption{{font-size:11px;color:#445;text-align:center;max-wi
 table{{border-collapse:collapse;margin-top:8px}}td,th{{padding:2px 10px;border-bottom:1px solid #dde;text-align:right}}
 td:first-child,th:first-child{{text-align:left}}</style>
 <h1>Map preview</h1>
-<p>Variant(s) run (weighting power, level mode, levels - see WEIGHT_POWER, LEVEL_MODE, LEVEL_MASS,
-LEVEL_PEAK in config.py): <b>{'</b>; <b>'.join(variant_labels)}</b>.
+<p>{"<b>--auto-level-mass</b>: LEVEL_MASS from kde.size_level_mass() per name (exploratory, see its "
+   "docstring) - each name's own resolved setting is labelled below its maps." if args.auto_level_mass else
+   "Variant(s) run (weighting power, level mode, levels - see WEIGHT_POWER, LEVEL_MODE, LEVEL_MASS, "
+   f"LEVEL_PEAK in config.py): <b>{'</b>; <b>'.join(variant_labels)}</b>."}
 Bandwidth {config.BANDWIDTH_MIN_M // 1000} to {config.BANDWIDTH_MAX_M // 1000} km, growing with the number of
 bearers. Database profile: <b>{config.PROFILE}</b>. Blue shades: level 1 (outer) to level 3 (highest).</p>
 {''.join(blocks)}{reference}

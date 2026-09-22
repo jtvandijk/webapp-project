@@ -205,6 +205,28 @@ I cannot see the data or run anything in the TRE, so:
    (not yet built): a separate, final visibility buffer on the tidied polygon, scaled by name size -
    deliberately kept apart from bandwidth, since widening bandwidth to the same end would also let
    individual noise bumps reach further and merge, working against this very problem.
+
+   **Full calibration round, 8 names x 4 `LEVEL_MASS` settings (2026-09-23).** By eye, against
+   85/60/30, 75/50/25, 50/25/10 and 20/10/5: the right setting tracks bearer count, not concentration
+   - as bearers fall from Smith (500k) to Cheshire (2k) the sweet spot moves steadily tighter - but
+   it is an **inverted U, not a straight line**: Smith never improves with tightening (good at
+   85/60/30, worse at every tighter setting - it likely has more than one comparably strong region,
+   and tightening carves a gap between them rather than isolating one), and Van Dijk (~150 bearers)
+   never lands on "good" at any setting either - the user's own read, that the untightened,
+   "speckled" original may just be the honest answer at that scale, is taken seriously here, not
+   treated as a gap to keep closing: at so few bearers a real cluster and a few coincidentally close
+   individuals may not be separable by any threshold. Longley and Cheshire share the same bearer
+   count (2k) but want visibly different settings (Longley looser, Cheshire tighter) - a residual
+   that bearer count alone cannot explain, left unresolved.
+
+   `kde.size_level_mass(n, second_share)` (new) is a first-draft curve through this data -
+   log-interpolated per level (not one triple scaled by a factor, since the good settings did not
+   keep a fixed shape at every size), loosest at both ends, tightest around Cheshire/Longley's size,
+   with `second_blob_share` (new, `kde.second_blob_share()`) overriding towards the loose end for a
+   Smith-like name. `preview.py --auto-level-mass` uses it instead of `--variants`. Explicitly not a
+   fitted regression - eight names with hand-picked, categorical verdicts is enough to see a shape,
+   not enough to trust exact numbers - to be tested against more names and refined, not treated as
+   settled.
 3. **Facts: one reference year, or pooled?** The old queries had no year filter, so people with
    many addresses counted several times. A single reference year avoids that (2026 is only a part
    year, so probably the last full year).
