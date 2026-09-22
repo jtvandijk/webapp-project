@@ -8,11 +8,14 @@ The steps, for one surname in one year (the numbers live in config.py):
      with the number of bearers                                    choose_bandwidth, smooth
   3. divide by the local population, partly ("a bit relative"),
      so that big cities do not show for every name                 weigh
-  4. cut at three levels, giving nested areas                      level_cutoffs, nested_regions
-  5. tidy: fill small gaps, drop specks, clip to the coast,
+  4. drop separate blobs that are too small a share of the name's
+     own total to be worth showing - a handful of people on their
+     own, not a real concentration                                 drop_minor_blobs
+  5. cut at three levels, giving nested areas                      level_cutoffs, nested_regions
+  6. tidy: fill small gaps, drop specks, clip to the coast,
      simplify                                                      tidy
-  6. turn the nested areas into three bands that do not overlap    make_bands
-  7. write GeoJSON in longitude/latitude, 4 decimals               geojson
+  7. turn the nested areas into three bands that do not overlap    make_bands
+  8. write GeoJSON in longitude/latitude, 4 decimals               geojson
 
 The old pipeline did the same in spirit, but ran R and Python for every single map. Here the
 heavy part (step 2) takes a few hundredths of a second, because the smoothing is done on the
@@ -27,7 +30,7 @@ import contourpy
 import numpy as np
 import shapely
 from pyproj import Transformer
-from scipy.ndimage import gaussian_filter
+from scipy import ndimage
 from shapely.geometry import MultiPolygon, Polygon, mapping, shape
 from shapely.ops import unary_union
 
@@ -90,7 +93,7 @@ def choose_bandwidth(cell_sets):
 
 
 def smooth(grid, bandwidth_m):
-    return gaussian_filter(grid, sigma=bandwidth_m / CELL, mode="constant")
+    return ndimage.gaussian_filter(grid, sigma=bandwidth_m / CELL, mode="constant")
 
 
 def population_surface(ix, iy, n):
@@ -116,7 +119,37 @@ def weigh(name_smooth, pop_smooth, land_grid, power=None):
 
 
 # ---------------------------------------------------------------------------
-# 4. levels
+# 4. dropping minor blobs
+# ---------------------------------------------------------------------------
+
+def drop_minor_blobs(surface, min_share=None):
+    """Zero out any separate blob (a connected patch of nonzero cells) that holds less than
+    MIN_BLOB_SHARE of the name's total (weighted) density.
+
+    This is different from MIN_AREA_KM2 (in tidy(), later): that drops blobs that are physically
+    small, but at this pipeline's bandwidths even a single person's own smoothed "bump" can cover
+    well over 100 km2, so a handful of people on their own, scattered somewhere on its own, would
+    still pass an area test easily. What actually marks it as not worth showing is that it holds
+    almost none of the name's total density, wherever it is - that is what this checks instead.
+
+    A "separate blob" only means what the smoothing has already made separate: two concentrations
+    close enough that their smoothed surfaces never actually reach zero between them (roughly,
+    within a few times the bandwidth) are one connected blob as far as this is concerned, and are
+    kept or dropped together, not compared to each other. It only tells apart things that are
+    genuinely far apart, such as a real regional concentration versus a handful of individuals
+    scattered elsewhere in the country - which is the case this was built for."""
+    min_share = config.MIN_BLOB_SHARE if min_share is None else min_share
+    if not min_share or not surface.any():
+        return surface
+    labels, count = ndimage.label(surface > 0)
+    totals = ndimage.sum(surface, labels, index=np.arange(1, count + 1))
+    keep = np.zeros(count + 1, bool)
+    keep[1:] = totals >= min_share * surface.sum()
+    return np.where(keep[labels], surface, 0.0)
+
+
+# ---------------------------------------------------------------------------
+# 5. levels
 # ---------------------------------------------------------------------------
 
 def level_cutoffs(surface, mode=None, levels=None):
@@ -159,7 +192,7 @@ def nested_regions(surface, cutoffs=None):
 
 
 # ---------------------------------------------------------------------------
-# 5. tidying
+# 6. tidying
 # ---------------------------------------------------------------------------
 
 class Land:
@@ -216,7 +249,7 @@ def tidy(region, land):
 
 
 # ---------------------------------------------------------------------------
-# 6. bands
+# 7. bands
 # ---------------------------------------------------------------------------
 
 def make_bands(surface, land, cutoffs=None):
@@ -233,17 +266,18 @@ def make_bands(surface, land, cutoffs=None):
     return bands if any(not b.is_empty for b in bands) else None
 
 
-def make_map(grid, bandwidth_m, pop_smooth, land, power=None, mode=None, levels=None):
+def make_map(grid, bandwidth_m, pop_smooth, land, power=None, mode=None, levels=None, min_share=None):
     """One surname in one year: the bearers on the grid -> the three bands (or None).
-    power, mode and levels override the settings in config.py (used to compare settings)."""
+    power, mode, levels and min_share override the settings in config.py (used to compare settings)."""
     surface = weigh(smooth(grid, bandwidth_m), pop_smooth, land.grid, power)
+    surface = drop_minor_blobs(surface, min_share)
     if not surface.any():
         return None
     return make_bands(surface, land, level_cutoffs(surface, mode, levels))
 
 
 # ---------------------------------------------------------------------------
-# 7. output
+# 8. output
 # ---------------------------------------------------------------------------
 
 _to_lonlat = Transformer.from_crs(27700, 4326, always_xy=True)

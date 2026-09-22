@@ -38,6 +38,24 @@ the map calculation to the full database and to an HPC batch job), 5 and 6 are s
   relative measure above and the two need balancing together, not separately. The old rule (divide
   by minus the log of the density) is not kept: as read, it moved density in the same direction as
   plain density, only compressed, rather than correcting for it.
+
+  **Found on real data:** weighting can make a "too spread out" complaint *worse*, not better -
+  dividing by local population boosts sparse areas relatively more, and a handful of individuals
+  scattered in the countryside usually sit in exactly those sparse areas. Weighting answers "should
+  every name show London", not "is this scattered individual worth showing" - those are different
+  questions, and only the first is what `WEIGHT_POWER` was built for. `MIN_BLOB_SHARE` below is for
+  the second.
+- **Dropping minor blobs (new, 2026-09-23).** A separate concentration is dropped if it holds less
+  than `MIN_BLOB_SHARE` (2%, a first guess) of the name's own total density (`kde.drop_minor_blobs`).
+  `MIN_AREA_KM2` (below) cannot do this job: at these bandwidths even one person's own smoothed
+  "bump" covers 100+ km2, so a handful of people passes an area test easily; what actually marks
+  them as not worth showing is how little of the name's own total they represent, which this checks
+  instead. It can only separate concentrations far enough apart that the smoothing already reduces
+  the surface to zero between them (roughly, several times the bandwidth) - two concentrations
+  closer than that are kept or dropped as one, not compared to each other. Tested on synthetic data
+  (found and fixed two wrong assumptions along the way: scipy's default connectivity does not treat
+  diagonal neighbours as joined, and mass share after smoothing is not the same number as a raw
+  bearer-count ratio) - not yet checked against real names.
 - **Map levels.** Each level is the smallest area that holds a share of the name's (weighted)
   density: 85% for level 1, 65% for level 2 and 40% for level 3 (`LEVEL_MASS`). This replaces the
   old cut-offs, which were divided by a size-dependent constant found by trial and error. Every name
@@ -156,13 +174,14 @@ I cannot see the data or run anything in the TRE, so:
 
 1. **The parish table name.** `spatial.conpar{boundaries}` in the `tre` block is a guess from the
    old scripts; the register and ONSPD table names are confirmed.
-2. **The look of the maps on real data.** The settings were chosen on fake data; the first test is about
-   50 real names. Run `python3 -m pipeline.preview --names ...` and compare with `--variants`, for
-   example `0.5/mass:0.85,0.65,0.4 0.5/mass:0.75,0.5,0.25`. If there are too many small spots: on fake data
-   `--min-area 400` (instead of 25) cut the number of separate areas by about a third but only removed
-   tiny specks, because the remaining spots are real-sized blobs. To remove those, lower the level
-   shares (`LEVEL_MASS`) or raise `WEIGHT_POWER`; if that is not enough, a rule that drops areas small
-   compared with the name's biggest one could be added.
+2. **The look of the maps on real data - in progress.** First real names tried: Longley (~2,200
+   bearers) came out too spread across the country (the old site shows 2 concentrated centres);
+   van Dijk (~150 bearers) came out as 15-20 separate spots, including some that look like just 1-2
+   people. `--min-area` cannot fix either (see `MIN_BLOB_SHARE` above, which was built in response to
+   this) - raising `WEIGHT_POWER` is *not* the fix either, it was tried in the reasoning here before
+   and found to make "too spread" worse, not better (see the weighting bullet above). Still to try
+   on real data: `--min-blob-share` at a few values, and lower `LEVEL_MASS` shares, ideally together
+   via `--variants` and `--min-blob-share` in the same run so they can be compared side by side.
 3. **Facts: one reference year, or pooled?** The old queries had no year filter, so people with
    many addresses counted several times. A single reference year avoids that (2026 is only a part
    year, so probably the last full year).

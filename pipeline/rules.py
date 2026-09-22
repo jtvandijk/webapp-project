@@ -81,7 +81,7 @@ def resolve(period, cells_by_period):
 
 
 def build_maps(periods, cells_by_period, bandwidth, pop_surfaces, land, power=None, mode=None, levels=None,
-               timings=None):
+               min_share=None, timings=None):
     """The map for one name in every one of `periods`, applying resolve() to each.
     pop_surfaces: {period id: population surface}, covering the same periods as cells_by_period.
     timings: optional dict, filled in with the seconds each fresh build took (not "substitute" ones).
@@ -97,7 +97,8 @@ def build_maps(periods, cells_by_period, bandwidth, pop_surfaces, land, power=No
             built[pid] = None
             continue
         started = time.perf_counter()
-        built[pid] = kde.make_map(kde.to_grid(*cells), bandwidth, pop_surfaces[pid], land, power, mode, levels)
+        built[pid] = kde.make_map(kde.to_grid(*cells), bandwidth, pop_surfaces[pid], land, power, mode, levels,
+                                  min_share)
         if timings is not None:
             timings[pid] = time.perf_counter() - started
 

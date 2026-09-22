@@ -154,5 +154,73 @@ class MapCalculation(unittest.TestCase):
         self.assertLess(per_map, 5.0)
 
 
+class MinorBlobs(unittest.TestCase):
+    """drop_minor_blobs(): a handful of people on their own somewhere should not show as if they
+    were a real concentration, even though at these bandwidths their own smoothed "bump" easily
+    covers more area than MIN_AREA_KM2 (that check happens later, in tidy(), and would not catch this)."""
+
+    def test_a_small_blob_is_dropped_a_big_one_kept(self):
+        surface = np.zeros((10, 10))
+        surface[1:4, 1:4] = 10.0      # a block: 9 cells, 90 in total
+        surface[8, 8] = 1.0           # on its own: 1 cell, 1 in total - about 1% of everything
+        out = kde.drop_minor_blobs(surface, min_share=0.05)
+        self.assertTrue((out[1:4, 1:4] == 10.0).all(), "the big blob should be untouched")
+        self.assertEqual(out[8, 8], 0.0, "the tiny blob should be dropped")
+
+    def test_two_equal_blobs_both_survive(self):
+        surface = np.zeros((10, 10))
+        surface[1, 1] = 5.0
+        surface[8, 8] = 5.0
+        out = kde.drop_minor_blobs(surface, min_share=0.4)      # each is 50% of the total
+        self.assertEqual(out[1, 1], 5.0)
+        self.assertEqual(out[8, 8], 5.0)
+
+    def test_a_diagonal_touch_is_two_separate_blobs(self):
+        # ndimage.label's default connectivity does NOT treat diagonal neighbours as joined
+        surface = np.zeros((10, 10))
+        surface[1, 1] = 1.0
+        surface[2, 2] = 1.0           # only touches (1,1) at the corner - not connected
+        out = kde.drop_minor_blobs(surface, min_share=0.6)      # neither is 60% of the total alone
+        self.assertTrue((out == 0).all(), "two separate blobs, neither reaches the share on its own")
+
+    def test_zero_share_changes_nothing(self):
+        surface = np.array([[0.0, 1.0], [2.0, 0.0]])
+        self.assertTrue((kde.drop_minor_blobs(surface, min_share=0.0) == surface).all())
+
+    def test_an_empty_surface_is_left_empty(self):
+        surface = np.zeros((5, 5))
+        self.assertTrue((kde.drop_minor_blobs(surface, min_share=0.1) == 0).all())
+
+    def test_wired_into_make_map(self):
+        # a dominant cluster at Cardiff (3000 bearers) plus a small, tight, distant pocket near
+        # London (400 bearers - about 16% of the map's total mass once smoothed, measured directly
+        # rather than guessed: raw bearer share and smoothed mass share are not the same thing).
+        # power=0 and mode="peak" here on purpose, to test this filter on its own, decoupled from
+        # population weighting and from "mass" levels' own more complex behaviour (both tested
+        # elsewhere) - and the pocket is placed ~200 km from Cardiff because this filter can only
+        # separate blobs the smoothing kernel actually reduces to zero between (see its docstring);
+        # much closer together, they would merge into one blob and be kept or dropped as a whole.
+        from shapely.geometry import Point
+        land = kde.Land()
+        pop = population()
+        big = cells_around(CARDIFF, 10000, 150, 3000, seed=5)
+        tiny = cells_around(LONDON, 1000, 5, 400, seed=6)
+        ix, iy = np.r_[big[0], tiny[0]], np.r_[big[1], tiny[1]]
+        n = np.r_[big[2], tiny[2]]
+        bandwidth = kde.choose_bandwidth([(ix, iy, n)])
+        grid = kde.to_grid(ix, iy, n)
+        cardiff_pt, london_pt = Point(*CARDIFF), Point(*LONDON)
+
+        kept = kde.make_map(grid, bandwidth, pop, land, power=0, mode="peak", min_share=0.10)
+        self.assertTrue(any(b.buffer(10000).contains(cardiff_pt) for b in kept), "Cardiff should still show")
+        self.assertTrue(any(b.buffer(10000).contains(london_pt) for b in kept),
+                        "the pocket (16% of the mass) should still show below its own share")
+
+        dropped = kde.make_map(grid, bandwidth, pop, land, power=0, mode="peak", min_share=0.20)
+        self.assertTrue(any(b.buffer(10000).contains(cardiff_pt) for b in dropped), "Cardiff should still show")
+        self.assertFalse(any(b.buffer(10000).contains(london_pt) for b in dropped),
+                         "the pocket should be dropped above its own share")
+
+
 if __name__ == "__main__":
     unittest.main()

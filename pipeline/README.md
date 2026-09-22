@@ -70,10 +70,22 @@ lookup holds latitude and longitude instead, tell me and I will add the conversi
 - `MAP_YEARS`: which years get a map. The website follows automatically.
 - `BANDWIDTH_MIN_M`, `BANDWIDTH_MAX_M`, `BANDWIDTH_N`: how widely each bearer is spread on the map.
 - `WEIGHT_POWER`: how much the local population is taken into account (0 = plain density, 1 = fully relative, now 0.5).
+  Careful: raising this does not just suppress big cities, it also makes any *sparse* area relatively
+  louder - including a handful of scattered individuals sitting in the countryside, which can make a
+  name look more spread out, not less.
+- `MIN_BLOB_SHARE`: drops a separate concentration that holds less than this share of the name's own
+  total (now 2%) - for a handful of people sitting on their own somewhere, not a real concentration.
+  Different from `MIN_AREA_KM2` below: at these bandwidths even one person's own smoothed "bump" can
+  cover 100+ km2, so an area test alone cannot catch this; only works between concentrations far
+  enough apart that the smoothing has already reduced the gap between them to zero (see
+  `kde.drop_minor_blobs`'s docstring) - two nearby but visually distinct concentrations are kept or
+  dropped together, not compared to each other. Tested on synthetic data only so far.
 - `LEVEL_MASS`: the share of a name's density that levels 1, 2 and 3 hold (now 85%, 65%, 40%). `LEVEL_MODE = "peak"` uses `LEVEL_PEAK` instead.
 - `SCOTLAND_MAX_SHARE`: when a Scottish name's 1911/1921 map is copied from 1901 instead of built (now more than 30% in Scotland in 1901).
 - `SMOOTH_M`, `SIMPLIFY_M`, `MIN_AREA_KM2`: how tidy the outlines are, and how large the files get. `MIN_AREA_KM2` removes
   tiny specks (`preview --min-area 400` to try); the preview table shows how many separate areas each map has.
+
+`preview.py --min-blob-share 0.05` (etc.) tries a different share without editing `config.py`.
 
 Use `preview.py` after changing any of them.
 

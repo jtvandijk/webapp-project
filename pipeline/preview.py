@@ -103,10 +103,13 @@ def main():
     parser.add_argument("--periods", nargs="*", default=["1851", "1901", "1911", "1921", "2000", "2020", "2026"])
     parser.add_argument("--variants", nargs="*", help="settings to compare, as <power>/<mode>, e.g. 0.5/mass 1/peak")
     parser.add_argument("--min-area", type=float, help="drop blobs and holes smaller than this many km2 (config MIN_AREA_KM2)")
+    parser.add_argument("--min-blob-share", type=float, help="drop a separate blob holding less than this share of the name's total (config MIN_BLOB_SHARE)")
     parser.add_argument("--out", default=str(config.WORK / "preview.html"))
     args = parser.parse_args()
     if args.min_area is not None:
         config.MIN_AREA_KM2 = args.min_area
+    if args.min_blob_share is not None:
+        config.MIN_BLOB_SHARE = args.min_blob_share
 
     variants = []
     for spec in args.variants or [f"{config.WEIGHT_POWER}/{config.LEVEL_MODE}"]:

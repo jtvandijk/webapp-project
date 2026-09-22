@@ -158,6 +158,15 @@ WEIGHT_POWER = 0.5
 WEIGHT_FLOOR = 50
 POPULATION_BANDWIDTH_M = 10000     # smoothing of the "everybody" surface
 
+# A separate blob (not connected to any other) is dropped if it holds less than this share of the
+# name's total (weighted) density - a handful of people on their own somewhere, not a real
+# concentration. This is not the same problem as MIN_AREA_KM2 below: at these bandwidths even one
+# person's own smoothed "bump" can cover well over 100 km2, so a small number of people can easily
+# pass an area test; what marks them as not worth showing is how little of the name's total they
+# represent, not their physical size. Tested on synthetic data only so far, not real names - a
+# starting point to calibrate, not a settled number.
+MIN_BLOB_SHARE = 0.02
+
 # The three map levels, level 1 outermost (lightest) to level 3 innermost (darkest).
 #   "mass": each level is the smallest area holding this share of the name's (weighted) density -
 #           a widespread name gets large areas, a local name small ones, both get all three levels
