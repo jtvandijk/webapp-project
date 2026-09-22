@@ -10,8 +10,10 @@ the map calculation to the full database and to an HPC batch job), 5 and 6 are s
 
 ## Decided so far
 
-- **Order of work.** First the historic (census) maps, then the modern (register) ones, then the
-  neighbourhood facts (stage 5), with the website reworked in parallel.
+- **Order of work.** First the modern (register) maps, then the historic (census) ones - swapped
+  from the original plan since the census database is still being prepared - then the neighbourhood
+  facts (stage 5), with the website reworked in parallel. `s1_counts.py --sources register` and
+  `preview.py` with only register periods work with no working census connection at all.
 - **Map periods (15).** Census: 1851, 1861, 1881, 1891, 1901, 1911, 1921 (1871 stays out, as
   before, not available for England and Wales). Register: 1997, 2000, 2005, 2010, 2015, 2020, 2025,
   2026.

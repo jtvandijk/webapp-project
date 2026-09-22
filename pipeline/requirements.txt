@@ -1,20 +1,10 @@
-# Packages the pipeline needs (all are on PyPI, so Artifactory can supply them).
+# Packages the pipeline needs
 numpy
 scipy
 shapely>=2.0
 pyproj
 contourpy
-
-# Only for a real run in the TRE, to talk to Postgres. Try these ONE AT A TIME, in this order, and
-# stop as soon as one installs (pipeline/db.py picks up whichever is present automatically):
-#
-#   pip install psycopg2            needs PostgreSQL's client dev headers and a C compiler
-#                                    (check first: pg_config --version). Usually the best if it works.
-#   pip install "psycopg[binary]"   psycopg version 3, a self-contained wheel, no compiler needed;
-#                                    a different package from psycopg2-binary, so worth trying if
-#                                    your Artifactory mirror does not carry that one
-#   pip install pg8000              pure Python, no system libraries or compiler needed at all;
-#                                    slower, and does not read ~/.pgpass (set PGPASSWORD instead)
+psycopg2
 
 # Only to remake pipeline/reference/gb_outline.geojson from a shapefile (rarely needed):
 # pyshp

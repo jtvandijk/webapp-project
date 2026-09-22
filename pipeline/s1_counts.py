@@ -1,15 +1,21 @@
 """Stage 1: count the bearers of every surname in every year, and make the name list.
 
-    python3 -m pipeline.s1_counts
+    python3 -m pipeline.s1_counts                    # both sources
+    python3 -m pipeline.s1_counts --sources register  # just the register database, e.g. while the
+                                                       # census database is not ready yet
 
 Writes (in the work folder, see config.py):
   counts.csv   source, year, surname, n         every name and year with at least COUNT_FLOOR bearers
   names.csv    surname, map_periods, max_n, periods
                the names that get a page: at least THRESHOLD[source] bearers in at least one map period
 
+A run with --sources only covers those sources; counts.csv and names.csv only hold what was
+actually counted this run, not a full release.
+
 Surnames are turned into keys first (pipeline/names.py), so "SMITH", "Smith" and "smith" are one
 name, and junk values such as "XXXX" or "nan" are dropped.
 """
+import argparse
 import csv
 from collections import defaultdict
 
@@ -48,20 +54,23 @@ def report_match_rate(rates):
         print(f"note: the match rate is below 95% in {worst}; if it falls in the newest years, the postcode lookup is probably out of date.")
 
 
-def count_all(register_conn, census_conn, cfg):
-    """{(source, year, key): n} for every source and year. Register and census live in different
-    databases in the TRE, so each gets its own connection."""
-    check_lookup(register_conn, cfg)
+def count_all(register_conn, census_conn, cfg, sources=("register", "census")):
+    """{(source, year, key): n} for every requested source and year. Register and census live in
+    different databases in the TRE, so each gets its own connection - only pass (and open) the one(s)
+    named in `sources`; the other can be None."""
     counts = defaultdict(int)
-    for year, raw, n in db.fetch(register_conn, sql.register_counts(cfg, config.REGISTER_YEARS)):
-        key = surname_key(raw)
-        if key:
-            counts[("register", int(year), key)] += n
-    for year in config.CENSUS_YEARS:
-        for raw, n in db.fetch(census_conn, sql.census_counts(cfg, year)):
+    if "register" in sources:
+        check_lookup(register_conn, cfg)
+        for year, raw, n in db.fetch(register_conn, sql.register_counts(cfg, config.REGISTER_YEARS)):
             key = surname_key(raw)
             if key:
-                counts[("census", year, key)] += n
+                counts[("register", int(year), key)] += n
+    if "census" in sources:
+        for year in config.CENSUS_YEARS:
+            for raw, n in db.fetch(census_conn, sql.census_counts(cfg, year)):
+                key = surname_key(raw)
+                if key:
+                    counts[("census", year, key)] += n
     # names that only existed in tiny variants may fall below the floor once merged
     return {k: n for k, n in counts.items() if n >= config.COUNT_FLOOR}
 
@@ -77,13 +86,22 @@ def name_list(counts):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--sources", nargs="*", choices=["register", "census"], default=["register", "census"],
+                        help="which sources to count (default: both)")
+    args = parser.parse_args()
+    sources = set(args.sources)
+
     cfg = config.settings()
-    register_conn = db.connect("register")
-    census_conn = db.connect("census")
-    report_match_rate(match_rate(register_conn, cfg))
-    counts = count_all(register_conn, census_conn, cfg)
-    register_conn.close()
-    census_conn.close()
+    register_conn = db.connect("register") if "register" in sources else None
+    census_conn = db.connect("census") if "census" in sources else None
+    if register_conn:
+        report_match_rate(match_rate(register_conn, cfg))
+    counts = count_all(register_conn, census_conn, cfg, sources)
+    if register_conn:
+        register_conn.close()
+    if census_conn:
+        census_conn.close()
     listed = name_list(counts)
 
     config.WORK.mkdir(parents=True, exist_ok=True)
@@ -106,10 +124,12 @@ def main():
         for pid in periods:
             per_period[pid] += 1
     thresholds = ", ".join(f"{source} {n}" for source, n in config.THRESHOLD.items())
+    print(f"sources counted this run: {', '.join(sorted(sources))}")
     print(f"{len(counts):,} name-year counts written to {config.WORK / 'counts.csv'}")
     print(f"{len(listed):,} names reach the threshold ({thresholds}) in at least one map period "
           f"({sum(per_period.values()):,} maps in total)")
-    print("names with a map, by period: " + "  ".join(f"{p['id']}:{per_period[p['id']]}" for p in config.PERIODS))
+    print("names with a map, by period: " +
+          "  ".join(f"{p['id']}:{per_period[p['id']]}" for p in config.PERIODS if p["source"] in sources))
 
 
 if __name__ == "__main__":

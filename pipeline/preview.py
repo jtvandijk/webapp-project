@@ -16,6 +16,9 @@ took and the size of the output file.
 Use it to judge the settings in config.py. Maps that are left out say why (too few bearers for that
 source's threshold). A heavily Scottish name does not lose its 1911/1921 map - it reuses the 1901
 map instead, since Scotland is missing from both censuses; the caption says so.
+
+Only connects to the database(s) that `--periods` actually needs - a register-only `--periods`
+(e.g. `1997 2000 2005 2010 2015 2020 2025 2026`) works with no working census connection at all.
 """
 import argparse
 import csv
@@ -110,13 +113,15 @@ def main():
     names = [(n, "") for n in args.names] if args.names else pick_examples()
     periods = [p for p in config.PERIODS if p["id"] in args.periods]
     cfg, land = config.settings(), kde.Land()
-    connections = {"register": db.connect("register"), "census": db.connect("census")}
     land_path = path(unary_union(land.parts).simplify(3000))
 
     # the reference census for the Scotland rule has to be loaded even if it is not drawn
     needed = list(periods)
     if any(p["year"] in config.SCOTLAND_MISSING_YEARS for p in periods):
         needed += [p for p in config.PERIODS if p["year"] == config.SCOTLAND_REFERENCE_YEAR and p not in periods]
+    # only connect to the database(s) actually needed - a register-only --periods needs no working
+    # census connection at all
+    connections = {source: db.connect(source) for source in {p["source"] for p in needed}}
     data = {p["id"]: fetch_period(connections[p["source"]], cfg, p) for p in needed}
 
     stats, blocks = [], []
