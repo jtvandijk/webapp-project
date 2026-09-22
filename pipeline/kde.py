@@ -332,35 +332,54 @@ def second_blob_share(grid, bandwidth_m, pop_smooth, land, power=None, min_share
 def size_level_mass(n, second_share=0.0):
     """A first-draft LEVEL_MASS triple for a name with n bearers (its biggest year) and the given
     second_blob_share (from that year's own surface) - NOT a fitted regression, a rough
-    log-interpolated curve through where eight real names' hand-picked verdicts seemed to peak
-    (2026-09-23: Smith, Jones, Davies, Obrien, Macdonald, Longley, Cheshire, Van Dijk at four
-    LEVEL_MASS settings each - the anchor triples below are close to the actual settings that were
-    judged "good" for names near each anchor's bearer count). Expect the anchor points to move as
-    more names are checked - this exists to be tested against real verdicts, not trusted as settled.
-    Each level is interpolated on its own (not one triple scaled by a single factor), since the
-    tested "good" settings did not keep the same shape (ratio between levels) at every size.
+    log-interpolated curve through where real names' hand-picked verdicts seemed to peak. Round 1
+    (2026-09-23 evening, 8 names x 4 settings): Smith, Jones, Davies, Obrien, Macdonald, Longley,
+    Cheshire, Van Dijk. Round 2 (2026-09-23 night, 28 names against round 1's curve, with a wider
+    smoothing pass - see SMOOTH_M - also active): Smith, Longley, Van Dijk, Macdonald, Obrien,
+    Cheshire, Davies, Jones, Patel, Lansley, Williams, Taylor, Evans, Thomas, Wilson, Johnson,
+    Baker, Davidson, Brown, Fraser, Mackenzie, Pugh, Pascoe, Murphy, Kelly, Nguyen, Robinson, Cohen.
+    Expect the anchor points to keep moving as more names are checked - this exists to be tested
+    against real verdicts, not trusted as settled. Each level is interpolated on its own (not one
+    triple scaled by a single factor), since the good settings did not keep the same shape (ratio
+    between levels) at every size.
 
     Shaped like an inverted U, tightest for names in the low thousands to tens of thousands of
-    bearers, loosest at both ends: very large names often turn out to have more than one comparably
-    strong region (Smith, in this data - checked via second_share below) where tightening carves a
-    visible gap rather than cleanly isolating one; very small names (Van Dijk, ~150 bearers) may
-    have too little real signal for any tight cut to reliably separate a genuine concentration from
-    a few coincidentally close individuals, so forcing one is not obviously more honest than the
-    untightened original - the smallest anchor is simply config.LEVEL_MASS itself, unchanged.
+    bearers, loosest at both ends: very small names (Van Dijk, ~150 bearers; Lansley, ~400) may have
+    too little real signal for any tight cut to reliably separate a genuine concentration from a few
+    coincidentally close individuals, so forcing one is not obviously more honest than the
+    untightened original - the smallest anchor is simply config.LEVEL_MASS, unchanged. At the large
+    end (round 2): several names around 200k-400k bearers (Davies, Jones, Williams, Taylor, Thomas)
+    read as more spread than wanted and were tightened; Smith specifically needed a tighter level 3
+    on its own (its outer levels were already right) - not the same "more than one comparably
+    strong region" story round 1 guessed, since Smith's own second_blob_share turned out to be
+    ~0 on real data. That guess is corrected here, not carried forward.
 
-    Longley and Cheshire share the same anchor point (~2,000 bearers) but wanted visibly different
-    settings (Longley looser, Cheshire tighter) - a real residual this curve cannot capture since it
-    is a function of n (and second_share) alone; it lands between the two rather than matching
-    either, which is expected, not a bug to chase with this measure.
+    Longley/Cheshire (~2,000 bearers) and Obrien/Macdonald/Davidson (~35,000) each share an anchor
+    point but did not all want the same setting - a real residual this curve cannot capture since it
+    is a function of n (and second_share) alone. Longley/Cheshire stopped visibly diverging once
+    the wider smoothing pass was tried, suggesting at least part of that gap may have been a
+    smoothing artefact rather than something size_level_mass() itself needs to fix. Obrien/Davidson
+    were happy with the current ~35,000 setting while Macdonald (and Fraser, and Mackenzie, all
+    Scottish clan names, all missing a real secondary region - London for Macdonald/Fraser) wanted
+    it looser - handled below via second_share, not by moving the shared anchor and unsettling
+    Obrien/Davidson.
 
-    second_share above 0.35 (a second concentration at least a third the size of the biggest one)
-    overrides every level towards its loosest anchor regardless of n, for the same reason as Smith."""
+    second_share used to be a hard override past 0.35 (one comparably-sized second region, as
+    tested on synthetic data). Real names never reached anywhere near that - Mackenzie's very real,
+    clearly-wanted secondary region measured only 0.03, Lansley 0.05 - so a high threshold could
+    never have helped the cases it needed to. Replaced with a continuous blend towards the loosest
+    (500,000-bearer) anchor, weighted by sqrt(second_share) rather than second_share itself so a
+    small-but-real secondary region (0.03-0.08, the range actually seen) still moves the result
+    noticeably rather than being rounded away. Unconfirmed whether this is enough to bring
+    Macdonald/Fraser/Mackenzie's missing regions back - needs checking against their actual
+    second_share (only Mackenzie's was reported this round) and the resulting map, not assumed."""
     anchors_n = np.log10([100, 2_000, 35_000, 300_000, 500_000])
-    anchor_triples = [config.LEVEL_MASS, (0.40, 0.20, 0.10), (0.50, 0.25, 0.10), (0.75, 0.50, 0.25), (0.85, 0.60, 0.30)]
+    anchor_triples = [config.LEVEL_MASS, (0.40, 0.20, 0.10), (0.50, 0.25, 0.10), (0.60, 0.38, 0.17), (0.85, 0.55, 0.18)]
     x = np.log10(max(n, 1))
     levels = tuple(float(np.interp(x, anchors_n, [t[i] for t in anchor_triples])) for i in range(3))
-    if second_share and second_share > 0.35:
-        levels = tuple(max(a, b) for a, b in zip(levels, anchor_triples[-1]))
+    if second_share:
+        weight = min(second_share, 1.0) ** 0.5
+        levels = tuple(v + weight * (loose - v) for v, loose in zip(levels, anchor_triples[-1]))
     return tuple(round(v, 3) for v in levels)
 
 

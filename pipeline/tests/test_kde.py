@@ -181,15 +181,21 @@ class SizeLevelMass(unittest.TestCase):
             self.assertGreater(level1, level2)
             self.assertGreater(level2, level3)
 
-    def test_a_large_second_blob_overrides_towards_the_loosest_anchor(self):
-        tight = kde.size_level_mass(35_000, second_share=0.0)
-        loose = kde.size_level_mass(35_000, second_share=0.5)
-        self.assertLess(tight[0], loose[0])
-        self.assertEqual(loose, (0.85, 0.60, 0.30))
+    def test_second_share_loosens_continuously_not_as_an_on_off_override(self):
+        # a hard threshold (tried in round 1) could never help the real cases that needed it: the
+        # actual second_share values seen so far (Mackenzie 0.03, Lansley 0.05) are far below any
+        # threshold that would only fire for a genuinely comparable second region - so even a small
+        # one has to move the result visibly, not be rounded away
+        none = kde.size_level_mass(35_000, second_share=0.0)
+        small = kde.size_level_mass(35_000, second_share=0.03)
+        bigger = kde.size_level_mass(35_000, second_share=0.3)
+        biggest = kde.size_level_mass(35_000, second_share=1.0)
+        self.assertLess(none[0], small[0])
+        self.assertLess(small[0], bigger[0])
+        self.assertLess(bigger[0], biggest[0])
 
-    def test_a_small_second_blob_is_not_enough_to_override(self):
-        self.assertEqual(kde.size_level_mass(35_000, second_share=0.1),
-                         kde.size_level_mass(35_000, second_share=0.0))
+    def test_second_share_of_one_reaches_exactly_the_loosest_anchor(self):
+        self.assertEqual(kde.size_level_mass(35_000, second_share=1.0), (0.85, 0.55, 0.18))
 
 
 class MinorBlobs(unittest.TestCase):
