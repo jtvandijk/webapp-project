@@ -109,14 +109,15 @@ def main():
         variants.append((float(power), mode, tuple(float(x) for x in levels.split(",")) if levels else None))
     names = [(n, "") for n in args.names] if args.names else pick_examples()
     periods = [p for p in config.PERIODS if p["id"] in args.periods]
-    cfg, conn, land = config.settings(), db.connect(), kde.Land()
+    cfg, land = config.settings(), kde.Land()
+    connections = {"register": db.connect("register"), "census": db.connect("census")}
     land_path = path(unary_union(land.parts).simplify(3000))
 
     # the reference census for the Scotland rule has to be loaded even if it is not drawn
     needed = list(periods)
     if any(p["year"] in config.SCOTLAND_MISSING_YEARS for p in periods):
         needed += [p for p in config.PERIODS if p["year"] == config.SCOTLAND_REFERENCE_YEAR and p not in periods]
-    data = {p["id"]: fetch_period(conn, cfg, p) for p in needed}
+    data = {p["id"]: fetch_period(connections[p["source"]], cfg, p) for p in needed}
 
     stats, blocks = [], []
     for key, label in names:

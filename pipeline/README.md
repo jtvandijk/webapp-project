@@ -13,7 +13,7 @@ The code that turns the registers and censuses into the data behind the website 
 | `kde.py` | The map calculation for one name and year. | done, tested |
 | `rules.py` | What happens to each period: built, copied from another year (Scotland), or left out. | done, tested |
 | `preview.py` | Draws a page of maps to look at. | done |
-| `sql.py`, `db.py`, `names.py` | The queries, the connection, the surname rule. | done |
+| `sql.py`, `db.py`, `names.py` | The queries, the two database connections, the surname rule. | done |
 | stages 2 to 6 | Population surfaces, point extracts, the map job on the HPC, facts, assembling the release. | to do |
 
 ## Try it on your own computer (fake data)
@@ -34,16 +34,25 @@ shows several settings side by side, without editing anything (`<weighting power
 
 ## Running it in the TRE
 
+The register+ONSPD tables and the census+parish tables are in **two different databases**, so
+there are two connections (`config.py`'s `connections.register` / `connections.census`; Postgres
+cannot join across databases in one query, so this isn't just a config nicety, `db.py` genuinely
+opens two).
+
 1. Check the parish table name in `config.py`'s `"tre"` block (`spatial.conpar…`) - it is a guess
-   from the old scripts. The register (`registers_linked.lcr_consol2026`) and ONSPD
-   (`registers_lookup.onspd_2026_feb`, `stdpcd`, `oseast1m`, `osnrth1m`, `ctry`) are confirmed.
+   from the old scripts, assumed to be in the same database as `census.*`. The register
+   (`registers_linked.lcr_consol2026`) and ONSPD (`registers_lookup.onspd_2026_feb`, `stdpcd`,
+   `oseast1m`, `osnrth1m`, `ctry`) are confirmed.
 2. Install a Postgres driver (see `requirements.txt`): try `pip install psycopg2` first (or
    `conda install psycopg2`, which is often simpler on an HPC), then `pip install "psycopg[binary]"`,
    then `pip install pg8000` (pure Python, no compiler needed at all) — stop at the first that
    installs. `db.py` uses whichever one is there.
-3. Set `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER` (e.g. source a small env file with these in it),
-   `export PGPASSWORD=...` separately, then `export GBNAMES_PROFILE=tre`. Passwords are never
-   written into any file (note: pg8000 only reads `PGPASSWORD`, not `~/.pgpass`).
+3. Set `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER` for the register database (e.g. source a small env
+   file with these in it). For the census database, set at least `CENSUS_PGDATABASE`; its host,
+   port and user fall back to the register ones if not set separately (`CENSUS_PGHOST` etc.), for
+   when it is the same server, just a different database. `export PGPASSWORD=...` (and
+   `CENSUS_PGPASSWORD` if the census login differs) separately, then `export GBNAMES_PROFILE=tre`.
+   Passwords are never written into any file (note: pg8000 only reads `PGPASSWORD`, not `~/.pgpass`).
 4. `python3 -m pipeline.s1_counts`. If a table or column name is wrong, Postgres says which. The stage
    prints how many register rows find their postcode in the lookup (it stops below 80%, which means the
    postcodes are written differently in the two tables) and stops if the lookup has a postcode twice,

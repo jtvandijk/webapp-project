@@ -52,15 +52,23 @@ the map calculation to the full database and to an HPC batch job), 5 and 6 are s
   ordinary threshold check on its own count.
 - **Register layout (TRE).** `registers_linked.lcr_consol2026`: forename, surname, postcode, first,
   last. The postcode is standardised (lower case, no spaces). It has no coordinates, so they come
-  from the ONS Postcode Directory (ONSPD, British National Grid metres, joined on `stdpcd`).
-  Postcodes without a grid reference (0) or missing from the file are left out - expected, fine, as
-  long as the remaining rows still clear the threshold. Census: `census.gb1851` with
-  `census.gb1851_att`, and so on; 1921 uses the same 1901 parishes as 1911.
+  from the ONS Postcode Directory (ONSPD, `registers_lookup.onspd_2026_feb`, British National Grid
+  metres, joined on `stdpcd`; register and ONSPD are in the same database). Postcodes without a grid
+  reference (0) or missing from the file are left out - expected, fine, as long as the remaining
+  rows still clear the threshold.
+- **Census layout (TRE).** `census.gb1851` with `census.gb1851_att`, and so on; joined to
+  `spatial.conpar1851` (1851-1891) or `spatial.conpar1901` (1901-1921) for the parish centroid.
+  1921 uses the same parishes as 1911.
 - **Great Britain only.** Northern Ireland has no historic data and different neighbourhood data,
   so it is left out, as are the Isle of Man and the Channel Islands (country codes in `extra_where`).
-- **Database connection.** `config.py` holds table and column names; the connection itself
-  (`PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`) comes from the environment, e.g. a sourced env file,
-  with `PGPASSWORD` exported separately at run time.
+- **Two databases.** The register+ONSPD tables and the census+parish tables are in different
+  databases, so there are two separate connections (`pipeline/db.py`, `config.py`'s
+  `connections.register` / `connections.census`). Assumed: `spatial.conpar*` lives in the same
+  database as `census.*` (they are joined together in one query) - flag if that is wrong. Settings
+  come from the environment: `PGHOST`/`PGPORT`/`PGDATABASE`/`PGUSER` for the register database;
+  `CENSUS_PGDATABASE` for the census one (falls back to the register's host/port/user if its own
+  are not set, so it only needs its own value where it actually differs). `PGPASSWORD` for both,
+  or `CENSUS_PGPASSWORD` if the census login differs.
 
 ## What goes in
 

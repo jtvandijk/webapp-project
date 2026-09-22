@@ -48,16 +48,17 @@ def report_match_rate(rates):
         print(f"note: the match rate is below 95% in {worst}; if it falls in the newest years, the postcode lookup is probably out of date.")
 
 
-def count_all(conn, cfg):
-    """{(source, year, key): n} for every source and year."""
-    check_lookup(conn, cfg)
+def count_all(register_conn, census_conn, cfg):
+    """{(source, year, key): n} for every source and year. Register and census live in different
+    databases in the TRE, so each gets its own connection."""
+    check_lookup(register_conn, cfg)
     counts = defaultdict(int)
-    for year, raw, n in db.fetch(conn, sql.register_counts(cfg, config.REGISTER_YEARS)):
+    for year, raw, n in db.fetch(register_conn, sql.register_counts(cfg, config.REGISTER_YEARS)):
         key = surname_key(raw)
         if key:
             counts[("register", int(year), key)] += n
     for year in config.CENSUS_YEARS:
-        for raw, n in db.fetch(conn, sql.census_counts(cfg, year)):
+        for raw, n in db.fetch(census_conn, sql.census_counts(cfg, year)):
             key = surname_key(raw)
             if key:
                 counts[("census", year, key)] += n
@@ -77,10 +78,12 @@ def name_list(counts):
 
 def main():
     cfg = config.settings()
-    conn = db.connect()
-    report_match_rate(match_rate(conn, cfg))
-    counts = count_all(conn, cfg)
-    conn.close()
+    register_conn = db.connect("register")
+    census_conn = db.connect("census")
+    report_match_rate(match_rate(register_conn, cfg))
+    counts = count_all(register_conn, census_conn, cfg)
+    register_conn.close()
+    census_conn.close()
     listed = name_list(counts)
 
     config.WORK.mkdir(parents=True, exist_ok=True)

@@ -2,9 +2,10 @@
 Settings for the GBNames pipeline. Edit this file, not the others.
 
   Fake data (default):  python3 -m pipeline.fake_data, then run any stage as normal.
-  Real run in the TRE:  fill in the "tre" block below, set PGHOST/PGPORT/PGDATABASE/PGUSER and
-                         PGPASSWORD (e.g. source an env file, export PGPASSWORD separately), then
-                         export GBNAMES_PROFILE=tre
+  Real run in the TRE:  the register+ONSPD and the census+parish tables live in two different
+                         databases, so there are two sets of connection variables (see "tre" below
+                         and pipeline/db.py). Set them (e.g. source an env file), export PGPASSWORD
+                         and CENSUS_PGPASSWORD separately, then export GBNAMES_PROFILE=tre.
 """
 import os
 from pathlib import Path
@@ -56,10 +57,18 @@ PROFILES = {
     },
     "tre": {
         "backend": "postgres",
-        # from the environment: PGHOST, PGPORT (default 5432), PGDATABASE, PGUSER. PGPASSWORD is
-        # read directly by pipeline/db.py and never stored here.
-        "connection": {"host": os.environ.get("PGHOST"), "port": int(os.environ.get("PGPORT", 5432)),
-                       "dbname": os.environ.get("PGDATABASE"), "user": os.environ.get("PGUSER")},
+        # Two databases. "register" also serves ONSPD (they are in the same database). "census"
+        # falls back to the register host/port/user if its own are not set - set CENSUS_PGDATABASE
+        # at least, since that always differs. PGPASSWORD/CENSUS_PGPASSWORD are read directly by
+        # pipeline/db.py and never stored here.
+        "connections": {
+            "register": {"host": os.environ.get("PGHOST"), "port": int(os.environ.get("PGPORT", 5432)),
+                        "dbname": os.environ.get("PGDATABASE"), "user": os.environ.get("PGUSER")},
+            "census": {"host": os.environ.get("CENSUS_PGHOST", os.environ.get("PGHOST")),
+                      "port": int(os.environ.get("CENSUS_PGPORT", os.environ.get("PGPORT", 5432))),
+                      "dbname": os.environ.get("CENSUS_PGDATABASE"),
+                      "user": os.environ.get("CENSUS_PGUSER", os.environ.get("PGUSER"))},
+        },
         "register": {
             "table": "registers_linked.lcr_consol2026", "surname": "surname", "forename": "forename",
             "key": "postcode", "first": "first", "last": "last",

@@ -1,5 +1,9 @@
 """Connecting to the database and running a query. The only file that knows which database it is.
 
+The TRE has two databases: "register" (also serves ONSPD) and "census". Every call names which one
+it wants; there is no default, since silently using the wrong one would be a confusing bug rather
+than a clear error. The fake ("sqlite") profile only has one file, so it ignores which one is asked for.
+
 Postgres drivers, tried in this order, whichever is actually installed is used automatically:
   1. psycopg2       needs PostgreSQL's client dev headers and a C compiler where it is installed
   2. psycopg (v3)   the same, or install as  psycopg[binary]  for a self-contained wheel instead
@@ -12,8 +16,9 @@ import os
 from . import config
 
 
-def connect(profile=None):
-    """An open connection for the chosen profile ("fake" = a local SQLite file, "tre" = Postgres)."""
+def connect(group, profile=None):
+    """An open connection to one database ("register" or "census") for the chosen profile
+    ("fake" = a local SQLite file, ignores `group`; "tre" = Postgres)."""
     cfg = config.settings(profile)
     if cfg["backend"] == "sqlite":
         import sqlite3
@@ -26,10 +31,10 @@ def connect(profile=None):
     unfilled = _unfilled(cfg)
     if unfilled:
         raise SystemExit("These settings in pipeline/config.py still say FILL_IN:\n  " + "\n  ".join(unfilled))
-    return _connect_postgres(cfg["connection"])
+    return _connect_postgres(cfg["connections"][group], group)
 
 
-def _connect_postgres(connection):
+def _connect_postgres(connection, group):
     """Try each Postgres driver in turn, since only one of them may actually be installable."""
     try:
         import psycopg2 as driver          # noqa: same keyword arguments as psycopg (v3), below
@@ -52,7 +57,9 @@ def _connect_postgres(connection):
                     "The first two need PostgreSQL's client headers and a C compiler on this machine "
                     "(check with: pg_config --version); pg8000 is pure Python and needs neither.")
 
-    password = os.environ.get("PGPASSWORD")           # read explicitly: pg8000 does not use ~/.pgpass
+    # <GROUP>_PGPASSWORD overrides PGPASSWORD, for a census database with a different login.
+    # Read explicitly rather than left to the driver: pg8000 does not use ~/.pgpass.
+    password = os.environ.get(f"{group.upper()}_PGPASSWORD") or os.environ.get("PGPASSWORD")
     if password:
         kwargs["password"] = password
     return driver.connect(**kwargs)
@@ -75,6 +82,6 @@ def _unfilled(cfg, path=""):
             found += _unfilled(value, f"{path}{key}.")
         elif isinstance(value, str) and "FILL_IN" in value:
             found.append(f"{path}{key}")
-        elif value is None:                    # e.g. an unset PGHOST/PGDATABASE/PGUSER
+        elif value is None:                    # e.g. an unset PGHOST/CENSUS_PGDATABASE/PGUSER
             found.append(f"{path}{key}")
     return found

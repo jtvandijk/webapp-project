@@ -35,7 +35,7 @@ class CountingMatchesAnIndependentCalculation(unittest.TestCase):
         fake_data.generate(persons=6000, surnames=300, seed=7, path=cls.db, quiet=True)
         cls.cfg = dict(config.settings("fake"), database=str(cls.db))
         conn = sqlite3.connect(cls.db)
-        cls.counts = s1_counts.count_all(conn, cls.cfg)
+        cls.counts = s1_counts.count_all(conn, conn, cls.cfg)  # one sqlite file serves both "databases"
         cls.conn = conn
 
     @classmethod
