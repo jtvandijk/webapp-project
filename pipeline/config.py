@@ -33,7 +33,7 @@ PROFILE = os.environ.get("GBNAMES_PROFILE", "fake")
 # census: one table per year, an "_att" table, and a parish table holding the parish centroid (x, y)
 
 _CENSUS_COLUMNS = {
-    "surname": "sname_clean_stand", "forename": "pname",       # census table
+    "forename": "pname",                                        # census table ("surname" set per profile below)
     "recid": "recid", "source": "source",                      # join keys, census <-> _att
     "parish": "gid", "sex": "sex",                              # _att table
     "parish_id": "conparid", "x": "x", "y": "y",                # parish table (centroid)
@@ -50,7 +50,7 @@ PROFILES = {
             "address_table": "postcode_lookup", "address_key": "postcode", "x": "easting", "y": "northing",
             "extra_where": "a.ctry IN ('E92000001', 'S92000003', 'W92000004')",  # England, Scotland, Wales
         },
-        "census": dict(_CENSUS_COLUMNS, table="gb{year}", att_table="gb{year}_att",
+        "census": dict(_CENSUS_COLUMNS, surname="sname_clean_stand", table="gb{year}", att_table="gb{year}_att",
                        parish_table="conpar{boundaries}"),
     },
     "tre": {
@@ -74,7 +74,10 @@ PROFILES = {
             "x": "east1m", "y": "north1m",  # 2026 ONSPD: renamed from the usual oseast1m/osnrth1m
             "extra_where": "a.ctry25cd IN ('E92000001', 'S92000003', 'W92000004')",  # England, Scotland, Wales; ctry -> ctry25cd in the 2026 ONSPD
         },
-        "census": dict(_CENSUS_COLUMNS, table="census.gb{year}", att_table="census.gb{year}_att",
+        # "surname": "sname" is the raw column, standardised uniformly in Python instead of relying
+        # on sname_clean_stand (which was only manually added for some years, not all - confirmed
+        # by the user). "sname" is confirmed consistent across all census years.
+        "census": dict(_CENSUS_COLUMNS, surname="sname", table="census.gb{year}", att_table="census.gb{year}_att",
                        parish_table="spatial.conpar{boundaries}"),  # check: guessed from the old scripts
     },
 }

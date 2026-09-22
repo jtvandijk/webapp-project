@@ -1,11 +1,59 @@
-# GBNames Website
-[GBNames](https://data.cdrc.ac.uk/gbnames/) focuses upon the origins and spread of family bloodlines through surnames as manifest in the past and over more recent years. Alpha release. This repository contains all code for the website to run -- not the code for generating the statistics and measures that are presented on the website.
+# GBNames
 
-## About
-Digitally encoded historical census data for England, Scotland, and Wales provided by the Economic and Social Research Council [I-CeM project](https://www1.essex.ac.uk/history/research/icem/) provide population-wide micro-data of individuals’ names and addresses (following a secure data user agreement by researchers). This integrated collection of historic census micro-data derives from the decennial Censuses of England and Wales for 1851, 1861, 1881, 1891, 1901 and 1911, and for Scotland for the period 1851 to 1901 (although we do not use the 1871 data). Addresses are geo-referenced to parishes,the boundaries of which have been digitised. See for more information: [Higgs and Schürer 2014](https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=7481).
+GBNames shows the geography of British surnames: where a name was concentrated in the census years
+1851-1921 and in more recent years, plus who tends to bear it (top forenames, top neighbourhoods,
+and how it relates to neighbourhood classifications, deprivation, broadband speed and more). The
+live site is at [apps.geods.ac.uk/gbnames](https://apps.geods.ac.uk/gbnames/), part of UCL's
+Consumer Data Research Centre (CDRC).
 
-Individual names and addresses cannot be obtained from censuses until the data are 100 years old, and so we use consumer
-registers for the period 1997-2016: details of these data are available in [Lansley, Li, and Longley 2019](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/rssa.12476).
+## Status: rebuild in progress, on this branch (`dev`)
 
-## Notes
-GBNames is intended to show interesting geographical patterns of names, rather than mapping individuals or families. We do not map or show statistics for names with less than 100 occurrences per year or for areas where the selected name has a very small population. This branch contains the GBNames version that is planned to be rolled out publicly with the maps using an updated methodology.
+The site as currently live (source in [`gbnames/`](gbnames/), a Django app backed by Postgres) is
+being replaced from scratch, for two reasons:
+
+- **The data needs updating.** New consumer registers (to 2026), the 1921 census, and refreshed
+  neighbourhood classifications.
+- **The current site does not cope with a traffic spike.** It went down after going viral on social
+  media, most likely a Postgres bottleneck - a single name search runs roughly 20 database queries.
+
+The plan (see [docs/pipeline.md](docs/pipeline.md)) is to precompute everything a visitor could ask
+for into small static files, so the public site becomes a plain file server with no database and no
+per-request computation - unaffected by the kind of load that took the old site down.
+
+`gbnames/` (the currently live Django app) stays in the repository for reference until the rebuild
+replaces it; nothing in the rebuild depends on it.
+
+## Where to start reading
+
+| Read this | For |
+|---|---|
+| [docs/data-contract.md](docs/data-contract.md) | The file format the rebuild produces, and that the future website reads: one JSON file per surname. |
+| [docs/pipeline.md](docs/pipeline.md) | The plan for turning individual-level records into that release: stages, decisions made, what is still open. |
+| [pipeline/README.md](pipeline/README.md) | How to run the pipeline - on fake data locally, or for real in the TRE. |
+
+## Repository layout
+
+| Path | What it is |
+|---|---|
+| `pipeline/` | The code that turns censuses and consumer registers into the public release: counting, the map calculation, disclosure rules. Runs partly inside a TRE (Trusted Research Environment), since the source data is individual-level. |
+| `docs/` | The data format and the pipeline plan (above). |
+| `tools/` | A sample-data generator and a validator for the future website's release format. |
+| `site/` | An early prototype of the static website (paused; not the current focus). |
+| `gbnames/` | The currently live Django app (source of apps.geods.ac.uk/gbnames). Being replaced. |
+| `data-prep/` | The old, one-off pipeline code this rebuild replaces, kept locally for reference. **Not tracked in git** (see `.gitignore`) - it is several GB and includes working data extracts. |
+| `work/` | Everything `pipeline/` writes when run locally: fake databases, counts, preview pages. **Not tracked in git.** |
+
+## The data
+
+Historic census microdata (England, Scotland, Wales; 1851-1911 so far, 1921 being added) comes from
+the ESRC [I-CeM project](https://www1.essex.ac.uk/history/research/icem/) - population-wide names
+and addresses, under a secure data use agreement, geo-referenced to historical parishes (see
+[Higgs and Schürer 2014](https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=7481) for
+background). Names and addresses cannot be released from a census until it is 100 years old; for
+1997 onwards, linked consumer registers are used instead (see
+[Lansley, Li and Longley 2019](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/rssa.12476)).
+
+This is individual-level data. It is never published as such: a surname's map is only built for a
+year in which it has at least 30 (historic) or 100 (modern) bearers, and nothing at all is shown
+below that. This repository holds code, not data - the two folders that could hold real or
+realistic-looking extracts (`data-prep/`, `work/`) are both git-ignored.
