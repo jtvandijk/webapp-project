@@ -18,7 +18,9 @@ from . import config
 
 def connect(group, profile=None):
     """An open connection to one database ("register" or "census") for the chosen profile
-    ("fake" = a local SQLite file, ignores `group`; "tre" = Postgres)."""
+    ("fake" = a local SQLite file, ignores `group`; "tre" = Postgres). Only checks the settings this
+    group actually needs - connecting to "register" never requires the census settings to be filled
+    in, and the other way round."""
     cfg = config.settings(profile)
     if cfg["backend"] == "sqlite":
         import sqlite3
@@ -28,10 +30,15 @@ def connect(group, profile=None):
                              "Make one first:  python3 -m pipeline.fake_data")
         return sqlite3.connect(cfg["database"])
 
-    unfilled = _unfilled(cfg)
-    if unfilled:
-        raise SystemExit("These settings in pipeline/config.py still say FILL_IN:\n  " + "\n  ".join(unfilled))
+    missing = _missing(cfg, group)
+    if missing:
+        raise SystemExit("These settings in pipeline/config.py still say FILL_IN:\n  " + "\n  ".join(missing))
     return _connect_postgres(cfg["connections"][group], group)
+
+
+def _missing(cfg, group):
+    """Which settings for one group (its connection, and its table/column names) are not filled in."""
+    return _unfilled(cfg["connections"][group], f"connections.{group}.") + _unfilled(cfg[group], f"{group}.")
 
 
 def _connect_postgres(connection, group):
