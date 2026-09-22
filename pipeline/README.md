@@ -102,7 +102,15 @@ lookup holds latitude and longitude instead, tell me and I will add the conversi
   cover 100+ km2, so an area test alone cannot catch this; only works between concentrations far
   enough apart that the smoothing has already reduced the gap between them to zero (see
   `kde.drop_minor_blobs`'s docstring) - two nearby but visually distinct concentrations are kept or
-  dropped together, not compared to each other. Tested on synthetic data only so far.
+  dropped together, not compared to each other. Cannot help a name with too few total bearers for a
+  real cluster and 1-2 coincidental individuals to differ enough in *relative* share (`MIN_BLOB_BEARERS`
+  below is for that). Note: for most of this session `preview.py` called this with a bug that meant
+  it was never actually applied at all (fixed 2026-09-23, see git history) - re-check any earlier
+  "min-blob-share doesn't help" conclusion now that it is actually running.
+- `MIN_BLOB_BEARERS`: also drops a blob with fewer than this many actual (unweighted) bearers,
+  whatever share of the total that is (now 5, `kde.drop_tiny_blobs()`) - complements `MIN_BLOB_SHARE`
+  rather than replacing it: this is the one that can help a small name, since "1-2 people" is "1-2
+  people" regardless of the name's total, unlike a percentage. Untested on real data yet.
 - `LEVEL_MASS`: the share of a name's density that levels 1, 2 and 3 hold for the smallest names
   (85%, 65%, 40%) - see `kde.size_level_mass()`, which varies this per name by default (confirmed on
   real data 2026-09-23); `LEVEL_MODE = "peak"` uses `LEVEL_PEAK` instead.
@@ -113,9 +121,83 @@ lookup holds latitude and longitude instead, tell me and I will add the conversi
   `MIN_AREA_KM2` removes tiny specks (`preview --min-area 400` to try); the preview table shows how many
   separate areas each map has.
 
-`preview.py --min-blob-share 0.05` (etc.) tries a different share without editing `config.py`.
+`preview.py --min-blob-share 0.05`/`--min-blob-bearers 8` (etc.) try a different value without
+editing `config.py`.
 
 Use `preview.py` after changing any of them.
+
+## How a map is actually put together
+
+One name, one year, start to finish (`kde.py`, numbered as in its module docstring):
+
+1. **Grid.** Every bearer that year is placed on a 1 km grid over Great Britain.
+2. **Smooth.** Each bearer's single grid cell is spread out into a soft "bump" (a Gaussian kernel) -
+   this is the KDE (kernel density estimate) part. How wide the bump is (the *bandwidth*) grows with
+   the name's size, from 8 km at 100 bearers to 18 km at 100,000+ (`size_bandwidth`) - a bigger name
+   uses a bit more spread, so its map reads as the more nationally-significant story it usually is,
+   rather than a tight dot. One bandwidth per name, from its biggest year, so the map looks the same
+   width across every year's slider position.
+3. **Weigh.** The smoothed name density is divided by the local population's own density (also
+   smoothed, `POPULATION_BANDWIDTH_M`), raised to `WEIGHT_POWER` (0.5: "a bit relative"). Without
+   this, every name's biggest patch would just be wherever the most people of *any* name live -
+   London, mostly. `WEIGHT_FLOOR`/`WEIGHT_CEILING` stop a very sparse or very dense pixel from
+   dominating the division at either end - the ceiling specifically stops an extremely dense exact
+   city centre creating a dip (a ring or "C" shape) relative to its own surrounding suburbs.
+4. **Drop noise.** A separate, disconnected patch is zeroed out if it holds too little of the name's
+   own total density (`MIN_BLOB_SHARE`, a *relative* test - fine for a name with plenty of total
+   bearers) or too few actual bearers outright (`MIN_BLOB_BEARERS`, an *absolute* test - the one that
+   can still help a name with very few bearers overall, where "1-2 people on their own" is never a
+   small enough *share* of the total for the relative test to catch).
+5. **Cut levels.** Three nested outlines are drawn: each one is the smallest area that contains a
+   given share of what's left of the name's density (`LEVEL_MASS`, "mass" mode) or a fixed fraction
+   of the peak value (`LEVEL_PEAK`, "peak" mode). **This share is not the same for every name** -
+   `kde.size_level_mass()` picks it per name (see the plain-terms section below for why).
+6. **Tidy.** Small gaps and notches are closed (`SMOOTH_M`), tiny specks removed (`MIN_AREA_KM2`),
+   and the outline clipped to the coastline and simplified (`SIMPLIFY_M`) for a smaller file.
+7. **Band.** The three nested areas become three non-overlapping bands (each level minus the one inside it).
+8. **Write.** The bands become GeoJSON, in longitude/latitude, 4 decimal places.
+
+The whole thing (population surfaces aside, which are shared across every name in a period) takes
+tens of milliseconds per map - the database query dominates the real runtime, not this calculation.
+
+## In plain terms (for anyone who isn't going to read the code)
+
+The shaded areas on a name's map are **not** simply "everywhere someone with this name lives", and
+they are **not** simply "how many people with this name live in each area" either (that would need
+a bar chart, not a map). They are closer to: *"given how common this name is here compared with how
+many people live here at all, how confident are we that this is a real, meaningful concentration of
+the name, rather than just wherever people in general happen to live?"*
+
+Three things make that possible, and all three matter for how to read a map:
+
+- **It is smoothed, not exact.** A person's location is spread out into a soft area, not marked as a
+  precise point - both because a single point tells you nothing reliable about the wider area, and
+  because it keeps individual people from ever being pinpointed. A rarer, more locally-rooted name
+  gets a tighter spread than a very common one, which gets spread a little wider, so each map reads
+  at roughly the scale that name's own story actually plays out at.
+- **It is weighted by population, not raw counts.** A name that just has a lot of bearers everywhere
+  big cities exist would otherwise light up London, Birmingham and Manchester every single time,
+  because that is simply where most people of *any* name live. The map instead asks whether the name
+  is *more* common somewhere than the local population alone would explain - so a name genuinely tied
+  to a particular place stands out there, rather than every name's map converging on the same few
+  big dots.
+- **The three shaded bands are "percentage volume contours" - but the percentage is not fixed.** Each
+  band is drawn as "the smallest area that holds this much of the name's own concentration" (the
+  darkest band being the tightest, most concentrated share). Two different names' darkest bands are
+  **not** necessarily the same percentage of anything comparable to each other - the percentage used
+  is chosen per name (bigger, more nationally-spread names and very small names both tend to need a
+  looser setting than names in between; see `kde.size_level_mass()`), specifically so that each map
+  looks like a sensible, readable picture of *that* name, rather than forcing every name through one
+  identical rule regardless of whether it happens to produce a good-looking result for it. So: read
+  the shading as "more concentrated the darker it gets", not as a number you could compare precisely
+  between two different names' maps.
+
+One honest limitation, not yet resolved: names with very few bearers nationally (a few hundred or
+fewer) sometimes cannot be reduced to one clean, confident-looking shape at all - there just isn't
+enough data to tell a real small cluster apart from a couple of people who happen to live near each
+other. Rather than force a falsely tidy-looking map in that case, the map is allowed to show a bit of
+that genuine uncertainty as several smaller, scattered areas - which is a more honest picture than
+hiding it, even though it looks less immediately clean than a name with plenty of bearers gets.
 
 ## How we know it works
 
