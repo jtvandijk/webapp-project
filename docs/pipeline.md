@@ -63,14 +63,17 @@ the map calculation to the full database and to an HPC batch job), 5 and 6 are s
   1921 uses the same parishes as 1911.
 - **Great Britain only.** Northern Ireland has no historic data and different neighbourhood data,
   so it is left out, as are the Isle of Man and the Channel Islands (country codes in `extra_where`).
-- **Two databases.** The register+ONSPD tables and the census+parish tables are in different
-  databases, so there are two separate connections (`pipeline/db.py`, `config.py`'s
-  `connections.register` / `connections.census`). Assumed: `spatial.conpar*` lives in the same
-  database as `census.*` (they are joined together in one query) - flag if that is wrong. Settings
-  come from the environment: `PGHOST`/`PGPORT`/`PGDATABASE`/`PGUSER` for the register database;
-  `CENSUS_PGDATABASE` for the census one (falls back to the register's host/port/user if its own
-  are not set, so it only needs its own value where it actually differs). `PGPASSWORD` for both,
-  or `CENSUS_PGPASSWORD` if the census login differs.
+- **Two databases, confirmed working.** The register+ONSPD tables and the census+parish tables are
+  in different databases, so there are two separate, fully independent connections (`pipeline/db.py`,
+  `config.py`'s `connections.register` / `connections.census`; confirmed `spatial.conpar*` is in the
+  same database as `census.*`, as they are joined together in one query). Settings come from the
+  environment, one full set per database, nothing shared or falling back between them
+  (`config.PG_ENV_SUFFIX`): `PGHOST_LCR`/`PGPORT_LCR`/`PGDATABASE_LCR`/`PGUSER_LCR`/`PGPASSWORD_LCR`
+  for the register (LCR = linked consumer register), and the same with `_ICEM` for the census
+  (I-CeM). `s1_counts.py --sources register` or `--sources census` (both directions, tested) and a
+  `preview.py --periods` restricted to one source's years let you test one database at a time,
+  which matters in practice: the TRE has no git pull/push, every fix is copied in by hand, and the
+  census database was still being prepared when register testing started.
 
 ## What goes in
 

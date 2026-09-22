@@ -3,16 +3,15 @@
 The TRE has two databases: "register" (also serves ONSPD) and "census". Every call names which one
 it wants; there is no default, since silently using the wrong one would be a confusing bug rather
 than a clear error. The fake ("sqlite") profile only has one file, so it ignores which one is asked for.
+Each group's settings, including its password, are fully separate - see config.PG_ENV_SUFFIX.
 
 Postgres drivers, tried in this order, whichever is actually installed is used automatically:
   1. psycopg2       needs PostgreSQL's client dev headers and a C compiler where it is installed
   2. psycopg (v3)   the same, or install as  psycopg[binary]  for a self-contained wheel instead
   3. pg8000         pure Python, no system libraries or compiler needed at all, but slower, and it
-                    does not read ~/.pgpass (PGPASSWORD is read explicitly below, so that still works)
+                    does not read ~/.pgpass (PGPASSWORD_* is read explicitly below, so that still works)
 See pipeline/requirements.txt for the exact commands to try.
 """
-import os
-
 from . import config
 
 
@@ -64,9 +63,8 @@ def _connect_postgres(connection, group):
                     "The first two need PostgreSQL's client headers and a C compiler on this machine "
                     "(check with: pg_config --version); pg8000 is pure Python and needs neither.")
 
-    # <GROUP>_PGPASSWORD overrides PGPASSWORD, for a census database with a different login.
     # Read explicitly rather than left to the driver: pg8000 does not use ~/.pgpass.
-    password = os.environ.get(f"{group.upper()}_PGPASSWORD") or os.environ.get("PGPASSWORD")
+    password = config.pg_env(group, "password")
     if password:
         kwargs["password"] = password
     return driver.connect(**kwargs)
@@ -89,6 +87,6 @@ def _unfilled(cfg, path=""):
             found += _unfilled(value, f"{path}{key}.")
         elif isinstance(value, str) and "FILL_IN" in value:
             found.append(f"{path}{key}")
-        elif value is None:                    # e.g. an unset PGHOST/CENSUS_PGDATABASE/PGUSER
+        elif value is None:                    # e.g. an unset PGHOST_LCR/PGDATABASE_ICEM/PGUSER_LCR
             found.append(f"{path}{key}")
     return found

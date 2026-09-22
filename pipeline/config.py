@@ -3,9 +3,12 @@ Settings for the GBNames pipeline. Edit this file, not the others.
 
   Fake data (default):  python3 -m pipeline.fake_data, then run any stage as normal.
   Real run in the TRE:  the register+ONSPD and the census+parish tables live in two different
-                         databases, so there are two sets of connection variables (see "tre" below
-                         and pipeline/db.py). Set them (e.g. source an env file), export PGPASSWORD
-                         and CENSUS_PGPASSWORD separately, then export GBNAMES_PROFILE=tre.
+                         databases, each with its own full set of connection variables (see
+                         PG_ENV_SUFFIX and "tre" below): PGHOST_LCR/PGPORT_LCR/PGDATABASE_LCR/
+                         PGUSER_LCR/PGPASSWORD_LCR for the register (LCR = linked consumer
+                         register), and the same with _ICEM for the census (I-CeM). Set them (e.g.
+                         source an env file; export the two passwords separately), then export
+                         GBNAMES_PROFILE=tre.
 """
 import os
 from pathlib import Path
@@ -15,6 +18,15 @@ WORK = ROOT / "work"                                   # everything the pipeline
 REFERENCE = Path(__file__).resolve().parent / "reference"
 
 PROFILE = os.environ.get("GBNAMES_PROFILE", "fake")
+
+# Which environment variable suffix belongs to which database group: PGHOST_LCR, PGDATABASE_ICEM,
+# and so on (see pg_env() below). Used by both this file and pipeline/db.py (for the password).
+PG_ENV_SUFFIX = {"register": "LCR", "census": "ICEM"}
+
+
+def pg_env(group, field, default=None):
+    """One Postgres setting for one database group, e.g. pg_env("census", "host") reads PGHOST_ICEM."""
+    return os.environ.get(f"PG{field.upper()}_{PG_ENV_SUFFIX[group]}", default)
 
 
 # ---------------------------------------------------------------------------
@@ -55,17 +67,15 @@ PROFILES = {
     },
     "tre": {
         "backend": "postgres",
-        # Two databases. "register" also serves ONSPD (they are in the same database). "census"
-        # falls back to the register host/port/user if its own are not set - set CENSUS_PGDATABASE
-        # at least, since that always differs. PGPASSWORD/CENSUS_PGPASSWORD are read directly by
-        # pipeline/db.py and never stored here.
+        # Two databases, each fully self-contained (no falling back to the other's settings, so
+        # each variable belongs to exactly one database - see PG_ENV_SUFFIX above). "register" also
+        # serves ONSPD (they are in the same database). The two PGPASSWORD_* variables are read
+        # directly by pipeline/db.py and never stored here.
         "connections": {
-            "register": {"host": os.environ.get("PGHOST"), "port": int(os.environ.get("PGPORT", 5432)),
-                        "dbname": os.environ.get("PGDATABASE"), "user": os.environ.get("PGUSER")},
-            "census": {"host": os.environ.get("CENSUS_PGHOST", os.environ.get("PGHOST")),
-                      "port": int(os.environ.get("CENSUS_PGPORT", os.environ.get("PGPORT", 5432))),
-                      "dbname": os.environ.get("CENSUS_PGDATABASE"),
-                      "user": os.environ.get("CENSUS_PGUSER", os.environ.get("PGUSER"))},
+            "register": {"host": pg_env("register", "host"), "port": int(pg_env("register", "port", 5432)),
+                        "dbname": pg_env("register", "database"), "user": pg_env("register", "user")},
+            "census": {"host": pg_env("census", "host"), "port": int(pg_env("census", "port", 5432)),
+                      "dbname": pg_env("census", "database"), "user": pg_env("census", "user")},
         },
         "register": {
             "table": "registers_linked.lcr_consol2026", "surname": "surname", "forename": "forename",

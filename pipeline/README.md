@@ -48,16 +48,18 @@ opens two).
    `conda install psycopg2`, which is often simpler on an HPC), then `pip install "psycopg[binary]"`,
    then `pip install pg8000` (pure Python, no compiler needed at all) — stop at the first that
    installs. `db.py` uses whichever one is there.
-3. Set `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER` for the register database (e.g. source a small env
-   file with these in it). For the census database, set at least `CENSUS_PGDATABASE`; its host,
-   port and user fall back to the register ones if not set separately (`CENSUS_PGHOST` etc.), for
-   when it is the same server, just a different database. `export PGPASSWORD=...` (and
-   `CENSUS_PGPASSWORD` if the census login differs) separately, then `export GBNAMES_PROFILE=tre`.
-   Passwords are never written into any file (note: pg8000 only reads `PGPASSWORD`, not `~/.pgpass`).
-4. `python3 -m pipeline.s1_counts`. If a table or column name is wrong, Postgres says which. The stage
-   prints how many register rows find their postcode in the lookup (it stops below 80%, which means the
-   postcodes are written differently in the two tables) and stops if the lookup has a postcode twice,
-   since everybody there would count twice.
+3. Set the connection variables for each database - fully separate, nothing shared between them
+   (see `config.PG_ENV_SUFFIX`): `PGHOST_LCR`, `PGPORT_LCR`, `PGDATABASE_LCR`, `PGUSER_LCR` for the
+   register (LCR = linked consumer register), and `PGHOST_ICEM`, `PGPORT_ICEM`, `PGDATABASE_ICEM`,
+   `PGUSER_ICEM` for the census (I-CeM) - e.g. source a small env file with these in it. Export
+   `PGPASSWORD_LCR` and `PGPASSWORD_ICEM` separately, then `export GBNAMES_PROFILE=tre`. Passwords
+   are never written into any file (note: pg8000 only reads `PGPASSWORD_*`, not `~/.pgpass`).
+4. `python3 -m pipeline.s1_counts` (add `--sources register` or `--sources census` to test one
+   database before the other is ready - `preview.py` does this automatically, based on which
+   sources its `--periods` need). If a table or column name is wrong, Postgres says which. The
+   stage prints how many register rows find their postcode in the lookup (it stops below 80%, which
+   means the postcodes are written differently in the two tables) and stops if the lookup has a
+   postcode twice, since everybody there would count twice.
 
 The coordinates in the lookup must be British National Grid metres (easting, northing). If the
 lookup holds latitude and longitude instead, tell me and I will add the conversion.
