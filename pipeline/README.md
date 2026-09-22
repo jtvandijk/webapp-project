@@ -32,6 +32,12 @@ Run everything from the project folder (the one that contains `pipeline/`, `docs
 and years. `--variants 0/mass 0.5/mass 1/mass` or `--variants 0.5/mass:0.85,0.65,0.4 0.5/mass:0.75,0.5,0.25`
 shows several settings side by side, without editing anything (`<weighting power>/<level mode>[:<level shares>]`). The page is a single file, so it also opens in the TRE, which has no internet.
 
+What is fetched from the database is cached in `work/cache/`, since comparing KDE settings re-draws
+the same data without re-fetching it - a real database query dominates the runtime (minutes), the
+drawing itself does not (tens of seconds even for many maps). A different `--names`/`--periods` is
+picked up automatically; `--refresh-cache` forces a re-fetch after the underlying data has actually
+changed (a new register or census load).
+
 ## Running it in the TRE
 
 The register+ONSPD tables and the census+parish tables are in **two different databases**, so

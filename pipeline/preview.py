@@ -19,11 +19,18 @@ map instead, since Scotland is missing from both censuses; the caption says so.
 
 Only connects to the database(s) that `--periods` actually needs - a register-only `--periods`
 (e.g. `1997 2000 2005 2010 2015 2020 2025 2026`) works with no working census connection at all.
+
+What is fetched from the database (which names, in which periods) is cached in work/cache/, since
+comparing KDE settings (bandwidth, weighting, levels, blob share) re-draws the same data without
+re-fetching it. Add `--refresh-cache` once the underlying data has actually changed - a different
+`--names`/`--periods` is picked up automatically, a new register or census load is not.
 """
 import argparse
 import csv
+import hashlib
 import html
 import json
+import pickle
 
 import numpy as np
 from pyproj import Transformer
@@ -38,14 +45,40 @@ PANEL = 105                                 # width of one map in pixels
 TOP = 1235                                   # km, for flipping y so that north is up
 
 
-def fetch_period(conn, cfg, period, surnames=None):
+CACHE_DIR = config.WORK / "cache"
+
+
+def _cache_path(period, surnames):
+    """One file per (profile, source, year, exact set of names asked for) - changing a KDE setting
+    (bandwidth, weighting, levels, blob share) never changes what would be fetched, so those runs
+    can all share a cache entry; asking for a different set of names cannot."""
+    key = f"{config.PROFILE}|{period['source']}|{period['year']}|{','.join(sorted(surnames or []))}"
+    return CACHE_DIR / f"{hashlib.sha1(key.encode()).hexdigest()[:16]}.pkl"
+
+
+def fetch_period(connect, cfg, period, surnames=None, use_cache=True, refresh_cache=False):
     """{name: (cell x, cell y, n)} and the smoothed surface of everybody for one map period.
     surnames: the standardised keys being previewed - always pass this on a real database, or the
-    query scans and groups by every surname in the country just to keep the few you asked for."""
+    query scans and groups by every surname in the country just to keep the few you asked for.
+
+    connect: a zero-argument function that opens the database connection, called only on a cache
+    miss - so that once every needed period is cached, comparing KDE settings needs no database
+    connection at all. Cached under work/cache/; pass --refresh-cache once the underlying data has
+    actually changed (a new register or census load), since nothing here notices that on its own."""
+    cache_path = _cache_path(period, surnames) if use_cache else None
+    if cache_path and cache_path.exists() and not refresh_cache:
+        with cache_path.open("rb") as f:
+            return pickle.load(f)
+    conn = connect()
     make = sql.register_cells if period["source"] == "register" else sql.census_cells
     by_name = kde.group_by_name(db.fetch(conn, make(cfg, period["year"], surnames=surnames)))
     ix, iy, n = (np.array(c) for c in zip(*db.fetch(conn, make(cfg, period["year"], by_surname=False))))
-    return by_name, kde.population_surface(ix.astype(int), iy.astype(int), n.astype(float))
+    result = (by_name, kde.population_surface(ix.astype(int), iy.astype(int), n.astype(float)))
+    if cache_path:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        with cache_path.open("wb") as f:
+            pickle.dump(result, f)
+    return result
 
 
 def path(geometry):
@@ -104,6 +137,7 @@ def main():
     parser.add_argument("--variants", nargs="*", help="settings to compare, as <power>/<mode>, e.g. 0.5/mass 1/peak")
     parser.add_argument("--min-area", type=float, help="drop blobs and holes smaller than this many km2 (config MIN_AREA_KM2)")
     parser.add_argument("--min-blob-share", type=float, help="drop a separate blob holding less than this share of the name's total (config MIN_BLOB_SHARE)")
+    parser.add_argument("--refresh-cache", action="store_true", help="ignore work/cache/ and re-query, e.g. after a new register or census load")
     parser.add_argument("--out", default=str(config.WORK / "preview.html"))
     args = parser.parse_args()
     if args.min_area is not None:
@@ -126,11 +160,20 @@ def main():
     needed = list(periods)
     if any(p["year"] in config.SCOTLAND_MISSING_YEARS for p in periods):
         needed += [p for p in config.PERIODS if p["year"] == config.SCOTLAND_REFERENCE_YEAR and p not in periods]
-    # only connect to the database(s) actually needed - a register-only --periods needs no working
-    # census connection at all
-    connections = {source: db.connect(source) for source in {p["source"] for p in needed}}
+    # only connect to the database(s) actually needed, and only on a cache miss - a register-only
+    # --periods needs no working census connection at all, and once every period below is cached,
+    # comparing KDE settings needs no database connection at all
+    connections = {}
+
+    def connect_once(source):
+        if source not in connections:
+            connections[source] = db.connect(source)
+        return connections[source]
+
     surnames = [key for key, _ in names]
-    data = {p["id"]: fetch_period(connections[p["source"]], cfg, p, surnames=surnames) for p in needed}
+    data = {p["id"]: fetch_period(lambda p=p: connect_once(p["source"]), cfg, p, surnames=surnames,
+                                   refresh_cache=args.refresh_cache)
+            for p in needed}
 
     stats, blocks = [], []
     for key, label in names:
