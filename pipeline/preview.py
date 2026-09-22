@@ -67,7 +67,7 @@ def _save(path, value):
         pickle.dump(value, f)
 
 
-def fetch_period(connect, cfg, period, surnames=None, use_cache=True, refresh_cache=False):
+def fetch_period(connect, cfg, period, surnames=None, use_cache=True, refresh_cache=False, population_bandwidth=None):
     """{name: (cell x, cell y, n)} and the smoothed surface of everybody for one map period.
     surnames: the standardised keys being previewed - always pass this on a real database, or the
     query scans and groups by every surname in the country just to keep the few you asked for.
@@ -79,13 +79,15 @@ def fetch_period(connect, cfg, period, surnames=None, use_cache=True, refresh_ca
     Cached under work/cache/, as two separate files per period so that adding a name to --names
     only fetches that name, not everything again: the "everybody" population surface (does not
     depend on which names are asked for, so it is fetched once ever, however many names later runs
-    add) and a per-name store that only grows (a name already in it from an earlier run is not
-    re-fetched; a new one is fetched alone and added). Pass --refresh-cache once the underlying data
-    has actually changed (a new register or census load), since nothing here notices that on its
-    own - it starts both files over from empty."""
+    add - population_bandwidth is part of its cache filename, so trying a different one does not
+    silently reuse a surface smoothed with the old one) and a per-name store that only grows (a name
+    already in it from an earlier run is not re-fetched; a new one is fetched alone and added). Pass
+    --refresh-cache once the underlying data has actually changed (a new register or census load),
+    since nothing here notices that on its own - it starts both files over from empty."""
     stem = _cache_stem(period)
+    pop_bw = config.POPULATION_BANDWIDTH_M if population_bandwidth is None else population_bandwidth
     names_path = CACHE_DIR / f"{stem}-names.pkl" if use_cache else None
-    pop_path = CACHE_DIR / f"{stem}-population.pkl" if use_cache else None
+    pop_path = CACHE_DIR / f"{stem}-population-{int(pop_bw)}.pkl" if use_cache else None
     make = sql.register_cells if period["source"] == "register" else sql.census_cells
 
     by_name = ({} if refresh_cache else _load(names_path)) if names_path else {}
@@ -99,7 +101,7 @@ def fetch_period(connect, cfg, period, surnames=None, use_cache=True, refresh_ca
     population = None if refresh_cache else (_load(pop_path) if pop_path else None)
     if population is None:
         ix, iy, n = (np.array(c) for c in zip(*db.fetch(connect(), make(cfg, period["year"], by_surname=False))))
-        population = kde.population_surface(ix.astype(int), iy.astype(int), n.astype(float))
+        population = kde.population_surface(ix.astype(int), iy.astype(int), n.astype(float), pop_bw)
         if pop_path:
             _save(pop_path, population)
 
@@ -164,6 +166,10 @@ def main():
     parser.add_argument("--smooth", type=float, help="metres to fill gaps/notches narrower than 2x this (config SMOOTH_M) - the old "
                                                        "pipeline's equivalent step used 10000 (this is 5000 by default)")
     parser.add_argument("--min-blob-share", type=float, help="drop a separate blob holding less than this share of the name's total (config MIN_BLOB_SHARE)")
+    parser.add_argument("--weight-ceiling", type=float, help="cap population used in weighting at this many people/km2 (config WEIGHT_CEILING) "
+                                                              "- stops one very dense pixel (e.g. a city centre) creating a dip there")
+    parser.add_argument("--population-bandwidth", type=float, help="smoothing of the population surface in metres (config POPULATION_BANDWIDTH_M) "
+                                                                    "- try matching a big name's own bandwidth (up to 18000) to test the same dip")
     parser.add_argument("--auto-level-mass", action="store_true",
                         help="per-name LEVEL_MASS from kde.size_level_mass() (exploratory - see its docstring) instead of --variants")
     parser.add_argument("--refresh-cache", action="store_true", help="ignore work/cache/ and re-query, e.g. after a new register or census load")
@@ -175,6 +181,8 @@ def main():
         config.MIN_BLOB_SHARE = args.min_blob_share
     if args.smooth is not None:
         config.SMOOTH_M = args.smooth
+    if args.weight_ceiling is not None:
+        config.WEIGHT_CEILING = args.weight_ceiling
 
     variants = []
     for spec in args.variants or [f"{config.WEIGHT_POWER}/{config.LEVEL_MODE}"]:
@@ -208,7 +216,7 @@ def main():
 
     surnames = [key for key, _ in names]
     data = {p["id"]: fetch_period(lambda p=p: connect_once(p["source"]), cfg, p, surnames=surnames,
-                                   refresh_cache=args.refresh_cache)
+                                   refresh_cache=args.refresh_cache, population_bandwidth=args.population_bandwidth)
             for p in needed}
 
     stats, blocks = [], []

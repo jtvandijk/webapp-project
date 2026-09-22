@@ -159,9 +159,19 @@ BANDWIDTH_N = (100, 100000)
 #   0.5 = a bit relative, the current setting
 # WEIGHT_FLOOR: areas with fewer people per km2 than this are treated as having that many, so a
 # handful of people in an empty area cannot dominate the map.
+# WEIGHT_CEILING: areas with MORE people per km2 than this are treated as having that many instead -
+# found needed on real data (2026-09-23): a big name's own bandwidth can be much wider than
+# POPULATION_BANDWIDTH_M below (up to 18 km vs a fixed 10 km), so right on an extremely dense exact
+# city centre, the population surface still has a sharp local peak that the name's own, more
+# smoothed-out surface does not - dividing by that peak creates a dip exactly there, which looked
+# like a ring or a "C" shape around the city rather than a filled-in area. Capping the population
+# used in the division (not the underlying data - only what this one calculation divides by) stops
+# one very dense pixel from being able to punch a hole like that. Untested on real data yet - a
+# starting guess, like MIN_BLOB_SHARE was.
 WEIGHT_POWER = 0.5
 WEIGHT_FLOOR = 50
-POPULATION_BANDWIDTH_M = 10000     # smoothing of the "everybody" surface
+WEIGHT_CEILING = 8000
+POPULATION_BANDWIDTH_M = 10000     # smoothing of the "everybody" surface - see WEIGHT_CEILING above
 
 # A separate blob (not connected to any other) is dropped if it holds less than this share of the
 # name's total (weighted) density - a handful of people on their own somewhere, not a real

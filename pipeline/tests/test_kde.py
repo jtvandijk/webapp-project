@@ -115,6 +115,16 @@ class MapCalculation(unittest.TestCase):
         half = kde.weigh(name, pop, land, power=0.5)
         self.assertAlmostEqual(half[0, 0] / half[0, 1], 10 ** 0.5)
 
+    def test_an_extremely_dense_pixel_is_capped_like_an_extremely_sparse_one_is(self):
+        # a city centre far denser than WEIGHT_CEILING should not be divided by its full density -
+        # found needed on real data (2026-09-23): a big name's own wide bandwidth can smooth right
+        # over such a pixel while the population surface (a fixed, narrower bandwidth) still peaks
+        # sharply there, dividing by the full peak on its own created a dip exactly on the city
+        name = np.full((1, 2), 4.0)
+        land = np.array([[True, True]])
+        capped = kde.weigh(name, np.array([[config.WEIGHT_CEILING * 10, config.WEIGHT_CEILING]]), land, power=1)
+        self.assertAlmostEqual(capped[0, 0], capped[0, 1], msg="ten times over the ceiling is treated the same as at it")
+
     def test_mass_levels_hold_the_stated_share_of_the_density(self):
         ix, iy, n = cells_around(CARDIFF, 15000, 200, 3000)
         surface = kde.weigh(kde.smooth(kde.to_grid(ix, iy, n), 10000), self.pop, self.land.grid, power=0)

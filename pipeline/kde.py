@@ -97,9 +97,11 @@ def smooth(grid, bandwidth_m):
     return ndimage.gaussian_filter(grid, sigma=bandwidth_m / CELL, mode="constant")
 
 
-def population_surface(ix, iy, n):
-    """The smoothed surface of everybody, used for weighting."""
-    return smooth(to_grid(ix, iy, n), config.POPULATION_BANDWIDTH_M)
+def population_surface(ix, iy, n, bandwidth_m=None):
+    """The smoothed surface of everybody, used for weighting. bandwidth_m overrides
+    config.POPULATION_BANDWIDTH_M (used to compare settings, e.g. against a big name's own,
+    possibly wider, bandwidth - see WEIGHT_CEILING in config.py)."""
+    return smooth(to_grid(ix, iy, n), config.POPULATION_BANDWIDTH_M if bandwidth_m is None else bandwidth_m)
 
 
 # ---------------------------------------------------------------------------
@@ -108,14 +110,16 @@ def population_surface(ix, iy, n):
 
 def weigh(name_smooth, pop_smooth, land_grid, power=None):
     """Make the map "a bit relative": divide the name's density by the density of everybody to a
-    power (config.WEIGHT_POWER: 0 = plain density, 1 = fully relative). Where fewer than
-    WEIGHT_FLOOR people live per km2 the floor is used instead, so that a few people in an empty
-    area cannot dominate. Everything that is not land is set to 0."""
+    power (config.WEIGHT_POWER: 0 = plain density, 1 = fully relative). Population is clipped
+    between WEIGHT_FLOOR and WEIGHT_CEILING first, so that neither a handful of people in an empty
+    area nor one extremely dense pixel in a city centre can dominate the division. Everything that
+    is not land is set to 0."""
     power = config.WEIGHT_POWER if power is None else power
     surface = name_smooth.astype(np.float64)
     if power:
         per_km2 = pop_smooth.astype(np.float64) / (CELL / 1000.0) ** 2
-        surface = surface / np.maximum(per_km2, config.WEIGHT_FLOOR) ** power
+        per_km2 = np.clip(per_km2, config.WEIGHT_FLOOR, config.WEIGHT_CEILING)
+        surface = surface / per_km2 ** power
     return np.where(land_grid, surface, 0.0)
 
 
