@@ -24,6 +24,7 @@ whole grid in one go.
 All geometry is in British National Grid metres until step 7.
 """
 import json
+import warnings
 from collections import defaultdict
 
 import contourpy
@@ -223,8 +224,17 @@ def _polygons(geometry):
 
 
 def _repair(geometry):
-    """Fix the tiny topology faults that clipping and subtracting shapes can leave behind."""
-    return geometry if geometry.is_valid else shapely.make_valid(geometry)
+    """Fix the tiny topology faults that clipping and subtracting shapes can leave behind.
+    GEOS sometimes reports "invalid value encountered" while doing this on a shape with a
+    near-zero-area or near-degenerate part; this is a normal side effect of cleaning such a shape
+    up, not a sign the result is wrong (checked by the geometry tests and the stress test, which
+    look at the actual output, not just whether it ran quietly), so it is suppressed here rather
+    than left to alarm whoever runs this without saying where it came from."""
+    if geometry.is_valid:
+        return geometry
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="invalid value encountered")
+        return shapely.make_valid(geometry)
 
 
 def drop_small(geometry):
@@ -238,13 +248,16 @@ def drop_small(geometry):
 
 
 def tidy(region, land):
+    """Also where buffer()/simplify() can raise the same benign "invalid value encountered"
+    warning as _repair() does, on the same kind of awkward shape - suppressed for the same reason."""
     if region.is_empty:
         return region
     smooth_m = config.SMOOTH_M
-    region = drop_small(region.buffer(smooth_m).buffer(-smooth_m))      # closes gaps narrower than 2 x SMOOTH_M
-    if region.is_empty:
-        return region
-    region = drop_small(land.clip(region).simplify(config.SIMPLIFY_M, preserve_topology=True))
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="invalid value encountered")
+        region = drop_small(region.buffer(smooth_m).buffer(-smooth_m))  # closes gaps narrower than 2 x SMOOTH_M
+        if not region.is_empty:
+            region = drop_small(land.clip(region).simplify(config.SIMPLIFY_M, preserve_topology=True))
     return region
 
 
