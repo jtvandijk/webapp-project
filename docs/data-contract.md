@@ -183,7 +183,7 @@ before the long run starts.
 | Item | How it was done before | To decide |
 |---|---|---|
 | `counts` | Census: all residents per name per year (1911 without Scotland). Registers: people with `first_im <= year <= last_im`. | Which years; do register counts stay "adults (estimated)". |
-| `maps` | Kernel density on a 1 km grid, bandwidth 8 to 18 km depending on name size and spread, weighted by population, cut into 3 levels, outlines smoothed and clipped to the coast. | Decided: 18 periods and the method (see [pipeline.md](pipeline.md)); the threshold counts rows, 100 per name and year. Open: how widespread names should look. |
+| `maps` | Kernel density on a 1 km grid, bandwidth 8 to 18 km depending on name size and spread, weighted by population, cut into 3 levels, outlines smoothed and clipped to the coast. | Decided: 15 periods and the method (see [pipeline.md](pipeline.md)); the threshold counts rows, per source (census 30, register 100). Open: how widespread names should look on real data. |
 | `forenames` | Top 10 per sex. Census pooled over 1851 to 1911. Registers: no year filter, so pooled. | Pooled or latest year. |
 | `places` | Top 10 parishes (1851 or 1901 boundaries); top 10 2011 MSOAs (at least 3 people). | Boundaries for 1921; MSOA version. Fix the 1911 join bug. |
 | `oac`, `loac` | Most common group among register addresses (2021 versions). | Which years of addresses. |

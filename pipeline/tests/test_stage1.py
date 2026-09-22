@@ -104,10 +104,16 @@ class CountingMatchesAnIndependentCalculation(unittest.TestCase):
         finally:
             self.conn.rollback()
 
-    def test_scotland_is_missing_in_1911_only(self):
-        total = lambda year: sum(n for (src, y, k), n in self.counts.items() if src == "census" and y == year)
-        self.assertLess(total(1911), total(1901))            # a whole country is missing
-        self.assertGreater(total(1921), total(1911))
+    def test_scotland_is_missing_in_1911_and_1921(self):
+        scottish_counties = {"Lanarkshire", "Midlothian", "Aberdeenshire", "Inverness-shire", "Angus", "Perthshire"}
+        for year in config.SCOTLAND_MISSING_YEARS:
+            boundaries = config.CENSUS_PARISH_BOUNDARIES[year]
+            counties = {r[0] for r in self.conn.execute(
+                f"SELECT DISTINCT regcnty FROM gb{year}_att a JOIN conpar{boundaries} p ON p.conparid = a.gid")}
+            self.assertFalse(counties & scottish_counties, f"{year} should have no Scottish parishes")
+        counties_1901 = {r[0] for r in self.conn.execute(
+            "SELECT DISTINCT regcnty FROM gb1901_att a JOIN conpar1901 p ON p.conparid = a.gid")}
+        self.assertTrue(counties_1901 & scottish_counties, "1901 (the reference year) should still have Scotland")
 
     def test_name_list_only_has_names_over_the_threshold(self):
         listed = s1_counts.name_list(self.counts)
@@ -115,7 +121,7 @@ class CountingMatchesAnIndependentCalculation(unittest.TestCase):
         for key, ids in listed.items():
             for pid in ids:
                 p = periods[pid]
-                self.assertGreaterEqual(self.counts[(p["source"], p["year"], key)], config.THRESHOLD)
+                self.assertGreaterEqual(self.counts[(p["source"], p["year"], key)], config.THRESHOLD[p["source"]])
 
 
 if __name__ == "__main__":

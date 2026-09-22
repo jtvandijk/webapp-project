@@ -5,7 +5,7 @@
 Writes (in the work folder, see config.py):
   counts.csv   source, year, surname, n         every name and year with at least COUNT_FLOOR bearers
   names.csv    surname, map_periods, max_n, periods
-               the names that get a page: at least THRESHOLD bearers in at least one map period
+               the names that get a page: at least THRESHOLD[source] bearers in at least one map period
 
 Surnames are turned into keys first (pipeline/names.py), so "SMITH", "Smith" and "smith" are one
 name, and junk values such as "XXXX" or "nan" are dropped.
@@ -66,11 +66,11 @@ def count_all(conn, cfg):
 
 
 def name_list(counts):
-    """{key: [period ids with at least THRESHOLD bearers]} for the names that get a page."""
+    """{key: [period ids with at least THRESHOLD[source] bearers]} for the names that get a page."""
     periods = {(p["source"], p["year"]): p["id"] for p in config.PERIODS}
     listed = defaultdict(list)
     for (source, year, key), n in sorted(counts.items(), key=lambda item: item[0][1]):
-        if n >= config.THRESHOLD and (source, year) in periods:
+        if n >= config.THRESHOLD[source] and (source, year) in periods:
             listed[key].append(periods[(source, year)])
     return listed
 
@@ -102,8 +102,9 @@ def main():
     for periods in listed.values():
         for pid in periods:
             per_period[pid] += 1
+    thresholds = ", ".join(f"{source} {n}" for source, n in config.THRESHOLD.items())
     print(f"{len(counts):,} name-year counts written to {config.WORK / 'counts.csv'}")
-    print(f"{len(listed):,} names reach {config.THRESHOLD} bearers in at least one map period "
+    print(f"{len(listed):,} names reach the threshold ({thresholds}) in at least one map period "
           f"({sum(per_period.values()):,} maps in total)")
     print("names with a map, by period: " + "  ".join(f"{p['id']}:{per_period[p['id']]}" for p in config.PERIODS))
 

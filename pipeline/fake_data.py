@@ -17,7 +17,7 @@ What it contains (see the FILL_IN block in config.py for the real names):
 
 Awkward things are put in on purpose, because the real data has them too: surnames written in
 different cases and with punctuation, junk surnames ("XXXX", "nan"), postcodes without
-coordinates, census people without a parish, and no Scotland in 1911.
+coordinates, census people without a parish, and no Scotland in 1911 or 1921.
 
 The invented geography: about 45 towns with real-ish positions and sizes. Each surname is
 "widespread" (follows the population), "regional" (a few home towns) or "local" (one home town),
@@ -290,7 +290,7 @@ def generate(persons=250000, surnames=5000, seed=1, path=None, quiet=False):
         cs = rng.choice(surnames, size=n, p=p_surname)
         ctown = draw_towns(rng, cs, np.where(kind == "widespread", 0.0, np.minimum(conc + 0.15, 0.97)),
                            home, hist_national)
-        if year == 1911:                                       # no Scotland in the 1911 data
+        if year in config.SCOTLAND_MISSING_YEARS:              # no Scotland in 1911 or 1921
             keep = ~scottish_town[ctown]
             cs, ctown = cs[keep], ctown[keep]
             n = cs.size

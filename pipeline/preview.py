@@ -13,14 +13,14 @@ Writes work/preview.html. It is one plain file with the maps drawn inside it, so
 machine with no internet (the TRE). Below the maps is a table with the bandwidth, the time each map
 took and the size of the output file.
 
-Use it to judge the settings in config.py. Maps that are left out say why (fewer than 100 bearers,
-or no Scotland in 1911 for a Scottish name).
+Use it to judge the settings in config.py. Maps that are left out say why (too few bearers for that
+source's threshold). A heavily Scottish name does not lose its 1911/1921 map - it reuses the 1901
+map instead, since Scotland is missing from both censuses; the caption says so.
 """
 import argparse
 import csv
 import html
 import json
-import time
 
 import numpy as np
 from pyproj import Transformer
@@ -126,25 +126,29 @@ def main():
             print(f"note: {key} has no bearers in the chosen periods, left out")
             continue
         bandwidth = kde.choose_bandwidth(have)
+        pop_surfaces = {pid: data[pid][1] for pid in data}
         rows = []
         for power, mode, levels in variants:
+            timings = {}
+            resolved = rules.build_maps(periods, by_period, bandwidth, pop_surfaces, land, power, mode, levels, timings)
             row = []
             for p in periods:
-                why = rules.skip_reason(p, by_period)
-                if why:
-                    row.append(panel(None, land_path, f"{p['id']}: none ({why})"))
+                bands, r = resolved[p["id"]]
+                cells = by_period.get(p["id"])
+                total = int(cells[2].sum()) if cells is not None else 0
+                if r.action == "omit":
+                    row.append(panel(None, land_path, f"{p['id']}: none ({r.reason})"))
                     continue
-                cells = by_period[p["id"]]
-                started = time.perf_counter()
-                bands = kde.make_map(kde.to_grid(*cells), bandwidth, data[p["id"]][1], land, power, mode, levels)
-                took = time.perf_counter() - started
+                caption = (f"{p['id']}: {total:,} bearers (using {r.reference}'s map, {r.reason})"
+                          if r.action == "substitute" else f"{p['id']}: {total:,} bearers")
+                ms = timings.get(r.reference if r.action == "substitute" else p["id"], 0.0) * 1000
                 collection = kde.geojson(bands) if bands else None
                 size = len(json.dumps(collection, separators=(",", ":"))) if collection else 0
                 areas = sum(len(_parts(b)) for b in bands or [])
-                vertices = sum(len(r.coords) for b in bands or [] for g in _parts(b) for r in [g.exterior, *g.interiors])
-                stats.append((key, f"{power:g}/{mode}" + (":" + ",".join(f"{x:g}" for x in levels) if levels else ""), p["id"], int(cells[2].sum()), bandwidth / 1000,
-                              took * 1000, areas, vertices, size / 1024))
-                row.append(panel(bands, land_path, f"{p['id']}: {int(cells[2].sum()):,} bearers"))
+                vertices = sum(len(rg.coords) for b in bands or [] for g in _parts(b) for rg in [g.exterior, *g.interiors])
+                variant_tag = f"{power:g}/{mode}" + (":" + ",".join(f"{x:g}" for x in levels) if levels else "")
+                stats.append((key, variant_tag, p["id"], total, bandwidth / 1000, ms, r.action, areas, vertices, size / 1024))
+                row.append(panel(bands, land_path, caption))
             shown = ",".join(f"{x:g}" for x in levels or (config.LEVEL_MASS if mode == "mass" else config.LEVEL_PEAK))
             tag = f"<div class='variant'>power {power:g}, {mode} {shown}</div>" if len(variants) > 1 else ""
             rows.append(f"<div>{tag}<div class='row'>{''.join(row)}</div></div>")
@@ -158,8 +162,8 @@ def main():
         reference = ("<h2>For comparison: maps on the existing website <small>real data, old method</small></h2>"
                      f"<div class='row'>{''.join(panels)}</div>")
 
-    table = "".join(f"<tr><td>{k}</td><td>{v}</td><td>{p}</td><td>{n:,}</td><td>{h:.0f}</td><td>{ms:.0f}</td>"
-                    f"<td>{ar}</td><td>{pts:,}</td><td>{kb:.0f}</td></tr>" for k, v, p, n, h, ms, ar, pts, kb in stats)
+    table = "".join(f"<tr><td>{k}</td><td>{v}</td><td>{p}</td><td>{n:,}</td><td>{h:.0f}</td><td>{a}</td><td>{ms:.0f}</td>"
+                    f"<td>{ar}</td><td>{pts:,}</td><td>{kb:.0f}</td></tr>" for k, v, p, n, h, ms, a, ar, pts, kb in stats)
     page = f"""<!doctype html><meta charset="utf-8"><title>Map preview</title>
 <style>body{{font:14px system-ui,sans-serif;margin:20px}}h2{{margin:26px 0 2px}}small{{color:#667;font-weight:400}}
 .row{{display:flex;flex-wrap:wrap;gap:4px}}.variant{{margin:8px 0 0;color:#345;font-weight:600;font-size:13px}}
@@ -174,12 +178,14 @@ bearers. Database profile: <b>{config.PROFILE}</b>. Blue shades: level 1 (outer)
 Variants shown: {', '.join(f'{p:g}/{m}' for p, m, _ in variants)}.</p>
 {''.join(blocks)}{reference}
 <h2>Time and size</h2><table><tr><th>name</th><th>variant</th><th>period</th><th>bearers</th><th>bandwidth km</th>
-<th>ms</th><th>separate areas</th><th>points</th><th>KB as GeoJSON</th></tr>{table}</table>"""
+<th>action</th><th>ms</th><th>separate areas</th><th>points</th><th>KB as GeoJSON</th></tr>{table}</table>"""
     with open(args.out, "w", encoding="utf-8") as f:
         f.write(page)
     if stats:
-        print(f"wrote {args.out}: {len(stats)} maps, median {np.median([s[5] for s in stats]):.0f} ms, "
-              f"largest {max(s[8] for s in stats):.0f} KB")
+        built = [s[5] for s in stats if s[6] == "build"]
+        timing = f"median {np.median(built):.0f} ms, " if built else ""
+        print(f"wrote {args.out}: {len(stats)} maps ({len(built)} built, {len(stats) - len(built)} reused), "
+              f"{timing}largest {max(s[9] for s in stats):.0f} KB")
 
 
 if __name__ == "__main__":

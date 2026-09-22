@@ -7,11 +7,11 @@ The code that turns the registers and censuses into the data behind the website 
 
 | File | What it does | Status |
 |---|---|---|
-| `config.py` | **All settings.** Database and table names, years, threshold, map settings. | done |
+| `config.py` | **All settings.** Table and column names, years, threshold, map settings. | done |
 | `fake_data.py` | Makes a fake database with the same shape as the real one. | done |
 | `s1_counts.py` | Stage 1: bearers per name per year, and the list of names that get a page. | done, tested |
 | `kde.py` | The map calculation for one name and year. | done, tested |
-| `rules.py` | Which maps are left out (fewer than 100 bearers; Scottish names in 1911). | done, tested |
+| `rules.py` | What happens to each period: built, copied from another year (Scotland), or left out. | done, tested |
 | `preview.py` | Draws a page of maps to look at. | done |
 | `sql.py`, `db.py`, `names.py` | The queries, the connection, the surname rule. | done |
 | stages 2 to 6 | Population surfaces, point extracts, the map job on the HPC, facts, assembling the release. | to do |
@@ -34,13 +34,17 @@ shows several settings side by side, without editing anything (`<weighting power
 
 ## Running it in the TRE
 
-1. Open `config.py` and fill in the `"tre"` block (search for `FILL_IN`): the connection details. The
-   register (`registers_linked.lcr_consol2026`) is filled in. The ONSPD names (`registers_lookup.onspd_2023_feb`,
-   `stdpcd`, `oseast1m`, `osnrth1m`, `ctry`) are guesses from the old scripts, and so is the parish table
-   `spatial.conpar…`: check them, and use the newest ONSPD you have.
-2. `export GBNAMES_PROFILE=tre` (and give Postgres the password the usual way, `~/.pgpass` or `PGPASSWORD`;
-   it is never written in the code).
-3. `python3 -m pipeline.s1_counts`. If a table or column name is wrong, Postgres says which. The stage
+1. Check the parish table name in `config.py`'s `"tre"` block (`spatial.conpar…`) - it is a guess
+   from the old scripts. The register (`registers_linked.lcr_consol2026`) and ONSPD
+   (`registers_lookup.onspd_2026_feb`, `stdpcd`, `oseast1m`, `osnrth1m`, `ctry`) are confirmed.
+2. Install a Postgres driver (see `requirements.txt`): try `pip install psycopg2` first (or
+   `conda install psycopg2`, which is often simpler on an HPC), then `pip install "psycopg[binary]"`,
+   then `pip install pg8000` (pure Python, no compiler needed at all) — stop at the first that
+   installs. `db.py` uses whichever one is there.
+3. Set `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER` (e.g. source a small env file with these in it),
+   `export PGPASSWORD=...` separately, then `export GBNAMES_PROFILE=tre`. Passwords are never
+   written into any file (note: pg8000 only reads `PGPASSWORD`, not `~/.pgpass`).
+4. `python3 -m pipeline.s1_counts`. If a table or column name is wrong, Postgres says which. The stage
    prints how many register rows find their postcode in the lookup (it stops below 80%, which means the
    postcodes are written differently in the two tables) and stops if the lookup has a postcode twice,
    since everybody there would count twice.
@@ -50,12 +54,12 @@ lookup holds latitude and longitude instead, tell me and I will add the conversi
 
 ## Things that are easy to change (all in `config.py`)
 
-- `THRESHOLD`: minimum bearers for a map (100 rows).
+- `THRESHOLD`: minimum bearers for a map, per source (now census 30, register 100).
 - `MAP_YEARS`: which years get a map. The website follows automatically.
 - `BANDWIDTH_MIN_M`, `BANDWIDTH_MAX_M`, `BANDWIDTH_N`: how widely each bearer is spread on the map.
 - `WEIGHT_POWER`: how much the local population is taken into account (0 = plain density, 1 = fully relative, now 0.5).
 - `LEVEL_MASS`: the share of a name's density that levels 1, 2 and 3 hold (now 85%, 65%, 40%). `LEVEL_MODE = "peak"` uses `LEVEL_PEAK` instead.
-- `SCOTLAND_MAX_SHARE`: when a Scottish name loses its 1911 map (now more than 25% in Scotland in 1901).
+- `SCOTLAND_MAX_SHARE`: when a Scottish name's 1911/1921 map is copied from 1901 instead of built (now more than 30% in Scotland in 1901).
 - `SMOOTH_M`, `SIMPLIFY_M`, `MIN_AREA_KM2`: how tidy the outlines are, and how large the files get. `MIN_AREA_KM2` removes
   tiny specks (`preview --min-area 400` to try); the preview table shows how many separate areas each map has.
 
@@ -68,8 +72,9 @@ Use `preview.py` after changing any of them.
   mistake (small counts were dropped before spelling variants were merged).
 - `tests/test_kde.py` checks the maps: three levels, in the right place, no overlap, on land, inside
   the data contract, small names still show, the weighting dial does what it says and each level
-  holds the share of density it claims. `tests/test_rules.py` checks the Scotland rule. A stress test on 40 random names found a geometry
-  fault that a single simple blob does not show.
+  holds the share of density it claims. `tests/test_rules.py` checks the threshold and the Scotland
+  rule, including that a copied map is only built once and matches its reference exactly. A stress
+  test on 40 random names found a geometry fault that a single simple blob does not show.
 - The fake database contains the awkward cases the real data has: surnames in different cases and
-  with punctuation, junk surnames, addresses without coordinates, two sets of parish numbers, and no
-  Scotland in 1911.
+  with punctuation, junk surnames, postcodes without coordinates, two sets of parish numbers, and no
+  Scotland in 1911 or 1921.
