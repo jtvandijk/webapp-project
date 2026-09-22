@@ -349,10 +349,22 @@ def size_level_mass(n, second_share=0.0):
     coincidentally close individuals, so forcing one is not obviously more honest than the
     untightened original - the smallest anchor is simply config.LEVEL_MASS, unchanged. At the large
     end (round 2): several names around 200k-400k bearers (Davies, Jones, Williams, Taylor, Thomas)
-    read as more spread than wanted and were tightened; Smith specifically needed a tighter level 3
-    on its own (its outer levels were already right) - not the same "more than one comparably
-    strong region" story round 1 guessed, since Smith's own second_blob_share turned out to be
-    ~0 on real data. That guess is corrected here, not carried forward.
+    read as more spread than wanted and were tightened; Smith's own second_blob_share turned out to
+    be ~0 on real data, so round 1's "more than one comparably strong region" guess for it does not
+    hold either.
+
+    Round 2 also tried tightening Smith's level 3 on its own, in response to its "circles" complaint
+    - reverted in round 3 (2026-09-23, still the same night) once real data showed this made a
+    DIFFERENT complaint (a "C" shape/ring around dense cities, WEIGHT_CEILING's job, see config.py)
+    visibly WORSE, not better. Mechanism: where the weighted surface dips at an exact dense city
+    centre and rings higher around it (WEIGHT_CEILING's problem to fix, not this curve's), a LOOSER
+    level threshold can sit below both the dip and the ring, reading as one solid area; tightening
+    raises the threshold until it clears the dip but not the ring, which is exactly what a "circle"
+    or "C" shape looks like - so tightening a name's tightest level does not fix that kind of
+    artefact, it exposes it. The 500,000-bearer anchor's level 3 is back at its round-1 value (0.30)
+    for this reason - the "circles" complaint that motivated tightening it was itself probably this
+    same weighting artefact, to be fixed at its source (WEIGHT_CEILING/POPULATION_BANDWIDTH_M), not
+    compensated for here.
 
     Longley/Cheshire (~2,000 bearers) and Obrien/Macdonald/Davidson (~35,000) each share an anchor
     point but did not all want the same setting - a real residual this curve cannot capture since it
@@ -374,7 +386,7 @@ def size_level_mass(n, second_share=0.0):
     Macdonald/Fraser/Mackenzie's missing regions back - needs checking against their actual
     second_share (only Mackenzie's was reported this round) and the resulting map, not assumed."""
     anchors_n = np.log10([100, 2_000, 35_000, 300_000, 500_000])
-    anchor_triples = [config.LEVEL_MASS, (0.40, 0.20, 0.10), (0.50, 0.25, 0.10), (0.60, 0.38, 0.17), (0.85, 0.55, 0.18)]
+    anchor_triples = [config.LEVEL_MASS, (0.40, 0.20, 0.10), (0.50, 0.25, 0.10), (0.60, 0.38, 0.17), (0.85, 0.60, 0.30)]
     x = np.log10(max(n, 1))
     levels = tuple(float(np.interp(x, anchors_n, [t[i] for t in anchor_triples])) for i in range(3))
     if second_share:

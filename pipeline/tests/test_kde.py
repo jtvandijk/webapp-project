@@ -195,7 +195,7 @@ class SizeLevelMass(unittest.TestCase):
         self.assertLess(bigger[0], biggest[0])
 
     def test_second_share_of_one_reaches_exactly_the_loosest_anchor(self):
-        self.assertEqual(kde.size_level_mass(35_000, second_share=1.0), (0.85, 0.55, 0.18))
+        self.assertEqual(kde.size_level_mass(35_000, second_share=1.0), (0.85, 0.60, 0.30))
 
 
 class MinorBlobs(unittest.TestCase):
