@@ -74,7 +74,8 @@ lookup holds latitude and longitude instead, tell me and I will add the conversi
 
 ## Things that are easy to change (all in `config.py`)
 
-- `THRESHOLD`: minimum bearers for a map, per source (now census 30, register 100).
+- `THRESHOLD`: minimum bearers for a map, per source (both 100 - a 30-bearer census map looked too
+  thin/noisy on real data to be worth showing, so it no longer has a separate, lower floor).
 - `MAP_YEARS`: which years get a map. The website follows automatically.
 - `BANDWIDTH_MIN_M`, `BANDWIDTH_MAX_M`, `BANDWIDTH_N`: how widely each bearer is spread on the map.
 - `WEIGHT_POWER`: how much the local population is taken into account (0 = plain density, 1 = fully relative, now 0.5).

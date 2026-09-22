@@ -22,9 +22,13 @@ the map calculation to the full database and to an HPC batch job), 5 and 6 are s
   IMD for England 2025, and a new precarity index. Which versions to use is decided when we get to stage 5.
 - **Language.** Python: numpy, scipy, shapely, pyproj and contourpy for the maps, plus a Postgres
   driver in the TRE (`pipeline/requirements.txt`; conda works well for this on the HPC).
-- **Threshold, per source.** Census: 30 bearers. This data is over 100 years old and treated as no
-  disclosure risk; the floor is only to keep a map meaningful, not for privacy. Register: 100
-  bearers, the standard disclosure threshold. (`THRESHOLD` in `config.py`.)
+- **Threshold, per source, both 100 (changed from census 30 on 2026-09-23).** Census data is over
+  100 years old and treated as no disclosure risk, so its floor is only to keep a map meaningful,
+  not for privacy - it was tried at 30 and looked too thin/noisy on real data to be worth showing,
+  so it was raised to match register rather than kept as a separate, lower "meaningful" floor.
+  Register's 100 is the standard disclosure threshold. (`THRESHOLD` in `config.py`.) This is the
+  floor for a map (and for a period counting towards a name's page); a name's other years still
+  show their raw count once it has a page at all.
 - **Map bandwidth.** The old rule used a per-surname "isonymy class" that cannot be made for new
   names, so the new rule uses the number of bearers only: 8 km at 100 bearers, rising steadily to
   18 km at 100,000, and one bandwidth per name (from its biggest year) for all of its maps. The
@@ -57,12 +61,18 @@ the map calculation to the full database and to an HPC batch job), 5 and 6 are s
   diagonal neighbours as joined, and mass share after smoothing is not the same number as a raw
   bearer-count ratio) - not yet checked against real names.
 - **Map levels.** Each level is the smallest area that holds a share of the name's (weighted)
-  density: 85% for level 1, 65% for level 2 and 40% for level 3 (`LEVEL_MASS`). This replaces the
-  old cut-offs, which were divided by a size-dependent constant found by trial and error. Every name
-  gets all three levels, small names show as clearly as big ones, a widespread name gets large
-  areas and a local name small ones. Compared by eye on fake data: 90/75/50 spreads local names too
-  much, 75/50/25 makes widespread names patchy again, so 85/65/40 is the middle - to revisit on real
-  data alongside the weighting dial above.
+  density: 85% for level 1, 65% for level 2 and 40% for level 3 (`LEVEL_MASS`), the fake-data
+  starting point - **found on real data (2026-09-23) to need to vary per name**, like bandwidth
+  already does, not stay one constant. Unlike bandwidth, though, what predicts the right tightness
+  does not look like bearer count: Cheshire needs almost as much area as Davies to reach the same
+  share of its own total despite far fewer bearers, because Davies is more geographically
+  concentrated - a difference in *shape*, not size. `kde.concentration()` (new, exploratory,
+  `preview.py`'s "concentration" column) is a first attempt at measuring that shape directly - the
+  "mass" cut-off value at which half a name's density is reached, cheap (reuses the sort
+  `level_cutoffs()` already does) and not sensitive to a name having several separate regional
+  cores the way a single weighted centroid/spread measure would be. Not yet used for anything,
+  and not yet checked whether it actually predicts the right `LEVEL_MASS` - the next thing to try.
+  Small names may also need tightening for an unrelated reason: see Van Dijk below.
 - **1911, 1921 and Scotland.** Neither census has Scotland, and a Scottish name still has plenty of
   bearers in England, so its own count for that year does not fall below the threshold on its own.
   So instead of building a map from that year's (incomplete) data, we reuse the map from 1901 (a
@@ -174,14 +184,27 @@ I cannot see the data or run anything in the TRE, so:
 
 1. **The parish table name.** `spatial.conpar{boundaries}` in the `tre` block is a guess from the
    old scripts; the register and ONSPD table names are confirmed.
-2. **The look of the maps on real data - in progress.** First real names tried: Longley (~2,200
-   bearers) came out too spread across the country (the old site shows 2 concentrated centres);
-   van Dijk (~150 bearers) came out as 15-20 separate spots, including some that look like just 1-2
-   people. `--min-area` cannot fix either (see `MIN_BLOB_SHARE` above, which was built in response to
-   this) - raising `WEIGHT_POWER` is *not* the fix either, it was tried in the reasoning here before
-   and found to make "too spread" worse, not better (see the weighting bullet above). Still to try
-   on real data: `--min-blob-share` at a few values, and lower `LEVEL_MASS` shares, ideally together
-   via `--variants` and `--min-blob-share` in the same run so they can be compared side by side.
+2. **The look of the maps on real data - in progress.** `LEVEL_MASS` tried at 0.70/0.50/0.30 (down
+   from the 0.85/0.65/0.40 default) on smith, longley, vandijk, macdonald, obrien, cheshire, davies,
+   jones: jones/davies excellent; cheshire/obrien still too wide (see the map levels bullet above -
+   probably a concentration/shape issue, not fixable by a tighter constant alone); macdonald good
+   (Scotland concentrated) with London still showing at the outer level only, which may just be
+   correct (a real, smaller concentration); smith developed small holes at the tighter setting
+   (plausible cause: a real dip between two nearby elevated areas, or the population-weighting step
+   suppressing a dense urban core, exposed once the value threshold rose - not confirmed which).
+   **Van Dijk (~150 bearers) specifically:** `MIN_BLOB_SHARE` does not help even at 0.10 - the
+   "separate areas" count in `preview.py`'s table barely moves between 0.02 and 0.05 (~40 throughout),
+   which is the signature of a share-based check being structurally powerless here, either because
+   the whole surface is already one connected blob nationally (individual bearers' smoothed bumps
+   never reach exact zero between them at this bandwidth), or because 150 total bearers is too few
+   for real clusters and individual noise to differ enough in *relative share* to be separable at
+   all. A much tighter `LEVEL_MASS` (0.30/0.20/0.10) *does* reduce it (down to 25-32), since it is a
+   value threshold, not a connectivity one - but the surviving blobs become quite small, which is
+   probably why the old pipeline manually inflated small names' visual size ("blow up smaller names
+   ... otherwise you can't really see them" - user's recollection, mechanism not recorded). Proposed
+   (not yet built): a separate, final visibility buffer on the tidied polygon, scaled by name size -
+   deliberately kept apart from bandwidth, since widening bandwidth to the same end would also let
+   individual noise bumps reach further and merge, working against this very problem.
 3. **Facts: one reference year, or pooled?** The old queries had no year filter, so people with
    many addresses counted several times. A single reference year avoids that (2026 is only a part
    year, so probably the last full year).

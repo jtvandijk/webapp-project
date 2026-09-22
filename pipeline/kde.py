@@ -289,6 +289,21 @@ def make_map(grid, bandwidth_m, pop_smooth, land, power=None, mode=None, levels=
     return make_bands(surface, land, level_cutoffs(surface, mode, levels))
 
 
+def concentration(grid, bandwidth_m, pop_smooth, land, power=None, min_share=None, share=0.5):
+    """How piled-up (rather than spread thin) a name's map is, from near 0 (share is reached almost
+    anywhere, even at low values - spread evenly across everywhere it has any presence at all) to
+    near 1 (only the very peak counts - almost all of the density sits in a few cells): the "mass"
+    cut-off value for `share`, as returned by level_cutoffs(), which is already a fraction of the
+    surface's own peak. Not used by make_map() - exploratory, for judging whether a name's own
+    concentration (rather than its bearer count) predicts how tight LEVEL_MASS should be for it. As
+    cheap as one level_cutoffs() call, since that is exactly what this is."""
+    surface = weigh(smooth(grid, bandwidth_m), pop_smooth, land.grid, power)
+    surface = drop_minor_blobs(surface, min_share)
+    if not surface.any():
+        return None
+    return level_cutoffs(surface, mode="mass", levels=(share,))[0]
+
+
 # ---------------------------------------------------------------------------
 # 8. output
 # ---------------------------------------------------------------------------

@@ -58,10 +58,14 @@ class Resolve(unittest.TestCase):
         self.assertIn("10 bearers", r.reason)
 
     def test_the_threshold_is_per_source(self):
-        self.assertEqual(rules.resolve(PERIODS["1901"], {"1901": cells((LONDON, 40))}).action, "build")   # >= 30
-        self.assertEqual(rules.resolve(PERIODS["1901"], {"1901": cells((LONDON, 20))}).action, "omit")    # < 30
-        self.assertEqual(rules.resolve(PERIODS["2020"], {"2020": cells((LONDON, 40))}).action, "omit")    # < 100
-        self.assertEqual(rules.resolve(PERIODS["2020"], {"2020": cells((LONDON, 150))}).action, "build")  # >= 100
+        # resolve() reads config.THRESHOLD[source] independently for each source - checked against
+        # the live values (both 100 today) rather than hardcoded numbers, so this still holds if the
+        # two are ever set differently again
+        census_t, register_t = config.THRESHOLD["census"], config.THRESHOLD["register"]
+        self.assertEqual(rules.resolve(PERIODS["1901"], {"1901": cells((LONDON, census_t))}).action, "build")
+        self.assertEqual(rules.resolve(PERIODS["1901"], {"1901": cells((LONDON, census_t - 1))}).action, "omit")
+        self.assertEqual(rules.resolve(PERIODS["2020"], {"2020": cells((LONDON, register_t - 1))}).action, "omit")
+        self.assertEqual(rules.resolve(PERIODS["2020"], {"2020": cells((LONDON, register_t))}).action, "build")
 
 
 class BuildMaps(unittest.TestCase):

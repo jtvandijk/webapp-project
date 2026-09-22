@@ -122,10 +122,15 @@ CENSUS_PARISH_BOUNDARIES = {1851: 1851, 1861: 1851, 1881: 1851, 1891: 1851,
 # 3. COUNTING AND DISCLOSURE
 # ---------------------------------------------------------------------------
 
-# Minimum bearers before a map is made, per source. Census data is over 100 years old and treated
-# as no disclosure risk, so its floor (30) is only to keep the map itself meaningful; register data
-# uses the standard 100.
-THRESHOLD = {"census": 30, "register": 100}
+# Minimum bearers before a map is made, per source, and (s1_counts.py) before a period counts
+# towards a name getting a page at all. Census data is over 100 years old and treated as no
+# disclosure risk, so this floor is only to keep the map itself meaningful, not for privacy -
+# register's is the standard disclosure floor. Both are 100: on real data, a 30-bearer census map
+# looked too thin/noisy to be worth showing (2026-09-23), so census was raised to match register
+# rather than keep a separate, lower "meaningful" floor that turned out not to be. A name's OTHER
+# years still show their raw count once it has a page (COUNT_FLOOR below is the much lower floor
+# for that) - this floor only decides map/page eligibility, not whether a count is ever recorded.
+THRESHOLD = {"census": 100, "register": 100}
 
 COUNT_FLOOR = 10       # counts below this are not kept at all, in either source
 

@@ -233,8 +233,13 @@ def main():
                 size = len(json.dumps(collection, separators=(",", ":"))) if collection else 0
                 areas = sum(len(_parts(b)) for b in bands or [])
                 vertices = sum(len(rg.coords) for b in bands or [] for g in _parts(b) for rg in [g.exterior, *g.interiors])
+                ref_id = r.reference if r.action == "substitute" else p["id"]
+                ref_cells = by_period.get(ref_id)
+                conc = kde.concentration(kde.to_grid(*ref_cells), bandwidth, pop_surfaces[ref_id], land, power) \
+                       if ref_cells is not None else None
                 variant_tag = f"{power:g}/{mode}" + (":" + ",".join(f"{x:g}" for x in levels) if levels else "")
-                stats.append((key, variant_tag, p["id"], total, bandwidth / 1000, ms, r.action, areas, vertices, size / 1024))
+                stats.append((key, variant_tag, p["id"], total, bandwidth / 1000, ms, r.action, areas, vertices,
+                              size / 1024, conc))
                 row.append(panel(bands, land_path, caption))
             tag = f"<div class='variant'>{variant_label}</div>" if len(variants) > 1 else ""
             rows.append(f"<div>{tag}<div class='row'>{''.join(row)}</div></div>")
@@ -249,7 +254,8 @@ def main():
                      f"<div class='row'>{''.join(panels)}</div>")
 
     table = "".join(f"<tr><td>{k}</td><td>{v}</td><td>{p}</td><td>{n:,}</td><td>{h:.0f}</td><td>{a}</td><td>{ms:.0f}</td>"
-                    f"<td>{ar}</td><td>{pts:,}</td><td>{kb:.0f}</td></tr>" for k, v, p, n, h, ms, a, ar, pts, kb in stats)
+                    f"<td>{ar}</td><td>{pts:,}</td><td>{kb:.0f}</td><td>{'' if c is None else f'{c:.2f}'}</td></tr>"
+                    for k, v, p, n, h, ms, a, ar, pts, kb, c in stats)
     page = f"""<!doctype html><meta charset="utf-8"><title>Map preview</title>
 <style>body{{font:14px system-ui,sans-serif;margin:20px}}h2{{margin:26px 0 2px}}small{{color:#667;font-weight:400}}
 .row{{display:flex;flex-wrap:wrap;gap:4px}}.variant{{margin:8px 0 0;color:#345;font-weight:600;font-size:13px}}
@@ -262,8 +268,12 @@ LEVEL_PEAK in config.py): <b>{'</b>; <b>'.join(variant_labels)}</b>.
 Bandwidth {config.BANDWIDTH_MIN_M // 1000} to {config.BANDWIDTH_MAX_M // 1000} km, growing with the number of
 bearers. Database profile: <b>{config.PROFILE}</b>. Blue shades: level 1 (outer) to level 3 (highest).</p>
 {''.join(blocks)}{reference}
-<h2>Time and size</h2><table><tr><th>name</th><th>variant</th><th>period</th><th>bearers</th><th>bandwidth km</th>
-<th>action</th><th>ms</th><th>separate areas</th><th>points</th><th>KB as GeoJSON</th></tr>{table}</table>"""
+<h2>Time and size</h2><p>Concentration: the "mass" cut-off value (0-1, share of the surface's own peak) at
+which half this name's density is reached - low means spread thin across everywhere it has any
+presence, high means piled into a few cells. Exploratory: seeing whether this predicts how tight
+LEVEL_MASS should be for a name better than its bearer count does.</p>
+<table><tr><th>name</th><th>variant</th><th>period</th><th>bearers</th><th>bandwidth km</th>
+<th>action</th><th>ms</th><th>separate areas</th><th>points</th><th>KB as GeoJSON</th><th>concentration</th></tr>{table}</table>"""
     with open(args.out, "w", encoding="utf-8") as f:
         f.write(page)
     if stats:
