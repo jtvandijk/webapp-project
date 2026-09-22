@@ -32,11 +32,13 @@ Run everything from the project folder (the one that contains `pipeline/`, `docs
 and years. `--variants 0/mass 0.5/mass 1/mass` or `--variants 0.5/mass:0.85,0.65,0.4 0.5/mass:0.75,0.5,0.25`
 shows several settings side by side, without editing anything (`<weighting power>/<level mode>[:<level shares>]`). The page is a single file, so it also opens in the TRE, which has no internet.
 
-`--auto-level-mass` replaces `--variants` with one setting per name, from `kde.size_level_mass()` -
-a first-draft, exploratory curve (see its docstring) trying to reproduce by eye what real names
-seem to need without hand-picking a triple for each one. Each name's own resolved setting (and its
-`second_blob_share`, the measure the curve uses to spot a name with more than one comparably strong
-region) is labelled under its maps.
+By default every name gets its own `LEVEL_MASS` from `kde.size_level_mass()` - a curve calibrated by
+eye against real names (see its docstring), confirmed on real data 2026-09-23 as a real improvement
+over one fixed setting for every name. Each name's own resolved setting (and its `second_blob_share`,
+the measure the curve uses to spot a name with a real secondary region) is labelled under its maps.
+Pass `--variants` to turn this off and compare specific settings by hand instead, e.g.
+`--variants 0/mass 0.5/mass 1/mass` or `--variants 0.5/mass:0.85,0.65,0.4 0.5/mass:0.75,0.5,0.25`
+(`<weighting power>/<level mode>[:<level shares>]`).
 
 What is fetched from the database is cached in `work/cache/`, since comparing KDE settings re-draws
 the same data without re-fetching it - a real database query dominates the runtime (minutes), the
@@ -88,6 +90,12 @@ lookup holds latitude and longitude instead, tell me and I will add the conversi
   Careful: raising this does not just suppress big cities, it also makes any *sparse* area relatively
   louder - including a handful of scattered individuals sitting in the countryside, which can make a
   name look more spread out, not less.
+- `WEIGHT_CEILING` (now 8000 people/km2) and `POPULATION_BANDWIDTH_M` (now 15000, widened from
+  10000): fix a ring or "C" shape that showed up around big, very dense cities instead of a filled
+  area - confirmed and fixed on real data 2026-09-23. A big name's own bandwidth can be much wider
+  than the population surface's, so an extremely dense exact city centre kept a sharp local peak the
+  name's own, more smoothed-out surface did not, and dividing by it created a dip exactly there.
+  `preview --weight-ceiling`/`--population-bandwidth` to try other values.
 - `MIN_BLOB_SHARE`: drops a separate concentration that holds less than this share of the name's own
   total (now 2%) - for a handful of people sitting on their own somewhere, not a real concentration.
   Different from `MIN_AREA_KM2` below: at these bandwidths even one person's own smoothed "bump" can
@@ -95,13 +103,15 @@ lookup holds latitude and longitude instead, tell me and I will add the conversi
   enough apart that the smoothing has already reduced the gap between them to zero (see
   `kde.drop_minor_blobs`'s docstring) - two nearby but visually distinct concentrations are kept or
   dropped together, not compared to each other. Tested on synthetic data only so far.
-- `LEVEL_MASS`: the share of a name's density that levels 1, 2 and 3 hold (now 85%, 65%, 40%). `LEVEL_MODE = "peak"` uses `LEVEL_PEAK` instead.
+- `LEVEL_MASS`: the share of a name's density that levels 1, 2 and 3 hold for the smallest names
+  (85%, 65%, 40%) - see `kde.size_level_mass()`, which varies this per name by default (confirmed on
+  real data 2026-09-23); `LEVEL_MODE = "peak"` uses `LEVEL_PEAK` instead.
 - `SCOTLAND_MAX_SHARE`: when a Scottish name's 1911/1921 map is copied from 1901 instead of built (now more than 30% in Scotland in 1901).
 - `SMOOTH_M`, `SIMPLIFY_M`, `MIN_AREA_KM2`: how tidy the outlines are, and how large the files get. `SMOOTH_M` (now
-  5000, `preview --smooth 10000` to try) closes gaps/notches narrower than 2x itself - the old pipeline's
-  equivalent step (`data-prep/py/fn_prerender.py`) used 10000, twice this, which is a plausible reason its
-  outlines read as more solid/concentric than this pipeline's can look at a tight `LEVEL_MASS`. `MIN_AREA_KM2`
-  removes tiny specks (`preview --min-area 400` to try); the preview table shows how many separate areas each map has.
+  10000, matching the old pipeline's equivalent step in `data-prep/py/fn_prerender.py` - confirmed on real data
+  to read as more solid/concentric than the previous 5000) closes gaps/notches narrower than 2x itself.
+  `MIN_AREA_KM2` removes tiny specks (`preview --min-area 400` to try); the preview table shows how many
+  separate areas each map has.
 
 `preview.py --min-blob-share 0.05` (etc.) tries a different share without editing `config.py`.
 

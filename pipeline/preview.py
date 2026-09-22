@@ -5,9 +5,12 @@
     python3 -m pipeline.preview --variants 0/mass 0.5/mass 1/mass 0.5/peak     # compare settings
     python3 -m pipeline.preview --variants 0.5/mass:0.9,0.75,0.5 0.5/mass:0.75,0.5,0.25
 
-A variant is  <weighting power>/<level mode>  or  <weighting power>/<level mode>:<levels>  (see
-WEIGHT_POWER, LEVEL_MODE, LEVEL_MASS and LEVEL_PEAK in config.py), for example  0.5/mass:0.75,0.5,0.25.
-With several variants every name gets one group of maps per variant, side by side.
+By default (confirmed on real data 2026-09-23) every name gets its own LEVEL_MASS from
+kde.size_level_mass(), not one fixed setting - pass --variants to compare specific settings by hand
+instead (this turns --auto-level-mass off). A variant is  <weighting power>/<level mode>  or
+<weighting power>/<level mode>:<levels>  (see WEIGHT_POWER, LEVEL_MODE, LEVEL_MASS and LEVEL_PEAK in
+config.py), for example  0.5/mass:0.75,0.5,0.25. With several variants every name gets one group of
+maps per variant, side by side.
 
 Writes work/preview.html. It is one plain file with the maps drawn inside it, so it also opens on a
 machine with no internet (the TRE). Below the maps is a table with the bandwidth, the time each map
@@ -163,18 +166,20 @@ def main():
     parser.add_argument("--periods", nargs="*", default=["1851", "1901", "1911", "1921", "2000", "2020", "2026"])
     parser.add_argument("--variants", nargs="*", help="settings to compare, as <power>/<mode>, e.g. 0.5/mass 1/peak")
     parser.add_argument("--min-area", type=float, help="drop blobs and holes smaller than this many km2 (config MIN_AREA_KM2)")
-    parser.add_argument("--smooth", type=float, help="metres to fill gaps/notches narrower than 2x this (config SMOOTH_M) - the old "
-                                                       "pipeline's equivalent step used 10000 (this is 5000 by default)")
+    parser.add_argument("--smooth", type=float, help="metres to fill gaps/notches narrower than 2x this (config SMOOTH_M, now 10000)")
     parser.add_argument("--min-blob-share", type=float, help="drop a separate blob holding less than this share of the name's total (config MIN_BLOB_SHARE)")
     parser.add_argument("--weight-ceiling", type=float, help="cap population used in weighting at this many people/km2 (config WEIGHT_CEILING) "
                                                               "- stops one very dense pixel (e.g. a city centre) creating a dip there")
-    parser.add_argument("--population-bandwidth", type=float, help="smoothing of the population surface in metres (config POPULATION_BANDWIDTH_M) "
-                                                                    "- try matching a big name's own bandwidth (up to 18000) to test the same dip")
+    parser.add_argument("--population-bandwidth", type=float, help="smoothing of the population surface in metres (config POPULATION_BANDWIDTH_M, "
+                                                                    "now 15000)")
     parser.add_argument("--auto-level-mass", action="store_true",
-                        help="per-name LEVEL_MASS from kde.size_level_mass() (exploratory - see its docstring) instead of --variants")
+                        help="per-name LEVEL_MASS from kde.size_level_mass() - the default whenever --variants is not given (pass --variants to "
+                             "compare specific settings manually instead)")
     parser.add_argument("--refresh-cache", action="store_true", help="ignore work/cache/ and re-query, e.g. after a new register or census load")
     parser.add_argument("--out", default=str(config.WORK / "preview.html"))
     args = parser.parse_args()
+    if args.variants is None and not args.auto_level_mass:
+        args.auto_level_mass = True    # the confirmed way to run, now the default - pass --variants for manual comparisons instead
     if args.min_area is not None:
         config.MIN_AREA_KM2 = args.min_area
     if args.min_blob_share is not None:

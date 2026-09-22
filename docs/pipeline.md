@@ -73,6 +73,25 @@ the map calculation to the full database and to an HPC batch job), 5 and 6 are s
   cores the way a single weighted centroid/spread measure would be. Not yet used for anything,
   and not yet checked whether it actually predicts the right `LEVEL_MASS` - the next thing to try.
   Small names may also need tightening for an unrelated reason: see Van Dijk below.
+- **Settled (2026-09-23), after several rounds of real-data calibration (~30 names) and one
+  significant correction along the way.** `LEVEL_MASS` now varies per name by default
+  (`kde.size_level_mass()`, `preview.py` uses it unless `--variants` is given), tightest for names
+  in the low thousands to tens of thousands of bearers, loosest at both ends; `second_blob_share`
+  loosens a name with a real secondary region. The bigger finding: a "C" shape/ring around big,
+  dense cities (worse the denser the city) was showing up independent of `LEVEL_MASS`, caused by a
+  big name's own bandwidth being wider than the fixed population-smoothing bandwidth, so an
+  extremely dense exact city centre kept a sharp local peak that the name's own surface did not,
+  and dividing by it created a dip exactly there. Fixed with `WEIGHT_CEILING` (8000 people/km2, caps
+  what the division uses) and a wider `POPULATION_BANDWIDTH_M` (15,000, was 10,000) together, plus a
+  wider `SMOOTH_M` (10,000, matching `data-prep`'s old equivalent step, was 5,000) for how solid the
+  outlines read. One correction made along the way: an earlier round tightened Smith's tightest
+  level in response to a "circles" complaint, which turned out to be the same ring artefact
+  misdiagnosed - tightening a name's tightest level exposes that kind of artefact rather than fixing
+  it, so that change was reverted once `WEIGHT_CEILING` existed to fix the real cause instead.
+  Confirmed on a real ~30-name test round: real, plausible regional patterning, the ring/hole
+  artefacts gone, small names honestly still uncertain (Van Dijk, Lansley) rather than forced into a
+  falsely confident shape - the full history of wrong guesses and corrections along the way is in
+  git commit messages, not repeated here.
 - **1911, 1921 and Scotland.** Neither census has Scotland, and a Scottish name still has plenty of
   bearers in England, so its own count for that year does not fall below the threshold on its own.
   So instead of building a map from that year's (incomplete) data, we reuse the map from 1901 (a
@@ -184,54 +203,11 @@ I cannot see the data or run anything in the TRE, so:
 
 1. **The parish table name.** `spatial.conpar{boundaries}` in the `tre` block is a guess from the
    old scripts; the register and ONSPD table names are confirmed.
-2. **The look of the maps on real data - in progress.** `LEVEL_MASS` tried at 0.70/0.50/0.30 (down
-   from the 0.85/0.65/0.40 default) on smith, longley, vandijk, macdonald, obrien, cheshire, davies,
-   jones: jones/davies excellent; cheshire/obrien still too wide (see the map levels bullet above -
-   probably a concentration/shape issue, not fixable by a tighter constant alone); macdonald good
-   (Scotland concentrated) with London still showing at the outer level only, which may just be
-   correct (a real, smaller concentration); smith developed small holes at the tighter setting
-   (plausible cause: a real dip between two nearby elevated areas, or the population-weighting step
-   suppressing a dense urban core, exposed once the value threshold rose - not confirmed which).
-   **Van Dijk (~150 bearers) specifically:** `MIN_BLOB_SHARE` does not help even at 0.10 - the
-   "separate areas" count in `preview.py`'s table barely moves between 0.02 and 0.05 (~40 throughout),
-   which is the signature of a share-based check being structurally powerless here, either because
-   the whole surface is already one connected blob nationally (individual bearers' smoothed bumps
-   never reach exact zero between them at this bandwidth), or because 150 total bearers is too few
-   for real clusters and individual noise to differ enough in *relative share* to be separable at
-   all. A much tighter `LEVEL_MASS` (0.30/0.20/0.10) *does* reduce it (down to 25-32), since it is a
-   value threshold, not a connectivity one - but the surviving blobs become quite small, which is
-   probably why the old pipeline manually inflated small names' visual size ("blow up smaller names
-   ... otherwise you can't really see them" - user's recollection, mechanism not recorded). Proposed
-   (not yet built): a separate, final visibility buffer on the tidied polygon, scaled by name size -
-   deliberately kept apart from bandwidth, since widening bandwidth to the same end would also let
-   individual noise bumps reach further and merge, working against this very problem.
-
-   **Full calibration round, 8 names x 4 `LEVEL_MASS` settings (2026-09-23).** By eye, against
-   85/60/30, 75/50/25, 50/25/10 and 20/10/5: the right setting tracks bearer count, not concentration
-   - as bearers fall from Smith (500k) to Cheshire (2k) the sweet spot moves steadily tighter - but
-   it is an **inverted U, not a straight line**: Smith never improves with tightening (good at
-   85/60/30, worse at every tighter setting - it likely has more than one comparably strong region,
-   and tightening carves a gap between them rather than isolating one), and Van Dijk (~150 bearers)
-   never lands on "good" at any setting either - the user's own read, that the untightened,
-   "speckled" original may just be the honest answer at that scale, is taken seriously here, not
-   treated as a gap to keep closing: at so few bearers a real cluster and a few coincidentally close
-   individuals may not be separable by any threshold. Longley and Cheshire share the same bearer
-   count (2k) but want visibly different settings (Longley looser, Cheshire tighter) - a residual
-   that bearer count alone cannot explain, left unresolved.
-
-   `kde.size_level_mass(n, second_share)` (new) is a first-draft curve through this data -
-   log-interpolated per level (not one triple scaled by a factor, since the good settings did not
-   keep a fixed shape at every size), loosest at both ends, tightest around Cheshire/Longley's size,
-   with `second_blob_share` (new, `kde.second_blob_share()`) overriding towards the loose end for a
-   Smith-like name. `preview.py --auto-level-mass` uses it instead of `--variants`. Explicitly not a
-   fitted regression - eight names with hand-picked, categorical verdicts is enough to see a shape,
-   not enough to trust exact numbers - to be tested against more names and refined, not treated as
-   settled.
-3. **Facts: one reference year, or pooled?** The old queries had no year filter, so people with
+2. **Facts: one reference year, or pooled?** The old queries had no year filter, so people with
    many addresses counted several times. A single reference year avoids that (2026 is only a part
    year, so probably the last full year).
-4. **Address to neighbourhood.** Facts need an output area / LSOA / MSOA for each postcode. Which lookup is available in the TRE?
-5. **Sex for register forenames.** The old pipeline used a forename-to-gender table (`monica_gender`). Is there an equivalent now?
-6. **Surname keys.** The rule is: remove accents, keep the letters a to z (`O'Brien` becomes `obrien`). Does the census `sname_clean_stand` follow the same convention?
-7. **Counts that are not published.** Counts below 10 (`COUNT_FLOOR`) are dropped. That number was my choice; is it the right floor?
-8. **Classification versions and the new precarity index**, when we get to stage 5.
+3. **Address to neighbourhood.** Facts need an output area / LSOA / MSOA for each postcode. Which lookup is available in the TRE?
+4. **Sex for register forenames.** The old pipeline used a forename-to-gender table (`monica_gender`). Is there an equivalent now?
+5. **Surname keys.** The rule is: remove accents, keep the letters a to z (`O'Brien` becomes `obrien`). Does the census `sname_clean_stand` follow the same convention?
+6. **Counts that are not published.** Counts below 10 (`COUNT_FLOOR`) are dropped. That number was my choice; is it the right floor?
+7. **Classification versions and the new precarity index**, when we get to stage 5.
