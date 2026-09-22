@@ -31,16 +31,19 @@ from shapely.geometry import shape
 from shapely.ops import transform, unary_union
 
 from . import config, db, fake_data, kde, rules, sql
+from .names import surname_key
 
 COLOURS = {1: "#6baed6", 2: "#4292c6", 3: "#2171b5"}
 PANEL = 105                                 # width of one map in pixels
 TOP = 1235                                   # km, for flipping y so that north is up
 
 
-def fetch_period(conn, cfg, period):
-    """{name: (cell x, cell y, n)} and the smoothed surface of everybody for one map period."""
+def fetch_period(conn, cfg, period, surnames=None):
+    """{name: (cell x, cell y, n)} and the smoothed surface of everybody for one map period.
+    surnames: the standardised keys being previewed - always pass this on a real database, or the
+    query scans and groups by every surname in the country just to keep the few you asked for."""
     make = sql.register_cells if period["source"] == "register" else sql.census_cells
-    by_name = kde.group_by_name(db.fetch(conn, make(cfg, period["year"])))
+    by_name = kde.group_by_name(db.fetch(conn, make(cfg, period["year"], surnames=surnames)))
     ix, iy, n = (np.array(c) for c in zip(*db.fetch(conn, make(cfg, period["year"], by_surname=False))))
     return by_name, kde.population_surface(ix.astype(int), iy.astype(int), n.astype(float))
 
@@ -110,7 +113,8 @@ def main():
         head, _, levels = spec.partition(":")
         power, mode = head.split("/")
         variants.append((float(power), mode, tuple(float(x) for x in levels.split(",")) if levels else None))
-    names = [(n, "") for n in args.names] if args.names else pick_examples()
+    names = [(surname_key(n), "") for n in args.names] if args.names else pick_examples()
+    names = [(key, label) for key, label in names if key]  # drop anything that standardises to nothing
     periods = [p for p in config.PERIODS if p["id"] in args.periods]
     cfg, land = config.settings(), kde.Land()
     land_path = path(unary_union(land.parts).simplify(3000))
@@ -122,7 +126,8 @@ def main():
     # only connect to the database(s) actually needed - a register-only --periods needs no working
     # census connection at all
     connections = {source: db.connect(source) for source in {p["source"] for p in needed}}
-    data = {p["id"]: fetch_period(connections[p["source"]], cfg, p) for p in needed}
+    surnames = [key for key, _ in names]
+    data = {p["id"]: fetch_period(connections[p["source"]], cfg, p, surnames=surnames) for p in needed}
 
     stats, blocks = [], []
     for key, label in names:

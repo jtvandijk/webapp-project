@@ -109,35 +109,57 @@ GROUP BY yr.yr"""
 # later stages: bearers per grid cell
 # ---------------------------------------------------------------------------
 
-def register_cells(cfg, year, by_surname=True):
+def _surname_filter(cfg, column, surnames):
+    """WHERE clause fragment that narrows to a small set of standardised surname keys, e.g.
+    ["smith", "longley"] - a coarse match (lower case, letters only) done in the database, cheap
+    enough to use even on an unindexed 150M-row table because it runs BEFORE any grouping, not
+    instead of the exact match: pipeline/names.py's surname_key() still resolves it precisely once
+    the (now small) result reaches Python. It does not fold accents the way surname_key() does (a
+    plain-ASCII name like "Muller" would not catch a row spelled "Müller"), which is an acceptable
+    gap for previewing a chosen name, not for anything that decides what gets published.
+
+    Only applied on Postgres. Without a `surnames` list (or on SQLite - the small fake/test data),
+    the query is unfiltered, exactly as before: register_counts()/census_counts() (stage 1, which
+    counts every surname on purpose) never pass one."""
+    if not surnames or cfg["backend"] != "postgres":
+        return ""
+    keys = ",".join("'" + s.replace("'", "''") + "'" for s in surnames)
+    return f" AND regexp_replace(lower({column}), '[^a-z]', '', 'g') IN ({keys})"
+
+
+def register_cells(cfg, year, by_surname=True, surnames=None):
     """Bearers per 1 km cell in one year: (raw surname, cell x, cell y, n), or without the surname
-    for the surface of everybody (used for the population weighting)."""
+    for the surface of everybody (used for the population weighting). Pass `surnames` (standardised
+    keys) whenever you only want specific names - see _surname_filter() above; leaving it out scans
+    and groups the whole table, fine for a handful of names on the fake data, not on the real one."""
     r, g = cfg["register"], config.GRID
     join, x, y, where = _register(cfg)
     ix, iy = _cell(cfg, x, g["x0"]), _cell(cfg, y, g["y0"])
     name, group = (f'r.{r["surname"]}, ', "1, 2, 3") if by_surname else ("", "1, 2")
+    only = _surname_filter(cfg, f'r.{r["surname"]}', surnames) if by_surname else ""
     return f"""
 SELECT {name}{ix}, {iy}, COUNT(*)
 FROM {r["table"]} r
 {join}
 WHERE r.{r["first"]} <= {int(year)} AND r.{r["last"]} >= {int(year)}
-  AND {where} AND {_inside_grid(x, y)}
+  AND {where} AND {_inside_grid(x, y)}{only}
 GROUP BY {group}"""
 
 
-def census_cells(cfg, year, by_surname=True):
+def census_cells(cfg, year, by_surname=True, surnames=None):
     """The same for a census year, using the parish centroids as the location."""
     table, att, parish, c = _census(cfg, year)
     g = config.GRID
     x, y = f'p.{c["x"]}', f'p.{c["y"]}'
     ix, iy = _cell(cfg, x, g["x0"]), _cell(cfg, y, g["y0"])
     name, group = (f'c.{c["surname"]}, ', "1, 2, 3") if by_surname else ("", "1, 2")
+    only = _surname_filter(cfg, f'c.{c["surname"]}', surnames) if by_surname else ""
     return f"""
 SELECT {name}{ix}, {iy}, COUNT(*)
 FROM {table} c
 JOIN {att} a ON a.{c["recid"]} = c.{c["recid"]} AND a.{c["source"]} = c.{c["source"]}
 JOIN {parish} p ON p.{c["parish_id"]} = a.{c["parish"]}
-WHERE p.{c["parish_id"]} <> 0 AND c.{c["surname"]} IS NOT NULL AND {_inside_grid(x, y)}
+WHERE p.{c["parish_id"]} <> 0 AND c.{c["surname"]} IS NOT NULL AND {_inside_grid(x, y)}{only}
 GROUP BY {group}"""
 
 
