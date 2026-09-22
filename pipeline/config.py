@@ -73,7 +73,7 @@ PROFILES = {
             "table": "registers_linked.lcr_consol2026", "surname": "surname", "forename": "forename",
             "key": "postcode", "first": "first", "last": "last",
             "address_table": "registers_lookup.onspd_2026_feb", "address_key": "stdpcd",
-            "x": "oseast1m", "y": "osnrth1m",
+            "x": "east1m", "y": "north1m",  # 2026 ONSPD: renamed from the usual oseast1m/osnrth1m
             "extra_where": GB_ONLY,
         },
         "census": dict(_CENSUS_COLUMNS, table="census.gb{year}", att_table="census.gb{year}_att",
