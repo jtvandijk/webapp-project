@@ -104,6 +104,26 @@ class BuildMaps(unittest.TestCase):
         rules.build_maps(periods, by_period, bandwidth, self.pop, self.land, timings=timings)
         self.assertEqual(set(timings), {"1901"})         # the only fresh build
 
+    def test_power_mode_levels_min_share_min_bearers_timings_are_keyword_only(self):
+        # found 2026-09-23: a positional call from preview.py silently passed its timings dict into
+        # the min_share slot instead, so MIN_BLOB_SHARE was never actually applied and the timings
+        # dict was never filled in either, with no error at all - keyword-only turns that class of
+        # mistake into an immediate TypeError instead of a silent no-op
+        with self.assertRaises(TypeError):
+            rules.build_maps([PERIODS["1901"]], {"1901": cells((LONDON, 900))}, 10000, self.pop, self.land, 0.5)
+
+    def test_min_share_passed_by_keyword_actually_reaches_the_map(self):
+        # a real end-to-end check, not just that make_map() itself honours min_share (MinorBlobs in
+        # test_kde.py already covers that) - this is the path that was broken: build_maps() passing
+        # it through to make_map() at all. An impossible-to-reach share drops every blob, including
+        # the real one, so the map comes back empty - a robust signal that the setting arrived.
+        by_period = {"1901": cells((LONDON, 900))}
+        bandwidth = kde.choose_bandwidth(list(by_period.values()))
+        normal = rules.build_maps([PERIODS["1901"]], by_period, bandwidth, self.pop, self.land, min_share=0.0)
+        impossible = rules.build_maps([PERIODS["1901"]], by_period, bandwidth, self.pop, self.land, min_share=2.0)
+        self.assertIsNotNone(normal["1901"][0])
+        self.assertIsNone(impossible["1901"][0])
+
 
 if __name__ == "__main__":
     unittest.main()

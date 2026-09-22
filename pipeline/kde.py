@@ -153,6 +153,37 @@ def drop_minor_blobs(surface, min_share=None):
     return np.where(keep[labels], surface, 0.0)
 
 
+def drop_tiny_blobs(weighted_surface, raw_smooth, min_bearers=None):
+    """Zero out any separate blob (same connectivity test as drop_minor_blobs()) whose own actual
+    (unweighted) bearer count - raw_smooth, i.e. smooth(grid, bandwidth_m) BEFORE weigh() - is below
+    min_bearers, regardless of what share of the name's total that is.
+
+    Built for names too small for drop_minor_blobs()/MIN_BLOB_SHARE to do its job at all: with very
+    few total bearers, a real small cluster and 1-2 coincidentally close individuals are not
+    reliably different in RELATIVE share of an already-tiny total (checked on real data, 2026-09-23
+    - Van Dijk's and Lansley's "separate areas" count barely moved between MIN_BLOB_SHARE 0.02 and
+    0.10). This checks an ABSOLUTE count instead, which does not have that problem - "1-2 people" is
+    "1-2 people" whatever the name's total is. Complements MIN_BLOB_SHARE, does not replace it: this
+    is the only one of the two that can ever help a small name, and MIN_BLOB_SHARE (a share of the
+    total) is the only one of the two that makes sense for a large one, where a small, genuinely
+    isolated pocket is still an absolute count too big for this to sensibly drop.
+
+    A real disclosure/honesty judgement, not just a technical one: this only makes a KEPT blob's
+    bearer count no smaller than min_bearers, not larger - a surviving blob at or just above the
+    floor is still a small number of real people, shown as a smoothed area covering a wide enough
+    region (a name's own bandwidth, kilometres to tens of kilometres) not to point at a specific
+    place, but still worth choosing deliberately rather than defaulting to. config.MIN_BLOB_BEARERS
+    is an unvalidated starting guess, like MIN_BLOB_SHARE originally was."""
+    min_bearers = config.MIN_BLOB_BEARERS if min_bearers is None else min_bearers
+    if not min_bearers or not weighted_surface.any():
+        return weighted_surface
+    labels, count = ndimage.label(weighted_surface > 0)
+    raw_totals = ndimage.sum(raw_smooth, labels, index=np.arange(1, count + 1))
+    keep = np.zeros(count + 1, bool)
+    keep[1:] = raw_totals >= min_bearers
+    return np.where(keep[labels], weighted_surface, 0.0)
+
+
 # ---------------------------------------------------------------------------
 # 5. levels
 # ---------------------------------------------------------------------------
@@ -283,11 +314,16 @@ def make_bands(surface, land, cutoffs=None):
     return bands if any(not b.is_empty for b in bands) else None
 
 
-def make_map(grid, bandwidth_m, pop_smooth, land, power=None, mode=None, levels=None, min_share=None):
+def make_map(grid, bandwidth_m, pop_smooth, land, *, power=None, mode=None, levels=None, min_share=None, min_bearers=None):
     """One surname in one year: the bearers on the grid -> the three bands (or None).
-    power, mode, levels and min_share override the settings in config.py (used to compare settings)."""
-    surface = weigh(smooth(grid, bandwidth_m), pop_smooth, land.grid, power)
+    power, mode, levels, min_share and min_bearers override the settings in config.py (used to
+    compare settings). Keyword-only from power on: a positional call that silently landed one of
+    these in the wrong slot (found in preview.py/rules.py, 2026-09-23 - MIN_BLOB_SHARE was never
+    actually applied all night because of exactly this) fails loudly instead of failing silently."""
+    raw_smooth = smooth(grid, bandwidth_m)
+    surface = weigh(raw_smooth, pop_smooth, land.grid, power)
     surface = drop_minor_blobs(surface, min_share)
+    surface = drop_tiny_blobs(surface, raw_smooth, min_bearers)
     if not surface.any():
         return None
     return make_bands(surface, land, level_cutoffs(surface, mode, levels))

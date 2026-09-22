@@ -80,12 +80,17 @@ def resolve(period, cells_by_period):
     return Resolution("build", "")
 
 
-def build_maps(periods, cells_by_period, bandwidth, pop_surfaces, land, power=None, mode=None, levels=None,
-               min_share=None, timings=None):
+def build_maps(periods, cells_by_period, bandwidth, pop_surfaces, land, *, power=None, mode=None, levels=None,
+               min_share=None, min_bearers=None, timings=None):
     """The map for one name in every one of `periods`, applying resolve() to each.
     pop_surfaces: {period id: population surface}, covering the same periods as cells_by_period.
     timings: optional dict, filled in with the seconds each fresh build took (not "substitute" ones).
-    Returns {period id: (bands or None, Resolution)} for every period in `periods`."""
+    Returns {period id: (bands or None, Resolution)} for every period in `periods`.
+    Keyword-only from power on, on purpose: a positional call from preview.py silently passed its
+    timings dict into the min_share slot instead (found 2026-09-23 - MIN_BLOB_SHARE was never
+    actually applied all night because of it, and the timings dict was never filled in either,
+    which is why every "ms" column read 0 all along). A keyword-only mismatch raises a TypeError
+    immediately instead of failing silently like that again."""
     resolved = {p["id"]: resolve(p, cells_by_period) for p in periods}
     needed = {pid for pid, r in resolved.items() if r.action == "build"}
     needed |= {r.reference for r in resolved.values() if r.action == "substitute"}
@@ -97,8 +102,8 @@ def build_maps(periods, cells_by_period, bandwidth, pop_surfaces, land, power=No
             built[pid] = None
             continue
         started = time.perf_counter()
-        built[pid] = kde.make_map(kde.to_grid(*cells), bandwidth, pop_surfaces[pid], land, power, mode, levels,
-                                  min_share)
+        built[pid] = kde.make_map(kde.to_grid(*cells), bandwidth, pop_surfaces[pid], land, power=power, mode=mode,
+                                  levels=levels, min_share=min_share, min_bearers=min_bearers)
         if timings is not None:
             timings[pid] = time.perf_counter() - started
 

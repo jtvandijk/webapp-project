@@ -168,6 +168,9 @@ def main():
     parser.add_argument("--min-area", type=float, help="drop blobs and holes smaller than this many km2 (config MIN_AREA_KM2)")
     parser.add_argument("--smooth", type=float, help="metres to fill gaps/notches narrower than 2x this (config SMOOTH_M, now 10000)")
     parser.add_argument("--min-blob-share", type=float, help="drop a separate blob holding less than this share of the name's total (config MIN_BLOB_SHARE)")
+    parser.add_argument("--min-blob-bearers", type=float, help="also drop a separate blob with fewer than this many actual bearers, whatever share "
+                                                                "of the total that is (config MIN_BLOB_BEARERS) - for names too small for "
+                                                                "--min-blob-share to do anything")
     parser.add_argument("--weight-ceiling", type=float, help="cap population used in weighting at this many people/km2 (config WEIGHT_CEILING) "
                                                               "- stops one very dense pixel (e.g. a city centre) creating a dip there")
     parser.add_argument("--population-bandwidth", type=float, help="smoothing of the population surface in metres (config POPULATION_BANDWIDTH_M, "
@@ -184,6 +187,8 @@ def main():
         config.MIN_AREA_KM2 = args.min_area
     if args.min_blob_share is not None:
         config.MIN_BLOB_SHARE = args.min_blob_share
+    if args.min_blob_bearers is not None:
+        config.MIN_BLOB_BEARERS = args.min_blob_bearers
     if args.smooth is not None:
         config.SMOOTH_M = args.smooth
     if args.weight_ceiling is not None:
@@ -251,7 +256,8 @@ def main():
         rows = []
         for (power, mode, levels), variant_label in zip(name_variants, name_labels):
             timings = {}
-            resolved = rules.build_maps(periods, by_period, bandwidth, pop_surfaces, land, power, mode, levels, timings)
+            resolved = rules.build_maps(periods, by_period, bandwidth, pop_surfaces, land, power=power, mode=mode,
+                                        levels=levels, timings=timings)
             row = []
             for p in periods:
                 bands, r = resolved[p["id"]]

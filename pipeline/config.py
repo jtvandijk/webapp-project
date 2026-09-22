@@ -179,9 +179,19 @@ POPULATION_BANDWIDTH_M = 15000     # smoothing of the "everybody" surface - see 
 # concentration. This is not the same problem as MIN_AREA_KM2 below: at these bandwidths even one
 # person's own smoothed "bump" can cover well over 100 km2, so a small number of people can easily
 # pass an area test; what marks them as not worth showing is how little of the name's total they
-# represent, not their physical size. Tested on synthetic data only so far, not real names - a
-# starting point to calibrate, not a settled number.
+# represent, not their physical size. Only helps a name with a large enough total for "a few people"
+# to genuinely be a small share of it - see MIN_BLOB_BEARERS for names too small for that (measured
+# cost: about 2% of one map's calculation time even for a very widespread name, not a real cost at
+# scale). Tested on synthetic data only so far, not real names - a starting point, not settled.
 MIN_BLOB_SHARE = 0.02
+
+# A separate blob is ALSO dropped if its own actual (unweighted) bearer count is below this many
+# people, whatever share of the name's total that is - complements MIN_BLOB_SHARE above rather than
+# replacing it: for a name with only a few hundred bearers in total (Van Dijk, Lansley), "1-2 people
+# on their own" is never a small enough SHARE of the total for MIN_BLOB_SHARE to catch (confirmed on
+# real data, 2026-09-23 - the "separate areas" count barely moved between 0.02 and 0.10), but it is
+# always a small absolute COUNT, which this checks directly instead. An unvalidated starting guess.
+MIN_BLOB_BEARERS = 5
 
 # The three map levels, level 1 outermost (lightest) to level 3 innermost (darkest).
 #   "mass": each level is the smallest area holding this share of the name's (weighted) density -
