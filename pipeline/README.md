@@ -34,9 +34,11 @@ shows several settings side by side, without editing anything (`<weighting power
 
 What is fetched from the database is cached in `work/cache/`, since comparing KDE settings re-draws
 the same data without re-fetching it - a real database query dominates the runtime (minutes), the
-drawing itself does not (tens of seconds even for many maps). A different `--names`/`--periods` is
-picked up automatically; `--refresh-cache` forces a re-fetch after the underlying data has actually
-changed (a new register or census load).
+drawing itself does not (tens of seconds even for many maps, though many names x many periods x
+many `--variants` adds up, since each variant redraws every one). The per-name part of the cache
+only grows: adding a name to `--names` fetches just that name, not the others again. `--refresh-cache`
+forces a full re-fetch after the underlying data has actually changed (a new register or census
+load), since nothing here notices that on its own.
 
 ## Running it in the TRE
 
