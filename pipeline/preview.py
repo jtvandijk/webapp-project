@@ -150,6 +150,11 @@ def main():
         head, _, levels = spec.partition(":")
         power, mode = head.split("/")
         variants.append((float(power), mode, tuple(float(x) for x in levels.split(",")) if levels else None))
+    # what each variant actually resolves to (falling back to config.py only where the variant did
+    # not spell out its own levels) - shown in the page header instead of config.py's raw settings,
+    # which are not what was drawn as soon as --variants overrides anything
+    variant_labels = [f"power {p:g}, {m} " + ",".join(f"{x:g}" for x in (lv or (config.LEVEL_MASS if m == "mass" else config.LEVEL_PEAK)))
+                      for p, m, lv in variants]
     names = [(surname_key(n), "") for n in args.names] if args.names else pick_examples()
     names = [(key, label) for key, label in names if key]  # drop anything that standardises to nothing
     periods = [p for p in config.PERIODS if p["id"] in args.periods]
@@ -185,7 +190,7 @@ def main():
         bandwidth = kde.choose_bandwidth(have)
         pop_surfaces = {pid: data[pid][1] for pid in data}
         rows = []
-        for power, mode, levels in variants:
+        for (power, mode, levels), variant_label in zip(variants, variant_labels):
             timings = {}
             resolved = rules.build_maps(periods, by_period, bandwidth, pop_surfaces, land, power, mode, levels, timings)
             row = []
@@ -206,8 +211,7 @@ def main():
                 variant_tag = f"{power:g}/{mode}" + (":" + ",".join(f"{x:g}" for x in levels) if levels else "")
                 stats.append((key, variant_tag, p["id"], total, bandwidth / 1000, ms, r.action, areas, vertices, size / 1024))
                 row.append(panel(bands, land_path, caption))
-            shown = ",".join(f"{x:g}" for x in levels or (config.LEVEL_MASS if mode == "mass" else config.LEVEL_PEAK))
-            tag = f"<div class='variant'>power {power:g}, {mode} {shown}</div>" if len(variants) > 1 else ""
+            tag = f"<div class='variant'>{variant_label}</div>" if len(variants) > 1 else ""
             rows.append(f"<div>{tag}<div class='row'>{''.join(row)}</div></div>")
         blocks.append(f"<h2>{html.escape(key)} <small>{label}</small></h2><div class='groups'>{''.join(rows)}</div>")
 
@@ -228,11 +232,10 @@ figure{{margin:0}}figcaption{{font-size:11px;color:#445;text-align:center;max-wi
 table{{border-collapse:collapse;margin-top:8px}}td,th{{padding:2px 10px;border-bottom:1px solid #dde;text-align:right}}
 td:first-child,th:first-child{{text-align:left}}</style>
 <h1>Map preview</h1>
-<p>Weighting power: <b>{config.WEIGHT_POWER}</b> (0 = plain density, 1 = fully relative). Levels by
-<b>{config.LEVEL_MODE}</b>: {config.LEVEL_MASS if config.LEVEL_MODE == 'mass' else config.LEVEL_PEAK}.
+<p>Variant(s) run (weighting power, level mode, levels - see WEIGHT_POWER, LEVEL_MODE, LEVEL_MASS,
+LEVEL_PEAK in config.py): <b>{'</b>; <b>'.join(variant_labels)}</b>.
 Bandwidth {config.BANDWIDTH_MIN_M // 1000} to {config.BANDWIDTH_MAX_M // 1000} km, growing with the number of
-bearers. Database profile: <b>{config.PROFILE}</b>. Blue shades: level 1 (outer) to level 3 (highest).
-Variants shown: {', '.join(f'{p:g}/{m}' for p, m, _ in variants)}.</p>
+bearers. Database profile: <b>{config.PROFILE}</b>. Blue shades: level 1 (outer) to level 3 (highest).</p>
 {''.join(blocks)}{reference}
 <h2>Time and size</h2><table><tr><th>name</th><th>variant</th><th>period</th><th>bearers</th><th>bandwidth km</th>
 <th>action</th><th>ms</th><th>separate areas</th><th>points</th><th>KB as GeoJSON</th></tr>{table}</table>"""
