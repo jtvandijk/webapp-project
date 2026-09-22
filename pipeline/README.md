@@ -42,8 +42,8 @@ opens two).
 1. Check the parish table name in `config.py`'s `"tre"` block (`spatial.conpar…`) - it is a guess
    from the old scripts, assumed to be in the same database as `census.*`. The register
    (`registers_linked.lcr_consol2026`) and ONSPD (`registers_lookup.onspd_2026_feb`, `stdpcd`,
-   `east1m`, `north1m`, `ctry`) are confirmed - note the 2026 ONSPD renamed the usual
-   `oseast1m`/`osnrth1m` to `east1m`/`north1m`.
+   `east1m`, `north1m`, `ctry25cd`) are confirmed - note the 2026 ONSPD renamed the usual
+   `oseast1m`/`osnrth1m`/`ctry` to `east1m`/`north1m`/`ctry25cd`.
 2. Install a Postgres driver (see `requirements.txt`): try `pip install psycopg2` first (or
    `conda install psycopg2`, which is often simpler on an HPC), then `pip install "psycopg[binary]"`,
    then `pip install pg8000` (pure Python, no compiler needed at all) — stop at the first that

@@ -40,8 +40,6 @@ _CENSUS_COLUMNS = {
     "parish_name": "parish", "county": "regcnty",
 }
 
-GB_ONLY = "a.ctry IN ('E92000001', 'S92000003', 'W92000004')"  # England, Scotland, Wales
-
 PROFILES = {
     "fake": {
         "backend": "sqlite",
@@ -50,7 +48,7 @@ PROFILES = {
             "table": "register", "surname": "surname", "forename": "forename",
             "key": "postcode", "first": "first", "last": "last",
             "address_table": "postcode_lookup", "address_key": "postcode", "x": "easting", "y": "northing",
-            "extra_where": GB_ONLY,
+            "extra_where": "a.ctry IN ('E92000001', 'S92000003', 'W92000004')",  # England, Scotland, Wales
         },
         "census": dict(_CENSUS_COLUMNS, table="gb{year}", att_table="gb{year}_att",
                        parish_table="conpar{boundaries}"),
@@ -74,7 +72,7 @@ PROFILES = {
             "key": "postcode", "first": "first", "last": "last",
             "address_table": "registers_lookup.onspd_2026_feb", "address_key": "stdpcd",
             "x": "east1m", "y": "north1m",  # 2026 ONSPD: renamed from the usual oseast1m/osnrth1m
-            "extra_where": GB_ONLY,
+            "extra_where": "a.ctry25cd IN ('E92000001', 'S92000003', 'W92000004')",  # England, Scotland, Wales; ctry -> ctry25cd in the 2026 ONSPD
         },
         "census": dict(_CENSUS_COLUMNS, table="census.gb{year}", att_table="census.gb{year}_att",
                        parish_table="spatial.conpar{boundaries}"),  # check: guessed from the old scripts
