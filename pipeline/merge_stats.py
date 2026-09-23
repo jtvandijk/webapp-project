@@ -26,6 +26,22 @@ def main():
     if not chunks:
         raise SystemExit(f"No chunk stats CSVs in {args.stats_dir} - run s4_maps.py first.")
 
+    # A short count is not an error here - re-running this mid-array-job to check progress is an
+    # intended use (see the module docstring), so a genuinely incomplete run must still merge. But
+    # "36 of 40" should never look identical to "40 of 40" in the output - real incident (2026-09-23):
+    # a user ran this right after submitting 40 stage 4 tasks and got 36 rows' worth with no
+    # indication anything was missing, indistinguishable from a clean run without manually diffing
+    # file lists against qstat by hand.
+    chunks_marker = Path(args.stats_dir).parent / "chunks" / "CHUNKS"
+    if chunks_marker.exists():
+        expected = int(chunks_marker.read_text().strip())
+        found = {int(p.stem.removeprefix("chunk_")) for p in chunks}
+        missing = sorted(set(range(expected)) - found)
+        if missing:
+            print(f"WARNING: only {len(found)} of {expected} expected chunks are present - "
+                 f"missing: {', '.join(map(str, missing))}. This merge will NOT include them. "
+                 "Check qstat/work/maps/chunk_<n>.done before treating this as a finished run.")
+
     rows = 0
     with open(args.out, "w", newline="") as out_file:
         out = csv.writer(out_file)
