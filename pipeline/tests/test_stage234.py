@@ -145,6 +145,34 @@ class Stage234EndToEnd(unittest.TestCase):
         # documenting what is checked when it does; the other two tests already require >=1 chunk
         # of real names to exist, so this is a bonus check, not the only coverage of "substitute"
 
+    def test_a_done_marker_from_a_different_chunks_value_is_not_trusted(self):
+        # real incident (2026-09-23): a .done marker left behind by an earlier, smaller-chunk-count
+        # run (--chunks 4) silently caused a later run using a different --chunks (40) to skip that
+        # chunk number entirely, because chunk_of()'s result for a given name depends on the total
+        # chunk count - "chunk 0 of 4" and "chunk 0 of 40" are different sets of names, not the same
+        # chunk redone. In the real incident the old run's stats CSV had also been separately deleted
+        # by a manual cleanup that missed work/maps/ - simulated here the same way.
+        for period in self.periods:
+            np.save(self.surfaces_dir / f"{period['id']}.npy", self.surfaces[period["id"]])
+        with tempfile.TemporaryDirectory() as maps_dir, tempfile.TemporaryDirectory() as stats_dir:
+            argv_old = ["s4_maps", "--chunk", "0", "--chunks", str(self.chunks),
+                       "--chunks-dir", str(self.chunks_dir), "--surfaces-dir", str(self.surfaces_dir),
+                       "--out-dir", maps_dir, "--stats-dir", stats_dir]
+            with mock.patch.object(sys, "argv", argv_old):
+                s4_maps.main()
+            self.assertIn(f"chunks={self.chunks}", Path(maps_dir, "chunk_0.done").read_text())
+            Path(stats_dir, "chunk_0.csv").unlink()      # the other half of the real incident
+
+            argv_new = ["s4_maps", "--chunk", "0", "--chunks", "40",
+                       "--chunks-dir", str(self.chunks_dir), "--surfaces-dir", str(self.surfaces_dir),
+                       "--out-dir", maps_dir, "--stats-dir", stats_dir]
+            with mock.patch.object(sys, "argv", argv_new):
+                s4_maps.main()          # must NOT skip, despite the old chunk_0.done existing
+
+            self.assertTrue(Path(stats_dir, "chunk_0.csv").exists(),
+                            "a leftover .done from a different --chunks caused a wrongful skip")
+            self.assertIn("chunks=40", Path(maps_dir, "chunk_0.done").read_text())
+
     def test_one_names_failure_does_not_take_the_rest_of_the_chunk_down(self):
         # real incident (2026-09-23): a shapely/GEOS error on one real name crashed the whole chunk,
         # losing the other ~150 unrelated names' work with it - process_name() failing for one name

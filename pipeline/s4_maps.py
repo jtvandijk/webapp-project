@@ -28,7 +28,12 @@ identical to one that quietly, successfully has none.
 
 Self-checking: writes work/maps/chunk_<n>.done only once a chunk finishes without error, and skips
 straight past a chunk that already has one (pass --force to redo it anyway) - so re-submitting the
-same array job after some tasks failed or were killed only repeats the ones that did not finish.
+same array job after some tasks failed or were killed only repeats the ones that did not finish. A
+.done marker is only trusted if it names the same --chunks this run is using and its own jsonl/stats
+files are still actually present - otherwise it is redone regardless of --force, since a marker left
+over from a run with a different --chunks describes a different partitioning of names entirely (real
+incident, 2026-09-23: a leftover --chunks 4 .done silently caused its chunk to be skipped, with a
+missing stats file, under a later --chunks 40 run).
 
 A single name's own map calculation failing (an unusual geometry GEOS cannot handle, say) does not
 take the rest of the chunk down with it - it is logged, with its full traceback, to
@@ -40,6 +45,7 @@ names) being blocked on one name's problem.
 import argparse
 import csv
 import json
+import re
 import time
 import traceback
 from collections import defaultdict
@@ -163,9 +169,28 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
     stats_dir.mkdir(parents=True, exist_ok=True)
     done_marker = out_dir / f"chunk_{args.chunk}.done"
+    jsonl_path = out_dir / f"chunk_{args.chunk}.jsonl"
+    stats_path = stats_dir / f"chunk_{args.chunk}.csv"
     if done_marker.exists() and not args.force:
-        print(f"chunk {args.chunk} already finished ({done_marker}) - skipping. Use --force to redo it.")
-        return
+        # Real incident (2026-09-23): an earlier, smaller sample run (--chunks 4) left chunk_0-3's
+        # .done/.jsonl behind; a manual between-runs cleanup emptied work/stats/ but not work/maps/,
+        # so the next run (--chunks 40) saw an existing .done for chunks 0-3 here and skipped them -
+        # silently keeping output computed under the OLD partitioning (chunk_of()'s result for a
+        # given name depends on the total chunk count, so "chunk 0 of 4" and "chunk 0 of 40" are not
+        # the same set of names at all), while their stats CSV was genuinely never recreated. A .done
+        # marker is now trusted only if it says it was made under this exact --chunks AND its own
+        # jsonl/stats files are still actually present - not just that some .done file exists.
+        marker_text = done_marker.read_text()
+        marker_chunks = re.search(r"chunks=(\d+)", marker_text)          # not a plain substring
+        stale_partitioning = marker_chunks is None or int(marker_chunks.group(1)) != args.chunks
+        missing_output = not (jsonl_path.exists() and stats_path.exists())
+        if not stale_partitioning and not missing_output:
+            print(f"chunk {args.chunk} already finished ({done_marker}) - skipping. Use --force to redo it.")
+            return
+        why = ("it was made under a different --chunks value" if stale_partitioning else
+              "its .jsonl/.csv output is missing even though .done exists (partial cleanup?)")
+        print(f"chunk {args.chunk}: {done_marker} exists but {why} - redoing it (this is not the "
+             "same thing as --force, which would redo it unconditionally either way).")
 
     sources = set(args.sources)
     periods = [p for p in config.PERIODS if p["source"] in sources]
@@ -180,8 +205,6 @@ def main():
     names = sorted(set().union(*(d.keys() for d in by_period.values())))
     print(f"chunk {args.chunk}: {len(names):,} names, {len(periods)} periods, loaded in {time.perf_counter() - started:.1f}s")
 
-    jsonl_path = out_dir / f"chunk_{args.chunk}.jsonl"
-    stats_path = stats_dir / f"chunk_{args.chunk}.csv"
     errors_path = out_dir / f"chunk_{args.chunk}.errors.log"
     failed = []
     with open(jsonl_path, "w") as jsonl_file, open(stats_path, "w", newline="") as stats_file, \
@@ -208,7 +231,8 @@ def main():
                 print(f"chunk {args.chunk}: {i:,}/{len(names):,} names, {time.perf_counter() - started:.1f}s elapsed")
 
     failed_note = f", {len(failed)} FAILED (see {errors_path.name}): {', '.join(failed)}" if failed else ""
-    done_marker.write_text(f"{len(names)} names, {time.perf_counter() - started:.1f}s{failed_note}\n")
+    done_marker.write_text(f"{len(names)} names, {time.perf_counter() - started:.1f}s, "
+                          f"chunks={args.chunks}{failed_note}\n")
     print(f"chunk {args.chunk} done: {jsonl_path}, {stats_path}{failed_note}")
 
 
