@@ -13,8 +13,13 @@ The code that turns the registers and censuses into the data behind the website 
 | `kde.py` | The map calculation for one name and year. | done, tested |
 | `rules.py` | What happens to each period: built, copied from another year (Scotland), or left out. | done, tested |
 | `preview.py` | Draws a page of maps to look at. | done |
-| `sql.py`, `db.py`, `names.py` | The queries, the two database connections, the surname rule. | done |
-| stages 2 to 6 | Population surfaces, point extracts, the map job on the HPC, facts, assembling the release. | to do |
+| `sql.py`, `db.py`, `names.py` | The queries, the two database connections, the surname rule, `chunk_of()`. | done |
+| `s2_surfaces.py` | Stage 2: the population surface for one map period, once, shared by every name's map. | done, tested |
+| `s3_extracts.py` | Stage 3: one query per period pulls every listed name's cells at once, split into chunk files. | done, tested |
+| `s4_maps.py` | Stage 4 (the heavy step): every name and period in one chunk - no database access at all. | done, tested |
+| `merge_stats.py` | Combines stage 4's per-chunk stats CSVs into one file. | done |
+| `hpc/stage4.sh` | The SGE array job that runs `s4_maps.py` once per chunk. | done, not yet run on the real HPC |
+| stages 5, 6 | Facts, assembling and validating the release. | to do |
 
 ## Try it on your own computer (fake data)
 
@@ -47,6 +52,44 @@ many `--variants` adds up, since each variant redraws every one). The per-name p
 only grows: adding a name to `--names` fetches just that name, not the others again. `--refresh-cache`
 forces a full re-fetch after the underlying data has actually changed (a new register or census
 load), since nothing here notices that on its own.
+
+## Stage 4: building every name's map
+
+Three stages, in order, each reading only what the one before it wrote to disk - never one
+database query per name, only ever one per map period:
+
+```
+python3 -m pipeline.s1_counts                              # counts + the name list (already run)
+python3 -m pipeline.s2_surfaces                             # one population surface per period
+python3 -m pipeline.s3_extracts --limit 500 --chunks 4      # a SAMPLE run first - see below
+python3 -m pipeline.s4_maps --chunk 0 --chunks 4            # ...--chunk 1, 2, 3
+python3 -m pipeline.merge_stats                             # combine the sample's stats into one file
+```
+
+**Do a sample run first**, not the full name list straight away - `s3_extracts.py --limit N` takes
+the first N names from `work/names.csv` (already sorted, so this is reproducible). Pick `--chunks`
+so a sample chunk has roughly as many names as a real chunk will (e.g. `--limit 500 --chunks 4` for
+~125 names/chunk, matching a real run's `--limit`-free `--chunks 200` over ~25,000 names) - a sample
+split into many small, fast chunks gives a misleadingly optimistic time to plan the real run's `-l h_rt`
+from. Time a few chunks (`s4_maps.py` prints its own elapsed time) and look at the actual file sizes
+in `work/maps/` and `work/stats.csv` before committing to the full run.
+
+Which chunk a name's data lives in is `names.chunk_of(key, chunks)` - a pure function of the name
+and the chunk count, not an assignment written down anywhere, so running `s3_extracts.py` again
+later with more names added does not reshuffle any existing name into a different chunk.
+
+**Stage 4 makes no database queries and needs no `PG*`/`GBNAMES_PROFILE` environment at all** -
+everything it needs was already written to disk by stages 2 and 3. On the HPC, `pipeline/hpc/stage4.sh`
+runs it as an SGE array job (`qsub -t 1-200 pipeline/hpc/stage4.sh`, one task per chunk); its
+`h_vmem`/`h_rt` are starting guesses, sized properly from the sample run's real timings, not
+measured yet. Each chunk writes `work/maps/chunk_<n>.jsonl` (one line per name-period: a "build"
+period carries its GeoJSON, a "substitute" period only names which period to copy - resolving that
+copy is stage 6's job, so identical geometry is never written twice) and `work/stats/chunk_<n>.csv`
+(bearers, bandwidth, the resolved `LEVEL_MASS`, `concentration`/`second_blob_share`, separate areas,
+points, GeoJSON size, build time - kept out of the GeoJSON itself, which is the one thing the
+website downloads and should stay lean). A chunk only gets a `work/maps/chunk_<n>.done` marker once
+it finishes without error, so re-submitting the same array job after some tasks failed or were
+killed only repeats the ones that did not finish (`--force` redoes a finished chunk anyway).
 
 ## Running it in the TRE
 

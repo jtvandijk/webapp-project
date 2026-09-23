@@ -7,6 +7,7 @@ looked up under a different key.
 The rule: remove accents, lower case, keep the letters a to z only.
     "O'Brien" -> "obrien"    "Smith-Jones" -> "smithjones"    "Müller" -> "muller"
 """
+import hashlib
 import re
 import unicodedata
 
@@ -24,3 +25,12 @@ def surname_key(raw):
     text = "".join(ch for ch in text if not unicodedata.combining(ch))
     key = _NOT_A_TO_Z.sub("", text.lower())
     return "" if key in PLACEHOLDERS else key
+
+
+def chunk_of(key, chunks):
+    """Which of `chunks` map-building chunks an (already standardised) surname key belongs to -
+    a pure function of the key and the chunk count, stable across runs, processes and machines
+    (unlike Python's own str hash(), randomised per process), so stage 3 (point extracts) and
+    stage 4 (map building) always agree on where a name's data lives without a shared manifest
+    file, and re-running stage 3 with more names added does not reshuffle any existing one."""
+    return int(hashlib.md5(key.encode()).hexdigest(), 16) % chunks

@@ -3,10 +3,12 @@
 The plan for turning individual-level records (inside the TRE) into the release described in
 [data-contract.md](data-contract.md).
 
-**Status.** Stage 1 (counts and name list) and the map calculation, including the Scotland rule,
-are built and tested, first on fake data and now checked against a hand-picked real name on the
-HPC. See [pipeline/README.md](../pipeline/README.md) for how to run them. Stages 2, 3, 4 (wiring
-the map calculation to the full database and to an HPC batch job), 5 and 6 are still to do.
+**Status.** Stages 1 to 4 are built and tested (first on fake data, then checked and calibrated
+against real names on the HPC): counts and name list, population surfaces, point extracts and the
+map-building array job, including the Scotland rule and the settled real-data calibration (see
+"Decided so far" below). See [pipeline/README.md](../pipeline/README.md)'s "Stage 4" section for how
+to run a sample first, then the full name list. Not yet run for real on the HPC at full scale.
+Stages 5 (facts) and 6 (assemble, validate, release) are still to do.
 
 ## Decided so far
 
@@ -153,12 +155,12 @@ counts -> name list ---> point extracts -> MAPS (array job) --+
 
 | # | Stage | What it does | Cost |
 |---|---|---|---|
-| 1 | **Counts and name list** | One query per source counts bearers per surname for **every year** at once (join the rows to a list of years, group by surname). Names with at least the threshold in at least one map period make the name list. Output: `counts` (source, year, surname, n). It also reports how many register rows find their postcode in the lookup, and stops if that is clearly wrong. | Minutes to hours. **Run first**: it tells us how many names and map-years there really are. |
-| 2 | **Population surfaces** | One density surface of *everybody* per map period (10 km bandwidth), used to make each name's map partly relative to the local population. | 15 small jobs (one per map period). |
-| 3 | **Point extracts** | For each map period, pull `(surname, x, y, count)` for the listed names, and split the result into K chunk files by surname (say K = 200). One extract per period, not one query per name. | One query per period. |
-| 4 | **Maps** (the heavy step) | An SGE array job with K tasks. Task k reads chunk k of every period and loads the grid and surfaces **once**. For each name and period at or above the threshold: density, weight by population, cut into 3 levels, make outlines, clip to the coast, simplify. Each task writes **one file** (one line per name-period), not thousands of tiny files. | The long one. |
+| 1 | **Counts and name list** (`s1_counts.py`, done) | One query per source counts bearers per surname for **every year** at once (join the rows to a list of years, group by surname). Names with at least the threshold in at least one map period make the name list. Output: `counts` (source, year, surname, n). It also reports how many register rows find their postcode in the lookup, and stops if that is clearly wrong. | Minutes to hours. **Run first**: it tells us how many names and map-years there really are. |
+| 2 | **Population surfaces** (`s2_surfaces.py`, done) | One density surface of *everybody* per map period (`POPULATION_BANDWIDTH_M`, now 15 km), used to make each name's map partly relative to the local population. One query per period. | 15 small jobs (one per map period). |
+| 3 | **Point extracts** (`s3_extracts.py`, done) | For each map period, one query pulls `(surname, x, y, count)` for every listed name at once, aggregated (spelling variants merged) and split into K chunk files by name (`names.chunk_of()`, a pure function of the name - no chunk assignment is written down anywhere for stage 4 to look up). One query per period, not one per name. | One query per period. |
+| 4 | **Maps** (the heavy step, `s4_maps.py` + `pipeline/hpc/stage4.sh`, done) | An SGE array job with K tasks. Task k reads chunk k of every period and loads the grid and surfaces **once** - no database access at all. For each name and period at or above the threshold: density, weight by population, cut into a per-name `LEVEL_MASS` (`kde.size_level_mass()`), make outlines, clip to the coast, simplify. Each task writes **two files** (one line per name-period each): a GeoJSON-carrying one for a "build" period (a "substitute" period only names which period to copy, resolved later, not duplicated here) and a stats one (bearers, bandwidth, resolved levels, concentration/second-blob measures, shape) kept separate from the GeoJSON so the website never downloads it. A `.done` marker per chunk makes re-submitting after a partial failure safe. | The long one - not yet measured on real data (do a sample run first, see pipeline/README.md). |
 | 5 | **Facts** | Grouped queries over all names at once: top 10 forenames per sex, top 10 places, the most common OAC / LOAC / IUC / AHAH / broadband class, IMD decile with mean and sd, the ethnicity estimate (from the surname list alone, no addresses). | Hours, not days. |
-| 6 | **Assemble and validate** | Join 1, 4 and 5 into the per-name files, the index, `manifest.json` and `lookups.json`. Run `tools/validate_data.py`. Pack the release as one archive for output checking. | Minutes. |
+| 6 | **Assemble and validate** | Join 1, 4 and 5 into the per-name files, the index, `manifest.json` and `lookups.json` - including resolving each "substitute" period against its reference, and (see data-contract.md) publishing why a period has no map. Run `tools/validate_data.py`. Pack the release as one archive for output checking. | Minutes. |
 
 Stages 1 to 5 touch individual-level records, so they run in the TRE. Only the finished, checked
 release folder leaves it.
@@ -186,7 +188,10 @@ core-hours, which is minutes on the cluster; even ten times slower it is under a
 have more complicated shapes than fake ones, and reading the points out of the database will
 probably matter more than the maps themselves.
 
-**These are estimates.** The first thing to do in the TRE is run one chunk and extrapolate from that.
+**These are estimates.** The first thing to do in the TRE is a sample run (`s3_extracts.py --limit`,
+`s4_maps.py` on a couple of its chunks - see pipeline/README.md's "Stage 4" section) and extrapolate
+the real per-chunk time from that, not this fake-data figure, before sizing the full array job's
+`-l h_rt`.
 
 ## Testing without the TRE
 
