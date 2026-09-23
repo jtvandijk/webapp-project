@@ -134,7 +134,7 @@ def panel(bands, land_path, caption):
 
 def old_bands(file):
     """A map from the existing site (longitude/latitude GeoJSON) as three bands in metres."""
-    to_bng = Transformer.from_crs(4326, 27700, always_xy=True).transform
+    to_bng = Transformer.from_crs(4326, 27700, always_xy=True, allow_ballpark=True).transform
     collection = json.loads(file.read_text())
     return [unary_union([transform(to_bng, shape(f["geometry"])) for f in collection["features"]
                          if f["properties"]["level"] == level] or [shape({"type": "Polygon", "coordinates": []})])

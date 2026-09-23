@@ -29,6 +29,7 @@ from collections import defaultdict
 
 import contourpy
 import numpy as np
+import pyproj
 import shapely
 from pyproj import Transformer
 from scipy import ndimage
@@ -37,6 +38,17 @@ from shapely.ops import unary_union
 
 from . import config
 from .names import surname_key
+
+# Real incident, real TRE data (2026-09-23): every coordinate transform below returned (inf, inf)
+# and took a very long time doing it. Cause: PROJ tries fetching a missing grid file (for the most
+# accurate British National Grid <-> WGS84 conversion) from an online CDN by default in some
+# builds, and in a TRE with no internet that attempt just hangs until it times out, then fails,
+# rather than failing fast. We do not need that grid's accuracy anyway - it corrects for metre-scale
+# historical surveying quirks, irrelevant on an 8-18 km smoothed density map - so network access is
+# turned off before any Transformer is created (process-wide, so this also covers preview.py's own
+# reverse transform for reading old-site reference files), and allow_ballpark permits the
+# lower-accuracy fallback explicitly rather than erroring when the precise grid is unavailable.
+pyproj.network.set_network_enabled(False)
 
 G = config.GRID
 CELL = G["cell"]
@@ -451,7 +463,7 @@ def size_level_mass(n, second_share=0.0):
 # 8. output
 # ---------------------------------------------------------------------------
 
-_to_lonlat = Transformer.from_crs(27700, 4326, always_xy=True)
+_to_lonlat = Transformer.from_crs(27700, 4326, always_xy=True, allow_ballpark=True)
 
 
 def geojson(bands):
