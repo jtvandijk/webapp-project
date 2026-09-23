@@ -124,6 +124,12 @@ def main():
     parser.add_argument("--force", action="store_true", help="redo this chunk even if it already finished")
     args = parser.parse_args()
 
+    chunks_marker = Path(args.chunks_dir) / "CHUNKS"
+    if chunks_marker.exists() and chunks_marker.read_text().strip() != str(args.chunks):
+        raise SystemExit(f"--chunks {args.chunks} does not match {chunks_marker} ({chunks_marker.read_text().strip()}) "
+                         "- s3_extracts.py was run with a different --chunks. Using the wrong number here would "
+                         "silently read the wrong names for this chunk, not just fail to find the file.")
+
     out_dir, stats_dir = Path(args.out_dir), Path(args.stats_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     stats_dir.mkdir(parents=True, exist_ok=True)

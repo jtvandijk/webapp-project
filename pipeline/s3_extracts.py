@@ -90,6 +90,7 @@ def main():
 
     for conn in connections.values():
         conn.close()
+    (out_dir / "CHUNKS").write_text(str(args.chunks))   # s4_maps.py checks this matches its own --chunks
     print(f"{len(names):,} names, {args.chunks} chunks, {len(periods)} periods written to {out_dir}")
 
 

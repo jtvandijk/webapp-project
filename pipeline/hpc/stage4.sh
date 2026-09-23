@@ -10,8 +10,13 @@
 #   qsub -t 1-200 pipeline/hpc/stage4.sh
 #
 # SGE array tasks are 1-indexed; task N processes chunk N-1 (stage 3's chunks are 0-indexed).
-# CHUNKS below must be the same number passed to s3_extracts.py --chunks, and the -t range above
-# must match it (1-CHUNKS).
+# CHUNKS below MUST be the same number stage3.sh used (its own CHUNKS), and the -t range above
+# must match it (1-CHUNKS) - s4_maps.py checks this against work/chunks/CHUNKS and refuses to run
+# if they disagree, rather than silently reading the wrong names for a chunk, but the -t range
+# itself is only checked by SGE actually starting that many tasks, so it still needs setting by hand.
+#
+# SOURCES below MUST also match stage2.sh/stage3.sh's SOURCES - register-only for now (see
+# stage2.sh's comment) - or this looks for census surfaces/chunks that do not exist yet and fails.
 #
 # h_vmem and h_rt below are STARTING GUESSES, not measured - size them from a real sample run first
 # (see pipeline/README.md's "Stage 4" section): run s3_extracts.py --limit with --chunks picked so
@@ -19,6 +24,9 @@
 # small chunks times fast, which is a misleadingly small number to plan the real run's -l h_rt
 # from), time a few chunks by hand, then set h_rt generously above the slowest one - not exactly
 # equal to it, since a real chunk's names/geometry will vary.
+#
+# No .env/GBNAMES_PROFILE needed here, unlike stage2.sh/stage3.sh - this stage makes no database
+# queries at all, only reads what they already wrote to work/surfaces/ and work/chunks/.
 
 #$ -N gbnames_stage4
 #$ -j y
@@ -29,8 +37,9 @@
 
 set -euo pipefail
 
-CHUNKS=200
+SOURCES="register"     # must match stage2.sh/stage3.sh
+CHUNKS=4                # must match stage3.sh's CHUNKS - use 200 (with -t 1-200) for the full run
 CHUNK=$((SGE_TASK_ID - 1))
 
 mkdir -p work/logs
-python3 -m pipeline.s4_maps --chunk "$CHUNK" --chunks "$CHUNKS"
+python3 -m pipeline.s4_maps --chunk "$CHUNK" --chunks "$CHUNKS" --sources $SOURCES

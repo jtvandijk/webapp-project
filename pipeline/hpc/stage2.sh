@@ -12,6 +12,10 @@
 # run this way: stage 2 writes one file per period (work/surfaces/<period>.npy), so running it
 # again later with SOURCES="census" only adds the census periods' files, it does not touch or
 # require redoing the register ones already there.
+#
+# Expects a .env file in the project root with PGHOST_LCR etc (see pipeline/README.md's "Running
+# it in the TRE") - `set -a` below means every variable .env sets is exported automatically, so it
+# works whether or not the file itself says "export".
 
 #$ -N gbnames_stage2
 #$ -j y
@@ -23,6 +27,11 @@
 set -euo pipefail
 
 SOURCES="register"     # "register census" once the census database is ready
+
+set -a
+source .env
+set +a
+export GBNAMES_PROFILE=tre
 
 mkdir -p work/logs
 python3 -m pipeline.s2_surfaces --sources $SOURCES

@@ -15,6 +15,12 @@
 # final one (a name that only clears the threshold via historic census bearers would be missing) -
 # fine for a sample/rehearsal run, but re-run s1_counts.py with both sources once census is ready,
 # before treating a full (non-sample) run of this stage as final.
+#
+# CHUNKS here MUST match stage4.sh's own CHUNKS (and its -t range) - s3_extracts.py writes
+# work/chunks/CHUNKS with the number used, and s4_maps.py refuses to run if its own --chunks does
+# not match it, rather than silently reading the wrong names for a chunk.
+#
+# Expects a .env file in the project root with PGHOST_LCR etc - see stage2.sh's comment.
 
 #$ -N gbnames_stage3
 #$ -j y
@@ -27,7 +33,12 @@ set -euo pipefail
 
 SOURCES="register"
 LIMIT="500"     # e.g. "500" for a sample run, or "" for the full name list
-CHUNKS=4        # match this to the real run's --chunks when doing a full run, not a sample's
+CHUNKS=4        # match this to stage4.sh's CHUNKS - see the note above
+
+set -a
+source .env
+set +a
+export GBNAMES_PROFILE=tre
 
 mkdir -p work/logs
 python3 -m pipeline.s3_extracts --sources $SOURCES --chunks "$CHUNKS" ${LIMIT:+--limit "$LIMIT"}
