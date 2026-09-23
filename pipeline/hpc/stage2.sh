@@ -23,11 +23,10 @@
 # is too late to help, which is why it is not here.
 #
 # A submitted qsub job starts a fresh, non-interactive shell - it does NOT have your login shell's
-# activated conda/venv environment (gbnames), which is why plain "python3" here would not find
-# numpy even though it works fine when you run it directly. Activated explicitly below - if conda
-# itself is not found, your cluster may need a "module load ..." first to put it on PATH; if
-# gbnames is a plain venv rather than a conda environment, replace the two "conda" lines with
-# `source /path/to/gbnames/bin/activate` instead.
+# activated conda environment (gbnames), which is why plain "python3" here would not find numpy
+# even though it works fine when you run it directly, and bash does not auto-source ~/.bashrc for
+# a non-interactive shell either, which is why conda itself was not even on PATH - so ~/.bashrc
+# (wherever conda's own init block lives) is sourced explicitly below before activating gbnames.
 
 #$ -N gbnames_stage2
 #$ -j y
@@ -38,7 +37,7 @@
 
 set -euo pipefail
 
-source "$(conda info --base)/etc/profile.d/conda.sh"
+source ~/.bashrc
 conda activate gbnames
 
 SOURCES="register"     # "register census" once the census database is ready

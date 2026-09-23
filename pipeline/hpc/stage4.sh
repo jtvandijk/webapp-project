@@ -42,7 +42,7 @@
 
 set -euo pipefail
 
-source "$(conda info --base)/etc/profile.d/conda.sh"
+source ~/.bashrc
 conda activate gbnames
 
 SOURCES="register"     # must match stage2.sh/stage3.sh
