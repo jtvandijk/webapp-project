@@ -5,8 +5,11 @@ Run from the project root:   python3 -m unittest discover -s pipeline/tests -t .
 import importlib.util
 import time
 import unittest
+from unittest import mock
 
 import numpy as np
+import shapely
+from shapely.geometry import Polygon
 
 from pipeline import config, kde
 
@@ -264,6 +267,27 @@ class MinorBlobs(unittest.TestCase):
         self.assertTrue(any(b.buffer(10000).contains(cardiff_pt) for b in dropped), "Cardiff should still show")
         self.assertFalse(any(b.buffer(10000).contains(london_pt) for b in dropped),
                          "the pocket should be dropped above its own share")
+
+
+class UnfixableGeometry(unittest.TestCase):
+    """kde._repair(): real incident (2026-09-23) - on some real, very small/thinly-scattered names,
+    shapely.make_valid() itself raised GEOSException("UnsupportedOperationException") instead of
+    fixing an invalid shape, crashing that name's whole map (and, before the stage 4 fix, its whole
+    chunk). Not reproduced here from real inputs (tried many small-scattered synthetic names against
+    the real TRE library versions without triggering it) - tested with a mocked failure instead,
+    which is the only way to exercise a fallback for a GEOS failure mode that cannot be reproduced on
+    demand."""
+
+    def test_a_geos_failure_in_make_valid_is_treated_as_empty_not_a_crash(self):
+        broken = Polygon([(0, 0), (1, 1), (1, 0), (0, 1), (0, 0)])  # a real bowtie - genuinely invalid
+        self.assertFalse(broken.is_valid)
+        with mock.patch.object(shapely, "make_valid", side_effect=shapely.errors.GEOSException("UnsupportedOperationException")):
+            result = kde._repair(broken)
+        self.assertTrue(result.is_empty)
+
+    def test_an_empty_polygon_counts_as_zero_polygons_not_one(self):
+        self.assertEqual(kde._polygons(Polygon()), [])
+        self.assertEqual(kde._polygons(Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])), [Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])])
 
 
 if __name__ == "__main__":

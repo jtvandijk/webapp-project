@@ -252,9 +252,12 @@ class Land:
 
 
 def _polygons(geometry):
-    """All the polygons inside a geometry (which may be a collection of mixed shapes)."""
+    """All the non-empty polygons inside a geometry (which may be a collection of mixed shapes).
+    An empty polygon (e.g. _repair()'s fallback when GEOS cannot fix something at all) is excluded,
+    not returned as "one polygon" - callers count these (separate areas, points, GeoJSON features)
+    and an empty one is really zero of all three, not one."""
     if geometry.geom_type == "Polygon":
-        return [geometry]
+        return [] if geometry.is_empty else [geometry]
     return [p for g in getattr(geometry, "geoms", []) for p in _polygons(g)]
 
 
@@ -264,12 +267,25 @@ def _repair(geometry):
     near-zero-area or near-degenerate part; this is a normal side effect of cleaning such a shape
     up, not a sign the result is wrong (checked by the geometry tests and the stress test, which
     look at the actual output, not just whether it ran quietly), so it is suppressed here rather
-    than left to alarm whoever runs this without saying where it came from."""
+    than left to alarm whoever runs this without saying where it came from.
+
+    Real incident (2026-09-23): on some real, very small/thinly-scattered names, make_valid() itself
+    raised GEOSException("UnsupportedOperationException") instead of fixing the geometry - on a
+    genuinely pathological shape it cannot repair at all, most likely after MIN_BLOB_BEARERS trims
+    most of a small name's blobs away, leaving something small relative to SMOOTH_M's now-larger
+    buffer. Not reproduced locally (tried real library versions and many small-scattered-name
+    scenarios) to pin down further. Treated as "nothing worth showing here" (empty geometry), the
+    same way a real gap between concentrations is - a shape even GEOS's own repair cannot fix is not
+    one this pipeline can trust to draw correctly anyway, and the alternative is crashing the whole
+    name's map rather than just this one band of it."""
     if geometry.is_valid:
         return geometry
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", message="invalid value encountered")
-        return shapely.make_valid(geometry)
+        try:
+            return shapely.make_valid(geometry)
+        except shapely.errors.GEOSException:
+            return Polygon()
 
 
 def drop_small(geometry):
