@@ -10,7 +10,15 @@ What it contains (see the FILL_IN block in config.py for the real names):
                    like the ONS Postcode Directory. Postcodes are written the way the linked
                    registers write them: lower case, no spaces ("ab123cd"). A few postcodes have
                    no grid reference (0 or empty), a few are missing altogether, and a few are in
-                   Northern Ireland (to be filtered out: we map Great Britain only).
+                   Northern Ireland (to be filtered out: we map Great Britain only). It also has
+                   made-up neighbourhood codes (2021 output area, LSOA and MSOA, the 2011 LSOA, and a
+                   district), a small share of them blank.
+  nbhd_oac, nbhd_loac, nbhd_ahah, nbhd_imd
+                   made-up neighbourhood tables for those codes, in exactly the shape of the real ones
+                   (tools/prep_neighbourhood.py), with a few areas missing. LOAC is London only, and
+                   Scottish deprivation is on the 2011 data zones, like the real thing.
+  register.eth     a made-up Ethnicity Estimator code per person (lower case, like the real column),
+                   some missing, a few unusable, and no estimate at all for some surnames.
   gb1851 ...       census people, one table per census year, plus gb1851_att with parish and sex
   conpar1851/1901  parish boundaries (centroid x, y), with DIFFERENT id numbers in the two versions
   forename_gender  forename -> M/F, used for the registers
@@ -93,6 +101,96 @@ def fake_postcode(i):
     d1, i = i % 99 + 1, i // 99
     d2, i = i % 9 + 1, i // 9
     return f"{a}{b}{d1}{d2}{LETTERS[i % 22]}A".lower()
+
+
+LONDON = 0                     # the index of London in TOWNS: the only place LOAC covers
+ETH_CODES = ("wbr wbr wbr wbr wbr wbr wir wao wao-pl wao-de baf baf-ng bca ain apk abd acn aao-ir oxx-dz").split()
+LOAC_GROUPS = "A1 A2 A3 B1 B2 C1 C2 D1 D2 D3 E1 E2 F1 F2 G1 G2".split()
+IMD_COUNTRIES = {"E": ("England", "IoD2025"), "W": ("Wales", "WIMD2025"), "S": ("Scotland", "SIMD2020v2")}
+
+
+def make_areas(rng, town, country):
+    """Made-up neighbourhood codes for every address, shaped like the ONS Postcode Directory's: 2021
+    output area, LSOA and MSOA, the 2011 LSOA, and a district. Each town has 6 output areas, 3 LSOAs and
+    2 MSOAs. Most 2011 LSOAs are the same as in 2021 and some were re-drawn (a different code); Scotland's
+    2011 data zones are all different from its 2022 ones. About 1.5% of addresses have no codes at all,
+    half written as empty text and half as missing."""
+    n = town.size
+    oa = rng.integers(0, 6, n)
+    blank = rng.random(n) < 0.015
+    out = {key: [] for key in ("oa", "lsoa", "lsoa_2011", "msoa", "district")}
+    for i in range(n):
+        if blank[i]:
+            for key in out:
+                out[key].append(None if i % 2 else "")
+            continue
+        p, t, o = country[i][0], int(town[i]), int(oa[i])
+        lsoa = o // 2
+        redrawn = p == "S" or lsoa == 2
+        out["oa"].append(f"{p}00{t:03d}{o:03d}")
+        out["lsoa"].append(f"{p}01{t:03d}{lsoa:03d}")
+        out["lsoa_2011"].append(f"{p}01{t:03d}{lsoa + 100 if redrawn else lsoa:03d}")
+        out["msoa"].append(f"{p}02{t:03d}{lsoa // 2:03d}")
+        district = "E09" if t == LONDON else {"E": "E06", "W": "W06", "S": "S12"}.get(p, "N09")
+        out["district"].append(f"{district}{t:03d}000")
+    return out
+
+
+def _share(rank, n, parts):
+    """Which of `parts` equal slices of a ranking of n a rank falls in (the same rule as tools/prep_neighbourhood.py)."""
+    return -(-rank * parts // n)
+
+
+def make_nbhd_tables(rng, areas):
+    """The four neighbourhood tables, with the columns of config.NBHD_TABLE_COLUMNS, for the areas that
+    appear in `areas`. The classes follow the town somewhat, so a surname's neighbourhood type follows its
+    home towns, and about 1% of areas are missing from each table."""
+    codes = {key: sorted({c for c in values if c and c[0] in "EWS"}) for key, values in areas.items()}
+    keep = lambda cs: [c for c in cs if rng.random() > 0.01]
+    tables = {"oac": [], "loac": [], "ahah": [], "imd": []}
+
+    for c in keep(codes["oa"]):
+        t, o = int(c[3:6]), int(c[6:9])
+        supergroup = (t * 3 + o) % 8 + 1 if rng.random() < 0.7 else int(rng.integers(1, 9))
+        group = f"{supergroup}{'abc'[(o if rng.random() < 0.7 else int(rng.integers(0, 3))) % 3]}"
+        tables["oac"].append((c, str(supergroup), group, f"{group}{int(rng.integers(1, 4))}"))
+    for c in [c for c in codes["oa"] if c[0] == "E" and int(c[3:6]) == LONDON]:      # only 6, so none are dropped
+        group = LOAC_GROUPS[(int(c[6:9]) * 5 + int(rng.integers(0, 3))) % len(LOAC_GROUPS)]
+        tables["loac"].append((c, group[0], group))
+
+    lsoa = keep(codes["lsoa"])                       # AHAH is one ranking of Great Britain: 1 = healthiest
+    score = np.array([int(c[3:6]) * 0.2 + rng.random() * 10 for c in lsoa])
+    rank = np.empty(len(lsoa), int)
+    rank[np.argsort(score)] = np.arange(1, len(lsoa) + 1)
+    for c, sc, r in zip(lsoa, score, rank):
+        tables["ahah"].append((c, round(float(sc), 3), int(r), int(_share(r, len(lsoa), 100)),
+                               int(_share(r, len(lsoa), 10))))
+
+    for letter, (country, source) in IMD_COUNTRIES.items():          # deprivation: ranked within each country, 1 = most deprived
+        own = keep([c for c in (codes["lsoa_2011"] if letter == "S" else codes["lsoa"]) if c[0] == letter])
+        score = np.array([-int(c[3:6]) * 0.2 + rng.random() * 10 for c in own])
+        rank = np.empty(len(own), int)
+        rank[np.argsort(-score)] = np.arange(1, len(own) + 1)
+        for c, r in zip(own, rank):
+            tables["imd"].append((c, country, source, int(r), len(own), int(_share(r, len(own), 100)),
+                                  int(_share(r, len(own), 10))))
+    return tables
+
+
+def make_eth(rng, surname_of_person, n_surnames):
+    """A made-up Ethnicity Estimator code for every person: mostly their surname's usual code, some
+    missing, and a few that are not in the code list. Some surnames never get an estimate."""
+    codes = np.array(ETH_CODES)
+    usual = rng.choice(codes, size=n_surnames)
+    usual[np.arange(n_surnames) % 23 == 0] = ""
+    person = np.where(rng.random(surname_of_person.size) < 0.88, usual[surname_of_person],
+                      rng.choice(codes, size=surname_of_person.size))
+    person[usual[surname_of_person] == ""] = ""
+    person[(rng.random(person.size) < 0.03) & (person != "")] = ""
+    person[(rng.random(person.size) < 0.002) & (person != "")] = "waos-k"        # not a real code
+    loud = (rng.random(person.size) < 0.05) & (person != "")                     # a few written in capitals
+    person[loud] = np.char.upper(person[loud])
+    return np.where(person == "", None, person)
 
 
 CENSUS_SIZE = {1851: .55, 1861: .60, 1881: .75, 1891: .85, 1901: .95, 1911: 1.0, 1921: 1.05}
@@ -245,20 +343,25 @@ def generate(persons=250000, surnames=5000, seed=1, path=None, quiet=False):
     postcode = np.array([fake_postcode(i) for i in range(addresses.x.size)])
     rows = list(zip(forename[who].tolist(), row_surname.tolist(), postcode[where].tolist(),
                     first_seen.tolist(), last_seen.tolist()))
+    person_eth = make_eth(np.random.default_rng([seed, 7]), s, surnames)      # its own random stream, so nothing above changes
+    eth = person_eth[who].tolist()
     n_junk = int(n_rows * 0.003)
     junk_addr = rng.integers(0, addresses.x.size, n_junk)
     junk_first = rng.integers(1997, 2027, n_junk)
     rows += list(zip(rng.choice(mal, n_junk).tolist(), rng.choice(["XXXX", "nan", ""], n_junk).tolist(),
                      postcode[junk_addr].tolist(), junk_first.tolist(),
                      np.minimum(junk_first + rng.integers(0, 6, n_junk), 2026).tolist()))
+    rows = [row + (e,) for row, e in zip(rows, eth + [None] * n_junk)]
     no_xy = rng.random(addresses.x.size) < 0.01            # in the lookup, but without a grid reference
     absent = rng.random(addresses.x.size) < 0.005          # not in the lookup at all
     town_name = np.array([t[0] for t in TOWNS])[addresses.town]
     country = np.where(scottish_town[addresses.town], "S92000003",
                        np.where(np.isin(town_name, WELSH), "W92000004", "E92000001"))
     country[rng.random(addresses.x.size) < 0.005] = "N92000002"      # Northern Ireland: to be filtered out
+    areas = make_areas(np.random.default_rng([seed, 5]), addresses.town, country)
     address_rows = [(postcode[i], (0.0 if i % 2 else None) if no_xy[i] else round(float(addresses.x[i]), 1),
-                     (0.0 if i % 2 else None) if no_xy[i] else round(float(addresses.y[i]), 1), country[i])
+                     (0.0 if i % 2 else None) if no_xy[i] else round(float(addresses.y[i]), 1), country[i],
+                     areas["oa"][i], areas["lsoa"][i], areas["lsoa_2011"][i], areas["msoa"][i], areas["district"][i])
                     for i in range(addresses.x.size) if not absent[i]]
     say(f"register: {len(rows):,} rows for {persons:,} people, {len(address_rows):,} postcodes in the lookup")
 
@@ -268,14 +371,21 @@ def generate(persons=250000, surnames=5000, seed=1, path=None, quiet=False):
     path.unlink(missing_ok=True)
     db = sqlite3.connect(path)
     db.executescript("""
-        CREATE TABLE register (forename TEXT, surname TEXT, postcode TEXT, first INTEGER, last INTEGER);
-        CREATE TABLE postcode_lookup (postcode TEXT, easting REAL, northing REAL, ctry TEXT);
+        CREATE TABLE register (forename TEXT, surname TEXT, postcode TEXT, first INTEGER, last INTEGER, eth TEXT);
+        CREATE TABLE postcode_lookup (postcode TEXT, easting REAL, northing REAL, ctry TEXT,
+                                      oa21cd TEXT, lsoa21cd TEXT, lsoa11cd TEXT, msoa21cd TEXT, lad25cd TEXT);
         CREATE TABLE forename_gender (forename TEXT, gender TEXT);
         CREATE TABLE conpar1851 (conparid INTEGER, x REAL, y REAL, parish TEXT, regcnty TEXT);
         CREATE TABLE conpar1901 (conparid INTEGER, x REAL, y REAL, parish TEXT, regcnty TEXT);
     """)
-    db.executemany("INSERT INTO register VALUES (?,?,?,?,?)", rows)
-    db.executemany("INSERT INTO postcode_lookup VALUES (?,?,?,?)", address_rows)
+    db.executemany("INSERT INTO register VALUES (?,?,?,?,?,?)", rows)
+    db.executemany("INSERT INTO postcode_lookup VALUES (?,?,?,?,?,?,?,?,?)", address_rows)
+    nbhd = make_nbhd_tables(np.random.default_rng([seed, 6]), areas)
+    for key, table_rows in nbhd.items():
+        columns = config.NBHD_TABLE_COLUMNS[key]
+        db.execute(f"CREATE TABLE nbhd_{key} (" + ", ".join(
+            f"{name} {kind}" + (" PRIMARY KEY" if name == "area_code" else "") for name, kind in columns) + ")")
+        db.executemany(f"INSERT INTO nbhd_{key} VALUES ({','.join('?' * len(columns))})", table_rows)
     db.executemany("INSERT INTO forename_gender VALUES (?,?)",
                    [(n, "F") for n in FEMALE] + [(n, "M") for n in MALE])
     county = [TOWNS[t][1] for t in parishes.town]

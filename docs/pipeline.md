@@ -8,7 +8,9 @@ against real names on the HPC): counts and name list, population surfaces, point
 map-building array job, including the Scotland rule and the settled real-data calibration (see
 "Decided so far" below). See [pipeline/README.md](../pipeline/README.md)'s "Stage 4" section for how
 to run a sample first, then the full name list. Not yet run for real on the HPC at full scale.
-Stages 5 (facts) and 6 (assemble, validate, release) are still to do.
+Stage 5 (facts) is built for the register side and tested on fake data, but not yet run in the TRE;
+the census facts (historic forenames and parishes) come after the census data has been checked. Stage 6
+(assemble, validate, release) is still to do.
 
 ## Decided so far
 
@@ -20,8 +22,20 @@ Stages 5 (facts) and 6 (assemble, validate, release) are still to do.
   before, not available for England and Wales). Register: 1997, 2000, 2005, 2010, 2015, 2020, 2025,
   2026.
 - **Method.** May change if it is faster, as long as the maps look the same in spirit.
-- **Neighbourhood facts (later).** Some sources are being refreshed and one is new: AHAH version 5,
-  IMD for England 2025, and a new precarity index. Which versions to use is decided when we get to stage 5.
+- **Neighbourhood facts (decided 2026-09-23).** UK OAC 2021/22, London OAC 2021 (London bearers only),
+  AHAH v5.1, and deprivation from IoD 2025 (England), WIMD 2025 (Wales) and SIMD 2020v2 (Scotland),
+  each ranked within its own country and then treated as comparable (a known simplification: percentile 1 in
+  Scotland counts as percentile 1 in England). Dropped: the Internet User Classification and broadband speed.
+  Not yet available: the new precarity index (a colleague is sending the file). The raw downloads are turned
+  into small lookup tables by `tools/prep_neighbourhood.py`, one per product and keyed on `area_code`, so a new
+  version of one product replaces one table. Each table is joined on the postcode-directory column that matches
+  its geography (`oa21cd`, `lsoa21cd`; Scottish deprivation on `lsoa11cd`), which is why no conversion between
+  2011 and 2021 areas is needed. AHAH runs the other way from deprivation: decile 1 = healthiest, 10 = least healthy.
+- **Ethnicity.** The Ethnicity Estimator replaces the old surname-only ONOMAP lookup: the register table
+  `registers_derived.lcr_consol_ethest` carries an estimate (`eth`, a code such as `WAO-DE`) per person, worked out
+  from forename and surname, and a name's ethnicity is the most common census group among its bearers. A name with
+  fewer than 100 bearers who have a usable code is shown as `unknown`. The three most common codes (countries) are
+  kept in the output but not used yet.
 - **Language.** Python: numpy, scipy, shapely, pyproj and contourpy for the maps, plus a Postgres
   driver in the TRE (`pipeline/requirements.txt`; conda works well for this on the HPC).
 - **Threshold, per source, both 100 (changed from census 30 on 2026-09-23).** Census data is over
@@ -159,11 +173,40 @@ counts -> name list ---> point extracts -> MAPS (array job) --+
 | 2 | **Population surfaces** (`s2_surfaces.py`, done) | One density surface of *everybody* per map period (`POPULATION_BANDWIDTH_M`, now 15 km), used to make each name's map partly relative to the local population. One query per period. | 15 small jobs (one per map period). |
 | 3 | **Point extracts** (`s3_extracts.py`, done) | For each map period, one query pulls `(surname, x, y, count)` for every listed name at once, aggregated (spelling variants merged) and split into K chunk files by name (`names.chunk_of()`, a pure function of the name - no chunk assignment is written down anywhere for stage 4 to look up). One query per period, not one per name. | One query per period. |
 | 4 | **Maps** (the heavy step, `s4_maps.py` + `pipeline/hpc/stage4.sh`, done) | An SGE array job with K tasks. Task k reads chunk k of every period and loads the grid and surfaces **once** - no database access at all. For each name and period at or above the threshold: density, weight by population, cut into a per-name `LEVEL_MASS` (`kde.size_level_mass()`), make outlines, clip to the coast, simplify. Each task writes **two files** (one line per name-period each): a GeoJSON-carrying one for a "build" period (a "substitute" period only names which period to copy, resolved later, not duplicated here) and a stats one (bearers, bandwidth, resolved levels, concentration/second-blob measures, shape) kept separate from the GeoJSON so the website never downloads it. A `.done` marker per chunk makes re-submitting after a partial failure safe. | The long one - not yet measured on real data (do a sample run first, see pipeline/README.md). |
-| 5 | **Facts** | Grouped queries over all names at once: top 10 forenames per sex, top 10 places, the most common OAC / LOAC / IUC / AHAH / broadband class, IMD decile with mean and sd, the ethnicity estimate (from the surname list alone, no addresses). | Hours, not days. |
+| 5 | **Facts** (`s5_facts.py`, register side done) | For every name, in its reference year: the most common OAC, LOAC, AHAH and deprivation values, the deprivation score, the top neighbourhoods and the ethnicity estimate; forenames pooled over all years. One query per fact and reference year, saved to disk, then computed in Python, so changing a rule never needs the database again. Writes `facts.csv` (see "Stage 5 output" below). | Hours, not days (not measured yet: do a sample run). |
 | 6 | **Assemble and validate** | Join 1, 4 and 5 into the per-name files, the index, `manifest.json` and `lookups.json` - including resolving each "substitute" period against its reference, and (see data-contract.md) publishing why a period has no map. Run `tools/validate_data.py`. Pack the release as one archive for output checking. | Minutes. |
 
 Stages 1 to 5 touch individual-level records, so they run in the TRE. Only the finished, checked
 release folder leaves it.
+
+### Stage 5 output
+
+`work/facts/facts.csv`, one row per name and fact: `surname, fact, version, ref_year, n_bearers, value, detail`.
+`version` says which release of the classification the value is from (so a new version can sit next to an old
+one), `detail` is JSON, and a name simply has no row for a fact it has no value for ("missing means no data").
+`ref_year` and `n_bearers` (the bearers who have a value for it) are empty for forenames, which are pooled.
+
+| `fact` | `value` | `detail` | Joined on |
+|---|---|---|---|
+| `oac` | most common group, e.g. `3b` | `distribution`: share of bearers per group | `oa21cd` |
+| `loac` | most common group, e.g. `A1` | `distribution` | `oa21cd`, London bearers only |
+| `ahah` | most common decile (1 = healthiest, 10 = least healthy) | `distribution`: ten shares, decile 1 first | `lsoa21cd` |
+| `imd` | most common decile (1 = most deprived) | `distribution`: ten shares | `lsoa21cd` (England, Wales), `lsoa11cd` (Scotland) |
+| `imd_score` | mean deprivation percentile (the "GBNames deprivation score") | `sd` | as `imd` |
+| `places` | empty | `places`: up to 10 of `{msoa, district}`, most common first, each with at least 3 people | `msoa21cd`, `lad25cd` |
+| `ethnicity` | most common census group code (`WBR`, `WAO`, ...) or `unknown` | `distribution` over groups, `codes`: the three most common codes | `eth` in the estimate table |
+| `forenames_register` | empty | `f` and `m`: up to 10 forenames each, most common first, each with at least 3 people | pooled over all register years |
+
+A tie for the most common value is broken at random, seeded by name and fact (so a re-run gives the same
+answer), and `detail` then has `"tie": true`. No counts are written for places or forenames, only their order.
+Shares are to three decimals (`SHARE_DECIMALS`); use two if the output checkers want less. The rules and their
+numbers are in `config.py`, section 6.
+
+Known small approximations: forenames are counted per register row (one person at several addresses counts
+more than once, as before), and the database keeps each spelling variant's 25 most common forenames before the
+variants are merged, which can only change a near-tie at the edge of the top ten. The postcode-directory codes
+are 2021 for England and Wales and 2022 for Scotland (`msoa21cd` holds Scottish intermediate zones), so
+`places` mixes MSOAs and intermediate zones.
 
 ### What changes compared with the old pipeline
 
@@ -208,11 +251,16 @@ I cannot see the data or run anything in the TRE, so:
 
 1. **The parish table name.** `spatial.conpar{boundaries}` in the `tre` block is a guess from the
    old scripts; the register and ONSPD table names are confirmed.
-2. **Facts: one reference year, or pooled?** The old queries had no year filter, so people with
-   many addresses counted several times. A single reference year avoids that (2026 is only a part
-   year, so probably the last full year).
-3. **Address to neighbourhood.** Facts need an output area / LSOA / MSOA for each postcode. Which lookup is available in the TRE?
-4. **Sex for register forenames.** The old pipeline used a forename-to-gender table (`monica_gender`). Is there an equivalent now?
+2. **Settled (2026-09-23): a reference year, not pooled.** Contemporary facts are worked out in each name's
+   latest register year with 100+ bearers, so people who moved are not counted at every old address and a name
+   with no 2026 records still has facts. Forenames are the exception and are pooled over all years.
+3. **Settled: address to neighbourhood.** The ONS Postcode Directory (`registers_lookup.onspd_2026_feb`) carries every
+   code needed (`oa21cd`, `lsoa21cd`, `lsoa11cd`, `msoa21cd`, `lad25cd`; confirmed in the TRE copy). Checked
+   against the public February 2026 directory on a laptop: 99.9% or more of live postcodes find a row in every table.
+4. **Settled: sex for register forenames.** `registers_lookup.lookup_monica` is identical to the old
+   `monica_gender` and is used for now (its columns are assumed to be `name` and `gender`; it may change).
 5. **Surname keys.** The rule is: remove accents, keep the letters a to z (`O'Brien` becomes `obrien`). Does the census `sname_clean_stand` follow the same convention?
 6. **Counts that are not published.** Counts below 10 (`COUNT_FLOOR`) are dropped. That number was my choice; is it the right floor?
-7. **Classification versions and the new precarity index**, when we get to stage 5.
+7. **Classification versions: settled** (see "Decided so far"). Still to add: the precarity index, when the file arrives;
+   it becomes one more table (`tools/prep_neighbourhood.py`), one more entry in `config.FACT_QUERIES` and a few lines in
+   `s5_facts.py` (the existing `compute_groups` or `compute_deciles` will do the calculation).

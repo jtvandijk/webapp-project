@@ -6,6 +6,7 @@
 #   bash pipeline/hpc/clean.sh              # stage 3 + 4 only, asks about stage 1 + 2 too
 #   bash pipeline/hpc/clean.sh --stage34    # stage 3 + 4 only, does not ask about stage 1 + 2
 #   bash pipeline/hpc/clean.sh --all        # stage 1 + 2 + 3 + 4, no question asked
+#   bash pipeline/hpc/clean.sh --facts      # stage 5 only (work/facts: the saved queries and the facts)
 #
 # Real incident this exists to help avoid (2026-09-23): a partial manual cleanup between two runs
 # emptied work/stats/ but left work/maps/'s .done/.jsonl files behind from an earlier, differently
@@ -29,11 +30,13 @@ WORK="work"
 
 ask_stage12=1
 clean_stage12=0
+only_facts=0
 for arg in "$@"; do
     case "$arg" in
         --all)     clean_stage12=1; ask_stage12=0 ;;
         --stage34) clean_stage12=0; ask_stage12=0 ;;
-        *) echo "Unknown option: $arg (expected --all or --stage34)"; exit 1 ;;
+        --facts)   only_facts=1 ;;
+        *) echo "Unknown option: $arg (expected --all, --stage34 or --facts)"; exit 1 ;;
     esac
 done
 
@@ -46,6 +49,21 @@ show_sizes() {
         fi
     done
 }
+
+if [ "$only_facts" -eq 1 ]; then
+    # Stage 5 trusts a saved query while the NAMES it was made for are unchanged; it cannot notice that
+    # the database, or a neighbourhood table, has changed since (s5_facts.py --refresh does the same job).
+    echo "Stage 5 output under $WORK/ (saved queries in facts/extract, and the facts):"
+    show_sizes "$WORK/facts"
+    read -r -p "Delete the above? [y/N] " reply
+    if [[ "$reply" =~ ^[Yy] ]]; then
+        rm -rf "$WORK/facts"
+        echo "Deleted: $WORK/facts"
+    else
+        echo "Left in place."
+    fi
+    exit 0
+fi
 
 echo "Stage 3 + stage 4 output under $WORK/:"
 show_sizes "$WORK/chunks" "$WORK/maps" "$WORK/stats" "$WORK/stats.csv"

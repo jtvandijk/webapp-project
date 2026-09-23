@@ -19,7 +19,10 @@ The code that turns the registers and censuses into the data behind the website 
 | `s4_maps.py` | Stage 4 (the heavy step): every name and period in one chunk - no database access at all. | done, tested |
 | `merge_stats.py` | Combines stage 4's per-chunk stats CSVs into one file. | done |
 | `hpc/stage4.sh` | The SGE array job that runs `s4_maps.py` once per chunk. | done, not yet run on the real HPC |
-| stages 5, 6 | Facts, assembling and validating the release. | to do |
+| `s5_facts.py` | Stage 5: the facts about each name (neighbourhood classifications, top neighbourhoods, ethnicity, forenames). One query per fact and reference year, saved, then computed. Register side; the census facts come after the census data has been checked. | done, tested on fake data; not yet run in the TRE |
+| `nbhd_tables.py` | The SQL to create and load the neighbourhood tables in the TRE, and a check of them against the real register. | done, tested |
+| `hpc/stage5.sh` | The SGE job that runs `s5_facts.py`: one job, not an array. Memory and time are guesses. | done, not yet run on the real HPC |
+| stage 6 | Assembling and validating the release. | to do |
 
 ## Try it on your own computer (fake data)
 
@@ -90,6 +93,55 @@ points, GeoJSON size, build time - kept out of the GeoJSON itself, which is the 
 website downloads and should stay lean). A chunk only gets a `work/maps/chunk_<n>.done` marker once
 it finishes without error, so re-submitting the same array job after some tasks failed or were
 killed only repeats the ones that did not finish (`--force` redoes a finished chunk anyway).
+
+## Stage 5: the facts about each name
+
+For every name: the most common OAC, LOAC, AHAH and deprivation values among its bearers, its
+deprivation score, its most common neighbourhoods, its ethnicity estimate and its forenames. The
+rules are in [docs/pipeline.md](../docs/pipeline.md) ("Stage 5") and `config.py` (section 6); in short,
+everything but forenames is worked out in each name's *reference year* (its latest register year with
+100+ bearers, from `counts.csv`), a fact needs 100+ bearers who have a value for it, and forenames are
+pooled over every year.
+
+The neighbourhood facts join the register to neighbourhood tables, which have to be in the TRE first:
+
+1. **On your own computer:** `python3 tools/prep_neighbourhood.py` turns the downloads in
+   `raw-indicators/` into `work/neighbourhood/nbhd_*.csv` (needs `pandas` and `openpyxl`; public data only).
+2. **Upload** those four CSVs to the TRE, then in the TRE make the SQL that creates and loads them:
+   `python3 -m pipeline.nbhd_tables ddl --csv-dir <folder the CSVs are in> > make_tables.sql`, and run it with
+   psql. The tables go in the schema named in `config.py` (`"tre"` profile, `"facts"`, `"tables"`:
+   `registers_lookup` is a guess; change it if you cannot create tables there). To load a new version of
+   one product later, `--replace` drops the old tables first.
+3. **Check them:** `python3 -m pipeline.nbhd_tables check` says, per country, how many register rows find a
+   row in each table. Expect about 99.9% everywhere; it stops and names the country and table if not, or
+   if a table has an area code twice.
+4. **Sample run first:** `python3 -m pipeline.s5_facts --limit 500`, then read `work/facts/report.txt` (how many
+   names got each fact and why others did not, ties broken, ethnicity codes it did not recognise) and
+   look at `work/facts/facts.csv`. Then the full run.
+
+Two `config.py` settings are not confirmed against the real tables yet (marked "check" in the `"tre"`
+profile): the columns of `registers_lookup.lookup_monica` (`name` and `gender` are assumed, as in the
+old `monica_gender`), and that `registers_derived.lcr_consol_ethest` has the same columns as
+`lcr_consol2026` plus `eth`. A wrong name gives a clear Postgres error naming it.
+
+**On the HPC, run it through qsub** (`qsub pipeline/hpc/stage5.sh`; edit `LIMIT` and `FACTS` at the top of
+the script), not on the login node: it is a few dozen queries that the database answers, plus light Python,
+so one job is enough and there is no array. Its memory (16G) and time (4h) are guesses; the run prints how
+many rows each query returned and how long it took, so a sample run tells you what the full one needs. The
+biggest fetch is the top neighbourhoods for the newest year, one row per name and neighbourhood.
+
+The first run is the slow one: one query per fact and reference year, each scanning the register, saved
+under `work/facts/extract/`. After that `--compute-only` redoes the calculation from the saved extracts
+without touching the database, so changing a rule (say `FACT_MIN_BEARERS`) is quick, and a job that was
+killed carries on where it stopped when submitted again. `--facts oac imd` runs only some facts.
+`--names smith macdonald --out-dir work/facts_try` works out just those names, to look at by eye.
+
+**A saved extract is trusted while the names it was made for are unchanged. It cannot notice that the
+database, or a neighbourhood table, has changed since.** After a new register load, or a new version of a
+table, use `--refresh` (all facts) or `--facts oac --refresh` (one), or empty the folder with
+`bash pipeline/hpc/clean.sh --facts`.
+
+On fake data: `python3 -m pipeline.fake_data`, `python3 -m pipeline.s1_counts`, then `python3 -m pipeline.s5_facts`.
 
 ## Running it in the TRE
 

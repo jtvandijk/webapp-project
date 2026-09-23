@@ -179,3 +179,130 @@ SELECT COUNT(*) FROM (
   WHERE {r["x"]} > 0 AND {r["y"]} > 0
   GROUP BY {r["address_key"]} HAVING COUNT(*) > 1
 ) d"""
+
+
+# ---------------------------------------------------------------------------
+# stage 5: facts
+# ---------------------------------------------------------------------------
+# Everybody counted here is somebody the counts and maps also count: the same register rows, the same
+# postcode lookup, the same Great Britain condition (_register above). The surname filter is the same
+# coarse one as for the maps and only ever narrows the rows, never widens them.
+
+def _area_key(cfg, spec):
+    """The postcode-directory column that a neighbourhood table's area_code joins to. Scottish
+    deprivation is on the 2011 data zones and everything else on the 2021 areas, hence the CASE."""
+    areas = cfg["register"]["areas"]
+    key = f"a.{areas[spec['key']]}"
+    if "scotland_key" in spec:
+        return (f"CASE WHEN a.{areas['country']} = '{config.COUNTRY_SCOTLAND}' "
+                f"THEN a.{areas[spec['scotland_key']]} ELSE {key} END")
+    return key
+
+
+def _with_ethest(cfg):
+    """The same settings, but with the register table swapped for the register that carries the
+    ethnicity estimate (it has the same columns, plus one for the estimate)."""
+    e = cfg["facts"]["ethest"]
+    return dict(cfg, register=dict(cfg["register"], table=e["table"], surname=e["surname"], key=e["key"],
+                                   first=e["first"], last=e["last"]))
+
+
+def fact_counts(cfg, fact, year, surnames=None):
+    """Bearers per surname and value, in one register year, for one of config.FACT_QUERIES:
+    (raw surname, value..., n, then for each of the spec's `sums` the sum and the sum of squares).
+    Only people who have a value are counted, so n is 'bearers with a value'."""
+    spec = config.FACT_QUERIES[fact]
+    if fact == "eth":
+        cfg = _with_ethest(cfg)
+    r = cfg["register"]
+    areas = r["areas"]
+    join, _, _, where = _register(cfg)
+    lookup, sums = "", ""
+    if spec.get("table"):
+        lookup = f'JOIN {cfg["facts"]["tables"][spec["table"]]} t ON t.area_code = {_area_key(cfg, spec)}'
+        values = [f"t.{c}" for c in spec["values"]]
+        sums = "".join(f", SUM(t.{c}), SUM(t.{c} * t.{c})" for c in spec.get("sums", []))
+    elif fact == "eth":
+        eth = f'r.{cfg["facts"]["ethest"]["eth"]}'
+        values = [f"UPPER(TRIM({eth}))"]
+        where += f" AND {eth} IS NOT NULL AND TRIM({eth}) <> ''"
+    else:
+        columns = [f"a.{areas[name]}" for name in spec["areas"]]
+        values = columns
+        where += f" AND {columns[0]} IS NOT NULL AND {columns[0]} <> ''"     # a postcode without a neighbourhood
+    only = _surname_filter(cfg, f'r.{r["surname"]}', surnames)
+    positions = ", ".join(str(i) for i in range(1, len(values) + 2))
+    return f"""
+SELECT r.{r["surname"]}, {", ".join(values)}, COUNT(*){sums}
+FROM {r["table"]} r
+{join}
+{lookup}
+WHERE r.{r["first"]} <= {int(year)} AND r.{r["last"]} >= {int(year)}
+  AND {where}{only}
+GROUP BY {positions}"""
+
+
+def forename_counts(cfg, surnames=None):
+    """Forenames per surname and sex, pooled over every register year: (raw surname, sex, forename, n),
+    only the FORENAMES_KEEP most common per raw surname and sex. Only forenames that are in the gender
+    table are counted (the same as the old pipeline, whose other forenames had no sex to list under)."""
+    r, g = cfg["register"], cfg["facts"]["gender"]
+    join, _, _, where = _register(cfg)
+    only = _surname_filter(cfg, f'r.{r["surname"]}', surnames)
+    sex = f'UPPER(SUBSTR(TRIM(g.{g["gender"]}), 1, 1))'
+    forename = f'LOWER(r.{r["forename"]})'
+    return f"""
+SELECT surname, sex, forename, n FROM (
+  SELECT r.{r["surname"]} AS surname, {sex} AS sex, {forename} AS forename, COUNT(*) AS n,
+         ROW_NUMBER() OVER (PARTITION BY r.{r["surname"]}, {sex} ORDER BY COUNT(*) DESC, {forename}) AS rk
+  FROM {r["table"]} r
+  {join}
+  JOIN {g["table"]} g ON LOWER(g.{g["name"]}) = {forename}
+  WHERE {where}{only}
+  GROUP BY r.{r["surname"]}, {sex}, {forename}
+) ranked
+WHERE rk <= {config.FORENAMES_KEEP}"""
+
+
+# ---------------------------------------------------------------------------
+# safety checks for the neighbourhood tables and the gender table
+# ---------------------------------------------------------------------------
+
+def duplicate_gender_names(cfg):
+    """How many forenames appear more than once in the gender table. It must be 0: a forename that
+    appears twice would count everybody who has it twice."""
+    g = cfg["facts"]["gender"]
+    return f"""
+SELECT COUNT(*) FROM (
+  SELECT LOWER({g["name"]}) FROM {g["table"]} GROUP BY LOWER({g["name"]}) HAVING COUNT(*) > 1
+) d"""
+
+
+def duplicate_nbhd_keys(cfg, table):
+    """How many area codes appear more than once in one neighbourhood table (must be 0)."""
+    name = cfg["facts"]["tables"][table]
+    return f"SELECT COUNT(*) - COUNT(DISTINCT area_code) FROM {name}"
+
+
+def nbhd_coverage(cfg, year):
+    """Per country, for the register rows in one year: (country, rows, then how many find a row in
+    each neighbourhood table, how many are in London and how many of those find one in LOAC, and how
+    many have a neighbourhood code). If a table was made for the wrong geography, or the upload is
+    incomplete, it shows here as a country with a low share."""
+    r = cfg["register"]
+    areas, tables = r["areas"], cfg["facts"]["tables"]
+    join, _, _, where = _register(cfg)
+    joins = "\n".join(f'LEFT JOIN {tables[k]} t_{k} ON t_{k}.area_code = {_area_key(cfg, config.FACT_QUERIES[k])}'
+                      for k in ("oac", "loac", "ahah", "imd"))
+    london = f"a.{areas['district']} LIKE 'E09%'"
+    return f"""
+SELECT a.{areas["country"]}, COUNT(*),
+       COUNT(t_oac.area_code), COUNT(t_ahah.area_code), COUNT(t_imd.area_code),
+       SUM(CASE WHEN {london} THEN 1 ELSE 0 END),
+       SUM(CASE WHEN {london} AND t_loac.area_code IS NOT NULL THEN 1 ELSE 0 END),
+       SUM(CASE WHEN a.{areas["msoa"]} IS NOT NULL AND a.{areas["msoa"]} <> '' THEN 1 ELSE 0 END)
+FROM {r["table"]} r
+{join}
+{joins}
+WHERE r.{r["first"]} <= {int(year)} AND r.{r["last"]} >= {int(year)} AND {where}
+GROUP BY a.{areas["country"]}"""

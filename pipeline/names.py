@@ -15,6 +15,7 @@ import unicodedata
 PLACEHOLDERS = {"", "xxxx", "nan", "null", "none", "unknown"}
 
 _NOT_A_TO_Z = re.compile(r"[^a-z]+")
+_PUNCTUATION_OR_DIGITS = re.compile(r"[^\w\s]|[\d_]")
 
 
 def surname_key(raw):
@@ -34,3 +35,13 @@ def chunk_of(key, chunks):
     stage 4 (map building) always agree on where a name's data lives without a shared manifest
     file, and re-running stage 3 with more names added does not reshuffle any existing one."""
     return int(hashlib.md5(key.encode()).hexdigest(), 16) % chunks
+
+
+def forename_clean(raw):
+    """A forename as listed on a name's page: lower case, punctuation and digits removed (so "Anne-Marie"
+    becomes "annemarie"), accents kept, and at least two characters - "" when nothing usable is left.
+    The same rule as the old pipeline's, which dropped initials and junk in the same way."""
+    if raw is None:
+        return ""
+    text = " ".join(_PUNCTUATION_OR_DIGITS.sub("", str(raw).lower()).split())
+    return text if len(text) >= 2 else ""

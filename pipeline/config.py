@@ -61,9 +61,20 @@ PROFILES = {
             "key": "postcode", "first": "first", "last": "last",
             "address_table": "postcode_lookup", "address_key": "postcode", "x": "easting", "y": "northing",
             "extra_where": "a.ctry IN ('E92000001', 'S92000003', 'W92000004')",  # England, Scotland, Wales
+            # the neighbourhood codes in the lookup (stage 5): logical name -> column
+            "areas": {"oa": "oa21cd", "lsoa": "lsoa21cd", "lsoa_2011": "lsoa11cd", "msoa": "msoa21cd",
+                      "district": "lad25cd", "country": "ctry"},
         },
         "census": dict(_CENSUS_COLUMNS, surname="sname_clean_stand", table="gb{year}", att_table="gb{year}_att",
                        parish_table="conpar{boundaries}"),
+        # stage 5 (facts): the neighbourhood tables, the forename -> gender table, and the register
+        # with the ethnicity estimate attached (in the fake data that is just the register itself)
+        "facts": {
+            "tables": {"oac": "nbhd_oac", "loac": "nbhd_loac", "ahah": "nbhd_ahah", "imd": "nbhd_imd"},
+            "gender": {"table": "forename_gender", "name": "forename", "gender": "gender"},
+            "ethest": {"table": "register", "surname": "surname", "key": "postcode", "first": "first",
+                       "last": "last", "eth": "eth"},
+        },
     },
     "tre": {
         "backend": "postgres",
@@ -83,12 +94,26 @@ PROFILES = {
             "address_table": "registers_lookup.onspd_2026_feb", "address_key": "stdpcd",
             "x": "east1m", "y": "north1m",  # 2026 ONSPD: renamed from the usual oseast1m/osnrth1m
             "extra_where": "a.ctry25cd IN ('E92000001', 'S92000003', 'W92000004')",  # England, Scotland, Wales; ctry -> ctry25cd in the 2026 ONSPD
+            # the neighbourhood codes in ONSPD (stage 5); confirmed to exist in the TRE copy
+            "areas": {"oa": "oa21cd", "lsoa": "lsoa21cd", "lsoa_2011": "lsoa11cd", "msoa": "msoa21cd",
+                      "district": "lad25cd", "country": "ctry25cd"},
         },
         # "surname": "sname" is the raw column, standardised uniformly in Python instead of relying
         # on sname_clean_stand (which was only manually added for some years, not all - confirmed
         # by the user). "sname" is confirmed consistent across all census years.
         "census": dict(_CENSUS_COLUMNS, surname="sname", table="census.gb{year}", att_table="census.gb{year}_att",
                        parish_table="spatial.conpar{boundaries}"),  # check: guessed from the old scripts
+        # stage 5 (facts). check: the schema the neighbourhood tables are uploaded into (registers_lookup
+        # is a guess, next to ONSPD; see  python3 -m pipeline.nbhd_tables ddl), the columns of lookup_monica
+        # (name, gender: as the old monica_gender, not yet confirmed), and that lcr_consol_ethest has the
+        # same columns as lcr_consol2026 plus `eth` (only `eth` is confirmed).
+        "facts": {
+            "tables": {"oac": "registers_lookup.nbhd_oac", "loac": "registers_lookup.nbhd_loac",
+                       "ahah": "registers_lookup.nbhd_ahah", "imd": "registers_lookup.nbhd_imd"},
+            "gender": {"table": "registers_lookup.lookup_monica", "name": "name", "gender": "gender"},
+            "ethest": {"table": "registers_derived.lcr_consol_ethest", "surname": "surname", "key": "postcode",
+                       "first": "first", "last": "last", "eth": "eth"},
+        },
     },
 }
 
@@ -224,3 +249,72 @@ MIN_AREA_KM2 = 25          # blobs and holes smaller than this are dropped
 SCOTLAND_MISSING_YEARS = [1911, 1921]
 SCOTLAND_REFERENCE_YEAR = 1901
 SCOTLAND_MAX_SHARE = 0.30
+
+
+# ---------------------------------------------------------------------------
+# 6. THE FACTS ABOUT EACH NAME (stage 5)
+# ---------------------------------------------------------------------------
+
+# Contemporary facts (neighbourhood classifications, top neighbourhoods, ethnicity) are worked out
+# in each name's REFERENCE YEAR: the latest register year in which it has at least THRESHOLD["register"]
+# bearers (from counts.csv, stage 1). Forenames are the exception: pooled over every register year.
+# A fact is only kept when at least FACT_MIN_BEARERS of those bearers have a value for it (a
+# postcode without a code, or, for LOAC, anyone living outside London, has none).
+FACT_MIN_BEARERS = 100
+
+PLACES_TOP, PLACES_MIN = 10, 3            # top neighbourhoods (MSOA or Scottish intermediate zone): how many, and
+                                          # the fewest people a neighbourhood may have to be listed
+FORENAMES_TOP, FORENAMES_MIN = 10, 3      # top forenames per sex, and the fewest people a forename may have
+FORENAMES_KEEP = 25                       # the database keeps this many per surname and sex before the merge
+                                          # of spelling variants, which bounds what has to be fetched. A forename
+                                          # outside a variant's top 25 cannot count towards the merged list, which
+                                          # only matters for near-ties at the edge of the top ten
+SHARE_DECIMALS = 3                        # shares in the distributions; use 2 if the output checkers want less
+
+COUNTRY_SCOTLAND = "S92000003"            # Scottish deprivation is on 2011 data zones, the rest on 2021 areas
+
+# What version each fact is, written next to it in the output so a new version can sit alongside.
+FACT_VERSIONS = {
+    "oac": "UK OAC 2021/22", "loac": "London OAC 2021", "ahah": "AHAH v5.1",
+    "imd": "IoD2025 / WIMD2025 / SIMD2020v2", "imd_score": "IoD2025 / WIMD2025 / SIMD2020v2",
+    "places": "MSOA 2021 / Scottish IZ 2022", "ethnicity": "Ethnicity Estimator",
+    "forenames_register": "register 1997-2026",
+}
+
+# The neighbourhood tables (made by tools/prep_neighbourhood.py), loaded into the TRE with
+# `python3 -m pipeline.nbhd_tables ddl`. Column -> SQL type; area_code is the primary key.
+NBHD_TABLE_COLUMNS = {
+    "oac": [("area_code", "text"), ("oac_supergroup", "text"), ("oac_group", "text"), ("oac_subgroup", "text")],
+    "loac": [("area_code", "text"), ("loac_supergroup", "text"), ("loac_group", "text")],
+    "ahah": [("area_code", "text"), ("ahah_score", "numeric"), ("ahah_rank", "integer"),
+             ("ahah_pctile", "integer"), ("ahah_decile", "integer")],
+    "imd": [("area_code", "text"), ("imd_country", "text"), ("imd_source", "text"), ("imd_rank", "integer"),
+            ("imd_areas", "integer"), ("imd_pctile", "integer"), ("imd_decile", "integer")],
+}
+
+# Which facts are counted from the register, and how. "key" is the postcode-directory column (a
+# logical name from each profile's register "areas") that the table's area_code joins to. Deprivation
+# is different for Scotland, whose ranking is on the 2011 data zones (scotland_key).
+#   values: what the counts are grouped by (table columns, or directory columns when there is no table)
+#   sums:   columns to add up as well, to get a mean and a spread later
+FACT_QUERIES = {
+    "oac": {"table": "oac", "key": "oa", "values": ["oac_group"]},
+    "loac": {"table": "loac", "key": "oa", "values": ["loac_group"]},
+    "ahah": {"table": "ahah", "key": "lsoa", "values": ["ahah_decile"]},
+    "imd": {"table": "imd", "key": "lsoa", "scotland_key": "lsoa_2011", "values": ["imd_decile"],
+            "sums": ["imd_pctile"]},
+    "places": {"areas": ["msoa", "district"]},
+    "eth": {},                                    # from the register with the ethnicity estimate, see sql.py
+}
+
+# The Ethnicity Estimator codes start with a census group (WAO-DE = White other, Germany). Only the
+# group is used for now, but the distribution over the codes is kept for later. A code whose start is
+# not in this list is left out of the counts and listed in the report.
+ETH_GROUPS = {
+    "WBR": "White - British", "WIR": "White - Irish", "WAO": "White - Other",
+    "BAF": "Black - African", "BCA": "Black - Caribbean",
+    "AIN": "Asian - Indian", "APK": "Asian - Pakistani", "ABD": "Asian - Bangladeshi",
+    "ACN": "Asian - Chinese", "AAO": "Asian - Other",
+    "OXX": "Other ethnic group",
+}
+ETH_UNKNOWN = "unknown"                # shown when too few bearers have a usable code

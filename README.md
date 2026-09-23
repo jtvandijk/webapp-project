@@ -37,10 +37,11 @@ replaces it; nothing in the rebuild depends on it.
 |---|---|
 | `pipeline/` | The code that turns censuses and consumer registers into the public release: counting, the map calculation, disclosure rules. Runs partly inside a TRE (Trusted Research Environment), since the source data is individual-level. |
 | `docs/` | The data format and the pipeline plan (above). |
-| `tools/` | A sample-data generator and a validator for the future website's release format. |
+| `tools/` | A sample-data generator and a validator for the future website's release format, and `prep_neighbourhood.py`, which turns the downloaded neighbourhood classifications into the lookup tables that go into the TRE. |
 | `site/` | An early prototype of the static website (paused; not the current focus). |
 | `gbnames/` | The currently live Django app (source of apps.geods.ac.uk/gbnames). Being replaced. |
 | `data-prep/` | The old, one-off pipeline code this rebuild replaces, kept locally for reference. **Not tracked in git** (see `.gitignore`) - it is several GB and includes working data extracts. |
+| `raw-indicators/` | The downloaded neighbourhood classifications (OAC, LOAC, AHAH, IMD), the input to `tools/prep_neighbourhood.py`. **Not tracked in git.** |
 | `work/` | Everything `pipeline/` writes when run locally: fake databases, counts, preview pages. **Not tracked in git.** |
 
 ## The data

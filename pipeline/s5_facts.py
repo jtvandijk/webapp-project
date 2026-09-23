@@ -1,0 +1,488 @@
+"""Stage 5: the facts about each name - neighbourhood classifications, top neighbourhoods, ethnicity, forenames.
+
+    python3 -m pipeline.s5_facts                      # every fact, for every name in work/names.csv
+    python3 -m pipeline.s5_facts --limit 500          # a sample run: the first 500 names, as in stage 3
+    python3 -m pipeline.s5_facts --names smith macdonald --out-dir work/facts_try   # a few names, to look at by eye
+    python3 -m pipeline.s5_facts --facts oac imd      # only some facts (say, after loading a new table)
+    python3 -m pipeline.s5_facts --compute-only       # no database: redo the calculation from the saved extracts
+
+The rules (all in config.py, section 6):
+  * Contemporary facts are worked out in each name's REFERENCE YEAR, the latest register year in which
+    it has at least THRESHOLD["register"] bearers (counts.csv, from stage 1). Each fact is the most
+    common value among the bearers who have one, and is only kept when at least FACT_MIN_BEARERS do.
+    A tie is broken at random, but always the same way for the same name and fact (so a re-run gives
+    the same answer, and the output says when it happened).
+  * Forenames are the exception: pooled over every register year, since a name with no bearers in
+    the newest year should still have forenames. Historic (census) facts are a later addition.
+
+Two steps, so a change of rule never needs the database again:
+  1. extract: one query per fact and per reference year, saved under work/facts/extract/. A saved
+     extract is reused while the names it was made for are unchanged (--refresh forces a new query).
+  2. compute: the facts and the report, from the extracts.
+
+Writes (work/facts/):
+  by_fact/<fact>.csv   one file per fact, so a run of only some facts leaves the others as they were
+  facts.csv            all of them together: surname, fact, version, ref_year, n_bearers, value, detail
+  report.txt           how many names got each fact, why others did not, and what looked odd
+`detail` is JSON: the distribution over the values, the spread, the list for places and forenames, and
+`tie` when a tie was broken. `version` says which release of the classification the value is from.
+"""
+import argparse
+import csv
+import hashlib
+import json
+import math
+import random
+import time
+from collections import Counter, defaultdict
+from pathlib import Path
+
+from . import config, db, sql
+from .names import forename_clean, surname_key
+from .s3_extracts import load_names
+
+FIELDS = ["surname", "fact", "version", "ref_year", "n_bearers", "value", "detail"]
+QUERIED = ["oac", "loac", "ahah", "imd", "places", "eth"]          # one query per reference year
+ALL = QUERIED + ["forenames"]                                      # forenames: one query in all
+
+
+# ---------------------------------------------------------------------------
+# which year, which names
+# ---------------------------------------------------------------------------
+
+def load_counts(path=None):
+    """{(source, year, key): n} from counts.csv (stage 1)."""
+    with open(path or config.WORK / "counts.csv", newline="") as f:
+        return {(row["source"], int(row["year"]), row["surname"]): int(row["n"]) for row in csv.DictReader(f)}
+
+
+def reference_years(counts, names):
+    """{name: year}: the latest register year with at least THRESHOLD["register"] bearers, for each of
+    `names` that has one. A name with none (say, listed for its census bearers only) has no
+    contemporary facts."""
+    wanted = set(names)
+    best = {}
+    for (source, year, key), n in counts.items():
+        if source == "register" and n >= config.THRESHOLD["register"] and key in wanted and year > best.get(key, 0):
+            best[key] = year
+    return best
+
+
+def names_by_year(ref_years):
+    by_year = defaultdict(list)
+    for key, year in ref_years.items():
+        by_year[year].append(key)
+    return {year: sorted(keys) for year, keys in sorted(by_year.items())}
+
+
+# ---------------------------------------------------------------------------
+# step 1: extract
+# ---------------------------------------------------------------------------
+# An extract is trusted only while it was made for exactly the names now asked for: its .done marker
+# records a fingerprint of them and is written last, so an interrupted run leaves no marker.
+
+def fingerprint(names):
+    return hashlib.md5("\n".join(sorted(names)).encode()).hexdigest()[:12]
+
+
+def _paths(out_dir, stem):
+    return out_dir / "extract" / f"{stem}.csv", out_dir / "extract" / f"{stem}.done"
+
+
+def is_current(out_dir, stem, names):
+    csv_path, done = _paths(out_dir, stem)
+    return csv_path.exists() and done.exists() and done.read_text().strip() == f"names={fingerprint(names)}"
+
+
+def _save(out_dir, stem, header, rows, names):
+    csv_path, done = _paths(out_dir, stem)
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    done.unlink(missing_ok=True)
+    with open(csv_path, "w", newline="") as f:
+        out = csv.writer(f)
+        out.writerow(header)
+        out.writerows(rows)
+    done.write_text(f"names={fingerprint(names)}\n")
+
+
+def _shape(fact):
+    """(number of value columns, number of extra sum columns) in a fact's query result."""
+    spec = config.FACT_QUERIES[fact]
+    return len(spec.get("values") or spec.get("areas") or ["code"]), 2 * len(spec.get("sums", []))
+
+
+def extract_fact(conn, cfg, fact, year, names, out_dir, refresh=False):
+    """One query for one fact in one year, for `names` (those whose reference year it is). Spelling
+    variants are merged by surname key here, and only the listed names are kept, whatever the
+    coarse database filter let through. Returns the number of rows saved, or None if a current
+    extract was already there."""
+    stem = f"{fact}_{year}"
+    if not refresh and is_current(out_dir, stem, names):
+        return None
+    n_values, n_sums = _shape(fact)
+    wanted = set(names)
+    totals = {}
+    for row in db.fetch(conn, sql.fact_counts(cfg, fact, year, surnames=names)):
+        key = surname_key(row[0])
+        if key not in wanted:
+            continue
+        values = tuple("" if v is None else str(v) for v in row[1:1 + n_values])
+        acc = totals.setdefault((key,) + values, [0] + [0.0] * n_sums)
+        acc[0] += int(row[1 + n_values])
+        for i, v in enumerate(row[2 + n_values:]):
+            acc[1 + i] += float(v)
+    header = ["surname"] + [f"value{i + 1}" for i in range(n_values)] + ["n"] + [f"sum{i + 1}" for i in range(n_sums)]
+    _save(out_dir, stem, header, sorted(k + tuple(v) for k, v in totals.items()), names)
+    return len(totals)
+
+
+def read_extract(out_dir, fact, year):
+    """{name: [(values, n, sums), ...]} from a saved extract."""
+    n_values, _ = _shape(fact)
+    found = defaultdict(list)
+    with open(_paths(out_dir, f"{fact}_{year}")[0], newline="") as f:
+        reader = csv.reader(f)
+        next(reader)
+        for row in reader:
+            found[row[0]].append((tuple(row[1:1 + n_values]), int(row[1 + n_values]),
+                                  [float(x) for x in row[2 + n_values:]]))
+    return found
+
+
+def extract_forenames(conn, cfg, names, out_dir, refresh=False):
+    """Forenames per surname and sex, pooled over every register year: one query."""
+    if not refresh and is_current(out_dir, "forenames", names):
+        return None
+    wanted = set(names)
+    totals = Counter()
+    for raw, sex, forename, n in db.fetch(conn, sql.forename_counts(cfg, surnames=names)):
+        key, clean = surname_key(raw), forename_clean(forename)
+        if key in wanted and clean and sex in ("F", "M"):
+            totals[(key, sex, clean)] += int(n)
+    _save(out_dir, "forenames", ["surname", "sex", "forename", "n"],
+          sorted((k, s, f, n) for (k, s, f), n in totals.items()), names)
+    return len(totals)
+
+
+def read_forenames(out_dir):
+    """{name: {"F": {forename: n}, "M": {...}}} from the saved forenames extract."""
+    found = defaultdict(lambda: {"F": {}, "M": {}})
+    with open(_paths(out_dir, "forenames")[0], newline="") as f:
+        reader = csv.reader(f)
+        next(reader)
+        for key, sex, forename, n in reader:
+            found[key][sex][forename] = int(n)
+    return found
+
+
+def check_tables(conn, cfg, facts):
+    """Stop if a table that the queries join to has a key twice: everybody with it would count twice."""
+    problems = []
+    for fact in facts:
+        table = config.FACT_QUERIES.get(fact, {}).get("table")
+        if table and db.fetch(conn, sql.duplicate_nbhd_keys(cfg, table))[0][0]:
+            problems.append(f"{cfg['facts']['tables'][table]} has area codes that appear more than once")
+    if "forenames" in facts and db.fetch(conn, sql.duplicate_gender_names(cfg))[0][0]:
+        problems.append(f"{cfg['facts']['gender']['table']} has forenames that appear more than once")
+    if problems:
+        raise SystemExit("Nothing has been queried, because:\n  " + "\n  ".join(problems) +
+                         "\nMake each one row per key (or fix the table names in config.py) and run again.")
+
+
+# ---------------------------------------------------------------------------
+# step 2: compute
+# ---------------------------------------------------------------------------
+
+def pick_mode(counts, seed):
+    """(value, tied): the most common value. A tie is broken at random, but the same way every time
+    for the same seed, whichever machine or run it is (a string seed is hashed, not Python's own hash())."""
+    top = max(counts.values())
+    tied = sorted(v for v, n in counts.items() if n == top)
+    if len(tied) == 1:
+        return tied[0], False
+    return random.Random(seed).choice(tied), True
+
+
+def _share(n, total):
+    return round(n / total, config.SHARE_DECIMALS)
+
+
+def _row(key, fact, year, n, value, detail):
+    return {"surname": key, "fact": fact, "version": config.FACT_VERSIONS[fact], "ref_year": year,
+            "n_bearers": n, "value": value, "detail": json.dumps(detail, separators=(",", ":"), ensure_ascii=False)}
+
+
+def _with_tie(detail, tied):
+    if tied:
+        detail["tie"] = True
+    return detail
+
+
+def _tally_value(tally, fact, total, tied=False):
+    tally[fact]["with_value"] += 1
+    tally[fact]["bearers_with_value"] += total
+    tally[fact]["ties"] += tied
+
+
+def compute_groups(fact, extracted, ref_years, tally):
+    """OAC and LOAC: the most common group, and the share of bearers in every group."""
+    out = []
+    for key, rows in sorted(extracted.items()):
+        by_value = Counter()
+        for (value,), n, _ in rows:
+            by_value[value] += n
+        total = sum(by_value.values())
+        if total < config.FACT_MIN_BEARERS:
+            continue
+        value, tied = pick_mode(by_value, f"{key}|{fact}")
+        shares = {v: _share(n, total) for v, n in sorted(by_value.items(), key=lambda item: (-item[1], item[0]))}
+        out.append(_row(key, fact, ref_years[key], total, value, _with_tie({"distribution": shares}, tied)))
+        _tally_value(tally, fact, total, tied)
+    return out
+
+
+def compute_deciles(fact, extracted, ref_years, tally):
+    """AHAH and IMD: the most common decile, and the share of bearers in each of the ten."""
+    out = []
+    for key, rows in sorted(extracted.items()):
+        by_value = Counter()
+        for (value,), n, _ in rows:
+            by_value[value] += n
+        total = sum(by_value.values())
+        if total < config.FACT_MIN_BEARERS:
+            continue
+        value, tied = pick_mode(by_value, f"{key}|{fact}")
+        shares = [_share(by_value.get(str(d), 0), total) for d in range(1, 11)]
+        out.append(_row(key, fact, ref_years[key], total, value, _with_tie({"distribution": shares}, tied)))
+        _tally_value(tally, fact, total, tied)
+    return out
+
+
+def compute_imd_score(extracted, ref_years, tally):
+    """The GBNames deprivation score: the mean and the spread (sd) of the deprivation percentile."""
+    out = []
+    for key, rows in sorted(extracted.items()):
+        total = sum(n for _, n, _ in rows)
+        if total < config.FACT_MIN_BEARERS:
+            continue
+        s, ss = sum(sums[0] for _, _, sums in rows), sum(sums[1] for _, _, sums in rows)
+        sd = math.sqrt(max(ss - s * s / total, 0.0) / (total - 1))
+        out.append(_row(key, "imd_score", ref_years[key], total, round(s / total, 2), {"sd": round(sd, 2)}))
+        _tally_value(tally, "imd_score", total)
+    return out
+
+
+def compute_places(extracted, ref_years, tally):
+    """The most common neighbourhoods, most common first, each with at least PLACES_MIN people. The
+    counts themselves are not written."""
+    out = []
+    for key, rows in sorted(extracted.items()):
+        by_area, district = Counter(), {}
+        for (area, dist), n, _ in rows:
+            by_area[area] += n
+            district.setdefault(area, dist)
+        total = sum(by_area.values())
+        if total < config.FACT_MIN_BEARERS:
+            continue
+        listed = sorted(((a, n) for a, n in by_area.items() if n >= config.PLACES_MIN), key=lambda an: (-an[1], an[0]))
+        if not listed:
+            continue
+        top = [{"msoa": a, "district": district[a]} for a, _ in listed[:config.PLACES_TOP]]
+        out.append(_row(key, "places", ref_years[key], total, "", {"places": top}))
+        _tally_value(tally, "places", total)
+    return out
+
+
+def eth_group(code):
+    """The census group an Ethnicity Estimator code belongs to (WAO-DE -> WAO), or None if it is not a known one."""
+    group = code.split("-")[0].strip().upper()
+    return group if group in config.ETH_GROUPS else None
+
+
+def compute_ethnicity(extracted, ref_years, tally):
+    """The most common census group among the bearers with a usable code. Every name with a reference
+    year gets an answer: 'unknown' when fewer than FACT_MIN_BEARERS have one. The three most common
+    codes (countries) are kept too, for later."""
+    out = []
+    for key in sorted(ref_years):
+        groups, codes = Counter(), Counter()
+        for (code,), n, _ in extracted.get(key, []):
+            group = eth_group(code)
+            if group is None:
+                tally["unmapped codes"][code] += n
+                continue
+            groups[group] += n
+            codes[code.strip().upper()] += n
+        total = sum(groups.values())
+        if total < config.FACT_MIN_BEARERS:
+            out.append(_row(key, "ethnicity", ref_years[key], total, config.ETH_UNKNOWN, {}))
+            tally["ethnicity"]["unknown"] += 1
+            continue
+        value, tied = pick_mode(groups, f"{key}|ethnicity")
+        detail = {"distribution": {g: _share(n, total) for g, n in sorted(groups.items(), key=lambda item: (-item[1], item[0]))},
+                  "codes": [[c, _share(n, total)] for c, n in sorted(codes.items(), key=lambda item: (-item[1], item[0]))[:3]]}
+        out.append(_row(key, "ethnicity", ref_years[key], total, value, _with_tie(detail, tied)))
+        _tally_value(tally, "ethnicity", total, tied)
+    return out
+
+
+def compute_forenames(extracted, names, tally):
+    """The most common forenames per sex, pooled over every register year, each with at least
+    FORENAMES_MIN people. The counts themselves are not written."""
+    out = []
+    for key in sorted(names):
+        if key not in extracted:
+            continue
+        lists = {}
+        for sex in ("F", "M"):
+            common = sorted(((f, n) for f, n in extracted[key][sex].items() if n >= config.FORENAMES_MIN),
+                            key=lambda fn: (-fn[1], fn[0]))
+            lists[sex.lower()] = [f for f, _ in common[:config.FORENAMES_TOP]]
+        if lists["f"] or lists["m"]:
+            out.append(_row(key, "forenames_register", "", "", "", lists))
+            tally["forenames_register"]["with_value"] += 1
+    return out
+
+
+# ---------------------------------------------------------------------------
+# writing and reporting
+# ---------------------------------------------------------------------------
+
+def write_fact(out_dir, fact, rows):
+    path = out_dir / "by_fact" / f"{fact}.csv"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", newline="") as f:
+        out = csv.DictWriter(f, fieldnames=FIELDS)
+        out.writeheader()
+        out.writerows(sorted(rows, key=lambda r: r["surname"]))
+
+
+def merge_facts(out_dir):
+    """facts.csv: every by_fact file together, sorted by name and fact. Returns the number of rows."""
+    rows = []
+    for path in sorted((out_dir / "by_fact").glob("*.csv")):
+        with open(path, newline="") as f:
+            rows += list(csv.DictReader(f))
+    rows.sort(key=lambda r: (r["surname"], r["fact"]))
+    with open(out_dir / "facts.csv", "w", newline="") as f:
+        out = csv.DictWriter(f, fieldnames=FIELDS)
+        out.writeheader()
+        out.writerows(rows)
+    return len(rows)
+
+
+def build_report(names, ref_years, counts, tally, outputs):
+    """The lines of the report: what was worked out, and what to look at."""
+    registered = sum(counts.get(("register", year, key), 0) for key, year in ref_years.items())
+    years = Counter(ref_years.values())
+    lines = [f"names in this run: {len(names):,}",
+             f"with a reference year (a register year with {config.THRESHOLD['register']}+ bearers): {len(ref_years):,}"
+             f"; the other {len(names) - len(ref_years):,} get no contemporary facts",
+             "reference years: " + "  ".join(f"{y}: {n:,}" for y, n in sorted(years.items(), reverse=True)[:8]),
+             "", f"{'fact':20} {'names with a value':>19} {'no value':>9} {'ties broken':>12} {'bearers with a value':>21}"]
+    for fact in outputs:
+        t = tally[fact]
+        scope = len(names) if fact == "forenames_register" else len(ref_years)
+        coverage = "" if fact == "forenames_register" or not registered else f"{t['bearers_with_value'] / registered:>20.1%}"
+        lines.append(f"{fact:20} {t['with_value']:>19,} {scope - t['with_value'] - t['unknown']:>9,} "
+                     f"{t['ties']:>12,} {coverage:>21}")
+    if "ethnicity" in outputs:
+        lines.append(f"\nethnicity: {tally['ethnicity']['unknown']:,} names are 'unknown' (fewer than "
+                     f"{config.FACT_MIN_BEARERS} bearers with a usable code)")
+        if tally["unmapped codes"]:
+            lines.append("ethnicity codes not in config.ETH_GROUPS, left out of the counts (code: bearers): " +
+                         ", ".join(f"{c}: {n:,}" for c, n in tally["unmapped codes"].most_common(20)))
+    lines.append("\n'bearers with a value' is the share of all bearers, in the reference years, who have a value for it.")
+    return lines
+
+
+# ---------------------------------------------------------------------------
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--facts", nargs="*", choices=ALL, default=ALL, help="which facts (default: all)")
+    which = parser.add_mutually_exclusive_group()
+    which.add_argument("--limit", type=int, help="only the first N names from work/names.csv (a sample run)")
+    which.add_argument("--names", nargs="*", help="only these names, which must be in work/names.csv; give --out-dir "
+                       "as well, so a few names do not replace the files of a fuller run")
+    parser.add_argument("--refresh", action="store_true", help="query again even where a current extract exists")
+    parser.add_argument("--compute-only", action="store_true", help="no database: use the saved extracts")
+    parser.add_argument("--out-dir", default=str(config.WORK / "facts"))
+    args = parser.parse_args()
+    out_dir, facts = Path(args.out_dir), list(args.facts)
+
+    names = load_names(args.limit)
+    if not names:
+        raise SystemExit("No names in work/names.csv - run s1_counts.py first.")
+    if args.names:
+        chosen = sorted({surname_key(n) for n in args.names} - {""})
+        missing = [k for k in chosen if k not in set(names)]
+        if missing:
+            raise SystemExit(f"Not in work/names.csv, so not names that get a page: {', '.join(missing)}")
+        names = chosen
+    counts = load_counts()
+    ref_years = reference_years(counts, names)
+    by_year = names_by_year(ref_years)
+    print(f"{len(names):,} names, {len(ref_years):,} with a reference year, in {len(by_year)} different years")
+
+    cfg = config.settings()
+    if not args.compute_only:
+        conn = db.connect("register")
+        check_tables(conn, cfg, facts)
+        for fact in [f for f in QUERIED if f in facts]:
+            for year, keys in by_year.items():
+                started = time.perf_counter()
+                rows = extract_fact(conn, cfg, fact, year, keys, out_dir, args.refresh)
+                print(f"{fact} {year}: {len(keys):,} names, " +
+                      ("saved extract reused" if rows is None else f"{rows:,} rows, {time.perf_counter() - started:.1f}s"))
+        if "forenames" in facts:
+            started = time.perf_counter()
+            rows = extract_forenames(conn, cfg, names, out_dir, args.refresh)
+            print("forenames: " + ("saved extract reused" if rows is None else f"{rows:,} rows, {time.perf_counter() - started:.1f}s"))
+        conn.close()
+
+    # the extracts must be for the names now in scope, whether or not this run made them
+    stale = [f"{fact} {year}" for fact in QUERIED if fact in facts for year, keys in by_year.items()
+             if not is_current(out_dir, f"{fact}_{year}", keys)]
+    if "forenames" in facts and not is_current(out_dir, "forenames", names):
+        stale.append("forenames")
+    if stale:
+        raise SystemExit("These extracts are missing, or were made for other names: " + ", ".join(stale) +
+                         "\nRun again without --compute-only.")
+
+    def load(fact):
+        merged = {}
+        for year in by_year:
+            merged.update(read_extract(out_dir, fact, year))     # each name has exactly one reference year
+        return merged
+
+    tally = defaultdict(Counter)
+    results = {}
+    if "oac" in facts:
+        results["oac"] = compute_groups("oac", load("oac"), ref_years, tally)
+    if "loac" in facts:
+        results["loac"] = compute_groups("loac", load("loac"), ref_years, tally)
+    if "ahah" in facts:
+        results["ahah"] = compute_deciles("ahah", load("ahah"), ref_years, tally)
+    if "imd" in facts:
+        imd = load("imd")
+        results["imd"] = compute_deciles("imd", imd, ref_years, tally)
+        results["imd_score"] = compute_imd_score(imd, ref_years, tally)
+    if "places" in facts:
+        results["places"] = compute_places(load("places"), ref_years, tally)
+    if "eth" in facts:
+        results["ethnicity"] = compute_ethnicity(load("eth"), ref_years, tally)
+    if "forenames" in facts:
+        results["forenames_register"] = compute_forenames(read_forenames(out_dir), names, tally)
+
+    for fact, rows in results.items():
+        write_fact(out_dir, fact, rows)
+    total = merge_facts(out_dir)
+    report = build_report(names, ref_years, counts, tally, list(results))
+    (out_dir / "report.txt").write_text("\n".join(report) + "\n")
+    print("\n".join(report))
+    print(f"\n{total:,} facts in {out_dir / 'facts.csv'}")
+
+
+if __name__ == "__main__":
+    main()

@@ -180,16 +180,16 @@ after the counting step of the pipeline.
 How the old pipeline did each item (from the code in `data-prep/`), and what needs a decision
 before the long run starts.
 
-| Item | How it was done before | To decide |
+| Item | How it was done before | Decided (2026-09-23) / still to decide |
 |---|---|---|
 | `counts` | Census: all residents per name per year (1911 without Scotland). Registers: people with `first_im <= year <= last_im`. | Which years; do register counts stay "adults (estimated)". |
 | `maps` | Kernel density on a 1 km grid, bandwidth 8 to 18 km depending on name size and spread, weighted by population, cut into 3 levels, outlines smoothed and clipped to the coast. | Decided: 15 periods and the method (see [pipeline.md](pipeline.md)); the threshold is 100 bearers, both sources. Open: how widespread names should look on real data; `LEVEL_MASS` (the level cut-offs) and `MIN_BLOB_SHARE` will end up varying per name rather than being one constant (see pipeline.md), which is why the settings actually used for a given name's map need recording somewhere - **agreed (2026-09-23): a separate, internal-only settings log written by Stage 4 (per name/period: resolved bandwidth, weighting power, level mode+shares, blob-share threshold, pipeline version), not part of these public files** - keeps this contract's payload lean and the PVC-style numbers out of anything a visitor's browser downloads, while still letting us answer "why does this map look like this" later. Not yet built. Also open: a missing period should say why on the website (see the `maps` row above) - the reason already exists internally, it just isn't published yet. |
-| `forenames` | Top 10 per sex. Census pooled over 1851 to 1911. Registers: no year filter, so pooled. | Pooled or latest year. |
-| `places` | Top 10 parishes (1851 or 1901 boundaries); top 10 2011 MSOAs (at least 3 people). | Boundaries for 1921; MSOA version. Fix the 1911 join bug. |
-| `oac`, `loac` | Most common group among register addresses (2021 versions). | Which years of addresses. |
-| `iuc` | Most common group. | Version. |
-| `imd` | Most common decile, plus mean and sd (England/Wales 2019, Scotland 2020). | England 2025 is available; check Wales and Scotland. |
-| `ahah` | Most common decile (version 3). | Version 5 is available; confirm decile direction. |
-| `precarity` (new) | Does not exist yet. | Which index and in what form. It will be added to this contract as a further optional fact. |
-| `bbs` | Most common broadband class (from a lookup file that appears to be 2017). | Refresh. |
-| `eee` | Looked up from the surname itself (ONOMAP), no address data. | Nothing. |
+| `forenames` | Top 10 per sex. Census pooled over 1851 to 1911. Registers: no year filter, so pooled. | **Pooled** over all years (all census years; all register years), so a name with no 2026 records still has forenames. Historic and contemporary stay two separate lists. Gender for the registers from `registers_lookup.lookup_monica` (unchanged; may change). |
+| `places` | Top 10 parishes (1851 or 1901 boundaries); top 10 2011 MSOAs (at least 3 people). | MSOA 2021 (Scotland: intermediate zone) and district come from the postcode directory (`msoa21cd`, `lad25cd`); names are attached after the TRE, so they can change without a new run. **Contemporary list: reference year** (latest year with 100+ bearers), like the other contemporary neighbourhood facts. **Parishes: pooled over all census years as the old code did** (group by county, parish id and name, top 10, id 0 left out), but not its 1911 join mistake (it joined 1911 records to the 1901 table); 1921 uses the 1901 boundaries, to confirm once uploaded. |
+| `oac`, `loac` | Most common group among register addresses (2021 versions). | **UK OAC 2021/22** and **London OAC 2021** (London bearers only), most common group in the latest year with 100+ bearers. Prepared by `tools/prep_neighbourhood.py`. |
+| `iuc` | Most common group. | **Dropped.** |
+| `imd` | Most common decile, plus mean and sd (England/Wales 2019, Scotland 2020). | **England 2025, Wales 2025, Scotland 2020v2.** Each country is ranked on its own, then treated as comparable (a known simplification). Decile 1 = most deprived. The "GBNames deprivation score" is the mean and sd of the percentile. |
+| `ahah` | Most common decile (version 3). | **Version 5.1.** Decile 1 = **healthiest**, 10 = least healthy: the opposite way round from `imd`, and the legend must say so. |
+| `precarity` (new) | Does not exist yet. | Waiting for the file from a colleague. It will be added to this contract as a further optional fact. |
+| `bbs` | Most common broadband class (from a lookup file that appears to be 2017). | **Dropped.** |
+| `eee` | Looked up from the surname itself (ONOMAP), no address data. | **Replaced by the Ethnicity Estimator** (modal census group, top three countries). Source: `registers_derived.lcr_consol_ethest`, the register with a person-level `eth` (worked out from forename and surname). The most common `eth` per surname in the reference year; a surname with no usable class is shown as `Unknown` (the page says there are too few data points). The old surname-only ONOMAP lookup is no longer used. What `eth` holds (census groups or country-level codes) is still to confirm. |

@@ -20,3 +20,6 @@ _meta.txt
 
 #pipeline working files (fake database, counts, maps)
 /work/
+
+#raw downloads of neighbourhood indicators (OAC, LOAC, AHAH, IMD), not redistributed
+/raw-indicators/
