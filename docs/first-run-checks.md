@@ -8,6 +8,13 @@ export out of the TRE, and then the whole thing has to be run again. Every step 
 anything leaves, and each one catches a different kind of mistake. Steps 1 to 5 are about the neighbourhood
 tables, 6 to 8 about the facts.
 
+**Not every step is needed every time.** This is the thorough list, for when something looks wrong. On a normal
+first run the essential steps are 3 (load the tables) and 6 (a small run of stage 5, whose report already says
+what share of bearers found a value for each fact), and comparing the result for a few names you know with the
+live site. Steps 1, 2 and 4 are belt and braces (upload intact; tables agree with the local ones; per-country
+coverage): go to them if the report shows a fact with noticeably less than about 99% of bearers having a value,
+since `nbhd_tables check` then says which country is affected.
+
 ## 1. On your own computer, before uploading
 
 ```
