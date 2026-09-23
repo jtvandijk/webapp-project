@@ -8,7 +8,9 @@ compared with a second calculation done in Python straight from the tables, shar
 SQL, so a query that joins the wrong column (say, Scotland's deprivation on the 2021 zones) or the
 wrong year gives a different answer.
 """
+import contextlib
 import csv
+import io
 import json
 import sqlite3
 import statistics
@@ -414,6 +416,60 @@ class NeighbourhoodTables(unittest.TestCase):
         for key, columns in config.NBHD_TABLE_COLUMNS.items():
             with open(config.ROOT / "work" / "neighbourhood" / f"nbhd_{key}.csv", newline="") as f:
                 self.assertEqual(next(csv.reader(f)), [c for c, _ in columns], key)
+
+    def test_the_postcode_lookup_gives_what_the_tables_give_for_the_postcodes_codes(self):
+        table = {k: {r[0]: r for r in self.conn.execute(f"SELECT * FROM nbhd_{k}")} for k in ("oac", "loac", "ahah", "imd")}
+        sample = self.conn.execute("""SELECT postcode, ctry, oa21cd, lsoa21cd, lsoa11cd, easting, northing FROM postcode_lookup
+                                      WHERE oa21cd <> '' ORDER BY ctry, postcode LIMIT 400""").fetchall()
+        sample += self.conn.execute("SELECT postcode, ctry, oa21cd, lsoa21cd, lsoa11cd, easting, northing FROM postcode_lookup "
+                                    "WHERE ctry = 'S92000003' AND oa21cd <> '' LIMIT 200").fetchall()
+        found = nbhd_tables.lookup(self.conn, self.cfg, [row[0] for row in sample])
+        seen_scottish = 0
+        for postcode, ctry, oa, lsoa, lsoa11, east, north in sample:
+            row = found[postcode]
+            self.assertEqual(row["oac_group"], table["oac"][oa][2] if oa in table["oac"] else None, postcode)
+            self.assertEqual(row["loac_group"], table["loac"][oa][2] if oa in table["loac"] else None, postcode)
+            self.assertEqual(row["ahah_decile"], table["ahah"][lsoa][4] if lsoa in table["ahah"] else None, postcode)
+            zone = lsoa11 if ctry == "S92000003" else lsoa                    # Scotland's deprivation is on the 2011 zones
+            self.assertEqual(row["imd_decile"], table["imd"][zone][6] if zone in table["imd"] else None, postcode)
+            self.assertEqual(row["imd_pctile"], table["imd"][zone][5] if zone in table["imd"] else None, postcode)
+            self.assertEqual(bool(row["counts"]), bool(east and north and east > 0 and north > 0 and ctry in GB), postcode)
+            seen_scottish += ctry == "S92000003"
+        self.assertGreater(seen_scottish, 20)
+
+    def test_the_postcode_lookup_says_plainly_what_is_missing_and_why(self):
+        self.assertEqual(nbhd_tables.standard_postcode(" SW1A 1AA"), "sw1a1aa")
+        self.assertEqual(nbhd_tables.standard_postcode("g1-1aa"), "g11aa")
+        blank = self.conn.execute("SELECT postcode FROM postcode_lookup WHERE (oa21cd = '' OR oa21cd IS NULL) AND easting > 0 "
+                                  "AND ctry = 'E92000001' LIMIT 1").fetchone()[0]
+        ni = self.conn.execute("SELECT postcode FROM postcode_lookup WHERE ctry = 'N92000002' LIMIT 1").fetchone()[0]
+        found = nbhd_tables.lookup(self.conn, self.cfg, [blank, ni, "zz99 9zz"])
+        self.assertNotIn("zz999zz", found)
+        self.assertIn("not in the postcode directory", "\n".join(nbhd_tables.describe(self.cfg, "ZZ99 9ZZ", None)))
+        self.assertIn("the postcode has no such code", "\n".join(nbhd_tables.describe(self.cfg, blank, found[blank])))
+        self.assertIn("counted by the pipeline: NO", "\n".join(nbhd_tables.describe(self.cfg, ni, found[ni])))
+        scot = nbhd_tables.lookup(self.conn, self.cfg, [self.conn.execute(
+            "SELECT postcode FROM postcode_lookup WHERE ctry = 'S92000003' AND oa21cd <> '' LIMIT 1").fetchone()[0]])
+        (row,) = scot.values()
+        text = "\n".join(nbhd_tables.describe(self.cfg, row["postcode"], row))
+        self.assertIn("[joined on lsoa11cd] (Scotland is on the 2011 data zones)", text)     # and the rest on lsoa21cd
+        self.assertIn("[joined on lsoa21cd]", text)
+
+    @unittest.skipUnless((config.ROOT / "raw-indicators" / "oac21" / "uk_oac_final.csv").exists(),
+                         "the raw downloads (raw-indicators/) are not on this machine")
+    def test_the_audit_tools_show_prints_what_the_download_says(self):
+        try:
+            from tools import audit_neighbourhood
+        except ImportError:
+            self.skipTest("openpyxl is not installed")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            audit_neighbourhood.Audit(config.ROOT / "raw-indicators", config.ROOT / "work" / "neighbourhood").show(["E00000001", "E01000001", "nonsense"])
+        text = out.getvalue()
+        self.assertIn("supergroup 3, group 3c, subgroup 3c2", text)          # City of London, straight from the download
+        self.assertIn("rank 26,525 of 33,755", text)
+        self.assertIn("published decile 8", text)
+        self.assertIn("in none of the downloads", text)
 
     def test_the_check_reports_per_country_and_finds_a_missing_country(self):
         # the fake tables are gappy on purpose (and one dropped London LSOA is a tenth of the rows), hence 0.75

@@ -264,6 +264,27 @@ SELECT surname, sex, forename, n FROM (
 WHERE rk <= {config.FORENAMES_KEEP}"""
 
 
+def postcode_lookup(cfg, postcodes):
+    """What stage 5 would use for each of these (already standardised) postcodes: the codes in the
+    postcode directory, whether the postcode counts at all (a grid reference, and Great Britain), and the
+    row each neighbourhood table gives for it. It joins in exactly the way fact_counts() does."""
+    r = cfg["register"]
+    areas, tables = r["areas"], cfg["facts"]["tables"]
+    _, _, _, where = _register(cfg)
+    joins = "\n".join(f'LEFT JOIN {tables[k]} t_{k} ON t_{k}.area_code = {_area_key(cfg, config.FACT_QUERIES[k])}'
+                      for k in ("oac", "loac", "ahah", "imd"))
+    listed = ",".join("'" + p.replace("'", "''") + "'" for p in postcodes)
+    return f"""
+SELECT a.{r["address_key"]}, CASE WHEN {where} THEN 1 ELSE 0 END, a.{areas["country"]},
+       a.{areas["oa"]}, a.{areas["lsoa"]}, a.{areas["lsoa_2011"]}, a.{areas["msoa"]}, a.{areas["district"]},
+       t_oac.oac_supergroup, t_oac.oac_group, t_oac.oac_subgroup, t_loac.loac_group,
+       t_ahah.ahah_rank, t_ahah.ahah_decile,
+       t_imd.imd_source, t_imd.imd_rank, t_imd.imd_areas, t_imd.imd_decile, t_imd.imd_pctile
+FROM {r["address_table"]} a
+{joins}
+WHERE a.{r["address_key"]} IN ({listed})"""
+
+
 # ---------------------------------------------------------------------------
 # safety checks for the neighbourhood tables and the gender table
 # ---------------------------------------------------------------------------

@@ -181,6 +181,8 @@ release folder leaves it.
 
 ### Stage 5 output
 
+(What to check on a first real run, before anything is exported: [first-run-checks.md](first-run-checks.md).)
+
 `work/facts/facts.csv`, one row per name and fact: `surname, fact, version, ref_year, n_bearers, value, detail`.
 `version` says which release of the classification the value is from (so a new version can sit next to an old
 one), `detail` is JSON, and a name simply has no row for a fact it has no value for ("missing means no data").

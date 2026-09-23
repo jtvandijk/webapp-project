@@ -114,7 +114,9 @@ The neighbourhood facts join the register to neighbourhood tables, which have to
    one product later, `--replace` drops the old tables first.
 3. **Check them:** `python3 -m pipeline.nbhd_tables check` says, per country, how many register rows find a
    row in each table. Expect about 99.9% everywhere; it stops and names the country and table if not, or
-   if a table has an area code twice.
+   if a table has an area code twice. `python3 -m pipeline.nbhd_tables lookup "SW1A 1AA" ...` prints what stage 5
+   will use for individual postcodes, to compare with the answers in [docs/first-run-checks.md](../docs/first-run-checks.md),
+   which lists every check to do on a first real run (upload intact, counts, spot postcodes, one name by hand in SQL).
 4. **Sample run first:** `python3 -m pipeline.s5_facts --limit 500`, then read `work/facts/report.txt` (how many
    names got each fact and why others did not, ties broken, ethnicity codes it did not recognise) and
    look at `work/facts/facts.csv`. Then the full run.

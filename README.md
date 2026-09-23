@@ -30,6 +30,7 @@ replaces it; nothing in the rebuild depends on it.
 | [docs/data-contract.md](docs/data-contract.md) | The file format the rebuild produces, and that the future website reads: one JSON file per surname. |
 | [docs/pipeline.md](docs/pipeline.md) | The plan for turning individual-level records into that release: stages, decisions made, what is still open. |
 | [pipeline/README.md](pipeline/README.md) | How to run the pipeline - on fake data locally, or for real in the TRE. |
+| [docs/first-run-checks.md](docs/first-run-checks.md) | What to check on the first real run in the TRE, before anything is exported. |
 
 ## Repository layout
 
@@ -55,6 +56,51 @@ background). Names and addresses cannot be released from a census until it is 10
 [Lansley, Li and Longley 2019](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/rssa.12476)).
 
 This is individual-level data. It is never published as such: a surname's map is only built for a
-year in which it has at least 30 (historic) or 100 (modern) bearers, and nothing at all is shown
-below that. This repository holds code, not data - the two folders that could hold real or
-realistic-looking extracts (`data-prep/`, `work/`) are both git-ignored.
+year in which it has at least 100 bearers, and nothing at all is shown below that. This repository holds
+code, not data - the two folders that could hold real or realistic-looking extracts (`data-prep/`,
+`work/`) are both git-ignored, and so is `raw-indicators/` (public downloads, see below, which are not ours to
+redistribute).
+
+### Neighbourhood classifications
+
+What the site says about the neighbourhoods a surname's bearers live in comes from public classifications,
+each looked up through a bearer's postcode using the ONS Postcode Directory (ONSPD). The downloads are kept
+in `raw-indicators/`; [`tools/prep_neighbourhood.py`](tools/prep_neighbourhood.py) turns them into four small
+lookup tables in `work/neighbourhood/`, and the `manifest.json` next to them records each table's geography,
+the direction of its scale and a checksum. The table below is the same information.
+
+| Product | Version | Areas | Joined on this ONSPD column | Direction of the scale |
+|---|---|---|---|---|
+| UK OAC | 2021/22 | output areas: 2021 (England, Wales), **2022 (Scotland)** | `oa21cd` | groups, no order |
+| London OAC | 2021 | output areas 2021, London only | `oa21cd` | groups, no order |
+| AHAH (healthy neighbourhoods) | v5.1 | LSOAs 2021 (England, Wales), **data zones 2022 (Scotland)** | `lsoa21cd` | rank and decile **1 = healthiest, 10 = least healthy** |
+| Deprivation | England IoD 2025, Wales WIMD 2025, Scotland SIMD 2020v2 | LSOAs **2021** (England, Wales), data zones **2011 (Scotland)** | `lsoa21cd` (England, Wales), **`lsoa11cd` (Scotland)** | rank, decile and percentile **1 = most deprived** |
+
+**Which zones, 2011 or 2021?** There is no conversion between them. ONSPD carries both the 2011 and the 2021
+(Scotland: 2022) code for every postcode, and each classification is joined on the column that matches the
+zones it was published for. The one place the two mix is Scotland: its deprivation index (SIMD 2020v2) is on
+the 2011 data zones, while AHAH and OAC use the 2022 ones. Joining on the wrong column does not fail loudly: in
+England about 6% of postcodes are in a zone whose code changed between 2011 and 2021, and they would quietly
+find no value (and a handful would pick up a different zone's value). `python3 -m pipeline.nbhd_tables check`
+reports the share per country, and would show it.
+
+**The scales run opposite ways.** AHAH decile 1 is the *healthiest* neighbourhood; the deprivation decile 1 is the
+*most deprived*. Anything that draws or words either scale has to say which end is which.
+
+**What is published and what we worked out.** Kept exactly as published: the OAC and LOAC groups, the AHAH rank
+and percentile, and every deprivation rank. Worked out here, from the published ranks: the AHAH decile (v5.1
+publishes none), the Scottish deprivation decile (SIMD publishes ranks only) and, for all three countries,
+the deprivation percentile, as `ceil(10 or 100 x rank / number of areas in the country)`. Where a decile is
+published (England, Wales) ours matches it: exactly for all 33,755 English areas, and for 1,913 of 1,917 Welsh ones
+(the other four sit on a boundary and differ by one decile). The AHAH score is rounded to three decimals. Northern
+Ireland is not covered.
+
+**Deprivation is ranked within each country and then treated as comparable.** A Scottish neighbourhood at
+percentile 1 counts as the same as an English one at percentile 1. They are not strictly comparable (three
+different indices), but this is the agreed simple comparison. The "GBNames deprivation score" is the mean and
+spread of this percentile among a surname's bearers, and the modal deprivation decile is its most common decile.
+
+**Checking it.** [`tools/audit_neighbourhood.py`](tools/audit_neighbourhood.py) re-reads the downloads with
+separate code and compares every value with the tables (`--show CODE` prints what the downloads say for an area).
+In the TRE, `python3 -m pipeline.nbhd_tables check` and `lookup <postcode>` test the loaded tables against the real
+register; [docs/first-run-checks.md](docs/first-run-checks.md) lists the steps, with expected answers for six real postcodes.

@@ -3,6 +3,7 @@
 
 Usage:   python3 tools/audit_neighbourhood.py
          python3 tools/audit_neighbourhood.py --raw raw-indicators --out work/neighbourhood
+         python3 tools/audit_neighbourhood.py --show E00000001 E01000001 S01006646   # what the downloads say for these areas
 
 Run it after tools/prep_neighbourhood.py, and again whenever a download or a table changes. It needs
 only openpyxl (pip install openpyxl). Exit code 0 = nothing wrong, 1 = at least one problem.
@@ -21,7 +22,9 @@ in one is unlikely to be repeated in the other. It checks that
   * the files hold plain numbers, no empty cells and no repeated area codes, and are still the files
     that manifest.json recorded.
 
-What is NOT checked here: anything in the TRE. That is what `python3 -m pipeline.nbhd_tables check` is for.
+What is NOT checked here: anything in the TRE. That is what `python3 -m pipeline.nbhd_tables check` and
+`lookup` are for; --show is the other half of a spot check: take the area codes that `lookup` printed for a
+postcode in the TRE and see here what the download itself says for them.
 """
 import argparse
 import csv
@@ -69,8 +72,7 @@ class Audit:
 
     def oac(self):
         print("=== UK OAC: is every value identical to the download?")
-        raw = {r["GeographyCode"]: (r["Supergroup"], r["Group"], r["Subgroup"])
-               for r in csv.DictReader(open(self.raw / "oac21/uk_oac_final.csv", encoding="utf-8-sig"))}
+        raw = self._oac_raw()
         gb = {k: v for k, v in raw.items() if k[0] in "EWS"}
         ours = {r["area_code"]: (r["oac_supergroup"], r["oac_group"], r["oac_subgroup"]) for r in self.prepared("oac")}
         common = self.same_areas("OAC", ours, gb)
@@ -81,7 +83,7 @@ class Audit:
 
     def loac(self):
         print("\n=== London OAC")
-        raw = {r["OA"]: (r["SG"], r["G"]) for r in csv.DictReader(open(self.raw / "loac21/loac_groups.csv", encoding="utf-8-sig"))}
+        raw = self._loac_raw()
         ours = {r["area_code"]: (r["loac_supergroup"], r["loac_group"]) for r in self.prepared("loac")}
         common = self.same_areas("LOAC", ours, raw)
         different = sum(ours[k] != raw[k] for k in common)
@@ -90,8 +92,7 @@ class Audit:
 
     def ahah(self):
         print("\n=== AHAH v5.1")
-        raw = {r["lsoa21cd"]: (float(r["ahah"]), int(r["ahah_rnk"]), int(r["ahah_pct"]))
-               for r in csv.DictReader(open(self.raw / "ahah/ahah_v5_1.csv", encoding="utf-8-sig"))}
+        raw = self._ahah_raw()
         ours = {r["area_code"]: r for r in self.prepared("ahah")}
         n = len(raw)
         common = self.same_areas("AHAH", ours, raw)
@@ -165,7 +166,50 @@ class Audit:
         self.check(same, "a file no longer matches the checksum in manifest.json")
         print("files match the checksums in manifest.json:", same)
 
+    def show(self, codes):
+        """What the downloads say for some area codes (copied from `python3 -m pipeline.nbhd_tables lookup`
+        in the TRE), to compare with what the tables there gave for the same postcode."""
+        oac, loac, ahah = self._oac_raw(), self._loac_raw(), self._ahah_raw()
+        deprivation = {"England IoD2025": self._england(), "Wales WIMD2025": self._wales(), "Scotland SIMD2020v2": self._scotland()}
+        print("What the downloads say (not the prepared tables), for each area code:")
+        for code in (c.strip().upper() for c in codes):
+            print(f"\n{code}")
+            found = False
+            if code in oac:
+                print("  UK OAC 2021/22   supergroup %s, group %s, subgroup %s" % oac[code])
+                found = True
+            if code in loac:
+                print(f"  London OAC       group {loac[code][1]}")
+            elif re.fullmatch(r"E00\d{6}", code):
+                print("  London OAC       not in the download (it covers London only)")
+            if code in ahah:
+                score, rank, pct = ahah[code]
+                print(f"  AHAH v5.1        rank {rank:,}, published percentile {pct}, score {score:.3f}; decile by our rule "
+                      f"ceil(10 * rank / {len(ahah):,}) = {ceil_div(rank * 10, len(ahah))}   (1 = healthiest)")
+                found = True
+            for label, data in deprivation.items():
+                if code in data:
+                    area, n = data[code], len(data)
+                    print(f"  {label}: {area['name']}: rank {area['rank']:,} of {n:,}; by our rule decile {ceil_div(area['rank'] * 10, n)}, "
+                          f"percentile {ceil_div(area['rank'] * 100, n)}; "
+                          + (f"published decile {area['decile']}" if "decile" in area else "no published decile (ranks only)") + "   (1 = most deprived)")
+                    found = True
+            if not found:
+                print("  in none of the downloads. Check the code: Scottish 2022 data zones are only in AHAH, 2011 ones only in "
+                      "the deprivation download, and Northern Ireland is not covered.")
+
     # -- reading the downloads, independently of prep_neighbourhood.py -----------------------
+
+    def _oac_raw(self):
+        return {r["GeographyCode"]: (r["Supergroup"], r["Group"], r["Subgroup"])
+                for r in csv.DictReader(open(self.raw / "oac21/uk_oac_final.csv", encoding="utf-8-sig"))}
+
+    def _loac_raw(self):
+        return {r["OA"]: (r["SG"], r["G"]) for r in csv.DictReader(open(self.raw / "loac21/loac_groups.csv", encoding="utf-8-sig"))}
+
+    def _ahah_raw(self):
+        return {r["lsoa21cd"]: (float(r["ahah"]), int(r["ahah_rnk"]), int(r["ahah_pct"]))
+                for r in csv.DictReader(open(self.raw / "ahah/ahah_v5_1.csv", encoding="utf-8-sig"))}
 
     def _england(self):
         sheet = openpyxl.load_workbook(self.raw / "imd/File_1_IoD2025_Index_of_Multiple_Deprivation.xlsx", read_only=True, data_only=True)["IMD25"]
@@ -192,9 +236,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--raw", default=ROOT / "raw-indicators", help="folder with the downloads")
     parser.add_argument("--out", default=ROOT / "work" / "neighbourhood", help="folder with the prepared tables")
+    parser.add_argument("--show", nargs="+", metavar="CODE", help="only print what the downloads say for these area codes")
     args = parser.parse_args()
     warnings.filterwarnings("ignore")
     audit = Audit(args.raw, args.out)
+    if args.show:
+        audit.show(args.show)
+        return 0
     audit.oac()
     audit.loac()
     audit.ahah()
