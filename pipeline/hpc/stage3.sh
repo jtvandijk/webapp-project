@@ -21,6 +21,9 @@
 # not match it, rather than silently reading the wrong names for a chunk.
 #
 # Expects a .env file in the project root with PGHOST_LCR etc - see stage2.sh's comment.
+#
+# One-off setup, before the FIRST qsub of any of these three scripts:  mkdir -p work/logs
+# (see stage2.sh's comment on why this has to happen before qsub, not inside the script).
 
 #$ -N gbnames_stage3
 #$ -j y
@@ -40,5 +43,4 @@ source .env
 set +a
 export GBNAMES_PROFILE=tre
 
-mkdir -p work/logs
 python3 -m pipeline.s3_extracts --sources $SOURCES --chunks "$CHUNKS" ${LIMIT:+--limit "$LIMIT"}

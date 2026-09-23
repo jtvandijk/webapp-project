@@ -27,6 +27,9 @@
 #
 # No .env/GBNAMES_PROFILE needed here, unlike stage2.sh/stage3.sh - this stage makes no database
 # queries at all, only reads what they already wrote to work/surfaces/ and work/chunks/.
+#
+# One-off setup, before the FIRST qsub of any of these three scripts:  mkdir -p work/logs
+# (see stage2.sh's comment on why this has to happen before qsub, not inside the script).
 
 #$ -N gbnames_stage4
 #$ -j y
@@ -41,5 +44,4 @@ SOURCES="register"     # must match stage2.sh/stage3.sh
 CHUNKS=4                # must match stage3.sh's CHUNKS - use 200 (with -t 1-200) for the full run
 CHUNK=$((SGE_TASK_ID - 1))
 
-mkdir -p work/logs
 python3 -m pipeline.s4_maps --chunk "$CHUNK" --chunks "$CHUNKS" --sources $SOURCES

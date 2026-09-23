@@ -16,6 +16,11 @@
 # Expects a .env file in the project root with PGHOST_LCR etc (see pipeline/README.md's "Running
 # it in the TRE") - `set -a` below means every variable .env sets is exported automatically, so it
 # works whether or not the file itself says "export".
+#
+# One-off setup, before the FIRST qsub of any of these three scripts:  mkdir -p work/logs
+# -o below needs that directory to already exist when SGE sets up output redirection, which
+# happens before this script's own body runs - a "mkdir -p work/logs" inside the script itself
+# is too late to help, which is why it is not here.
 
 #$ -N gbnames_stage2
 #$ -j y
@@ -33,5 +38,4 @@ source .env
 set +a
 export GBNAMES_PROFILE=tre
 
-mkdir -p work/logs
 python3 -m pipeline.s2_surfaces --sources $SOURCES
