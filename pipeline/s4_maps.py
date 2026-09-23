@@ -19,6 +19,13 @@ copy is stage 6's job, so identical geometry is never written out twice) and one
 concentration/second_blob_share measures, and the map's own size/shape - kept out of the GeoJSON
 itself, which only the website downloads and should stay lean).
 
+rules.resolve() decides "build" from the raw bearer count alone, before weighting, blob-dropping or
+geometry repair ever run - it is a plan, not a guarantee, and either step can still leave nothing to
+show. When that happens the period is recorded as "omit" (with its own reason: "no concentration
+survived weighting/blob-dropping", or "geometry could not be repaired") rather than as a "build"
+with silently missing GeoJSON - a period a visitor should be told has no map must never look
+identical to one that quietly, successfully has none.
+
 Self-checking: writes work/maps/chunk_<n>.done only once a chunk finishes without error, and skips
 straight past a chunk that already has one (pass --force to redo it anyway) - so re-submitting the
 same array job after some tasks failed or were killed only repeats the ones that did not finish.
@@ -96,10 +103,24 @@ def process_name(name, cells_by_period, periods, pop_surfaces, land):
         total = int(cells[2].sum()) if cells is not None else 0
         collection = kde.geojson(bands) if bands else None
 
-        row = {"surname": name, "period": period["id"], "action": r.action, "bearers": total}
-        if r.reason:
-            row["reason"] = r.reason
-        if r.action == "substitute":
+        action, reason = r.action, r.reason
+        if action == "build" and not collection:
+            # r.action is decided from the raw bearer count alone (rules.resolve()), before
+            # weighting/blob-dropping/geometry even run - "build" is a plan, not a guarantee, and
+            # either can still end up with nothing to show: make_map() itself may drop every blob
+            # (bands is None - a real name too diffuse/scattered for anything to survive
+            # MIN_BLOB_SHARE/MIN_BLOB_BEARERS), or bands can be real but every one of its levels
+            # fails to survive GeoJSON conversion (kde._repair() giving up on a genuinely unfixable
+            # shape, see its docstring). Recorded the same way a normal omission is, with its own
+            # distinct, machine-checkable reason for each - never as a "build" with silently
+            # missing geometry - since the website needs to say "no map" here either way.
+            action, reason = "omit", ("geometry could not be repaired" if bands else
+                                      "no concentration survived weighting/blob-dropping")
+
+        row = {"surname": name, "period": period["id"], "action": action, "bearers": total}
+        if reason:
+            row["reason"] = reason
+        if action == "substitute":
             row["reference"] = r.reference
         elif collection:
             row["geojson"] = collection
@@ -109,7 +130,7 @@ def process_name(name, cells_by_period, periods, pop_surfaces, land):
         areas = sum(len(kde._polygons(b)) for b in bands or [])
         points = sum(len(rg.coords) for b in bands or [] for g in kde._polygons(b) for rg in [g.exterior, *g.interiors])
         ms = timings.get(r.reference if r.action == "substitute" else period["id"], 0.0) * 1000
-        stats_rows.append([name, period["id"], r.action, total, round(bandwidth), config.WEIGHT_POWER,
+        stats_rows.append([name, period["id"], action, total, round(bandwidth), config.WEIGHT_POWER,
                            *[round(x, 4) for x in levels], round(second, 4), round(concentration, 4),
                            areas, points, round(size_kb, 2), round(ms, 1)])
     return jsonl_rows, stats_rows

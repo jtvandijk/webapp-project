@@ -96,6 +96,39 @@ class Stage234EndToEnd(unittest.TestCase):
             self.assertNotIn("geojson", row)
             self.assertIn("reason", row)
 
+    def test_a_build_with_no_surviving_blob_is_recorded_as_omit(self):
+        # real question raised (2026-09-23): r.action == "build" is decided from the raw bearer
+        # count alone (rules.resolve()), before weighting/blob-dropping/geometry ever run - it is a
+        # plan, not a guarantee. MIN_BLOB_SHARE/MIN_BLOB_BEARERS can legitimately drop every blob for
+        # a name that otherwise clears the threshold (bands comes back None) - that must not look
+        # identical to a genuine successful build with no signal anything went wrong. Forced here
+        # with an absurdly high MIN_BLOB_BEARERS so a real, well-over-threshold name still loses
+        # everything to blob-dropping.
+        period = self.periods[0]
+        cells_by_period = {period["id"]: (np.array([300]), np.array([300]), np.array([500.0]))}
+        pop_surfaces = {period["id"]: self.surfaces[period["id"]]}
+        with mock.patch.object(config, "MIN_BLOB_BEARERS", 1_000_000):
+            jsonl_rows, stats_rows = s4_maps.process_name("test", cells_by_period, [period], pop_surfaces, self.land)
+        self.assertEqual(jsonl_rows[0]["action"], "omit")
+        self.assertEqual(jsonl_rows[0]["reason"], "no concentration survived weighting/blob-dropping")
+        self.assertNotIn("geojson", jsonl_rows[0])
+        self.assertEqual(stats_rows[0][2], "omit")             # jsonl and stats agree on the reclassified action
+
+    def test_a_build_with_unfixable_geometry_is_recorded_as_omit(self):
+        # the other way "build" can end up with nothing to show: bands is real, but every one of
+        # its levels fails GeoJSON conversion (kde._repair() giving up on a genuinely unfixable
+        # shape - see its docstring for the real incident this covers). Forced here by making
+        # kde.geojson() itself return None, the same as a total repair failure would.
+        period = self.periods[0]
+        cells_by_period = {period["id"]: (np.array([300]), np.array([300]), np.array([500.0]))}
+        pop_surfaces = {period["id"]: self.surfaces[period["id"]]}
+        with mock.patch.object(s4_maps.kde, "geojson", return_value=None):
+            jsonl_rows, stats_rows = s4_maps.process_name("test", cells_by_period, [period], pop_surfaces, self.land)
+        self.assertEqual(jsonl_rows[0]["action"], "omit")
+        self.assertEqual(jsonl_rows[0]["reason"], "geometry could not be repaired")
+        self.assertNotIn("geojson", jsonl_rows[0])
+        self.assertEqual(stats_rows[0][2], "omit")
+
     def test_a_substitute_row_names_its_reference_and_carries_no_geojson_of_its_own(self):
         found_one = False
         for chunk in range(self.chunks):
