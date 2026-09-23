@@ -42,8 +42,12 @@
 
 set -euo pipefail
 
+# ~/.bashrc and conda's own init script are not written to be safe under "set -u" - see stage2.sh's
+# comment. Relaxed just around sourcing them, restored straight after.
+set +euo pipefail
 source ~/.bashrc
 conda activate gbnames
+set -euo pipefail
 
 SOURCES="register"     # must match stage2.sh/stage3.sh
 CHUNKS=4                # must match stage3.sh's CHUNKS - use 200 (with -t 1-200) for the full run

@@ -37,8 +37,13 @@
 
 set -euo pipefail
 
+# ~/.bashrc and conda's own init script are not written to be safe under "set -u" (they reference
+# variables that are normally fine left unset, e.g. $PS1 for an interactive prompt) - relaxed just
+# around sourcing them, restored straight after for the rest of this script.
+set +euo pipefail
 source ~/.bashrc
 conda activate gbnames
+set -euo pipefail
 
 SOURCES="register"     # "register census" once the census database is ready
 
