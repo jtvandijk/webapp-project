@@ -22,11 +22,19 @@ itself, which only the website downloads and should stay lean).
 Self-checking: writes work/maps/chunk_<n>.done only once a chunk finishes without error, and skips
 straight past a chunk that already has one (pass --force to redo it anyway) - so re-submitting the
 same array job after some tasks failed or were killed only repeats the ones that did not finish.
+
+A single name's own map calculation failing (an unusual geometry GEOS cannot handle, say) does not
+take the rest of the chunk down with it - it is logged, with its full traceback, to
+work/maps/chunk_<n>.errors.log and skipped, and the chunk still finishes and gets its .done marker
+(named as failed in that marker, so it is not mistaken for a clean run). A skipped name is missing
+from the output with a clear record of why, rather than the whole chunk (~150 other, unrelated
+names) being blocked on one name's problem.
 """
 import argparse
 import csv
 import json
 import time
+import traceback
 from collections import defaultdict
 from pathlib import Path
 
@@ -153,20 +161,34 @@ def main():
 
     jsonl_path = out_dir / f"chunk_{args.chunk}.jsonl"
     stats_path = stats_dir / f"chunk_{args.chunk}.csv"
-    with open(jsonl_path, "w") as jsonl_file, open(stats_path, "w", newline="") as stats_file:
+    errors_path = out_dir / f"chunk_{args.chunk}.errors.log"
+    failed = []
+    with open(jsonl_path, "w") as jsonl_file, open(stats_path, "w", newline="") as stats_file, \
+        open(errors_path, "w") as errors_file:
         stats_out = csv.writer(stats_file)
         stats_out.writerow(STATS_HEADER)
         for i, name in enumerate(names, start=1):
             cells_by_period = {pid: by_period[pid].get(name) for pid in by_period}
-            jsonl_rows, stats_rows = process_name(name, cells_by_period, periods, pop_surfaces, land)
+            try:
+                jsonl_rows, stats_rows = process_name(name, cells_by_period, periods, pop_surfaces, land)
+            except Exception:
+                # one name's geometry should never take the other ~150 names in this chunk down with
+                # it - logged here (with the full traceback, to actually diagnose it afterwards) and
+                # skipped, not silently dropped: a name missing from the output with no record of why
+                # would be much harder to notice and explain later than a name skipped and logged now.
+                failed.append(name)
+                errors_file.write(f"=== {name} ===\n{traceback.format_exc()}\n")
+                print(f"chunk {args.chunk}: FAILED on {name} (see {errors_path}) - continuing")
+                continue
             for row in jsonl_rows:
                 jsonl_file.write(json.dumps(row, separators=(",", ":")) + "\n")
             stats_out.writerows(stats_rows)
             if i % 50 == 0 or i == len(names):
                 print(f"chunk {args.chunk}: {i:,}/{len(names):,} names, {time.perf_counter() - started:.1f}s elapsed")
 
-    done_marker.write_text(f"{len(names)} names, {time.perf_counter() - started:.1f}s\n")
-    print(f"chunk {args.chunk} done: {jsonl_path}, {stats_path}")
+    failed_note = f", {len(failed)} FAILED (see {errors_path.name}): {', '.join(failed)}" if failed else ""
+    done_marker.write_text(f"{len(names)} names, {time.perf_counter() - started:.1f}s{failed_note}\n")
+    print(f"chunk {args.chunk} done: {jsonl_path}, {stats_path}{failed_note}")
 
 
 if __name__ == "__main__":

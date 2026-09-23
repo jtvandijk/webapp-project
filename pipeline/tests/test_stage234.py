@@ -3,11 +3,13 @@ small fake database, the same way test_stage1.py checks stage 1.
 
 Run from the project root:   python3 -m unittest discover -s pipeline/tests -t .
 """
+import json
 import sqlite3
+import sys
 import tempfile
 import unittest
-from collections import defaultdict
 from pathlib import Path
+from unittest import mock
 
 import numpy as np
 
@@ -44,6 +46,11 @@ class Stage234EndToEnd(unittest.TestCase):
         cls.chunks_dir = Path(cls.tmp.name) / "chunks"
         for p in cls.periods:
             s3_extracts.extract_period(cls.conn, cls.cfg, p, cls.names, cls.chunks, cls.chunks_dir)
+
+        cls.surfaces_dir = Path(cls.tmp.name) / "surfaces"
+        cls.maps_dir = Path(cls.tmp.name) / "maps"
+        cls.stats_dir = Path(cls.tmp.name) / "stats"
+        cls.surfaces_dir.mkdir()
 
     @classmethod
     def tearDownClass(cls):
@@ -104,6 +111,45 @@ class Stage234EndToEnd(unittest.TestCase):
         # not asserting this must happen (depends on the fake data's random Scottish shares), just
         # documenting what is checked when it does; the other two tests already require >=1 chunk
         # of real names to exist, so this is a bonus check, not the only coverage of "substitute"
+
+    def test_one_names_failure_does_not_take_the_rest_of_the_chunk_down(self):
+        # real incident (2026-09-23): a shapely/GEOS error on one real name crashed the whole chunk,
+        # losing the other ~150 unrelated names' work with it - process_name() failing for one name
+        # must not stop the others in the same chunk from being written and the chunk from finishing
+        chunk = 0
+        for period in self.periods:
+            np.save(self.surfaces_dir / f"{period['id']}.npy", self.surfaces[period["id"]])
+
+        real_process_name = s4_maps.process_name
+        by_period = s4_maps.load_chunk(self.chunks_dir, self.periods, chunk)
+        names_here = sorted(set().union(*(d.keys() for d in by_period.values())))
+        self.assertGreaterEqual(len(names_here), 2, "need at least 2 names in this chunk to test isolation")
+        unlucky = names_here[0]
+
+        def flaky(name, cells_by_period, periods, pop_surfaces, land):
+            if name == unlucky:
+                raise RuntimeError("simulated GEOS failure")
+            return real_process_name(name, cells_by_period, periods, pop_surfaces, land)
+
+        argv = ["s4_maps", "--chunk", str(chunk), "--chunks", str(self.chunks), "--force",
+               "--chunks-dir", str(self.chunks_dir), "--surfaces-dir", str(self.surfaces_dir),
+               "--out-dir", str(self.maps_dir), "--stats-dir", str(self.stats_dir)]
+        with mock.patch.object(s4_maps, "process_name", flaky), mock.patch.object(sys, "argv", argv):
+            s4_maps.main()          # must not raise
+
+        done_text = (self.maps_dir / f"chunk_{chunk}.done").read_text()
+        self.assertIn(unlucky, done_text)
+        self.assertIn("FAILED", done_text)
+        errors_text = (self.maps_dir / f"chunk_{chunk}.errors.log").read_text()
+        self.assertIn(unlucky, errors_text)
+        self.assertIn("RuntimeError", errors_text)
+
+        written_names = set()
+        for line in (self.maps_dir / f"chunk_{chunk}.jsonl").read_text().splitlines():
+            written_names.add(json.loads(line)["surname"])
+        self.assertNotIn(unlucky, written_names)
+        for other in names_here[1:]:
+            self.assertIn(other, written_names)
 
 
 if __name__ == "__main__":
