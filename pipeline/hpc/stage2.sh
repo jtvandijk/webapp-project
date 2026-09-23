@@ -21,6 +21,13 @@
 # -o below needs that directory to already exist when SGE sets up output redirection, which
 # happens before this script's own body runs - a "mkdir -p work/logs" inside the script itself
 # is too late to help, which is why it is not here.
+#
+# A submitted qsub job starts a fresh, non-interactive shell - it does NOT have your login shell's
+# activated conda/venv environment (gbnames), which is why plain "python3" here would not find
+# numpy even though it works fine when you run it directly. Activated explicitly below - if conda
+# itself is not found, your cluster may need a "module load ..." first to put it on PATH; if
+# gbnames is a plain venv rather than a conda environment, replace the two "conda" lines with
+# `source /path/to/gbnames/bin/activate` instead.
 
 #$ -N gbnames_stage2
 #$ -j y
@@ -30,6 +37,9 @@
 #$ -cwd
 
 set -euo pipefail
+
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate gbnames
 
 SOURCES="register"     # "register census" once the census database is ready
 

@@ -24,6 +24,10 @@
 #
 # One-off setup, before the FIRST qsub of any of these three scripts:  mkdir -p work/logs
 # (see stage2.sh's comment on why this has to happen before qsub, not inside the script).
+#
+# Activates the gbnames conda/venv environment explicitly - a submitted qsub job does not have
+# your login shell's one active. See stage2.sh's comment if conda itself is not found, or gbnames
+# is a plain venv.
 
 #$ -N gbnames_stage3
 #$ -j y
@@ -33,6 +37,9 @@
 #$ -cwd
 
 set -euo pipefail
+
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate gbnames
 
 SOURCES="register"
 LIMIT="500"     # e.g. "500" for a sample run, or "" for the full name list

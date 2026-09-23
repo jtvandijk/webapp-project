@@ -26,7 +26,9 @@
 # equal to it, since a real chunk's names/geometry will vary.
 #
 # No .env/GBNAMES_PROFILE needed here, unlike stage2.sh/stage3.sh - this stage makes no database
-# queries at all, only reads what they already wrote to work/surfaces/ and work/chunks/.
+# queries at all, only reads what they already wrote to work/surfaces/ and work/chunks/. It still
+# needs the gbnames conda/venv environment activated below, same as the other two - that is about
+# the Python packages (numpy, scipy, shapely, ...), a separate thing from database credentials.
 #
 # One-off setup, before the FIRST qsub of any of these three scripts:  mkdir -p work/logs
 # (see stage2.sh's comment on why this has to happen before qsub, not inside the script).
@@ -39,6 +41,9 @@
 #$ -cwd
 
 set -euo pipefail
+
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate gbnames
 
 SOURCES="register"     # must match stage2.sh/stage3.sh
 CHUNKS=4                # must match stage3.sh's CHUNKS - use 200 (with -t 1-200) for the full run
