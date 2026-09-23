@@ -51,6 +51,10 @@ set -euo pipefail
 
 SOURCES="register"     # must match stage2.sh/stage3.sh
 CHUNKS=4                # must match stage3.sh's CHUNKS - use 200 (with -t 1-200) for the full run
-CHUNK=$((SGE_TASK_ID - 1))
+
+# SGE only sets SGE_TASK_ID for an array job (qsub -t ...) - defaults to 1 (chunk 0) so a plain
+# "qsub pipeline/hpc/stage4.sh" with no -t still runs, as a quick single-chunk sanity check, rather
+# than hitting "unbound variable" under set -u.
+CHUNK=$((${SGE_TASK_ID:-1} - 1))
 
 python3 -m pipeline.s4_maps --chunk "$CHUNK" --chunks "$CHUNKS" --sources $SOURCES
