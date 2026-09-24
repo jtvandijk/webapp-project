@@ -8,6 +8,13 @@ handshake between the two halves of the project:
 
 If both sides keep to this document, they can be built at the same time and swapped freely.
 
+> **Open question (September 2026): how the facts are served.** Everything below describes the flat-file
+> plan: the facts sit inside each surname's JSON file, and there is no database. That is the current default,
+> not a settled decision. Stage 5 already keeps the facts as one long table (`facts.csv`: a row per surname,
+> fact and version), so a new classification is new rows, not a change to every name file. Whether the release
+> keeps folding the facts into the name files, or serves them from one database file (SQLite, or Parquet/Arrow),
+> waits for the database confirmation. The maps stay plain files either way, and stages 1 to 5 do not change.
+
 ## The idea in one paragraph
 
 Everything about a surname is worked out **in advance** and saved in **one small file per surname**.
