@@ -106,12 +106,6 @@ def census_parish_id_counts(cfg, year):
     return f"SELECT {c['parish']}, COUNT(*) FROM {att} GROUP BY {c['parish']}"
 
 
-def surname_pairs(cfg, year):
-    """(raw surname, old cleaned surname, people) for one census year: every different pair once, with its people."""
-    table, _, _, c = _census(cfg, year)
-    return f"SELECT {c['surname']}, {c['surname_clean']}, COUNT(*) FROM {table} GROUP BY {c['surname']}, {c['surname_clean']}"
-
-
 def column_types(cfg, table):
     """(column, type) for every column of a table. Reads the catalogue only, so it is instant."""
     if cfg["backend"] == "postgres":

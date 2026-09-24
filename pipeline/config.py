@@ -99,7 +99,6 @@ _CENSUS_COLUMNS = {
     "forename": "pname",                                        # census table ("surname" set per profile below)
     "recid": "recid", "source": "source",                      # join keys, census <-> _att
     "parish": "gid", "sex": "sex",                              # _att table (parish: not in 1921, see CENSUS_PARISH_COLUMN)
-    "surname_clean": "sname_clean_stand",                       # the old cleaned surname (only some years have it); check_surnames.py
     "parish_id": "conparid", "x": "x", "y": "y",                # parish table (centroid)
     "parish_name": "parish", "county": "regcnty",
 }
@@ -150,10 +149,11 @@ PROFILES = {
             "areas": {"oa": "oa21cd", "lsoa": "lsoa21cd", "lsoa_2011": "lsoa11cd", "msoa": "msoa21cd",
                       "district": "lad25cd", "country": "ctry25cd"},
         },
-        # "surname": "sname" is the raw column, standardised uniformly in Python instead of relying
-        # on sname_clean_stand (which was only manually added for some years, not all - confirmed
-        # by the user). "sname" is confirmed consistent across all census years.
-        "census": dict(_CENSUS_COLUMNS, surname="sname", table="census.gb{year}", att_table="census.gb{year}_att",
+        # "surname": "sname_clean_stand" is the surname as cleaned by the old project's SQL function (leading initials,
+        # bracketed text and everything after " or " removed, junk names emptied); names.surname_key() is then applied to it,
+        # as for the register. Every census table needs the column; the TRE's backup lacks it, so tools/sql/make_sname_clean_stand.sh makes it for every year.
+        # The surname index (how-to, "The census surname") has to be made on this column.
+        "census": dict(_CENSUS_COLUMNS, surname="sname_clean_stand", table="census.gb{year}", att_table="census.gb{year}_att",
                        # spatial.conpar1851 and spatial.conpar1901: conparid, geom, centroid, x, y (centroid, British
                        # National Grid metres), regcnty, parish - as given by the data owner; stage 1 checks the join
                        parish_table="spatial.conpar{boundaries}"),

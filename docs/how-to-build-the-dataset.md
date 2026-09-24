@@ -226,40 +226,57 @@ python3 -m pipeline.check_parishes --lookup conpar_lookup.csv     # also compare
 
 It reads the two small parish tables and makes one pass over each year's attributes table (about a minute or two per year, no maps and no names involved), changes nothing, and prints what it found; the lines that start with `LOOK` are the ones to read. It shows, per year, the range of parish ids the people carry, how many are id 0 (expected), have no id, or carry an id that is not in the parish table it should use (or is in the *other* table: the sign of the wrong table or column). For the tables it shows repeated ids, ids shared between the two tables, parishes without a name (`-`), counties in capitals, centroids that are missing, at 0,0 or not in metres, and whether the id columns can hold fractional ids such as `200136.3`.
 
-**Also before stage 1 for the census: the surnames.** The pipeline reads the raw surname (`sname`) and standardises it itself. The old project made a
-cleaned column, `sname_clean_stand`, with a SQL function that did more: it moved bracketed text and everything after " or " out of the name,
-removed leading initials, and emptied names that were mostly punctuation. To see how much that matters:
+**The census surname: `sname_clean_stand`, for every year.** The pipeline reads the census surname from `sname_clean_stand`, the surname as cleaned
+by the old project (leading initials, bracketed text and everything after " or " removed, names that are only junk emptied), and then applies
+`surname_key()` to it as for the register. The census tables in the TRE are the original backup, which does not have that column, so it is made there,
+for every year, by two files in `tools/sql/` (both go in the same folder in the TRE): `census_sname_clean_stand.sql` (the cleaning, as plain SQL) and
+`make_sname_clean_stand.sh` (runs it for each year that lacks the column). It needs `psql` and the census settings of `.env`, and nothing else.
 
 ```
-python3 -m pipeline.check_surnames | tee work/surname_check.txt
+cd <project folder>
+set -a; source .env; set +a                                 # only the database settings; no GBNAMES_PROFILE needed
+bash tools/sql/make_sname_clean_stand.sh --list             # which years have the column: changes nothing. Expect "lacks" for all seven
 ```
 
-It makes one pass over each year's census table (a year without the cleaned column is skipped) and prints, per year, the share of people who are
-under a different name, which kind of difference it is, and the biggest cases with both readings. If the shares are small (under about 1%) the raw
-reading is fine; if they are not, use the cleaned column instead of the raw one (next paragraph), which needs no rebuilding in Python.
-
-**A year without the cleaned column (1921), or using `sname_clean_stand` everywhere.** The old function `f_clean_surnames(table, column)` makes the cleaned column. Do not run it on a big census table: it does about fifteen full `UPDATE` passes, and it drops and re-creates the columns it writes (`sname_clean`, `sname_clean_ext`, `sname_clean_partial`, `sname_clean_stand`), so on a year that already has them it would wipe them. Run it on the *different names* of the year instead (about a million rows, not tens of millions), then copy the result over in one pass. Not yet run; try it on the small table first, which is also where the results are looked at:
+Before the first real run, two things about the size. Each year's step rewrites every person of that table, so **while it runs the table needs room for
+a second copy of itself** on the disk (the biggest year is the one to look at):
 
 ```sql
--- 1. the different raw names of the year, with the number of people that carry each
-CREATE TABLE census.sname_1921 AS SELECT sname, COUNT(*) AS n FROM census.gb1921 GROUP BY sname;
-
--- 2. clean them
-SELECT f_clean_surnames('census.sname_1921', 'sname');
-
--- 3. look at the biggest changes before going on
-SELECT sname, n, sname_clean_stand FROM census.sname_1921
-WHERE sname_clean_stand IS DISTINCT FROM regexp_replace(lower(sname), '[^a-z]', '', 'g')
-ORDER BY n DESC LIMIT 40;
-
--- 4. put the result on the census table in one pass
-ALTER TABLE census.gb1921 ADD COLUMN sname_clean_stand text;
-UPDATE census.gb1921 g SET sname_clean_stand = m.sname_clean_stand FROM census.sname_1921 m WHERE g.sname = m.sname;
+SELECT relname, pg_size_pretty(pg_total_relation_size(oid)) FROM pg_class WHERE relnamespace = 'census'::regnamespace AND relkind = 'r' ORDER BY 1;
 ```
 
-One fix is needed in the function first: in step 12 the second `EXECUTE` is written against `census.gb1881_sample` instead of the table it was given. It must read `EXECUTE 'UPDATE '||_intab||' SET sname_clean = regexp_replace(sname_clean,''\s{2,}'','' '',''g'')';`. As written it fails if the sample table no longer exists, and otherwise changes the wrong table, so the double spaces after "A. B. SMITH" are not collapsed and the two initials are not both removed.
+And do it **before building the other indexes on that table where you can**: if the recid/source indexes are already there the step still works, but it
+is slower (every index is updated for every person) and they come out bloated; then run `REINDEX TABLE census.gb<year>;` afterwards, or drop them before and
+build them again after. I could not time this on the real data: expect tens of minutes per year, not seconds.
 
-To use the cleaned column in the pipeline, `surname=` in the `tre` census profile of `config.py` becomes `sname_clean_stand`. Every stage then reads it, including the coarse surname filter in the database, so **the surname index has to be made on that column**: `CREATE INDEX ... ON census.gb<year> ((regexp_replace(lower(sname_clean_stand), '[^a-z]', '', 'g')))`. People whose cleaned name is empty are not counted; stage 1 shows them under "not counted although they should be".
+Then start with one year (1851 is probably the smallest), read what it prints, and do the rest:
+
+```
+bash tools/sql/make_sname_clean_stand.sh 1851
+nohup bash tools/sql/make_sname_clean_stand.sh > sname_clean.log 2>&1 &     # the other six, one after the other; follow it with:  tail -f sname_clean.log
+```
+
+Each year is one transaction: if it stops (an error, a lost connection) that year is left exactly as it was, and running the same command again does the
+years that are still missing (a year that has the column is skipped, never redone). For each year it prints three small tables, in this order. Read them:
+
+- **the biggest names the cleaning changed** (raw name, number of people, cleaned name): worth a glance, in case that year has junk that the old rules do not know;
+- **people and people_with_no_cleaned_name**: the people whose name the cleaning empties. They are not counted, and stage 1 shows them under "not counted although they should be". Should be a small share; tell me the numbers if it is not;
+- **people, with_a_surname, with_a_cleaned_name**: with_a_cleaned_name is with_a_surname minus the emptied names.
+
+When it is done, `--list` says "has sname_clean_stand" for every year. The helper tables it leaves (`census.sname_1851` and so on, the different names of a
+year with their cleaning, about a million rows each) are for looking at; the pipeline does not use them. The script has been run on made-up names in
+Postgres 16 and gives the same answers as the old function on all of them, but not on the real tables, hence the first year on its own.
+
+The old cleaning has its quirks (only the first dot of a name is turned into a space, so "A. B. SMITH" becomes `bsmith`; digits are only partly removed),
+and they are kept on purpose: every year is then cleaned in the same way.
+
+**The surname index goes on this column**, after the step above. The pipeline narrows the database query to the wanted surnames on the column it reads, so
+
+```sql
+CREATE INDEX ... ON census.gb<year> ((regexp_replace(lower(sname_clean_stand), '[^a-z]', '', 'g')));
+```
+
+An index on `sname` is not used.
 
 **What stage 1 prints for the census** (only when `census` is in `GBNAMES_SOURCES`), one line per year:
 `1881: 26,000,000 people; 97.1% counted; 2.3% parish id 0; 0.60% not counted although they should be ...`

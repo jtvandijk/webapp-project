@@ -280,7 +280,7 @@ I cannot see the data or run anything in the TRE, so:
    against the public February 2026 directory on a laptop: 99.9% or more of live postcodes find a row in every table.
 4. **Settled: sex for register forenames.** `registers_lookup.lookup_monica` is identical to the old
    `monica_gender` and is used for now (its columns are assumed to be `name` and `gender`; it may change).
-5. **Surname keys.** The rule is: remove accents, keep the letters a to z (`O'Brien` becomes `obrien`). Does the census `sname_clean_stand` follow the same convention?
+5. **Surname keys: settled.** The rule is: remove accents, keep the letters a to z (`O'Brien` becomes `obrien`). For the census it is applied to `sname_clean_stand`, the old project's cleaned surname, in every year (the TRE's backup of the census does not have the column, so `tools/sql/make_sname_clean_stand.sh` makes it there, for every year).
 6. **Counts that are not published.** Counts below 10 (`COUNT_FLOOR`) are dropped. That number was my choice; is it the right floor?
 7. **Classification versions: settled** (see "Decided so far"), including the financial precarity classification.
    Confirmed 2026-09-24: a per-surname most common group may be published, and so may the classification's names;

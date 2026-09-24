@@ -209,8 +209,8 @@ class TheSqlForTheTre(unittest.TestCase):
         self.assertIn("p.conparid <> 0", forenames)                         # the same people as the census counts
         parishes = sql.census_parish_counts(self.cfg, 1851)
         self.assertIn("spatial.conpar1851 p", parishes)
-        self.assertIn("GROUP BY c.sname, p.regcnty, p.parish", parishes)     # by name, not by id
-        self.assertIn("regexp_replace(lower(c.sname)", sql.census_parish_counts(self.cfg, 1851, surnames=["smith"]))
+        self.assertIn("GROUP BY c.sname_clean_stand, p.regcnty, p.parish", parishes)     # by name, not by id
+        self.assertIn("regexp_replace(lower(c.sname_clean_stand)", sql.census_parish_counts(self.cfg, 1851, surnames=["smith"]))
 
     def test_ethnicity_comes_from_the_estimate_table_and_forenames_from_the_gender_table(self):
         self.assertIn("registers_derived.lcr_consol_ethest", sql.fact_counts(self.cfg, "eth", 2025))
