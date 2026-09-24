@@ -236,7 +236,30 @@ python3 -m pipeline.check_surnames | tee work/surname_check.txt
 
 It makes one pass over each year's census table (a year without the cleaned column is skipped) and prints, per year, the share of people who are
 under a different name, which kind of difference it is, and the biggest cases with both readings. If the shares are small (under about 1%) the raw
-reading is fine; if they are not, the old cleaning should be rebuilt in `pipeline/names.py`.
+reading is fine; if they are not, use the cleaned column instead of the raw one (next paragraph), which needs no rebuilding in Python.
+
+**A year without the cleaned column (1921), or using `sname_clean_stand` everywhere.** The old function `f_clean_surnames(table, column)` makes the cleaned column. Do not run it on a big census table: it does about fifteen full `UPDATE` passes, and it drops and re-creates the columns it writes (`sname_clean`, `sname_clean_ext`, `sname_clean_partial`, `sname_clean_stand`), so on a year that already has them it would wipe them. Run it on the *different names* of the year instead (about a million rows, not tens of millions), then copy the result over in one pass. Not yet run; try it on the small table first, which is also where the results are looked at:
+
+```sql
+-- 1. the different raw names of the year, with the number of people that carry each
+CREATE TABLE census.sname_1921 AS SELECT sname, COUNT(*) AS n FROM census.gb1921 GROUP BY sname;
+
+-- 2. clean them
+SELECT f_clean_surnames('census.sname_1921', 'sname');
+
+-- 3. look at the biggest changes before going on
+SELECT sname, n, sname_clean_stand FROM census.sname_1921
+WHERE sname_clean_stand IS DISTINCT FROM regexp_replace(lower(sname), '[^a-z]', '', 'g')
+ORDER BY n DESC LIMIT 40;
+
+-- 4. put the result on the census table in one pass
+ALTER TABLE census.gb1921 ADD COLUMN sname_clean_stand text;
+UPDATE census.gb1921 g SET sname_clean_stand = m.sname_clean_stand FROM census.sname_1921 m WHERE g.sname = m.sname;
+```
+
+One fix is needed in the function first: in step 12 the second `EXECUTE` is written against `census.gb1881_sample` instead of the table it was given. It must read `EXECUTE 'UPDATE '||_intab||' SET sname_clean = regexp_replace(sname_clean,''\s{2,}'','' '',''g'')';`. As written it fails if the sample table no longer exists, and otherwise changes the wrong table, so the double spaces after "A. B. SMITH" are not collapsed and the two initials are not both removed.
+
+To use the cleaned column in the pipeline, `surname=` in the `tre` census profile of `config.py` becomes `sname_clean_stand`. Every stage then reads it, including the coarse surname filter in the database, so **the surname index has to be made on that column**: `CREATE INDEX ... ON census.gb<year> ((regexp_replace(lower(sname_clean_stand), '[^a-z]', '', 'g')))`. People whose cleaned name is empty are not counted; stage 1 shows them under "not counted although they should be".
 
 **What stage 1 prints for the census** (only when `census` is in `GBNAMES_SOURCES`), one line per year:
 `1881: 26,000,000 people; 97.1% counted; 2.3% parish id 0; 0.60% not counted although they should be ...`
