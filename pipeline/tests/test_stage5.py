@@ -100,7 +100,7 @@ class ComputeRules(unittest.TestCase):
         self.assertEqual(json.loads(row["detail"])["sd"], round(statistics.stdev(pcts), 2))
 
     def test_places_are_ordered_capped_and_need_a_few_people(self):
-        areas = [((f"E02{i:03d}", "E09000001"), 40 - i) for i in range(14)] + [(("E02999", "E09000001"), config.PLACES_MIN - 1)]
+        areas = [((f"E02{i:03d}", "E09000001"), 40 - i) for i in range(14)] + [(("E02999", "E09000001"), config.FACT_MIN_IN_CATEGORY - 1)]
         (row,) = s5_facts.compute_places({"smith": extract(*areas)}, self.ref, self.tally)
         listed = [p["msoa"] for p in json.loads(row["detail"])["places"]]
         self.assertEqual(listed, [f"E02{i:03d}" for i in range(config.PLACES_TOP)])      # most common first, ten only
@@ -109,10 +109,10 @@ class ComputeRules(unittest.TestCase):
         self.assertNotIn("n", json.loads(row["detail"])["places"][0])                    # no counts are written
 
     def test_a_small_name_still_lists_a_neighbourhood_that_has_enough_people(self):
-        rows = extract((("E02001", "E09000001"), config.PLACES_MIN + 1), (("E02002", "E09000001"), 1), (("E02003", "E09000001"), 2))
+        rows = extract((("E02001", "E09000001"), config.FACT_MIN_IN_CATEGORY + 1), (("E02002", "E09000001"), 1), (("E02003", "E09000001"), 2))
         (row,) = s5_facts.compute_places({"smith": rows}, self.ref, self.tally)
         self.assertEqual([p["msoa"] for p in json.loads(row["detail"])["places"]], ["E02001"])
-        self.assertEqual(s5_facts.compute_places({"smith": extract((("E02009", "E09000001"), config.PLACES_MIN - 1))}, self.ref, self.tally), [])
+        self.assertEqual(s5_facts.compute_places({"smith": extract((("E02009", "E09000001"), config.FACT_MIN_IN_CATEGORY - 1))}, self.ref, self.tally), [])
 
     def test_ethnicity_is_the_most_common_group_not_the_most_common_code(self):
         rows = extract((("WBR",), 40), (("WAO-PL",), 30), (("WAO-DE",), 30), (("WAOS-K",), 50))
@@ -135,12 +135,35 @@ class ComputeRules(unittest.TestCase):
 
     def test_forenames_need_a_few_people_and_are_listed_most_common_first(self):
         female = {f"name{i:02d}": 30 - i for i in range(12)}
-        female["rare"] = config.FORENAMES_MIN - 1
+        female["rare"] = config.FACT_MIN_IN_CATEGORY - 1
         (row,) = s5_facts.compute_forenames({"smith": {"F": female, "M": {"john": 5}}}, ["smith", "nobody"], self.tally)
         detail = json.loads(row["detail"])
         self.assertEqual(detail["f"], [f"name{i:02d}" for i in range(config.FORENAMES_TOP)])
         self.assertEqual(detail["m"], ["john"])
         self.assertEqual((row["ref_year"], row["n_bearers"], row["value"]), ("", "", ""))   # pooled: no reference year
+
+    def test_census_forenames_use_the_same_rules_and_say_which_years_were_pooled(self):
+        female = {f"name{i:02d}": 30 - i for i in range(12)}
+        female["rare"] = MIN - 1
+        (row,) = s5_facts.compute_forenames({"smith": {"F": female, "M": {"john": MIN}}}, ["smith", "nobody"], self.tally,
+                                            "forenames_census", [1851, 1901])
+        detail = json.loads(row["detail"])
+        self.assertEqual((row["fact"], row["version"]), ("forenames_census", "census 1851-1901"))     # the years actually pooled
+        self.assertEqual(detail["f"], [f"name{i:02d}" for i in range(config.FORENAMES_TOP)])
+        self.assertEqual((detail["m"], detail["years"]), (["john"], [1851, 1901]))
+        self.assertEqual((row["ref_year"], row["n_bearers"], row["value"]), ("", "", ""))
+
+    def test_parishes_are_ordered_capped_titled_and_need_enough_people(self):
+        parishes = {(f"county {i % 3}", f"parish {i:02d}"): [f"COUNTY {i % 3}", f"Parish {i:02d}", 40 - i] for i in range(14)}
+        parishes[("kent", "tiny")] = ["KENT", "Tiny", MIN - 1]
+        (row,) = s5_facts.compute_parishes({"smith": parishes}, ["smith", "nobody"], self.tally, [1851, 1861])
+        detail = json.loads(row["detail"])
+        self.assertEqual([p["parish"] for p in detail["parishes"]], [f"Parish {i:02d}" for i in range(config.PLACES_TOP)])
+        self.assertEqual(detail["parishes"][0], {"county": "County 0", "parish": "Parish 00"})      # the county is written in title case
+        self.assertNotIn("Tiny", [p["parish"] for p in detail["parishes"]])
+        self.assertEqual(detail["years"], [1851, 1861])
+        self.assertNotIn("n", detail["parishes"][0])                                                  # no counts are written
+        self.assertEqual(s5_facts.compute_parishes({"smith": {("kent", "tiny"): ["KENT", "Tiny", MIN - 1]}}, ["smith"], self.tally, [1851]), [])
 
     def test_forename_cleaning_follows_the_old_rule(self):
         for raw, clean in [("Anne-Marie", "annemarie"), ("MARY", "mary"), ("J", ""), ("Zoë", "zoë"), ("o'neil", "oneil"),
@@ -172,6 +195,18 @@ class TheSqlForTheTre(unittest.TestCase):
         self.assertIn("registers_lookup.nbhd_fpc", sql.fact_counts(self.cfg, "fpc", 2025))
         self.assertIn("t.area_code = a.lsoa21cd", sql.fact_counts(self.cfg, "fpc", 2025))        # the same zones as AHAH
         self.assertIn("a.msoa21cd, a.lad25cd", sql.fact_counts(self.cfg, "places", 2025))
+
+    def test_the_census_facts_use_the_parish_boundaries_of_their_year_and_the_sex_in_the_att_table(self):
+        forenames = sql.census_forename_counts(self.cfg, 1921)
+        self.assertIn("census.gb1921 c", forenames)
+        self.assertIn("census.gb1921_att a", forenames)
+        self.assertIn("spatial.conpar1901 p", forenames)                    # 1921 uses the 1901 boundaries
+        self.assertIn("UPPER(SUBSTR(TRIM(a.sex), 1, 1))", forenames)
+        self.assertIn("p.conparid <> 0", forenames)                         # the same people as the census counts
+        parishes = sql.census_parish_counts(self.cfg, 1851)
+        self.assertIn("spatial.conpar1851 p", parishes)
+        self.assertIn("GROUP BY c.sname, p.regcnty, p.parish", parishes)     # by name, not by id
+        self.assertIn("regexp_replace(lower(c.sname)", sql.census_parish_counts(self.cfg, 1851, surnames=["smith"]))
 
     def test_ethnicity_comes_from_the_estimate_table_and_forenames_from_the_gender_table(self):
         self.assertIn("registers_derived.lcr_consol_ethest", sql.fact_counts(self.cfg, "eth", 2025))
@@ -205,8 +240,9 @@ class Stage5EndToEnd(unittest.TestCase):
             s1_counts.main()
         cls.out = root / "facts"
         cls.by_year = {}
-        with mock.patch.object(config, "FORENAMES_KEEP", 100_000):      # no cut, so the lists can be compared exactly
-            cls.run_stage5()
+        cls.census_cache = {}
+        with mock.patch.object(config, "FORENAMES_KEEP", 100_000), mock.patch.object(config, "PARISHES_KEEP", 100_000):
+            cls.run_stage5()                                             # no cut, so the lists can be compared exactly
         cls.conn = sqlite3.connect(cls.db_path)
         cls.cfg = dict(config.settings("fake"), database=str(cls.db_path))
         cls.facts = defaultdict(dict)                       # fact -> name -> row
@@ -274,8 +310,12 @@ class Stage5EndToEnd(unittest.TestCase):
             self.assertTrue(rows, fact)
             for row in rows.values():
                 json.loads(row["detail"])
-                self.assertEqual(row["version"], config.FACT_VERSIONS[fact])
-        self.assertEqual(set(self.facts), {"oac", "loac", "ahah", "imd", "imd_score", "fpc", "places", "ethnicity", "forenames_register"})
+                version = config.FACT_VERSIONS[fact]
+                if fact in ("forenames_census", "parishes"):          # these say which census years were pooled
+                    version = version.format(first=min(config.CENSUS_YEARS), last=max(config.CENSUS_YEARS))
+                self.assertEqual(row["version"], version)
+        self.assertEqual(set(self.facts), {"oac", "loac", "ahah", "imd", "imd_score", "fpc", "places", "ethnicity", "forenames_register",
+                                           "forenames_census", "parishes"})
         report = (self.out / "report.txt").read_text()
         self.assertTrue(report.startswith("names in this run"))
         self.assertIn("bearers covered", report)
@@ -325,11 +365,11 @@ class Stage5EndToEnd(unittest.TestCase):
             self.assertEqual(json.loads(row["detail"])["sd"], round(statistics.stdev(values), 2), key)
 
     def test_places_match_an_independent_count(self):
-        listed = {k for k in self.ref if any(n >= config.PLACES_MIN for n in Counter(p[5] for p in self.people(self.ref[k], k) if p[5]).values())}
+        listed = {k for k in self.ref if any(n >= config.FACT_MIN_IN_CATEGORY for n in Counter(p[5] for p in self.people(self.ref[k], k) if p[5]).values())}
         self.assertEqual(set(self.facts["places"]), listed)
         for key, row in self.facts["places"].items():
             counts = Counter(p[5] for p in self.people(self.ref[key], key) if p[5])
-            top = sorted(((m, n) for m, n in counts.items() if n >= config.PLACES_MIN), key=lambda mn: (-mn[1], mn[0]))
+            top = sorted(((m, n) for m, n in counts.items() if n >= config.FACT_MIN_IN_CATEGORY), key=lambda mn: (-mn[1], mn[0]))
             self.assertEqual([p["msoa"] for p in json.loads(row["detail"])["places"]],
                              [m for m, _ in top[:config.PLACES_TOP]], key)
 
@@ -357,9 +397,93 @@ class Stage5EndToEnd(unittest.TestCase):
         for key, row in self.facts["forenames_register"].items():
             detail = json.loads(row["detail"])
             for sex in ("F", "M"):
-                common = sorted(((f, n) for f, n in pooled[(key, sex)].items() if n >= config.FORENAMES_MIN),
+                common = sorted(((f, n) for f, n in pooled[(key, sex)].items() if n >= config.FACT_MIN_IN_CATEGORY),
                                 key=lambda fn: (-fn[1], fn[0]))
                 self.assertEqual(detail[sex.lower()], [f for f, _ in common[:config.FORENAMES_TOP]], (key, sex))
+
+    # -- the historic facts ---------------------------------------------------------------------
+
+    def census_people(self):
+        """{name: [(year, forename, sex, county, parish)]} for the census people that count (their parish is found in the
+        boundaries of their year, and is not id 0), straight from the tables."""
+        if not self.census_cache:
+            grouped = defaultdict(list)
+            for year in config.CENSUS_YEARS:
+                boundaries = config.CENSUS_PARISH_BOUNDARIES[year]
+                for surname, forename, sex, county, parish in self.conn.execute(f"""
+                        SELECT c.sname_clean_stand, c.pname, a.sex, p.regcnty, p.parish FROM gb{year} c
+                        JOIN gb{year}_att a ON a.recid = c.recid AND a.source = c.source
+                        JOIN conpar{boundaries} p ON p.conparid = a.gid WHERE p.conparid <> 0"""):
+                    grouped[surname_key(surname)].append((year, forename, sex, county, parish))
+            self.census_cache.update(grouped)
+        return self.census_cache
+
+    def test_historic_forenames_are_pooled_over_the_census_years(self):
+        people, expected = self.census_people(), {}
+        for key in self.names:
+            lists = {}
+            for sex in ("F", "M"):
+                counts = Counter(forename_clean(f) for _, f, s, _, _ in people.get(key, []) if s == sex and forename_clean(f))
+                common = sorted(((f, n) for f, n in counts.items() if n >= MIN), key=lambda fn: (-fn[1], fn[0]))
+                lists[sex.lower()] = [f for f, _ in common[:config.FORENAMES_TOP]]
+            if lists["f"] or lists["m"]:
+                expected[key] = lists
+        self.assertGreater(len(expected), 20)
+        self.assertEqual(set(self.facts["forenames_census"]), set(expected))
+        for key, row in self.facts["forenames_census"].items():
+            detail = json.loads(row["detail"])
+            self.assertEqual({"f": detail["f"], "m": detail["m"]}, expected[key], key)
+            self.assertEqual(detail["years"], config.CENSUS_YEARS)
+
+    def test_parishes_are_pooled_by_name_across_the_two_boundary_versions(self):
+        people, expected, merged_across_versions = self.census_people(), {}, 0
+        for key in self.names:
+            counts, versions = Counter(), defaultdict(set)
+            for year, _, _, county, parish in people.get(key, []):
+                counts[(county.lower(), parish.lower())] += 1
+                versions[(county.lower(), parish.lower())].add(config.CENSUS_PARISH_BOUNDARIES[year])
+            merged_across_versions += sum(len(v) == 2 for v in versions.values())
+            listed = sorted(((n, c, p) for (c, p), n in counts.items() if n >= MIN), key=lambda item: (-item[0], item[1], item[2]))
+            if listed:
+                expected[key] = [(c.title(), p.title()) for _, c, p in listed[:config.PLACES_TOP]]
+        self.assertGreater(merged_across_versions, 20)         # the fake 1851 and 1901 boundaries number the same parishes differently
+        self.assertEqual(set(self.facts["parishes"]), set(expected))
+        for key, row in self.facts["parishes"].items():
+            listed = json.loads(row["detail"])["parishes"]
+            self.assertEqual([(p["county"], p["parish"].title()) for p in listed], expected[key], key)
+            self.assertEqual(len({(p["county"], p["parish"]) for p in listed}), len(listed), key)      # a parish is listed once
+
+    def test_only_the_chosen_sources_are_worked_out_and_open_a_database(self):
+        chosen, real = self.names[:2], db.connect
+        for sources, expected, forbidden in (("register", {"oac", "forenames_register"}, {"forenames_census", "parishes"}),
+                                             ("census", {"forenames_census", "parishes"}, {"oac", "forenames_register", "places"})):
+            opened = []
+            out = Path(self.tmp.name) / f"sources_{sources}"
+
+            def spy(group, profile=None):
+                opened.append(group)
+                return real(group, profile)
+            with mock.patch.object(db, "connect", spy), \
+                    mock.patch.object(sys, "argv", ["s5_facts", "--out-dir", str(out), "--sources", sources, "--names", *chosen]):
+                s5_facts.main()
+            with open(out / "facts.csv", newline="") as f:
+                got = {r["fact"] for r in csv.DictReader(f)}
+            self.assertTrue(expected <= got, (sources, got))
+            self.assertFalse(got & forbidden, (sources, got))
+            self.assertEqual(set(opened), {sources})                 # the other database is never opened
+
+    def test_leaving_out_a_census_year_pools_the_others_and_says_so(self):
+        out = Path(self.tmp.name) / "years_left_out"
+        years = [1851, 1861, 1881, 1891, 1901, 1911]                 # 1921 is not loaded yet
+        with mock.patch.object(sys, "argv", ["s5_facts", "--out-dir", str(out), "--sources", "census", "--names", *self.names[:3],
+                                             "--census-years", *map(str, years)]):
+            s5_facts.main()
+        with open(out / "facts.csv", newline="") as f:
+            rows = list(csv.DictReader(f))
+        self.assertTrue(rows)
+        for row in rows:
+            self.assertEqual(json.loads(row["detail"])["years"], years)
+        self.assertFalse((out / "extract" / "parishes_1921.csv").exists())      # 1921 was never queried
 
     # -- re-running -----------------------------------------------------------------------------
 

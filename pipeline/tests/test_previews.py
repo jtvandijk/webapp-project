@@ -36,7 +36,9 @@ class PreviewsAreNeverOverwritten(unittest.TestCase):
         with mock.patch.object(sys, "argv", ["s1_counts"]):
             s1_counts.main()
         with open(cls.root / "names.csv", newline="") as f:
-            cls.names = [row["surname"] for row in csv.DictReader(f)]
+            rows = list(csv.DictReader(f))
+        cls.names = [row["surname"] for row in rows]
+        cls.periods = {row["surname"]: row["periods"].split(";") for row in rows}      # the periods each name gets a map for
 
     @classmethod
     def tearDownClass(cls):
@@ -57,6 +59,19 @@ class PreviewsAreNeverOverwritten(unittest.TestCase):
         self.assertIn("preview1.html: python3 -m pipeline.preview --names", first)     # the page says how it was made
         self.assertIn(self.names[0], first)
         self.assertIn("preview2.html", (folder / "preview2.html").read_text())
+
+    def test_sources_register_draws_the_register_map_years_and_no_census_year(self):
+        register = [str(y) for y in config.MAP_YEARS["register"]]
+        name = max(self.names, key=lambda n: sum(p in register for p in self.periods[n]))       # a name with many register maps
+        wanted = [p for p in self.periods[name] if p in register]
+        self.assertGreaterEqual(len(wanted), 2)
+        with mock.patch.object(sys, "argv", ["preview", "--names", name, "--sources", "register", "--out", str(self.root / "reg.html")]):
+            preview.main()
+        page = (self.root / "reg.html").read_text()
+        for year in wanted:
+            self.assertIn(f"<td>{year}</td>", page)              # in the table of maps
+        for year in config.MAP_YEARS["census"]:
+            self.assertNotIn(f"<td>{year}</td>", page)
 
     def test_out_still_chooses_the_file(self):
         target = self.root / "somewhere" / "mine.html"

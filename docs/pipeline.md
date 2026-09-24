@@ -8,8 +8,8 @@ against real names on the HPC): counts and name list, population surfaces, point
 map-building array job, including the Scotland rule and the settled real-data calibration (see
 "Decided so far" below). See [pipeline/README.md](../pipeline/README.md)'s "Stage 4" section for how
 to run a sample first, then the full name list. Not yet run for real on the HPC at full scale.
-Stage 5 (facts) is built for the register side and tested on fake data, but not yet run in the TRE;
-the census facts (historic forenames and parishes) come after the census data has been checked. Stage 6
+Stage 5 (facts) is built, for the register and for the census (historic forenames and parishes), and tested on fake
+data; the register side has run in the TRE, the census side waits for the census database. Stage 6
 (assemble, validate, release) is still to do.
 
 ## Decided so far
@@ -199,9 +199,11 @@ one), `detail` is JSON, and a name simply has no row for a fact it has no value 
 | `imd` | most common decile (1 = most deprived) | `distribution`: ten shares | `lsoa21cd` (England, Wales), `lsoa11cd` (Scotland) |
 | `imd_score` | mean deprivation percentile (the "GBNames deprivation score") | `sd` | as `imd` |
 | `fpc` | most common group, one of 13 (inside 5 clusters); safeguarded data | `distribution`: share per group | `lsoa21cd` |
-| `places` | empty | `places`: up to 10 of `{msoa, district}`, most common first, each with at least 3 people | `msoa21cd`, `lad25cd` |
+| `places` | empty | `places`: up to 10 of `{msoa, district}`, most common first, each with at least 5 people | `msoa21cd`, `lad25cd` |
 | `ethnicity` | most common census group code (`WBR`, `WAO`, ...) or `unknown` | `distribution` over groups, `codes`: the three most common codes | `eth` in the estimate table |
-| `forenames_register` | empty | `f` and `m`: up to 10 forenames each, most common first, each with at least 3 people | pooled over all register years |
+| `forenames_register` | empty | `f` and `m`: up to 10 forenames each, most common first, each with at least 5 people | pooled over all register years |
+| `forenames_census` | empty | the same, and `years`: which census years were pooled | pooled over the census years 1851 to 1921; the sex is in the census |
+| `parishes` | empty | `parishes`: up to 10 of `{county, parish}`, most common first, each with at least 5 people, and `years` | pooled over the census years; a parish is counted by county and name, so a parish that the 1851 and 1901 boundaries number differently is one |
 
 **`value` and `detail`.** `value` is the headline, the one thing the site shows for the fact: the most common group,
 decile or census group, or (for `imd_score`) the mean. `detail` is everything else, as JSON: the shares of bearers in
@@ -211,9 +213,10 @@ each group or decile (`distribution`), the spread (`sd`, for the score), the thr
 
 **When a fact is reported.** The 100-bearer floor applies to the name as a whole, through the reference year. A fact
 is then only written when the category it reports (the most common group or decile, or census group) has at least
-5 bearers (`FACT_MIN_IN_CATEGORY`); `imd_score` needs 5 bearers with a value; a neighbourhood is listed with at least
-3 people. So a name can have LOAC from a few London bearers, and `n_bearers` says how few. It is a disclosure floor,
-not a statistical one.
+5 bearers (`FACT_MIN_IN_CATEGORY`); `imd_score` needs 5 bearers with a value; and a neighbourhood, a parish or a forename is
+listed with at least 5 people. One number for everything. (The historic census is over 100 years old and needs no
+disclosure floor; it uses the same number to keep the two sources alike.) So a name can have LOAC from a few London
+bearers, and `n_bearers` says how few. It is a disclosure floor, not a statistical one.
 
 A tie for the most common value is broken at random, seeded by name and fact (so a re-run gives the same
 answer), and `detail` then has `"tie": true`. No counts are written for places or forenames, only their order.

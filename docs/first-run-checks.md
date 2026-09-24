@@ -99,14 +99,15 @@ the download does shows up at once.
 ## 6. A small run of stage 5
 
 ```
-python3 -m pipeline.s5_facts --limit 500        # or qsub pipeline/hpc/stage5.sh for the 5,000-name sample
+python3 -m pipeline.s5_facts --sources register --limit 500   # or qsub pipeline/hpc/stage5.sh for the 5,000-name sample
+                                                              # (drop --sources register once the census database is ready)
 ```
 
 Read `work/facts/report.txt`. Expect most names to have a reference year of 2026 or 2025; "bearers with a value"
 close to 100% for OAC, AHAH, IMD and places (lower for ethnicity, depending on how many people have a code,
 and around a tenth for LOAC, which covers London only); and look at any ethnicity codes listed as not recognised. Then look at a few
 names you know, kept apart from the rest:
-`python3 -m pipeline.s5_facts --names smith macdonald` (it writes to `work/preview_facts/`; a Scottish name should
+`python3 -m pipeline.s5_facts --sources register --names smith macdonald` (it writes to `work/preview_facts/`; a Scottish name should
 come out with Scottish neighbourhood codes, a London one with London ones).
 
 ## 7. One name, worked out by hand
@@ -150,7 +151,7 @@ WHERE regexp_replace(lower(r.surname), '[^a-z]', '', 'g') = 'longley'
   AND upper(substr(trim(g.gender), 1, 1)) = 'F'
   AND a.east1m > 0 AND a.north1m > 0 AND a.ctry25cd IN ('E92000001', 'S92000003', 'W92000004')
 GROUP BY 1 ORDER BY 2 DESC LIMIT 12;
--- compare with the "f" list in facts.csv (forenames with fewer than 3 people are left out there)
+-- compare with the "f" list in facts.csv (forenames with fewer than 5 people are left out there)
 ```
 
 ## 8. Before anything is exported

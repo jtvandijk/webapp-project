@@ -286,6 +286,46 @@ FROM {r["address_table"]} a
 WHERE a.{r["address_key"]} IN ({listed})"""
 
 
+def census_forename_counts(cfg, year, surnames=None):
+    """Forenames per surname and sex in one census year: (raw surname, sex, forename, n), only the
+    FORENAMES_KEEP most common per raw surname and sex. The people are the same ones the census counts and maps
+    use (a parish that is found in the boundaries of that year, and not id 0). The sex is in the _att table."""
+    table, att, parish, c = _census(cfg, year)
+    only = _surname_filter(cfg, f'c.{c["surname"]}', surnames)
+    sex = f'UPPER(SUBSTR(TRIM(a.{c["sex"]}), 1, 1))'
+    forename = f'LOWER(c.{c["forename"]})'
+    return f"""
+SELECT surname, sex, forename, n FROM (
+  SELECT c.{c["surname"]} AS surname, {sex} AS sex, {forename} AS forename, COUNT(*) AS n,
+         ROW_NUMBER() OVER (PARTITION BY c.{c["surname"]}, {sex} ORDER BY COUNT(*) DESC, {forename}) AS rk
+  FROM {table} c
+  JOIN {att} a ON a.{c["recid"]} = c.{c["recid"]} AND a.{c["source"]} = c.{c["source"]}
+  JOIN {parish} p ON p.{c["parish_id"]} = a.{c["parish"]}
+  WHERE p.{c["parish_id"]} <> 0 AND c.{c["surname"]} IS NOT NULL{only}
+  GROUP BY c.{c["surname"]}, {sex}, {forename}
+) ranked
+WHERE rk <= {config.FORENAMES_KEEP}"""
+
+
+def census_parish_counts(cfg, year, surnames=None):
+    """Parishes per surname in one census year: (raw surname, county, parish, n), only the PARISHES_KEEP most
+    common per raw surname. Grouped by county and parish NAME, not by id: the boundaries of 1851 and 1901 number
+    their parishes differently, and a visitor sees the name."""
+    table, att, parish, c = _census(cfg, year)
+    only = _surname_filter(cfg, f'c.{c["surname"]}', surnames)
+    return f"""
+SELECT surname, county, parish, n FROM (
+  SELECT c.{c["surname"]} AS surname, p.{c["county"]} AS county, p.{c["parish_name"]} AS parish, COUNT(*) AS n,
+         ROW_NUMBER() OVER (PARTITION BY c.{c["surname"]} ORDER BY COUNT(*) DESC, p.{c["parish_name"]}, p.{c["county"]}) AS rk
+  FROM {table} c
+  JOIN {att} a ON a.{c["recid"]} = c.{c["recid"]} AND a.{c["source"]} = c.{c["source"]}
+  JOIN {parish} p ON p.{c["parish_id"]} = a.{c["parish"]}
+  WHERE p.{c["parish_id"]} <> 0 AND c.{c["surname"]} IS NOT NULL{only}
+  GROUP BY c.{c["surname"]}, p.{c["county"]}, p.{c["parish_name"]}
+) ranked
+WHERE rk <= {config.PARISHES_KEEP}"""
+
+
 # ---------------------------------------------------------------------------
 # safety checks for the neighbourhood tables and the gender table
 # ---------------------------------------------------------------------------

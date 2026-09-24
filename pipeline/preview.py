@@ -2,6 +2,7 @@
 
     python3 -m pipeline.preview                       # a few example names on the fake data
     python3 -m pipeline.preview --names smith jones --periods 1851 1901 2000 2026
+    python3 -m pipeline.preview --names smith jones --sources register   # all the register map years, no census database needed
     python3 -m pipeline.preview --variants 0/mass 0.5/mass 1/mass 0.5/peak     # compare settings
     python3 -m pipeline.preview --variants 0.5/mass:0.9,0.75,0.5 0.5/mass:0.75,0.5,0.25
 
@@ -167,7 +168,11 @@ def pick_examples():
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--names", nargs="*", help="surname keys (default: examples from the fake data)")
-    parser.add_argument("--periods", nargs="*", default=["1851", "1901", "1911", "1921", "2000", "2020", "2026"])
+    parser.add_argument("--periods", nargs="*", help="map periods (default: 1851 1901 1911 1921 2000 2020 2026, or all the map "
+                        "years of --sources)")
+    parser.add_argument("--sources", nargs="*", choices=["register", "census"],
+                        help="use every map year of these sources as the periods, e.g. --sources register for all eight register "
+                             "years (only the databases the periods need are opened)")
     parser.add_argument("--variants", nargs="*", help="settings to compare, as <power>/<mode>, e.g. 0.5/mass 1/peak")
     parser.add_argument("--min-area", type=float, help="drop blobs and holes smaller than this many km2 (config MIN_AREA_KM2)")
     parser.add_argument("--smooth", type=float, help="metres to fill gaps/notches narrower than 2x this (config SMOOTH_M, now 10000)")
@@ -185,6 +190,9 @@ def main():
     parser.add_argument("--refresh-cache", action="store_true", help="ignore work/cache/ and re-query, e.g. after a new register or census load")
     parser.add_argument("--out", help="write here instead of the next numbered file in work/preview_maps/")
     args = parser.parse_args()
+    if args.periods is None:
+        args.periods = ([str(year) for source in args.sources for year in config.MAP_YEARS[source]] if args.sources
+                        else ["1851", "1901", "1911", "1921", "2000", "2020", "2026"])
     if args.out:
         out = Path(args.out)
         out.parent.mkdir(parents=True, exist_ok=True)

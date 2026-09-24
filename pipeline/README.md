@@ -19,7 +19,7 @@ The code that turns the registers and censuses into the data behind the website 
 | `s4_maps.py` | Stage 4 (the heavy step): every name and period in one chunk - no database access at all. | done, tested |
 | `merge_stats.py` | Combines stage 4's per-chunk stats CSVs into one file. | done |
 | `hpc/stage4.sh` | The SGE array job that runs `s4_maps.py` once per chunk. | done, not yet run on the real HPC |
-| `s5_facts.py` | Stage 5: the facts about each name (neighbourhood classifications, top neighbourhoods, ethnicity, forenames). One query per fact and reference year, saved, then computed. Register side; the census facts come after the census data has been checked. | done, tested on fake data; not yet run in the TRE |
+| `s5_facts.py` | Stage 5: the facts about each name (neighbourhood classifications, top neighbourhoods, ethnicity, forenames, and from the census historic forenames and parishes). One query per fact and reference year (per census year for the historic ones), saved, then computed. | done, tested on fake data; the register side has run in the TRE, the census side waits for the census database |
 | `nbhd_tables.py` | The SQL to create and load the neighbourhood tables in the TRE, and a check of them against the real register. | done, tested |
 | `hpc/stage5.sh` | The SGE job that runs `s5_facts.py`: one job, not an array. Memory and time are guesses. | done, not yet run on the real HPC |
 | stage 6 | Assembling and validating the release. | to do |
@@ -120,7 +120,7 @@ The neighbourhood facts join the register to neighbourhood tables, which have to
    if a table has an area code twice. `python3 -m pipeline.nbhd_tables lookup "SW1A 1AA" ...` prints what stage 5
    will use for individual postcodes, to compare with the answers in [docs/first-run-checks.md](../docs/first-run-checks.md),
    which lists every check to do on a first real run (upload intact, counts, spot postcodes, one name by hand in SQL).
-4. **Sample run first:** `python3 -m pipeline.s5_facts --limit 500`, then read `work/facts/report.txt` (how many
+4. **Sample run first:** `python3 -m pipeline.s5_facts --sources register --limit 500`, then read `work/facts/report.txt` (how many
    names got each fact and why others did not, ties broken, ethnicity codes it did not recognise) and
    look at `work/facts/facts.csv`. Then the full run.
 
@@ -142,6 +142,15 @@ killed carries on where it stopped when submitted again. `--facts oac imd` runs 
 `--names smith macdonald` works out just those names, to look at by eye: it writes to `work/preview_facts/` and also
 keeps each run as `facts1.csv`, `report1.txt`, `facts2.csv`, ... so an earlier set of names is not lost (`facts.csv`
 is always the latest).
+
+**The historic facts** (forenames with their sex, and parishes) come from the census database: one query per census
+year, pooled. `--sources register` or `--sources census` chooses which databases are used (only the ones needed are
+opened, and `hpc/stage5.sh` has a `SOURCES` setting, register-only until the census database is ready).
+`--census-years 1851 1861 1881 1891 1901 1911` pools only those years, for testing before 1921 is loaded; the
+years actually pooled are written in each row's `detail`. They count the same people as the census counts and maps
+(a parish that is found in that year's boundaries, and not id 0). A parish is counted by county and name, not by id,
+because the 1851 and 1901 boundaries number their parishes differently. The 1921 census is assumed to have the same
+table layout as the others (`census.gb1921`, `gb1921_att`, boundaries of 1901): confirm this when it is loaded.
 
 **A saved extract is trusted while the names it was made for are unchanged. It cannot notice that the
 database, or a neighbourhood table, has changed since.** After a new register load, or a new version of a

@@ -1,10 +1,13 @@
-"""Stage 5: the facts about each name - neighbourhood classifications, top neighbourhoods, ethnicity, forenames.
+"""Stage 5: the facts about each name - neighbourhood classifications, top neighbourhoods, ethnicity, forenames,
+and, from the census, historic forenames and parishes.
 
     python3 -m pipeline.s5_facts                      # every fact, for every name in work/names.csv
     python3 -m pipeline.s5_facts --limit 500          # a sample run: the first 500 names, as in stage 3
     python3 -m pipeline.s5_facts --names smith macdonald   # a few names, to look at by eye: work/preview_facts/
     python3 -m pipeline.s5_facts --facts oac imd      # only some facts (say, after loading a new table)
     python3 -m pipeline.s5_facts --compute-only       # no database: redo the calculation from the saved extracts
+    python3 -m pipeline.s5_facts --sources register   # only the register facts, e.g. while the census database is not ready
+    python3 -m pipeline.s5_facts --sources census --census-years 1851 1861 1881 1891 1901 1911   # 1921 not loaded yet
 
 The rules (all in config.py, section 6):
   * Contemporary facts are worked out in each name's REFERENCE YEAR, the latest register year in which
@@ -14,7 +17,11 @@ The rules (all in config.py, section 6):
     A tie is broken at random, but always the same way for the same name and fact (so a re-run gives
     the same answer, and the output says when it happened).
   * Forenames are the exception: pooled over every register year, since a name with no bearers in
-    the newest year should still have forenames. Historic (census) facts are a later addition.
+    the newest year should still have forenames.
+  * Historic facts come from the census and are pooled over the census years: forenames (with the sex in
+    the census) and parishes, the most common first, each with at least FACT_MIN_IN_CATEGORY people. A parish is
+    counted by county and name, so it is one parish whichever boundaries (1851 or 1901) number it. Which
+    years were pooled is written in `detail`. The people counted are the ones the census counts and maps use.
 
 Two steps, so a change of rule never needs the database again:
   1. extract: one query per fact and per reference year, saved under work/facts/extract/. A saved
@@ -47,7 +54,10 @@ from .s3_extracts import load_names
 
 FIELDS = ["surname", "fact", "version", "ref_year", "n_bearers", "value", "detail"]
 QUERIED = ["oac", "loac", "ahah", "imd", "fpc", "places", "eth"]   # one query per reference year
-ALL = QUERIED + ["forenames"]                                      # forenames: one query in all
+REGISTER_FACTS = QUERIED + ["forenames"]                           # forenames: one query in all
+CENSUS_FACTS = ["forenames_census", "parishes"]                    # one query per census year
+ALL = REGISTER_FACTS + CENSUS_FACTS
+POOLED = ["forenames_register", "forenames_census", "parishes"]    # facts about all the years, so no reference year
 
 
 # ---------------------------------------------------------------------------
@@ -168,14 +178,65 @@ def extract_forenames(conn, cfg, names, out_dir, refresh=False):
     return len(totals)
 
 
-def read_forenames(out_dir):
-    """{name: {"F": {forename: n}, "M": {...}}} from the saved forenames extract."""
+def read_forenames(out_dir, stems=("forenames",)):
+    """{name: {"F": {forename: n}, "M": {...}}} from the saved forenames extract(s); several (one per census
+    year) are added together."""
     found = defaultdict(lambda: {"F": {}, "M": {}})
-    with open(_paths(out_dir, "forenames")[0], newline="") as f:
-        reader = csv.reader(f)
-        next(reader)
-        for key, sex, forename, n in reader:
-            found[key][sex][forename] = int(n)
+    for stem in stems:
+        with open(_paths(out_dir, stem)[0], newline="") as f:
+            reader = csv.reader(f)
+            next(reader)
+            for key, sex, forename, n in reader:
+                found[key][sex][forename] = found[key][sex].get(forename, 0) + int(n)
+    return found
+
+
+def _norm(text):
+    """A county or parish name as a key: lower case, single spaces, so a spelling of the case does not split a parish."""
+    return " ".join(str(text or "").lower().split())
+
+
+def extract_census_forenames(conn, cfg, year, names, out_dir, refresh=False):
+    """Forenames per surname and sex in one census year (the query keeps the most common per spelling)."""
+    stem = f"forenames_census_{year}"
+    if not refresh and is_current(out_dir, stem, names):
+        return None
+    wanted, totals = set(names), Counter()
+    for raw, sex, forename, n in db.fetch(conn, sql.census_forename_counts(cfg, year, surnames=names)):
+        key, clean = surname_key(raw), forename_clean(forename)
+        if key in wanted and clean and sex in ("F", "M"):
+            totals[(key, sex, clean)] += int(n)
+    _save(out_dir, stem, ["surname", "sex", "forename", "n"], sorted((k, s, f, n) for (k, s, f), n in totals.items()), names)
+    return len(totals)
+
+
+def extract_parishes(conn, cfg, year, names, out_dir, refresh=False):
+    """Parishes per surname in one census year, by county and name (spellings of the case merged)."""
+    stem = f"parishes_{year}"
+    if not refresh and is_current(out_dir, stem, names):
+        return None
+    wanted, totals = set(names), {}
+    for raw, county, parish, n in db.fetch(conn, sql.census_parish_counts(cfg, year, surnames=names)):
+        key = surname_key(raw)
+        if key not in wanted or not _norm(parish):
+            continue
+        entry = totals.setdefault((key, _norm(county), _norm(parish)), [str(county or "").strip(), str(parish).strip(), 0])
+        entry[2] += int(n)
+    _save(out_dir, stem, ["surname", "county", "parish", "n"],
+          sorted((k[0], e[0], e[1], e[2]) for k, e in totals.items()), names)
+    return len(totals)
+
+
+def read_parishes(out_dir, years):
+    """{name: {(county key, parish key): [county, parish, n]}} added together over the census years."""
+    found = defaultdict(dict)
+    for year in years:
+        with open(_paths(out_dir, f"parishes_{year}")[0], newline="") as f:
+            reader = csv.reader(f)
+            next(reader)
+            for key, county, parish, n in reader:
+                entry = found[key].setdefault((_norm(county), _norm(parish)), [county, parish, 0])
+                entry[2] += int(n)
     return found
 
 
@@ -211,8 +272,11 @@ def _share(n, total):
     return round(n / total, config.SHARE_DECIMALS)
 
 
-def _row(key, fact, year, n, value, detail):
-    return {"surname": key, "fact": fact, "version": config.FACT_VERSIONS[fact], "ref_year": year,
+def _row(key, fact, year, n, value, detail, years=None):
+    version = config.FACT_VERSIONS[fact]
+    if years:                                    # the historic facts say which census years were pooled
+        version = version.format(first=min(years), last=max(years))
+    return {"surname": key, "fact": fact, "version": version, "ref_year": year,
             "n_bearers": n, "value": value, "detail": json.dumps(detail, separators=(",", ":"), ensure_ascii=False)}
 
 
@@ -285,7 +349,7 @@ def compute_imd_score(extracted, ref_years, tally):
 
 
 def compute_places(extracted, ref_years, tally):
-    """The most common neighbourhoods, most common first, each with at least PLACES_MIN people. The
+    """The most common neighbourhoods, most common first, each with at least FACT_MIN_IN_CATEGORY people. The
     counts themselves are not written."""
     out = []
     for key, rows in sorted(extracted.items()):
@@ -295,7 +359,7 @@ def compute_places(extracted, ref_years, tally):
             district.setdefault(area, dist)
         total = sum(by_area.values())
         _tally_covered(tally, "places", total)
-        listed = sorted(((a, n) for a, n in by_area.items() if n >= config.PLACES_MIN), key=lambda an: (-an[1], an[0]))
+        listed = sorted(((a, n) for a, n in by_area.items() if n >= config.FACT_MIN_IN_CATEGORY), key=lambda an: (-an[1], an[0]))
         if not listed:
             continue
         top = [{"msoa": a, "district": district[a]} for a, _ in listed[:config.PLACES_TOP]]
@@ -338,21 +402,40 @@ def compute_ethnicity(extracted, ref_years, tally):
     return out
 
 
-def compute_forenames(extracted, names, tally):
-    """The most common forenames per sex, pooled over every register year, each with at least
-    FORENAMES_MIN people. The counts themselves are not written."""
+def compute_forenames(extracted, names, tally, fact="forenames_register", years=None):
+    """The most common forenames per sex, pooled over every year, each with at least FACT_MIN_IN_CATEGORY
+    people. The counts themselves are not written. For the census, `years` says which census years were pooled."""
     out = []
     for key in sorted(names):
         if key not in extracted:
             continue
         lists = {}
         for sex in ("F", "M"):
-            common = sorted(((f, n) for f, n in extracted[key][sex].items() if n >= config.FORENAMES_MIN),
+            common = sorted(((f, n) for f, n in extracted[key][sex].items() if n >= config.FACT_MIN_IN_CATEGORY),
                             key=lambda fn: (-fn[1], fn[0]))
             lists[sex.lower()] = [f for f, _ in common[:config.FORENAMES_TOP]]
         if lists["f"] or lists["m"]:
-            out.append(_row(key, "forenames_register", "", "", "", lists))
-            tally["forenames_register"]["with_value"] += 1
+            if years:
+                lists["years"] = list(years)
+            out.append(_row(key, fact, "", "", "", lists, years))
+            tally[fact]["with_value"] += 1
+    return out
+
+
+def compute_parishes(extracted, names, tally, years):
+    """The most common parishes, pooled over the census years, most common first, each with at least
+    FACT_MIN_IN_CATEGORY people. The counts themselves are not written."""
+    out = []
+    for key in sorted(names):
+        parishes = extracted.get(key)
+        if not parishes:
+            continue
+        listed = sorted(((n, county, parish) for county, parish, n in parishes.values() if n >= config.FACT_MIN_IN_CATEGORY),
+                        key=lambda item: (-item[0], _norm(item[1]), _norm(item[2])))
+        if listed:
+            top = [{"county": county.title(), "parish": parish} for _, county, parish in listed[:config.PLACES_TOP]]
+            out.append(_row(key, "parishes", "", "", "", {"parishes": top, "years": list(years)}, years))
+            tally["parishes"]["with_value"] += 1
     return out
 
 
@@ -394,8 +477,8 @@ def build_report(names, ref_years, counts, tally, outputs):
              "", f"{'fact':20} {'names with a value':>19} {'no value':>9} {'ties broken':>12} {'bearers covered':>16}"]
     for fact in outputs:
         t = tally[fact]
-        scope = len(names) if fact == "forenames_register" else len(ref_years)
-        coverage = "" if fact == "forenames_register" or not registered else f"{t['covered'] / registered:>15.1%}"
+        scope = len(names) if fact in POOLED else len(ref_years)
+        coverage = "" if fact in POOLED or not registered else f"{t['covered'] / registered:>15.1%}"
         lines.append(f"{fact:20} {t['with_value']:>19,} {scope - t['with_value'] - t['unknown']:>9,} "
                      f"{t['ties']:>12,} {coverage:>16}")
     if "ethnicity" in outputs:
@@ -419,7 +502,11 @@ def build_report(names, ref_years, counts, tally, outputs):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--facts", nargs="*", choices=ALL, default=ALL, help="which facts (default: all)")
+    parser.add_argument("--facts", nargs="*", choices=ALL, help="which facts (default: all those of the chosen sources)")
+    parser.add_argument("--sources", nargs="*", choices=["register", "census"], default=["register", "census"],
+                        help="which sources' facts (default: both); only their databases are opened")
+    parser.add_argument("--census-years", nargs="*", type=int, choices=config.CENSUS_YEARS, default=config.CENSUS_YEARS,
+                        help="which census years to pool for the historic facts (default: all; leave one out while its data is not ready)")
     which = parser.add_mutually_exclusive_group()
     which.add_argument("--limit", type=int, help="only the first N names from work/names.csv (a sample run)")
     which.add_argument("--names", nargs="*", help="only these names, which must be in work/names.csv; the results go in "
@@ -429,7 +516,10 @@ def main():
     parser.add_argument("--out-dir", help="where to write (default: work/facts, or work/preview_facts for a --names run)")
     args = parser.parse_args()
     out_dir = Path(args.out_dir) if args.out_dir else config.WORK / ("preview_facts" if args.names else "facts")
-    facts = list(args.facts)
+    facts = list(args.facts) if args.facts else [f for f in ALL if ("census" if f in CENSUS_FACTS else "register") in args.sources]
+    census_years = sorted(args.census_years)
+    if not facts:
+        raise SystemExit("Nothing to do: no facts for those sources.")
 
     names = load_names(args.limit)
     if not names:
@@ -446,26 +536,40 @@ def main():
     print(f"{len(names):,} names, {len(ref_years):,} with a reference year, in {len(by_year)} different years")
 
     cfg = config.settings()
+    register_facts = [f for f in REGISTER_FACTS if f in facts]
+    census_facts = [f for f in CENSUS_FACTS if f in facts]
+
+    def report_time(label, rows, started):
+        print(f"{label}: " + ("saved extract reused" if rows is None else f"{rows:,} rows, {time.perf_counter() - started:.1f}s"))
+
     if not args.compute_only:
-        conn = db.connect("register")
-        check_tables(conn, cfg, facts)
-        for fact in [f for f in QUERIED if f in facts]:
-            for year, keys in by_year.items():
+        if register_facts:
+            conn = db.connect("register")
+            check_tables(conn, cfg, facts)
+            for fact in [f for f in QUERIED if f in facts]:
+                for year, keys in by_year.items():
+                    started = time.perf_counter()
+                    rows = extract_fact(conn, cfg, fact, year, keys, out_dir, args.refresh)
+                    report_time(f"{fact} {year} ({len(keys):,} names)", rows, started)
+            if "forenames" in facts:
                 started = time.perf_counter()
-                rows = extract_fact(conn, cfg, fact, year, keys, out_dir, args.refresh)
-                print(f"{fact} {year}: {len(keys):,} names, " +
-                      ("saved extract reused" if rows is None else f"{rows:,} rows, {time.perf_counter() - started:.1f}s"))
-        if "forenames" in facts:
-            started = time.perf_counter()
-            rows = extract_forenames(conn, cfg, names, out_dir, args.refresh)
-            print("forenames: " + ("saved extract reused" if rows is None else f"{rows:,} rows, {time.perf_counter() - started:.1f}s"))
-        conn.close()
+                report_time("forenames", extract_forenames(conn, cfg, names, out_dir, args.refresh), started)
+            conn.close()
+        if census_facts:
+            conn = db.connect("census")
+            for fact, extractor in (("forenames_census", extract_census_forenames), ("parishes", extract_parishes)):
+                for year in (census_years if fact in facts else []):
+                    started = time.perf_counter()
+                    report_time(f"{fact} {year}", extractor(conn, cfg, year, names, out_dir, args.refresh), started)
+            conn.close()
 
     # the extracts must be for the names now in scope, whether or not this run made them
     stale = [f"{fact} {year}" for fact in QUERIED if fact in facts for year, keys in by_year.items()
              if not is_current(out_dir, f"{fact}_{year}", keys)]
     if "forenames" in facts and not is_current(out_dir, "forenames", names):
         stale.append("forenames")
+    stale += [f"{fact} {year}" for fact in CENSUS_FACTS if fact in facts for year in census_years
+              if not is_current(out_dir, f"{fact}_{year}", names)]
     if stale:
         raise SystemExit("These extracts are missing, or were made for other names: " + ", ".join(stale) +
                          "\nRun again without --compute-only.")
@@ -496,6 +600,11 @@ def main():
         results["ethnicity"] = compute_ethnicity(load("eth"), ref_years, tally)
     if "forenames" in facts:
         results["forenames_register"] = compute_forenames(read_forenames(out_dir), names, tally)
+    if "forenames_census" in facts:
+        pooled = read_forenames(out_dir, [f"forenames_census_{y}" for y in census_years])
+        results["forenames_census"] = compute_forenames(pooled, names, tally, "forenames_census", census_years)
+    if "parishes" in facts:
+        results["parishes"] = compute_parishes(read_parishes(out_dir, census_years), names, tally, census_years)
 
     for fact, rows in results.items():
         write_fact(out_dir, fact, rows)

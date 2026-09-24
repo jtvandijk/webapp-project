@@ -9,8 +9,10 @@
 #   qsub pipeline/hpc/stage5.sh
 #
 # LIMIT below is for a SAMPLE run: the first N names of work/names.csv, the same N as a stage 3
-# sample uses. Set it to "" for the full name list. FACTS is empty for every fact, or a list such as
-# "oac imd" (say, after loading a new table, or to redo one that failed).
+# sample uses. Set it to "" for the full name list. FACTS is empty for every fact of the chosen SOURCES, or
+# a list such as "oac imd" (say, after loading a new table, or to redo one that failed). SOURCES is
+# register-only for now, since the census database is not ready: the historic facts (forenames, parishes)
+# need it, so set SOURCES="register census" once it is.
 #
 # Before this: stage 1 (work/counts.csv and work/names.csv), and the neighbourhood tables loaded in
 # the TRE - check them first with  python3 -m pipeline.nbhd_tables check
@@ -48,12 +50,13 @@ source ~/.bashrc
 conda activate gbnames
 set -euo pipefail
 
+SOURCES="register"   # "register census" once the census database is ready
 LIMIT="5000"    # e.g. "5000" for a sample run, or "" for the full name list
-FACTS=""        # "" for every fact, or e.g. "oac imd"
+FACTS=""        # "" for every fact of those sources, or e.g. "oac imd"
 
 set -a
 source .env
 set +a
 export GBNAMES_PROFILE=tre
 
-python3 -m pipeline.s5_facts ${LIMIT:+--limit "$LIMIT"} ${FACTS:+--facts $FACTS}
+python3 -m pipeline.s5_facts --sources $SOURCES ${LIMIT:+--limit "$LIMIT"} ${FACTS:+--facts $FACTS}

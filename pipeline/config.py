@@ -266,13 +266,17 @@ SCOTLAND_MAX_SHARE = 0.30
 # only; some bearers have no ethnicity code) can rest on few people, and n_bearers in the output says how many.
 FACT_MIN_IN_CATEGORY = 5
 
-PLACES_TOP, PLACES_MIN = 10, 3            # top neighbourhoods (MSOA or Scottish intermediate zone): how many, and
-                                          # the fewest people a neighbourhood may have to be listed
-FORENAMES_TOP, FORENAMES_MIN = 10, 3      # top forenames per sex, and the fewest people a forename may have
+# The same minimum applies to everything that is listed: a neighbourhood, a parish or a forename needs at least
+# FACT_MIN_IN_CATEGORY people (5) to appear. (The historic census is over 100 years old and needs no disclosure
+# floor, but the same one keeps the two sources alike and the lists free of one-off oddities.)
+PLACES_TOP = 10                           # top neighbourhoods (MSOA or Scottish intermediate zone) and top parishes listed
+FORENAMES_TOP = 10                        # top forenames per sex listed
 FORENAMES_KEEP = 25                       # the database keeps this many per surname and sex before the merge
                                           # of spelling variants, which bounds what has to be fetched. A forename
                                           # outside a variant's top 25 cannot count towards the merged list, which
                                           # only matters for near-ties at the edge of the top ten
+PARISHES_KEEP = 25                        # the same bound for parishes: the database keeps this many per surname and census
+                                          # year before the years are pooled and spelling variants merged
 SHARE_DECIMALS = 3                        # shares in the distributions; use 2 if the output checkers want less
 
 COUNTRY_SCOTLAND = "S92000003"            # Scottish deprivation is on 2011 data zones, the rest on 2021 areas
@@ -284,6 +288,7 @@ FACT_VERSIONS = {
     "fpc": "Financial Precarity Classification",
     "places": "MSOA 2021 / Scottish IZ 2022", "ethnicity": "Ethnicity Estimator",
     "forenames_register": "register 1997-2026",
+    "forenames_census": "census {first}-{last}", "parishes": "consistent parishes, census {first}-{last}",   # the years actually pooled
 }
 
 # The neighbourhood tables (made by tools/prep_neighbourhood.py), loaded into the TRE with
