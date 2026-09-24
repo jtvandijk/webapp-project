@@ -126,28 +126,32 @@ class CensusMatch(unittest.TestCase):
             self.assertEqual(twice.execute(sql.people_in_repeated_parish_ids(self.cfg, year)).fetchone()[0], expected, year)
         self.assertEqual(twice.execute(sql.people_in_repeated_parish_ids(self.cfg, 1851)).fetchone()[0], 0)   # 1851 uses the other table
 
-    def test_in_1921_people_with_no_parish_id_are_people_not_in_a_parish_but_in_another_year_they_are_unexplained(self):
-        # 1921 records "not in a parish" as no id at all; the other years as id 0
-        nulled = self.damaged("UPDATE gb1921_att SET conparid1901 = NULL WHERE recid % 40 = 1", "UPDATE gb1911_att SET gid = NULL WHERE recid % 40 = 1")
+    def test_in_1911_and_1921_people_with_no_parish_id_are_people_not_in_a_parish_but_in_another_year_they_are_unexplained(self):
+        # 1911 and 1921 record "not in a parish" as no id at all; the other years as id 0
+        nulled = self.damaged("UPDATE gb1921_att SET conparid1901 = NULL WHERE recid % 40 = 1", "UPDATE gb1911_att SET gid = NULL WHERE recid % 40 = 1", "UPDATE gb1901_att SET gid = NULL WHERE recid % 40 = 1")
         healthy, found = s1_counts.census_match(self.conn, self.cfg), s1_counts.census_match(nulled, self.cfg)
         k21 = self.conn.execute("SELECT COUNT(*) FROM gb1921_att WHERE recid % 40 = 1 AND conparid1901 <> 0").fetchone()[0]      # had a parish
         k11 = self.conn.execute("SELECT COUNT(*) FROM gb1911_att WHERE recid % 40 = 1 AND gid <> 0").fetchone()[0]
-        z11 = self.conn.execute("SELECT COUNT(*) FROM gb1911_att WHERE recid % 40 = 1 AND gid = 0").fetchone()[0]                # had id 0
-        self.assertGreater(min(k21, k11, z11), 0)
+        k01 = self.conn.execute("SELECT COUNT(*) FROM gb1901_att WHERE recid % 40 = 1 AND gid <> 0").fetchone()[0]
+        z01 = self.conn.execute("SELECT COUNT(*) FROM gb1901_att WHERE recid % 40 = 1 AND gid = 0").fetchone()[0]                # had id 0
+        self.assertGreater(min(k21, k11, k01, z01), 0)
         self.assertEqual(found[1921][2], healthy[1921][2] + k21)                # more people "in no parish" ...
         self.assertEqual(found[1921][3], healthy[1921][3] - k21)                # ... and fewer counted
         self.assertEqual(found[1921][1] - found[1921][2] - found[1921][3], 0)   # nobody is unexplained
-        self.assertEqual(found[1911][2], healthy[1911][2] - z11)                # 1911: a missing id is not id 0 (those who had 0 are now missing) ...
-        self.assertEqual(found[1911][1] - found[1911][2] - found[1911][3], k11 + z11)     # ... so all of them are unexplained
+        self.assertEqual(found[1911][2], healthy[1911][2] + k11)                # 1911 too
+        self.assertEqual(found[1911][1] - found[1911][2] - found[1911][3], 0)
+        self.assertEqual(found[1901][2], healthy[1901][2] - z01)                # 1901: a missing id is not id 0 (those who had 0 are now missing) ...
+        self.assertEqual(found[1901][1] - found[1901][2] - found[1901][3], k01 + z01)     # ... so all of them are unexplained
         report = self.run_report(nulled)
         self.assertIn("1921:", report)
         self.assertRegex([line for line in report.splitlines() if line.strip().startswith("1921:")][0], r"0\.00% not counted")
-        self.assertNotRegex([line for line in report.splitlines() if line.strip().startswith("1911:")][0], r"0\.00% not counted")
+        self.assertNotRegex([line for line in report.splitlines() if line.strip().startswith("1901:")][0], r"0\.00% not counted")
 
-    def test_only_the_1921_sql_treats_a_missing_id_as_no_parish(self):
+    def test_only_the_1911_and_1921_sql_treat_a_missing_id_as_no_parish(self):
         tre = config.settings("tre")
         self.assertIn("a.conparid1901 = 0 OR a.conparid1901 IS NULL", sql.census_match(tre, 1921))
-        for year in (1851, 1861, 1881, 1891, 1901, 1911):
+        self.assertIn("a.gid = 0 OR a.gid IS NULL", sql.census_match(tre, 1911))
+        for year in (1851, 1861, 1881, 1891, 1901):
             self.assertNotIn("IS NULL", sql.census_match(tre, year), year)
         self.assertIn("HAVING COUNT(*) > 1", sql.people_in_repeated_parish_ids(tre, 1901))
         self.assertIn("FROM census.gb1901_att a", sql.people_in_repeated_parish_ids(tre, 1901))

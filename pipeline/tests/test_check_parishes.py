@@ -287,9 +287,12 @@ class CheckParishes(unittest.TestCase):
         self.assertIn(f"{zero + nulls + lost + unlocated:,} people", line)
         self.assertIn(f"id 0 {zero:,}, no id {nulls:,}, id not in the table {lost:,}, parish without a usable location {unlocated:,}", line)
 
-    def test_in_1921_a_missing_id_is_said_to_be_how_the_year_records_people_not_in_a_parish(self):
-        _, text, problems = self.report(self.damaged("UPDATE gb1921_att SET conparid1901 = NULL WHERE recid % 50 = 0"))
-        self.assertIn("that is how this year records people not in a parish", text)
+    def test_in_1911_and_1921_a_missing_id_is_said_to_be_how_the_year_records_people_not_in_a_parish(self):
+        _, text, problems = self.report(self.damaged("UPDATE gb1921_att SET conparid1901 = NULL WHERE recid % 50 = 0",
+                                                     "UPDATE gb1911_att SET gid = NULL WHERE recid % 50 = 0", "UPDATE gb1901_att SET gid = NULL WHERE recid % 50 = 0"))
+        said = [line.split(":")[0].strip() for line in text.splitlines() if "that is how this year records people not in a parish" in line]
+        self.assertEqual(said, ["1911", "1921"])                               # not 1901: there a missing id is unexplained
+        self.assertIn("1901:", [l for l in text.splitlines() if "have no parish id at all (NULL)" in l][0])
         self.assertEqual(problems, [], text)
 
     def test_a_text_id_column_is_flagged(self):

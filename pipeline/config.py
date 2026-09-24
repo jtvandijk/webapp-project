@@ -202,10 +202,11 @@ CENSUS_PARISH_BOUNDARIES = {1851: 1851, 1861: 1851, 1881: 1851, 1891: 1851,
 # parishes by point in polygon, and that result is the column conparid1901. Any year not listed uses the profile's column.
 CENSUS_PARISH_COLUMN = {1921: "conparid1901"}
 
-# The census years in which a person who was not in a parish (soldiers, sailors, people abroad) has NO parish id (NULL),
-# where every other year records them as parish id 0. Stage 1 counts them with the id-0 people, not under "not counted
-# although they should be". 1921: checked by the data owner, the year has no id 0 at all.
-CENSUS_NULL_PARISH_IS_NONE = [1921]
+# The census years in which a person who could not be put in a parish (soldiers, sailors, people abroad) has NO parish id
+# (NULL), where the other years record them as parish id 0. Stage 1 counts them with the id-0 people, not under "not
+# counted although they should be". Confirmed by the data owner (2026-09-26): about 300,000 people in each of 1911 and
+# 1921 have no id, and almost nobody has id 0.
+CENSUS_NULL_PARISH_IS_NONE = [1911, 1921]
 
 # A parish with no name of its own in the parish table (the name is "-") in one of these counties is shown in the places
 # lists under a name made here, and pooled with the others that get the same one: (a regular expression for the county as
