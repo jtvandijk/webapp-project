@@ -87,6 +87,36 @@ GROUP BY c.{c["surname"]}
 HAVING COUNT(*) >= {config.SQL_PREFILTER}"""
 
 
+def census_rows(cfg, year):
+    """How many people (rows) the census table of this year has."""
+    table, _, _, _ = _census(cfg, year)
+    return f"SELECT COUNT(*) FROM {table}"
+
+
+def census_match(cfg, year):
+    """How the people of one census year that have an attributes row divide up: (how many, how many with parish id 0,
+    how many are counted). Parish id 0 is by design: people counted in the census who were not in a parish of the
+    country (soldiers, sailors, British people abroad). 'Counted' is exactly the people census_counts() counts."""
+    table, att, parish, c = _census(cfg, year)
+    return f"""
+SELECT COUNT(*),
+       SUM(CASE WHEN a.{c["parish"]} = 0 THEN 1 ELSE 0 END),
+       SUM(CASE WHEN p.{c["parish_id"]} IS NOT NULL AND p.{c["parish_id"]} <> 0 AND c.{c["surname"]} IS NOT NULL THEN 1 ELSE 0 END)
+FROM {table} c
+JOIN {att} a ON a.{c["recid"]} = c.{c["recid"]} AND a.{c["source"]} = c.{c["source"]}
+LEFT JOIN {parish} p ON p.{c["parish_id"]} = a.{c["parish"]}"""
+
+
+def duplicate_parish_ids(cfg, year):
+    """How many parish ids (other than 0) appear more than once in the parish table this census year uses. It must be 0: a
+    parish that appears twice would count everybody in it twice."""
+    _, _, parish, c = _census(cfg, year)
+    return f"""
+SELECT COUNT(*) FROM (
+  SELECT {c["parish_id"]} FROM {parish} WHERE {c["parish_id"]} <> 0 GROUP BY {c["parish_id"]} HAVING COUNT(*) > 1
+) d"""
+
+
 def register_totals(cfg, years, matched):
     """Register rows per year: (year, n). With matched=True only the rows that get usable
     coordinates, otherwise all of them. The share between the two is the postcode match rate."""

@@ -153,7 +153,9 @@ PROFILES = {
         # on sname_clean_stand (which was only manually added for some years, not all - confirmed
         # by the user). "sname" is confirmed consistent across all census years.
         "census": dict(_CENSUS_COLUMNS, surname="sname", table="census.gb{year}", att_table="census.gb{year}_att",
-                       parish_table="spatial.conpar{boundaries}"),  # check: guessed from the old scripts
+                       # spatial.conpar1851 and spatial.conpar1901: conparid, geom, centroid, x, y (centroid, British
+                       # National Grid metres), regcnty, parish - as given by the data owner; stage 1 checks the join
+                       parish_table="spatial.conpar{boundaries}"),
         # stage 5 (facts). check: the schema the neighbourhood tables are uploaded into (registers_lookup
         # is a guess, next to ONSPD; see  python3 -m pipeline.nbhd_tables ddl), the columns of lookup_monica
         # (name, gender: as the old monica_gender, not yet confirmed), and that lcr_consol_ethest has the

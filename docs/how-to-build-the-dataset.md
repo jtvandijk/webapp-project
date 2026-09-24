@@ -159,7 +159,7 @@ To start a stage from clean: `bash pipeline/hpc/clean.sh` (stages 3 and 4; it as
 
 | What changed | Run again |
 |---|---|
-| A new register or census load | 1, then 2, 3, 4 and 5 (`--refresh`); check the postcode match rate step 1 prints |
+| A new register or census load | 1, then 2, 3, 4 and 5 (`--refresh`); check what step 1 prints: the postcode match rate (register) and how the census people divide up (census) |
 | The list of names (thresholds in `config.py`) | 1, then 3, 4, 5 |
 | The grid (`GRID`) | 2, 3 and 4 |
 | The smoothing of the population (`POPULATION_BANDWIDTH_M`) | 2, then 4 |
@@ -211,11 +211,19 @@ HPC folder; load them only if they are missing (section 2, step 0).
 
 | Stage | Submit | Look at, before the next |
 |---|---|---|
-| 1 | `qsub pipeline/hpc/stage1.sh` | the log: the postcode match rate (at least 95%), the number of names that reach the threshold; `work/names.csv` exists |
+| 1 | `qsub pipeline/hpc/stage1.sh` | the log: the postcode match rate (at least 95%), the number of names that reach the threshold; `work/names.csv` exists. With the census on: one line per year (see below) |
 | 2 | `qsub pipeline/hpc/stage2.sh` | one file per register map period in `work/surfaces/` (eight) |
 | 3 | `qsub pipeline/hpc/stage3.sh` | the log's line per period; `work/chunks/CHUNKS` holds the chunk number you set |
 | 4 | `qsub -t 1-200 pipeline/hpc/stage4.sh` (the range ends at `GBNAMES_CHUNKS`), then `python3 -m pipeline.merge_stats` | every chunk finished: as many `work/maps/*.done` as chunks; `merge_stats` warns if a stats file is missing |
 | 5 | `qsub pipeline/hpc/stage5.sh` | `work/facts/report.txt`: the "bearers covered" column and the ethnicity codes it did not recognise; the time at the end |
+
+**What stage 1 prints for the census** (only when `census` is in `GBNAMES_SOURCES`), one line per year:
+`1881: 26,000,000 people; 97.1% counted; 2.3% parish id 0; 0.60% not counted although they should be ...`
+
+- *counted*: the person has a surname, an attributes row, and a parish that is in that year's boundaries. Only these are in the maps and the counts.
+- *parish id 0*: **expected, not a fault.** Some people were counted in the census but not in a parish of Great Britain (soldiers, sailors, British citizens in the colonies and protectorates). They are left out on purpose.
+- *not counted although they should be*: a parish id other than 0 that is not in the boundaries for that year, no surname, or no attributes row. A few per cent is normal (the boundary files are a clean-up of the original). Above 5% stage 1 says so; above 20% it stops, because the ids then almost certainly belong to other boundaries (say the 1851 ones for 1911).
+- Stage 1 also stops, and writes nothing, if a parish id appears twice in a parish table or if there are more than 1% more attributes rows than people (a person would count twice).
 
 Stages 2 and 3 do not depend on each other, so they can be submitted together; stage 4 needs both, and stage 5 needs
 only stage 1 (so it can run beside stages 2 to 4). When a job fails, read the end of its log in `work/logs/`, fix the

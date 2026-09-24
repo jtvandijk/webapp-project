@@ -12,6 +12,10 @@ Writes (in the work folder, see config.py):
 A run with --sources only covers those sources; counts.csv and names.csv only hold what was
 actually counted this run, not a full release.
 
+For the census it also reports how the people of each year divide up (counted, parish id 0 which is expected, and the
+ones that should have been counted but were not), and stops if a person appears twice or the parish ids do not fit the
+boundaries; for the register, the postcode match rate.
+
 Surnames are turned into keys first (pipeline/names.py), so "SMITH", "Smith" and "smith" are one
 name, and junk values such as "XXXX" or "nan" are dropped.
 """
@@ -52,6 +56,57 @@ def report_match_rate(rates):
                          "its column names in config.py are wrong. Nothing has been written.")
     if rates[worst][0] / rates[worst][1] < 0.95:
         print(f"note: the match rate is below 95% in {worst}; if it falls in the newest years, the postcode lookup is probably out of date.")
+
+
+def check_parish_tables(conn, cfg):
+    """Stop if a parish table has a parish twice: everybody in it would count twice."""
+    for year in sorted(set(config.CENSUS_YEARS)):
+        repeated = db.fetch(conn, sql.duplicate_parish_ids(cfg, year))[0][0]
+        if repeated:
+            raise SystemExit(f"The parish table used for {year} has {repeated:,} parish ids that appear more than once. "
+                             "Make it one row per parish (or fix the table name in config.py) and run again.")
+
+
+def census_match(conn, cfg):
+    """{year: (people, with an attributes row, with parish id 0, counted)} for every census year."""
+    found = {}
+    for year in config.CENSUS_YEARS:
+        people = int(db.fetch(conn, sql.census_rows(cfg, year))[0][0])
+        joined, nowhere, counted = db.fetch(conn, sql.census_match(cfg, year))[0]
+        found[year] = (people, int(joined or 0), int(nowhere or 0), int(counted or 0))
+    return found
+
+
+def report_census_match(found):
+    """Print how the people of each census year divide up, and stop if something must be wrong. People with parish id 0
+    are expected (soldiers, sailors, people abroad) and are not a problem. Two things are:
+      * more attributes rows than people: a person appears twice, so every count would be inflated;
+      * many people who HAVE a parish id that is not in the parish boundaries used for that year: the wrong boundaries
+        (say the 1851 ones for 1911), or a parish table that is not the one the ids come from."""
+    worst, problems = 0.0, []
+    print("census: how the people divide up (a person with parish id 0 is expected: soldiers, sailors, people abroad)")
+    for year, (people, joined, nowhere, counted) in found.items():
+        if not people:
+            raise SystemExit(f"The census table for {year} has no rows. Check the table names in config.py.")
+        missing_row, extra_rows = max(people - joined, 0), max(joined - people, 0)
+        unexplained = max(joined - nowhere - counted, 0) + missing_row            # should be in a parish but are not counted
+        share = unexplained / max(people - nowhere, 1)
+        worst = max(worst, share)
+        print(f"  {year}: {people:,} people; {counted / people:.1%} counted; {nowhere / people:.1%} parish id 0; "
+              f"{unexplained / people:.2%} not counted although they should be (id not in the parish boundaries, no surname, or no attributes row)"
+              + (f"; {extra_rows / people:.2%} MORE attributes rows than people" if extra_rows else ""))
+        if extra_rows / people > 0.01:
+            problems.append(f"{year}: {extra_rows:,} more attributes rows than people ({extra_rows / people:.1%}): people appear twice")
+    if problems:
+        raise SystemExit("A person appears more than once, so counts would be inflated:\n  " + "\n  ".join(problems) +
+                         "\nNothing has been written.")
+    if worst > 0.20:
+        raise SystemExit(f"In at least one census year more than 20% of the people who should be in a parish are not counted "
+                         f"(worst {worst:.0%}). The parish ids probably do not belong to the boundaries used for that year, or the "
+                         "parish table or its column names in config.py are wrong. Nothing has been written.")
+    if worst > 0.05:
+        print(f"note: in at least one census year {worst:.0%} of the people who should be in a parish are not counted; "
+              "look at the years above.")
 
 
 def count_all(register_conn, census_conn, cfg, sources=("register", "census")):
@@ -98,6 +153,9 @@ def main():
     census_conn = db.connect("census") if "census" in sources else None
     if register_conn:
         report_match_rate(match_rate(register_conn, cfg))
+    if census_conn:
+        check_parish_tables(census_conn, cfg)
+        report_census_match(census_match(census_conn, cfg))
     counts = count_all(register_conn, census_conn, cfg, sources)
     if register_conn:
         register_conn.close()
