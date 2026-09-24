@@ -278,7 +278,7 @@ COUNTRY_SCOTLAND = "S92000003"            # Scottish deprivation is on 2011 data
 FACT_VERSIONS = {
     "oac": "UK OAC 2021/22", "loac": "London OAC 2021", "ahah": "AHAH v5.1",
     "imd": "IoD2025 / WIMD2025 / SIMD2020v2", "imd_score": "IoD2025 / WIMD2025 / SIMD2020v2",
-    "fpc": "Financial Precarity Classification v2",
+    "fpc": "Financial Precarity Classification",
     "places": "MSOA 2021 / Scottish IZ 2022", "ethnicity": "Ethnicity Estimator",
     "forenames_register": "register 1997-2026",
 }
@@ -292,8 +292,9 @@ NBHD_TABLE_COLUMNS = {
              ("ahah_pctile", "integer"), ("ahah_decile", "integer")],
     "imd": [("area_code", "text"), ("imd_country", "text"), ("imd_source", "text"), ("imd_rank", "integer"),
             ("imd_areas", "integer"), ("imd_pctile", "integer"), ("imd_decile", "integer")],
-    # SAFEGUARDED data (the financial precarity classification): the table goes into the TRE, but its
-    # values may not appear anywhere in this repository (code, tests, docs) or in a public release's inputs.
+    # SAFEGUARDED data: the financial precarity classification's lookup from area to group. The table goes into
+    # the TRE, but its area-level values may not appear anywhere in this repository (code, tests, docs). The
+    # classification's published names are not safeguarded.
     "fpc": [("area_code", "text"), ("fpc_cluster", "text"), ("fpc_group", "text")],
 }
 

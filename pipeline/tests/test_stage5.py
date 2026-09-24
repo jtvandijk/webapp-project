@@ -494,8 +494,8 @@ class NeighbourhoodTables(unittest.TestCase):
 
 
 class SafeguardedData(unittest.TestCase):
-    """The financial precarity classification may not be published. Its download and its table are kept
-    out of git by .gitignore (twice), and these tests fail if that ever stops being true."""
+    """The financial precarity classification's lookup from area to group may not be published. Its download
+    and its table are kept out of git by .gitignore (twice), and these tests fail if that ever stops being true."""
 
     def test_the_ignore_rules_for_the_safeguarded_files_are_still_there(self):
         rules = {line.strip() for line in (config.ROOT / ".gitignore").read_text().splitlines()}

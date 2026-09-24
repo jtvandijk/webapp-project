@@ -24,7 +24,7 @@ _meta.txt
 #raw downloads of neighbourhood indicators (OAC, LOAC, AHAH, IMD), not redistributed
 /raw-indicators/
 
-#SAFEGUARDED: the financial precarity classification (FPC) must never be committed, pushed or published.
+#SAFEGUARDED: the financial precarity classification's lookup from area to group (FPC) must never be committed, pushed or published.
 #The two folders above (raw-indicators/, work/) already cover it; these rules are a second lock, in case a
 #prepared table is ever written somewhere else (tools/prep_neighbourhood.py --out) or a folder is unignored.
 /raw-indicators/fpc/

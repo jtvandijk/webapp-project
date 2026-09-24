@@ -26,9 +26,10 @@ the census facts (historic forenames and parishes) come after the census data ha
   AHAH v5.1, and deprivation from IoD 2025 (England), WIMD 2025 (Wales) and SIMD 2020v2 (Scotland),
   each ranked within its own country and then treated as comparable (a known simplification: percentile 1 in
   Scotland counts as percentile 1 in England). Dropped: the Internet User Classification and broadband speed.
-  Added 2026-09-24: the Financial Precarity Classification v2 (13 groups in 5 clusters, on the same zones as AHAH:
-  `lsoa21cd`). It is **safeguarded data**: its download and its table are never in the repository (`.gitignore`
-  twice, and a test fails if that stops being true), and no value from it may appear in code, tests or docs. The raw downloads are turned
+  Added 2026-09-24: the Financial Precarity Classification (13 groups in 5 clusters, on the same zones as AHAH:
+  `lsoa21cd`). Its lookup from area to group is **safeguarded data** (the published names are not): the download and
+  its table are never in the repository (`.gitignore` twice, and a test fails if that stops being true), and no
+  area-level value from it may appear in code, tests or docs. The raw downloads are turned
   into small lookup tables by `tools/prep_neighbourhood.py`, one per product and keyed on `area_code`, so a new
   version of one product replaces one table. Each table is joined on the postcode-directory column that matches
   its geography (`oa21cd`, `lsoa21cd`; Scottish deprivation on `lsoa11cd`), which is why no conversion between
@@ -266,5 +267,6 @@ I cannot see the data or run anything in the TRE, so:
    `monica_gender` and is used for now (its columns are assumed to be `name` and `gender`; it may change).
 5. **Surname keys.** The rule is: remove accents, keep the letters a to z (`O'Brien` becomes `obrien`). Does the census `sname_clean_stand` follow the same convention?
 6. **Counts that are not published.** Counts below 10 (`COUNT_FLOOR`) are dropped. That number was my choice; is it the right floor?
-7. **Classification versions: settled** (see "Decided so far"), including the financial precarity classification. To
-   confirm with its owner: that a per-surname most common group may be published, since the source data may not be.
+7. **Classification versions: settled** (see "Decided so far"), including the financial precarity classification.
+   Confirmed 2026-09-24: a per-surname most common group may be published, and so may the classification's names;
+   only the lookup from area to group is safeguarded.

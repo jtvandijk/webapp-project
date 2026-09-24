@@ -77,8 +77,8 @@ public February 2026 postcode directory and the tables; they hold for that direc
 | EH1 1AD | Scotland | S00143153 | S01014710 | S01008674 | 3a | none | 10 | SIMD2020v2: 6, 59 |
 | G1 1AB | Scotland | S00159099 | S01017410 | S01010260 | 3a | none | 10 | SIMD2020v2: 6, 51 |
 
-The financial precarity classification is left out of this table on purpose: it is safeguarded data, so its
-values are not written anywhere in this repository. `lookup` prints its cluster and group for each postcode; check
+The financial precarity classification is left out of this table on purpose: its lookup from area to group is
+safeguarded data, so no area-level value from it is written anywhere in this repository. `lookup` prints its cluster and group for each postcode; check
 those against `python3 tools/audit_neighbourhood.py --show <area code>` on your own computer.
 
 What to look for: the Scottish rows join deprivation on `lsoa11cd` (the 2011 zone) and everything else on the

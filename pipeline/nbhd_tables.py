@@ -1,7 +1,7 @@
 """The neighbourhood lookup tables in the TRE: the SQL to create and load them, and a check on them.
 
 One of the tables (nbhd_fpc, the financial precarity classification) is SAFEGUARDED data: it may be loaded into
-the TRE, but its values must never appear in this repository, in a test or in the documentation.
+the TRE, but its area-level values must never appear in this repository, in a test or in the documentation.
 
     python3 -m pipeline.nbhd_tables ddl                                  # print the SQL that creates the tables
     python3 -m pipeline.nbhd_tables ddl --csv-dir work/neighbourhood     # ... and the lines that load the CSVs

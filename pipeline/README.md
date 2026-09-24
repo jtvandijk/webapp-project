@@ -108,7 +108,7 @@ The neighbourhood facts join the register to neighbourhood tables, which have to
 1. **On your own computer:** `python3 tools/prep_neighbourhood.py` turns the downloads in
    `raw-indicators/` into `work/neighbourhood/nbhd_*.csv` (needs `pandas` and `openpyxl`). One of the tables, the financial precarity classification, is
    **safeguarded data**: `nbhd_fpc.csv` and its download stay out of git (`.gitignore` covers them, and a test checks it)
-   and nothing from it may go into code, tests or docs.
+   and no area-level value from it may go into code, tests or docs.
 2. **Upload** those five CSVs to the TRE, then in the TRE make the SQL that creates and loads them:
    `python3 -m pipeline.nbhd_tables ddl --csv-dir <folder the CSVs are in> > make_tables.sql`, and run it with
    psql. The tables go in the schema named in `config.py` (`"tre"` profile, `"facts"`, `"tables"`:

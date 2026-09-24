@@ -8,7 +8,8 @@ Needs pandas and openpyxl (pip install pandas openpyxl). Run it on a laptop, not
 data is public except the financial precarity classification (see below). Upload the five CSVs in the output folder; manifest.json records what
 went in (file checksums) and what came out (rows per country).
 
-SAFEGUARDED DATA: the financial precarity classification (fpc) may not be published. Its download
+SAFEGUARDED DATA: the lookup from area to group of the financial precarity classification (fpc) may not be
+published (the classification's published names and descriptions are not safeguarded). Its download
 (raw-indicators/fpc/) and its table (nbhd_fpc.csv) must stay out of the repository: they are covered by
 .gitignore, twice, and nothing in the code, tests or docs may contain its area-level values.
 
@@ -63,7 +64,7 @@ NOTES = {
     "nbhd_imd": "England IoD 2025 and Wales WIMD 2025 on 2021 LSOAs (ONSPD lsoa21cd); Scotland SIMD 2020v2 on 2011 data zones "
                 "(ONSPD lsoa11cd). Ranked within each country, then treated as comparable. "
                 "DIRECTION: rank 1, decile 1 and percentile 1 = most deprived.",
-    "nbhd_fpc": "SAFEGUARDED - never publish. Financial precarity classification v2. area_code is a 2021 LSOA (England, Wales) "
+    "nbhd_fpc": "SAFEGUARDED - never publish this lookup. Financial precarity classification. area_code is a 2021 LSOA (England, Wales) "
                 "or 2022 data zone (Scotland) (ONSPD lsoa21cd), as for AHAH. fpc_cluster is one of 5 clusters (A to E) and "
                 "fpc_group one of 13 groups (A01 to E13) inside them. Categories: no order is claimed.",
 }
