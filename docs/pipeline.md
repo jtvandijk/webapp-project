@@ -118,6 +118,12 @@ data; the register side has run in the TRE, the census side waits for the census
   (`SCOTLAND_MAX_SHARE`, `pipeline/rules.py`) - a heavily Scottish name shows the same 1901 map for
   1901, 1911 and 1921. If 1901 itself is too small to build or copy, the year falls back to the
   ordinary threshold check on its own count.
+  **The other half (decided 2026-09-26, after seeing Smith and Macdonald on the real data):** a map that
+  IS built for 1911 or 1921 (the name is not Scottish enough to copy 1901's) has no Scottish people in
+  it, so Scotland looks empty and the name looks as if it had vanished from there. The website draws the
+  **Scotland mask** (a blanked-out Scotland, "no data") on those maps, and only on those: a copied map is
+  1901's, which does have Scotland, and gets no mask (it gets the note that it shows 1901). Stage 6 has to
+  tell the website which is which: see `copyOf` in the data contract.
 - **Register layout (TRE).** `registers_linked.lcr_consol2026`: forename, surname, postcode, first,
   last. The postcode is standardised (lower case, no spaces). It has no coordinates, so they come
   from the ONS Postcode Directory (ONSPD, `registers_lookup.onspd_2026_feb`, British National Grid

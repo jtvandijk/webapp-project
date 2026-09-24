@@ -80,6 +80,7 @@ Rules:
 | `name` | Lowercase letters a to z only. It must equal the file name. This is the search key. |
 | `counts` | Number of bearers per year, for **every** year we have, not only the mapped ones. Grouped by source (`census`, `register`). Years are text keys. |
 | `maps` | One entry per map period, keyed by the period `id` from the manifest. A period is only present if the name has **at least the threshold** (100) bearers that year. A file with no map at all is not published. **Open (agreed 2026-09-23): a missing period should say why** ("no map because too few bearers that year" vs "no map because the concentration wasn't strong enough to show" vs other reasons) rather than the visitor just seeing that slider position is absent - `rules.Resolution.reason` already has this text internally in the pipeline for every omitted period, it just doesn't reach the published files yet. Needs a field (e.g. a `mapNotes` object alongside `maps`, keyed the same way) and website text for it - not yet designed or built. |
+| `copyOf` | Optional, on a map entry (a GeoJSON "foreign member" next to `type` and `features`): the period id whose map this one is. Present exactly when the pipeline copied another year's map instead of building one: a heavily Scottish name shows its 1901 map for 1911 and 1921 (`"1911": { "type": "FeatureCollection", "copyOf": "1901", ... }`), because Scotland is missing from those censuses. **Decided 2026-09-26: the website draws a period's mask (Scotland, blanked out) only on a map WITHOUT `copyOf`.** A built 1911 or 1921 map has no Scottish people in it, and without the mask a name like Smith looks as if it had vanished from Scotland; a copied map is 1901's, which has Scotland, so it gets no mask, and the page says it shows 1901. Stage 6 writes it; the validator should check that the period named exists in the same file, has a map of its own and is not itself a copy. Not yet built. |
 | map shape | Standard GeoJSON, longitude/latitude (EPSG:4326), 4 decimal places, `Polygon` or `MultiPolygon`. Each feature has `properties.level` 1, 2 or 3 (1 = concentrated, 3 = most concentrated). The three levels are bands that do not overlap. |
 | `facts` | Every entry is optional. **Missing means no data**; the page then says so. Lists are ordered most common first. |
 | `forenames` | Lowercase, at most 10 per sex (`f`, `m`) per source. |
@@ -98,9 +99,10 @@ Everything that used to be typed into the code as a list of years now lives here
 - `sources`: `census` and `register`, with the label, what is being counted, and the years covered
   (`coverage`), which page text uses ("over the period 1997-2016").
 - `periods`: **the list of map/slider positions**, in order. Each has an `id` (the year as text),
-  its `source`, and optionally a `mask` (draw an extra outline) and a `note` shown to the visitor.
+  its `source`, and optionally a `mask` (draw an extra outline) and a `note` shown to the visitor. A `mask` on a period is
+  drawn on a name's map **only if that name's map for the period was built from that year's own data** (see `copyOf`).
 - `levels`: label and colour for map levels 1 to 3.
-- `masks`: extra outlines. Currently Scotland for 1911, because those census records are not available.
+- `masks`: extra outlines. Scotland, on the periods 1911 and 1921, because Scotland is not in those censuses.
 - `basemap`: map centre, zoom limits and the background tile servers.
 - `examples`: surnames suggested on the welcome screen.
 
@@ -122,7 +124,7 @@ names exist below the threshold.
 
 1. First visit: load `manifest.json` and `lookups.json` (small, identical for everybody, cached).
 2. Search: turn the typed name into the key (lowercase a to z), load `names/<xx>/<name>.json`.
-3. File found: draw the slider from the `periods` that the name has a map for, and the boxes from `facts`.
+3. File found: draw the slider from the `periods` that the name has a map for, and the boxes from `facts`. For a period with a `mask` in the manifest, draw the mask on the map unless that map has `copyOf`.
 4. File not found (404): show one message: "no map or statistics for this name: either we found no
    records, or it has fewer than 100 bearers (we do not show these, to protect privacy)".
 
