@@ -259,9 +259,12 @@ SCOTLAND_MAX_SHARE = 0.30
 # Contemporary facts (neighbourhood classifications, top neighbourhoods, ethnicity) are worked out
 # in each name's REFERENCE YEAR: the latest register year in which it has at least THRESHOLD["register"]
 # bearers (from counts.csv, stage 1). Forenames are the exception: pooled over every register year.
-# A fact is only kept when at least FACT_MIN_BEARERS of those bearers have a value for it (a
-# postcode without a code, or, for LOAC, anyone living outside London, has none).
-FACT_MIN_BEARERS = 100
+# A fact is only reported when the category it reports (the most common group, decile or census group)
+# has at least FACT_MIN_IN_CATEGORY bearers, so nothing is ever said about fewer people than that. The
+# 100-bearer floor applies to the name as a whole, through the reference year above, not to each fact. This
+# is a disclosure floor, not a statistical one: a fact that few bearers have a value for (LOAC covers London
+# only; some bearers have no ethnicity code) can rest on few people, and n_bearers in the output says how many.
+FACT_MIN_IN_CATEGORY = 5
 
 PLACES_TOP, PLACES_MIN = 10, 3            # top neighbourhoods (MSOA or Scottish intermediate zone): how many, and
                                           # the fewest people a neighbourhood may have to be listed

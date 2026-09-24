@@ -161,8 +161,8 @@ Everything that leaves the TRE is `facts.csv`. A few checks that need nothing bu
 import csv, collections
 rows = list(csv.DictReader(open("work/facts/facts.csv")))
 print(collections.Counter(r["fact"] for r in rows))                                   # rows per fact
-low = [r for r in rows if r["n_bearers"] and int(r["n_bearers"]) < 100 and r["value"] != "unknown"]
-print("facts based on fewer than 100 bearers (must be 0):", len(low))
+low = [r for r in rows if r["n_bearers"] and int(r["n_bearers"]) < 5 and r["value"] != "unknown"]
+print("facts based on fewer than 5 bearers (must be 0):", len(low))
 print("rows with counts in a list (must be 0):", sum('"n"' in r["detail"] for r in rows if r["fact"] in ("places", "forenames_register")))
 ```
 

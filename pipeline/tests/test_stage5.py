@@ -24,7 +24,7 @@ from unittest import mock
 from pipeline import config, db, fake_data, nbhd_tables, s1_counts, s5_facts, sql
 from pipeline.names import forename_clean, surname_key
 
-MIN = config.FACT_MIN_BEARERS
+MIN = config.FACT_MIN_IN_CATEGORY
 GB = ("E92000001", "S92000003", "W92000004")
 
 
@@ -65,11 +65,19 @@ class ComputeRules(unittest.TestCase):
         self.assertEqual(json.loads(row["detail"]), {"distribution": [0, 0, 0.6, 0.4, 0, 0, 0, 0, 0, 0]})
         self.assertEqual(row["version"], config.FACT_VERSIONS["ahah"])
 
-    def test_fewer_than_the_minimum_bearers_with_a_value_gives_no_fact(self):
+    def test_a_fact_needs_enough_bearers_in_the_category_it_reports_not_in_total(self):
         for compute in (lambda e: s5_facts.compute_groups("oac", e, self.ref, self.tally),
                         lambda e: s5_facts.compute_deciles("imd", e, self.ref, self.tally)):
             self.assertEqual(compute({"smith": extract((("3",), MIN - 1))}), [])
             self.assertEqual(len(compute({"smith": extract((("3",), MIN))})), 1)
+            # many bearers in total, but the most common category is just under the floor: nothing is reported
+            spread = extract(*[((str(d),), MIN - 1) for d in range(1, 11)])
+            self.assertEqual(compute({"smith": spread}), [])
+
+    def test_a_fact_that_few_bearers_have_is_still_reported_when_its_category_is_big_enough(self):
+        # LOAC-like: only 11 bearers live in London, but 6 of them in the same group
+        (row,) = s5_facts.compute_groups("loac", {"smith": extract((("A1",), MIN + 1), (("B2",), 3), (("C1",), 2))}, self.ref, self.tally)
+        self.assertEqual((row["value"], row["n_bearers"]), ("A1", MIN + 1 + 5))
 
     def test_a_tie_is_flagged_in_the_detail(self):
         (row,) = s5_facts.compute_groups("oac", {"smith": extract((("3b",), 50), (("4a",), 50))}, self.ref, self.tally)
@@ -94,6 +102,12 @@ class ComputeRules(unittest.TestCase):
         self.assertEqual(row["value"], "")
         self.assertNotIn("n", json.loads(row["detail"])["places"][0])                    # no counts are written
 
+    def test_a_small_name_still_lists_a_neighbourhood_that_has_enough_people(self):
+        rows = extract((("E02001", "E09000001"), config.PLACES_MIN + 1), (("E02002", "E09000001"), 1), (("E02003", "E09000001"), 2))
+        (row,) = s5_facts.compute_places({"smith": rows}, self.ref, self.tally)
+        self.assertEqual([p["msoa"] for p in json.loads(row["detail"])["places"]], ["E02001"])
+        self.assertEqual(s5_facts.compute_places({"smith": extract((("E02009", "E09000001"), config.PLACES_MIN - 1))}, self.ref, self.tally), [])
+
     def test_ethnicity_is_the_most_common_group_not_the_most_common_code(self):
         rows = extract((("WBR",), 40), (("WAO-PL",), 30), (("WAO-DE",), 30), (("WAOS-K",), 50))
         (row,) = s5_facts.compute_ethnicity({"smith": rows}, self.ref, self.tally)
@@ -103,12 +117,15 @@ class ComputeRules(unittest.TestCase):
         self.assertEqual(detail["codes"], [["WBR", 0.4], ["WAO-DE", 0.3], ["WAO-PL", 0.3]])
         self.assertEqual(dict(self.tally["unmapped codes"]), {"WAOS-K": 50})             # not counted, and reported
 
-    def test_a_name_with_too_few_usable_codes_is_unknown_and_so_is_one_with_none(self):
-        ref = {"smith": 2025, "jones": 2025}
-        rows = s5_facts.compute_ethnicity({"smith": extract((("WBR",), MIN - 1))}, ref, self.tally)
-        self.assertEqual({r["surname"]: (r["value"], r["detail"]) for r in rows},
-                         {"smith": (config.ETH_UNKNOWN, "{}"), "jones": (config.ETH_UNKNOWN, "{}")})
-        self.assertEqual(self.tally["ethnicity"]["unknown"], 2)
+    def test_a_name_with_no_census_group_big_enough_is_unknown_and_so_is_one_with_none(self):
+        ref = {"smith": 2025, "jones": 2025, "brown": 2025, "green": 2025}
+        found = s5_facts.compute_ethnicity({"smith": extract((("WBR",), MIN - 1)),
+                                            "brown": extract((("WBR",), MIN - 1), (("AIN",), MIN - 1), (("WIR",), MIN - 1)),   # 12 people, no group big enough
+                                            "green": extract((("WBR",), MIN + 2), (("AIN",), 3))},                           # 10 people, one group big enough
+                                           ref, self.tally)
+        got = {r["surname"]: r["value"] for r in found}
+        self.assertEqual(got, {"smith": config.ETH_UNKNOWN, "jones": config.ETH_UNKNOWN, "brown": config.ETH_UNKNOWN, "green": "WBR"})
+        self.assertEqual(self.tally["ethnicity"]["unknown"], 3)
 
     def test_forenames_need_a_few_people_and_are_listed_most_common_first(self):
         female = {f"name{i:02d}": 30 - i for i in range(12)}
@@ -264,7 +281,7 @@ class Stage5EndToEnd(unittest.TestCase):
     def test_classifications_match_an_independent_count(self):
         checked = Counter()
         for fact in ("oac", "loac", "ahah", "imd", "fpc"):
-            wanted = {k for k in self.ref if sum(self.expected(fact, k).values()) >= MIN}
+            wanted = {k for k in self.ref if max(self.expected(fact, k).values(), default=0) >= MIN}
             self.assertEqual(set(self.facts[fact]), wanted, fact)              # the same names, no more and no fewer
             for key, row in self.facts[fact].items():
                 counts, total = self.expected(fact, key), sum(self.expected(fact, key).values())
@@ -299,9 +316,10 @@ class Stage5EndToEnd(unittest.TestCase):
             self.assertEqual(json.loads(row["detail"])["sd"], round(statistics.stdev(values), 2), key)
 
     def test_places_match_an_independent_count(self):
+        listed = {k for k in self.ref if any(n >= config.PLACES_MIN for n in Counter(p[5] for p in self.people(self.ref[k], k) if p[5]).values())}
+        self.assertEqual(set(self.facts["places"]), listed)
         for key, row in self.facts["places"].items():
             counts = Counter(p[5] for p in self.people(self.ref[key], key) if p[5])
-            self.assertGreaterEqual(sum(counts.values()), MIN)
             top = sorted(((m, n) for m, n in counts.items() if n >= config.PLACES_MIN), key=lambda mn: (-mn[1], mn[0]))
             self.assertEqual([p["msoa"] for p in json.loads(row["detail"])["places"]],
                              [m for m, _ in top[:config.PLACES_TOP]], key)
@@ -312,7 +330,7 @@ class Stage5EndToEnd(unittest.TestCase):
         self.assertEqual(set(self.facts["ethnicity"]), set(self.ref))       # every name with a reference year has an answer
         for key, row in self.facts["ethnicity"].items():
             counts = self.expected("ethnicity", key)
-            if sum(counts.values()) < MIN:
+            if max(counts.values(), default=0) < MIN:
                 self.assertEqual((row["value"], row["detail"]), (config.ETH_UNKNOWN, "{}"), key)
             else:
                 self.assertIn(row["value"], [v for v, n in counts.items() if n == max(counts.values())], key)

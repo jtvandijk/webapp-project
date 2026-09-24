@@ -9,7 +9,8 @@
 The rules (all in config.py, section 6):
   * Contemporary facts are worked out in each name's REFERENCE YEAR, the latest register year in which
     it has at least THRESHOLD["register"] bearers (counts.csv, from stage 1). Each fact is the most
-    common value among the bearers who have one, and is only kept when at least FACT_MIN_BEARERS do.
+    common value among the bearers who have one, and is only kept when that value has at least
+    FACT_MIN_IN_CATEGORY bearers (the 100-bearer floor applies to the name, through the reference year).
     A tie is broken at random, but always the same way for the same name and fact (so a re-run gives
     the same answer, and the output says when it happened).
   * Forenames are the exception: pooled over every register year, since a name with no bearers in
@@ -232,7 +233,7 @@ def compute_groups(fact, extracted, ref_years, tally):
         for (value,), n, _ in rows:
             by_value[value] += n
         total = sum(by_value.values())
-        if total < config.FACT_MIN_BEARERS:
+        if max(by_value.values(), default=0) < config.FACT_MIN_IN_CATEGORY:
             continue
         value, tied = pick_mode(by_value, f"{key}|{fact}")
         shares = {v: _share(n, total) for v, n in sorted(by_value.items(), key=lambda item: (-item[1], item[0]))}
@@ -249,7 +250,7 @@ def compute_deciles(fact, extracted, ref_years, tally):
         for (value,), n, _ in rows:
             by_value[value] += n
         total = sum(by_value.values())
-        if total < config.FACT_MIN_BEARERS:
+        if max(by_value.values(), default=0) < config.FACT_MIN_IN_CATEGORY:
             continue
         value, tied = pick_mode(by_value, f"{key}|{fact}")
         shares = [_share(by_value.get(str(d), 0), total) for d in range(1, 11)]
@@ -263,7 +264,7 @@ def compute_imd_score(extracted, ref_years, tally):
     out = []
     for key, rows in sorted(extracted.items()):
         total = sum(n for _, n, _ in rows)
-        if total < config.FACT_MIN_BEARERS:
+        if total < config.FACT_MIN_IN_CATEGORY:
             continue
         s, ss = sum(sums[0] for _, _, sums in rows), sum(sums[1] for _, _, sums in rows)
         sd = math.sqrt(max(ss - s * s / total, 0.0) / (total - 1))
@@ -282,8 +283,6 @@ def compute_places(extracted, ref_years, tally):
             by_area[area] += n
             district.setdefault(area, dist)
         total = sum(by_area.values())
-        if total < config.FACT_MIN_BEARERS:
-            continue
         listed = sorted(((a, n) for a, n in by_area.items() if n >= config.PLACES_MIN), key=lambda an: (-an[1], an[0]))
         if not listed:
             continue
@@ -301,8 +300,8 @@ def eth_group(code):
 
 def compute_ethnicity(extracted, ref_years, tally):
     """The most common census group among the bearers with a usable code. Every name with a reference
-    year gets an answer: 'unknown' when fewer than FACT_MIN_BEARERS have one. The three most common
-    codes (countries) are kept too, for later."""
+    year gets an answer: 'unknown' when no census group has at least FACT_MIN_IN_CATEGORY bearers. The
+    three most common codes (countries) are kept too, for later."""
     out = []
     for key in sorted(ref_years):
         groups, codes = Counter(), Counter()
@@ -314,7 +313,7 @@ def compute_ethnicity(extracted, ref_years, tally):
             groups[group] += n
             codes[code.strip().upper()] += n
         total = sum(groups.values())
-        if total < config.FACT_MIN_BEARERS:
+        if max(groups.values(), default=0) < config.FACT_MIN_IN_CATEGORY:
             out.append(_row(key, "ethnicity", ref_years[key], total, config.ETH_UNKNOWN, {}))
             tally["ethnicity"]["unknown"] += 1
             continue
@@ -387,8 +386,8 @@ def build_report(names, ref_years, counts, tally, outputs):
         lines.append(f"{fact:20} {t['with_value']:>19,} {scope - t['with_value'] - t['unknown']:>9,} "
                      f"{t['ties']:>12,} {coverage:>21}")
     if "ethnicity" in outputs:
-        lines.append(f"\nethnicity: {tally['ethnicity']['unknown']:,} names are 'unknown' (fewer than "
-                     f"{config.FACT_MIN_BEARERS} bearers with a usable code)")
+        lines.append(f"\nethnicity: {tally['ethnicity']['unknown']:,} names are 'unknown' (no census group with at least "
+                     f"{config.FACT_MIN_IN_CATEGORY} bearers)")
         if tally["unmapped codes"]:
             lines.append("ethnicity codes not in config.ETH_GROUPS, left out of the counts (code: bearers): " +
                          ", ".join(f"{c}: {n:,}" for c, n in tally["unmapped codes"].most_common(20)))

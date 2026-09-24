@@ -100,7 +100,8 @@ For every name: the most common OAC, LOAC, AHAH and deprivation values among its
 deprivation score, its most common neighbourhoods, its ethnicity estimate and its forenames. The
 rules are in [docs/pipeline.md](../docs/pipeline.md) ("Stage 5") and `config.py` (section 6); in short,
 everything but forenames is worked out in each name's *reference year* (its latest register year with
-100+ bearers, from `counts.csv`), a fact needs 100+ bearers who have a value for it, and forenames are
+100+ bearers, from `counts.csv`), a fact is only reported when the category it reports has at least 5 bearers
+(`FACT_MIN_IN_CATEGORY`), and forenames are
 pooled over every year.
 
 The neighbourhood facts join the register to neighbourhood tables, which have to be in the TRE first:
@@ -136,7 +137,7 @@ biggest fetch is the top neighbourhoods for the newest year, one row per name an
 
 The first run is the slow one: one query per fact and reference year, each scanning the register, saved
 under `work/facts/extract/`. After that `--compute-only` redoes the calculation from the saved extracts
-without touching the database, so changing a rule (say `FACT_MIN_BEARERS`) is quick, and a job that was
+without touching the database, so changing a rule (say `FACT_MIN_IN_CATEGORY`) is quick, and a job that was
 killed carries on where it stopped when submitted again. `--facts oac imd` runs only some facts.
 `--names smith macdonald --out-dir work/facts_try` works out just those names, to look at by eye.
 

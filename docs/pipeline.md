@@ -37,7 +37,7 @@ the census facts (historic forenames and parishes) come after the census data ha
 - **Ethnicity.** The Ethnicity Estimator replaces the old surname-only ONOMAP lookup: the register table
   `registers_derived.lcr_consol_ethest` carries an estimate (`eth`, a code such as `WAO-DE`) per person, worked out
   from forename and surname, and a name's ethnicity is the most common census group among its bearers. A name with
-  fewer than 100 bearers who have a usable code is shown as `unknown`. The three most common codes (countries) are
+  no census group with at least 5 bearers is shown as `unknown`. The three most common codes (countries) are
   kept in the output but not used yet.
 - **Language.** Python: numpy, scipy, shapely, pyproj and contourpy for the maps, plus a Postgres
   driver in the TRE (`pipeline/requirements.txt`; conda works well for this on the HPC).
@@ -202,6 +202,18 @@ one), `detail` is JSON, and a name simply has no row for a fact it has no value 
 | `places` | empty | `places`: up to 10 of `{msoa, district}`, most common first, each with at least 3 people | `msoa21cd`, `lad25cd` |
 | `ethnicity` | most common census group code (`WBR`, `WAO`, ...) or `unknown` | `distribution` over groups, `codes`: the three most common codes | `eth` in the estimate table |
 | `forenames_register` | empty | `f` and `m`: up to 10 forenames each, most common first, each with at least 3 people | pooled over all register years |
+
+**`value` and `detail`.** `value` is the headline, the one thing the site shows for the fact: the most common group,
+decile or census group, or (for `imd_score`) the mean. `detail` is everything else, as JSON: the shares of bearers in
+each group or decile (`distribution`), the spread (`sd`, for the score), the three most common ethnicity codes
+(`codes`), or, for `places` and `forenames_register`, the lists themselves (which have no single headline, so their
+`value` is empty). `n_bearers` is how many bearers the value rests on. Which of these a fact has is in the table.
+
+**When a fact is reported.** The 100-bearer floor applies to the name as a whole, through the reference year. A fact
+is then only written when the category it reports (the most common group or decile, or census group) has at least
+5 bearers (`FACT_MIN_IN_CATEGORY`); `imd_score` needs 5 bearers with a value; a neighbourhood is listed with at least
+3 people. So a name can have LOAC from a few London bearers, and `n_bearers` says how few. It is a disclosure floor,
+not a statistical one.
 
 A tie for the most common value is broken at random, seeded by name and fact (so a re-run gives the same
 answer), and `detail` then has `"tie": true`. No counts are written for places or forenames, only their order.
