@@ -32,8 +32,9 @@ def _register(cfg):
 
 
 def _census(cfg, year):
-    """(census table, att table, parish table, columns) for one census year."""
-    c = cfg["census"]
+    """(census table, att table, parish table, columns) for one census year. `columns` is the profile's, except that
+    the parish id column of the att table can differ per year (config.CENSUS_PARISH_COLUMN: 1921)."""
+    c = dict(cfg["census"], parish=config.CENSUS_PARISH_COLUMN.get(year, cfg["census"]["parish"]))
     boundaries = config.CENSUS_PARISH_BOUNDARIES[year]
     return (c["table"].format(year=year), c["att_table"].format(year=year),
             c["parish_table"].format(boundaries=boundaries), c)

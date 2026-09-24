@@ -415,10 +415,11 @@ class Stage5EndToEnd(unittest.TestCase):
             grouped = defaultdict(list)
             for year in config.CENSUS_YEARS:
                 boundaries = config.CENSUS_PARISH_BOUNDARIES[year]
+                parish_column = "conparid1901" if year == 1921 else "gid"       # written out: the real 1921 table differs
                 for surname, forename, sex, county, parish in self.conn.execute(f"""
                         SELECT c.sname_clean_stand, c.pname, a.sex, p.regcnty, p.parish FROM gb{year} c
                         JOIN gb{year}_att a ON a.recid = c.recid AND a.source = c.source
-                        JOIN conpar{boundaries} p ON p.conparid = a.gid WHERE p.conparid <> 0"""):
+                        JOIN conpar{boundaries} p ON p.conparid = a.{parish_column} WHERE p.conparid <> 0"""):
                     grouped[surname_key(surname)].append((year, forename, sex, county, parish))
             self.census_cache.update(grouped)
         return self.census_cache

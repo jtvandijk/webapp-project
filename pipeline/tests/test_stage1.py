@@ -62,7 +62,8 @@ class CountingMatchesAnIndependentCalculation(unittest.TestCase):
         for year in config.CENSUS_YEARS:
             boundaries = config.CENSUS_PARISH_BOUNDARIES[year]
             valid = {r[0] for r in self.conn.execute(f"SELECT conparid FROM conpar{boundaries}")}
-            people = self.conn.execute(f"""SELECT c.sname_clean_stand, a.gid FROM gb{year} c
+            parish_column = "conparid1901" if year == 1921 else "gid"           # written out: the real 1921 table differs
+            people = self.conn.execute(f"""SELECT c.sname_clean_stand, a.{parish_column} FROM gb{year} c
                                            JOIN gb{year}_att a ON a.recid = c.recid AND a.source = c.source""").fetchall()
             expected = Counter(surname_key(s) for s, gid in people if gid in valid and gid != 0)
             got = {k: n for (src, y, k), n in self.counts.items() if src == "census" and y == year}
@@ -108,8 +109,9 @@ class CountingMatchesAnIndependentCalculation(unittest.TestCase):
         scottish_counties = {"Lanarkshire", "Midlothian", "Aberdeenshire", "Inverness-shire", "Angus", "Perthshire"}
         for year in config.SCOTLAND_MISSING_YEARS:
             boundaries = config.CENSUS_PARISH_BOUNDARIES[year]
+            parish_column = "conparid1901" if year == 1921 else "gid"
             counties = {r[0] for r in self.conn.execute(
-                f"SELECT DISTINCT regcnty FROM gb{year}_att a JOIN conpar{boundaries} p ON p.conparid = a.gid")}
+                f"SELECT DISTINCT regcnty FROM gb{year}_att a JOIN conpar{boundaries} p ON p.conparid = a.{parish_column}")}
             self.assertFalse(counties & scottish_counties, f"{year} should have no Scottish parishes")
         counties_1901 = {r[0] for r in self.conn.execute(
             "SELECT DISTINCT regcnty FROM gb1901_att a JOIN conpar1901 p ON p.conparid = a.gid")}

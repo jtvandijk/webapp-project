@@ -48,7 +48,8 @@ class CensusMatch(unittest.TestCase):
         self.assertEqual(set(found), set(config.CENSUS_YEARS))
         for year, (people, joined, nowhere, counted) in found.items():
             valid = {r[0] for r in self.conn.execute(f"SELECT conparid FROM conpar{config.CENSUS_PARISH_BOUNDARIES[year]}")}
-            rows = self.conn.execute(f"""SELECT a.gid FROM gb{year} c JOIN gb{year}_att a ON a.recid = c.recid AND a.source = c.source""").fetchall()
+            parish_column = "conparid1901" if year == 1921 else "gid"           # written out: the real 1921 table differs
+            rows = self.conn.execute(f"""SELECT a.{parish_column} FROM gb{year} c JOIN gb{year}_att a ON a.recid = c.recid AND a.source = c.source""").fetchall()
             self.assertEqual(people, self.conn.execute(f"SELECT COUNT(*) FROM gb{year}").fetchone()[0], year)
             self.assertEqual((joined, nowhere, counted),
                              (len(rows), sum(g == 0 for (g,) in rows), sum(g in valid and g != 0 for (g,) in rows)), year)
@@ -115,6 +116,22 @@ class CensusMatch(unittest.TestCase):
         self.assertIn("census.gb1921_att a", query)
         self.assertIn("LEFT JOIN spatial.conpar1901 p", query)                   # 1921 uses the 1901 boundaries
         self.assertIn("SELECT COUNT(*) FROM census.gb1851", sql.census_rows(config.settings("tre"), 1851))
+
+    def test_1921_reads_its_parish_from_conparid1901_and_every_other_year_from_gid(self):
+        # the ids recorded for 1921 do not link to the standard parishes; conparid1901 (point in polygon) does
+        tre = config.settings("tre")
+        for make in (sql.census_match, sql.census_counts, sql.census_cells,
+                     sql.census_forename_counts, sql.census_parish_counts):
+            for year in config.ALL_CENSUS_YEARS:
+                query = make(tre, year)
+                column = "conparid1901" if year == 1921 else "gid"
+                other = "gid" if year == 1921 else "conparid1901"
+                self.assertIn(f"a.{column}", query, (make.__name__, year))
+                self.assertNotIn(f"a.{other}", query, (make.__name__, year))
+        # and the fake attributes table of 1921 has the same column as the real one, and no gid
+        columns = {r[1] for r in self.conn.execute("PRAGMA table_info(gb1921_att)")}
+        self.assertIn("conparid1901", columns)
+        self.assertNotIn("gid", columns)
 
 
 if __name__ == "__main__":

@@ -98,7 +98,7 @@ def pg_env(group, field, default=None):
 _CENSUS_COLUMNS = {
     "forename": "pname",                                        # census table ("surname" set per profile below)
     "recid": "recid", "source": "source",                      # join keys, census <-> _att
-    "parish": "gid", "sex": "sex",                              # _att table
+    "parish": "gid", "sex": "sex",                              # _att table (parish: not in 1921, see CENSUS_PARISH_COLUMN)
     "parish_id": "conparid", "x": "x", "y": "y",                # parish table (centroid)
     "parish_name": "parish", "county": "regcnty",
 }
@@ -195,6 +195,11 @@ PERIODS = [{"id": str(year), "year": year, "source": source}
 # Census parishes come in two boundary versions; each census year uses one. 1921 uses the 1901 one too.
 CENSUS_PARISH_BOUNDARIES = {1851: 1851, 1861: 1851, 1881: 1851, 1891: 1851,
                             1901: 1901, 1911: 1901, 1921: 1901}
+
+# The column of gb<year>_att that holds the parish id: "gid" (the original ids, cleaned up by the data owner) - except in
+# 1921. The ids recorded for 1921 do not link to the standardised parishes, so its records were assigned to the 1901
+# parishes by point in polygon, and that result is the column conparid1901. Any year not listed uses the profile's column.
+CENSUS_PARISH_COLUMN = {1921: "conparid1901"}
 
 
 # ---------------------------------------------------------------------------

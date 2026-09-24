@@ -416,7 +416,8 @@ def generate(persons=250000, surnames=5000, seed=1, path=None, quiet=False):
         cfem = rng.random(n) < 0.5
         cname = np.where(cfem, fem[rng.choice(40, n, p=zipf)], mal[rng.choice(40, n, p=zipf)])
         db.execute(f"CREATE TABLE gb{year} (recid INTEGER, source TEXT, sname_clean_stand TEXT, pname TEXT)")
-        db.execute(f"CREATE TABLE gb{year}_att (recid INTEGER, source TEXT, gid INTEGER, sex TEXT)")
+        parish_column = config.CENSUS_PARISH_COLUMN.get(year, "gid")      # 1921 has conparid1901 instead of gid, as in the real tables
+        db.execute(f"CREATE TABLE gb{year}_att (recid INTEGER, source TEXT, {parish_column} INTEGER, sex TEXT)")
         recid = np.arange(1, n + 1).tolist()
         db.executemany(f"INSERT INTO gb{year} VALUES (?,?,?,?)",
                        zip(recid, ["c"] * n, keys[cs].tolist(), cname.tolist()))
