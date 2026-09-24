@@ -25,7 +25,7 @@ shasum -a 256 work/neighbourhood/*.csv      # the checksums; the same ones are i
 
 ## 2. In the TRE: did the upload arrive intact?
 
-In the folder you uploaded the four CSVs to:
+In the folder you uploaded the five CSVs to:
 
 ```
 sha256sum nbhd_*.csv                        # each must equal the checksum in manifest.json
@@ -36,15 +36,16 @@ wc -l nbhd_*.csv                            # one more than the row counts below
 
 ```
 python3 -m pipeline.nbhd_tables ddl --csv-dir <that folder> > make_tables.sql
-psql ... -f make_tables.sql                 # creates the four tables and loads the CSVs
+psql ... -f make_tables.sql                 # creates the five tables and loads the CSVs
 ```
 
 ```sql
 SELECT 'oac', count(*) FROM registers_lookup.nbhd_oac UNION ALL
 SELECT 'loac', count(*) FROM registers_lookup.nbhd_loac UNION ALL
 SELECT 'ahah', count(*) FROM registers_lookup.nbhd_ahah UNION ALL
-SELECT 'imd', count(*) FROM registers_lookup.nbhd_imd;
--- expect 235,243 / 26,369 / 43,064 / 42,648
+SELECT 'imd', count(*) FROM registers_lookup.nbhd_imd UNION ALL
+SELECT 'fpc', count(*) FROM registers_lookup.nbhd_fpc;
+-- expect 235,243 / 26,369 / 43,064 / 42,648 / 43,064
 
 SELECT imd_country, count(*) FROM registers_lookup.nbhd_imd GROUP BY 1;
 -- expect England 33,755, Wales 1,917, Scotland 6,976
@@ -75,6 +76,10 @@ public February 2026 postcode directory and the tables; they hold for that direc
 | CF10 1AA | Wales | W00010121 | W01002019 | W01001941 | 3a | none | 10 | WIMD2025: 6, 56 |
 | EH1 1AD | Scotland | S00143153 | S01014710 | S01008674 | 3a | none | 10 | SIMD2020v2: 6, 59 |
 | G1 1AB | Scotland | S00159099 | S01017410 | S01010260 | 3a | none | 10 | SIMD2020v2: 6, 51 |
+
+The financial precarity classification is left out of this table on purpose: it is safeguarded data, so its
+values are not written anywhere in this repository. `lookup` prints its cluster and group for each postcode; check
+those against `python3 tools/audit_neighbourhood.py --show <area code>` on your own computer.
 
 What to look for: the Scottish rows join deprivation on `lsoa11cd` (the 2011 zone) and everything else on the
 2021 or 2022 codes, and the Welsh row's 2011 and 2021 LSOA codes differ. If the codes match but a value does

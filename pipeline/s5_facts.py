@@ -42,7 +42,7 @@ from .names import forename_clean, surname_key
 from .s3_extracts import load_names
 
 FIELDS = ["surname", "fact", "version", "ref_year", "n_bearers", "value", "detail"]
-QUERIED = ["oac", "loac", "ahah", "imd", "places", "eth"]          # one query per reference year
+QUERIED = ["oac", "loac", "ahah", "imd", "fpc", "places", "eth"]   # one query per reference year
 ALL = QUERIED + ["forenames"]                                      # forenames: one query in all
 
 
@@ -225,7 +225,7 @@ def _tally_value(tally, fact, total, tied=False):
 
 
 def compute_groups(fact, extracted, ref_years, tally):
-    """OAC and LOAC: the most common group, and the share of bearers in every group."""
+    """OAC, LOAC and FPC: the most common group, and the share of bearers in every group."""
     out = []
     for key, rows in sorted(extracted.items()):
         by_value = Counter()
@@ -462,6 +462,8 @@ def main():
         results["oac"] = compute_groups("oac", load("oac"), ref_years, tally)
     if "loac" in facts:
         results["loac"] = compute_groups("loac", load("loac"), ref_years, tally)
+    if "fpc" in facts:
+        results["fpc"] = compute_groups("fpc", load("fpc"), ref_years, tally)      # safeguarded: see nbhd_tables.py
     if "ahah" in facts:
         results["ahah"] = compute_deciles("ahah", load("ahah"), ref_years, tally)
     if "imd" in facts:

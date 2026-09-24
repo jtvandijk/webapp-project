@@ -1,5 +1,8 @@
 """The neighbourhood lookup tables in the TRE: the SQL to create and load them, and a check on them.
 
+One of the tables (nbhd_fpc, the financial precarity classification) is SAFEGUARDED data: it may be loaded into
+the TRE, but its values must never appear in this repository, in a test or in the documentation.
+
     python3 -m pipeline.nbhd_tables ddl                                  # print the SQL that creates the tables
     python3 -m pipeline.nbhd_tables ddl --csv-dir work/neighbourhood     # ... and the lines that load the CSVs
     python3 -m pipeline.nbhd_tables ddl --replace                        # ... dropping any old ones first
@@ -12,7 +15,7 @@ columns are in config.py (NBHD_TABLE_COLUMNS, and "facts" > "tables" in the prof
 the fake data and the queries in stage 5 cannot disagree. Change the schema name in the "tre" profile
 if you cannot create tables in registers_lookup.
 
-`ddl` uses the "tre" profile unless GBNAMES_PROFILE says otherwise. The lines that load the CSVs are
+`ddl` makes one table for each product in config.NBHD_TABLE_COLUMNS (five). It uses the "tre" profile unless GBNAMES_PROFILE says otherwise. The lines that load the CSVs are
 psql's \copy, which reads the file on the machine psql runs on, so give --csv-dir the folder as seen from there.
 
 `lookup` shows, for some postcodes, the neighbourhood codes in the postcode directory and the value each
@@ -37,12 +40,12 @@ from . import config, db, sql
 COUNTRIES = {"E92000001": "England", "W92000004": "Wales", "S92000003": "Scotland"}
 LOOKUP_FIELDS = ["postcode", "counts", "country", "oa", "lsoa", "lsoa_2011", "msoa", "district",
                  "oac_supergroup", "oac_group", "oac_subgroup", "loac_group", "ahah_rank", "ahah_decile",
-                 "imd_source", "imd_rank", "imd_areas", "imd_decile", "imd_pctile"]
+                 "imd_source", "imd_rank", "imd_areas", "imd_decile", "imd_pctile", "fpc_cluster", "fpc_group"]
 LOW = 0.98                # a share below this in any country is reported as a problem
 
 
 def ddl(cfg, csv_dir=None, replace=False):
-    """The SQL text for the four tables, optionally with the lines that load their CSVs."""
+    """The SQL text for the neighbourhood tables, optionally with the lines that load their CSVs."""
     lines = ["-- The neighbourhood tables. Made by pipeline/nbhd_tables.py from config.py."]
     for key, columns in config.NBHD_TABLE_COLUMNS.items():
         name = cfg["facts"]["tables"][key]
@@ -66,14 +69,15 @@ def check(conn, cfg, year):
             problems.append(f"{cfg['facts']['tables'][key]} has {repeated:,} area codes that appear more than once")
     rows = db.fetch(conn, sql.nbhd_coverage(cfg, year))
     print(f"register rows in {year}, and the share that find a row, per country:")
-    print(f"{'':10} {'rows':>12} {'OAC':>8} {'AHAH':>8} {'IMD':>8} {'LOAC (of London)':>17} {'neighbourhood':>14}")
-    for country, n, oac, ahah, imd, london, loac, msoa in sorted(rows, key=lambda r: str(r[0])):
+    print(f"{'':10} {'rows':>12} {'OAC':>8} {'AHAH':>8} {'IMD':>8} {'FPC':>8} {'LOAC (of London)':>17} {'neighbourhood':>14}")
+    for country, n, oac, ahah, imd, fpc, london, loac, msoa in sorted(rows, key=lambda r: str(r[0])):
         n, london = int(n), int(london or 0)
         share = lambda k, of=n: (int(k or 0) / of) if of else float("nan")
         loac_share = share(loac, london) if london else float("nan")
         print(f"{COUNTRIES.get(country, str(country)):10} {n:>12,} {share(oac):>8.2%} {share(ahah):>8.2%} "
-              f"{share(imd):>8.2%} {loac_share:>17.2%} {share(msoa):>14.2%}")
-        for label, value in (("OAC", share(oac)), ("AHAH", share(ahah)), ("IMD", share(imd)), ("neighbourhood code", share(msoa))):
+              f"{share(imd):>8.2%} {share(fpc):>8.2%} {loac_share:>17.2%} {share(msoa):>14.2%}")
+        for label, value in (("OAC", share(oac)), ("AHAH", share(ahah)), ("IMD", share(imd)), ("FPC", share(fpc)),
+                             ("neighbourhood code", share(msoa))):
             if value < LOW:
                 problems.append(f"{COUNTRIES.get(country, country)}: only {value:.1%} of rows find {label}")
         if london and loac_share < LOW:
@@ -112,7 +116,7 @@ def describe(cfg, text, row):
         code = row[code_field]
         return "the postcode has no such code" if not code else f"code {code} is not in the table"
 
-    label = lambda name: f"  {name:16}"
+    label = lambda name: f"  {name:19}"
     joined = lambda field: f"   [joined on {areas[field]}]"
     if row["oac_group"]:
         lines.append(f"{label('UK OAC 2021/22')}supergroup {row['oac_supergroup']}, group {row['oac_group']}, subgroup {row['oac_subgroup']}{joined('oa')}")
@@ -134,6 +138,10 @@ def describe(cfg, text, row):
                      + (" (Scotland is on the 2011 data zones)" if scotland else ""))
     else:
         lines.append(f"{label('deprivation')}no row: {why('lsoa_2011' if scotland else 'lsoa')}")
+    if row["fpc_group"]:
+        lines.append(f"{label('financial precarity')}cluster {row['fpc_cluster']}, group {row['fpc_group']}{joined('lsoa')}")
+    else:
+        lines.append(f"{label('financial precarity')}no row: {why('lsoa')}")
     return lines
 
 

@@ -146,6 +146,8 @@ class TheSqlForTheTre(unittest.TestCase):
         self.assertIn("t.area_code = a.oa21cd", sql.fact_counts(self.cfg, "oac", 2025))
         self.assertIn("t.area_code = a.oa21cd", sql.fact_counts(self.cfg, "loac", 2025))
         self.assertIn("t.area_code = a.lsoa21cd", sql.fact_counts(self.cfg, "ahah", 2025))
+        self.assertIn("registers_lookup.nbhd_fpc", sql.fact_counts(self.cfg, "fpc", 2025))
+        self.assertIn("t.area_code = a.lsoa21cd", sql.fact_counts(self.cfg, "fpc", 2025))        # the same zones as AHAH
         self.assertIn("a.msoa21cd, a.lad25cd", sql.fact_counts(self.cfg, "places", 2025))
 
     def test_ethnicity_comes_from_the_estimate_table_and_forenames_from_the_gender_table(self):
@@ -192,7 +194,8 @@ class Stage5EndToEnd(unittest.TestCase):
         cls.names = s5_facts.load_names()
         cls.ref = s5_facts.reference_years(cls.counts, cls.names)
         cls.tables = {k: dict(cls.conn.execute(f"SELECT area_code, {col} FROM nbhd_{k}"))
-                      for k, col in (("oac", "oac_group"), ("loac", "loac_group"), ("ahah", "ahah_decile"), ("imd", "imd_decile"))}
+                      for k, col in (("oac", "oac_group"), ("loac", "loac_group"), ("ahah", "ahah_decile"), ("imd", "imd_decile"),
+                                  ("fpc", "fpc_group"))}
 
     @classmethod
     def run_stage5(cls, *extra):
@@ -228,8 +231,8 @@ class Stage5EndToEnd(unittest.TestCase):
         for _, eth, oa, lsoa, lsoa11, msoa, district, country in self.people(self.ref[key], key):
             if fact in ("oac", "loac"):
                 value = self.tables[fact].get(oa)
-            elif fact == "ahah":
-                value = self.tables["ahah"].get(lsoa)
+            elif fact in ("ahah", "fpc"):
+                value = self.tables[fact].get(lsoa)
             elif fact == "imd":
                 value = self.tables["imd"].get(lsoa11 if country == "S92000003" else lsoa)
             elif fact == "ethnicity":
@@ -249,18 +252,18 @@ class Stage5EndToEnd(unittest.TestCase):
             for row in rows.values():
                 json.loads(row["detail"])
                 self.assertEqual(row["version"], config.FACT_VERSIONS[fact])
-        self.assertEqual(set(self.facts), {"oac", "loac", "ahah", "imd", "imd_score", "places", "ethnicity", "forenames_register"})
+        self.assertEqual(set(self.facts), {"oac", "loac", "ahah", "imd", "imd_score", "fpc", "places", "ethnicity", "forenames_register"})
         self.assertTrue((self.out / "report.txt").read_text().startswith("names in this run"))
 
     def test_only_names_with_a_reference_year_get_a_contemporary_fact(self):
-        for fact in ("oac", "loac", "ahah", "imd", "imd_score", "places", "ethnicity"):
+        for fact in ("oac", "loac", "ahah", "imd", "imd_score", "fpc", "places", "ethnicity"):
             self.assertLessEqual(set(self.facts[fact]), set(self.ref), fact)
             for key, row in self.facts[fact].items():
                 self.assertEqual(int(row["ref_year"]), self.ref[key], (fact, key))
 
     def test_classifications_match_an_independent_count(self):
         checked = Counter()
-        for fact in ("oac", "loac", "ahah", "imd"):
+        for fact in ("oac", "loac", "ahah", "imd", "fpc"):
             wanted = {k for k in self.ref if sum(self.expected(fact, k).values()) >= MIN}
             self.assertEqual(set(self.facts[fact]), wanted, fact)              # the same names, no more and no fewer
             for key, row in self.facts[fact].items():
@@ -275,7 +278,7 @@ class Stage5EndToEnd(unittest.TestCase):
                     shares = {str(d + 1): s for d, s in enumerate(shares) if s}
                 self.assertEqual(shares, {v: round(n / total, 3) for v, n in counts.items()}, (fact, key))
                 checked[fact] += 1
-        self.assertTrue(all(checked[f] >= 5 for f in ("oac", "loac", "ahah", "imd")), checked)
+        self.assertTrue(all(checked[f] >= 5 for f in ("oac", "loac", "ahah", "imd", "fpc")), checked)
 
     def test_scottish_deprivation_really_is_joined_on_the_2011_zones(self):
         scots = [k for k in self.facts["imd"] if any(p[-1] == "S92000003" for p in self.people(self.ref[k], k))]
@@ -398,7 +401,8 @@ class NeighbourhoodTables(unittest.TestCase):
     def test_the_sql_creates_tables_with_the_columns_in_config(self):
         script = nbhd_tables.ddl(self.cfg, csv_dir="somewhere", replace=True)
         loading = [line for line in script.splitlines() if line.startswith("\\copy")]
-        self.assertEqual(len(loading), 4)
+        self.assertEqual(len(loading), len(config.NBHD_TABLE_COLUMNS))
+        self.assertEqual(len(loading), 5)
         memory = sqlite3.connect(":memory:")
         memory.executescript("\n".join(line for line in script.splitlines() if not line.startswith("\\")))
         for key, columns in config.NBHD_TABLE_COLUMNS.items():
@@ -418,7 +422,7 @@ class NeighbourhoodTables(unittest.TestCase):
                 self.assertEqual(next(csv.reader(f)), [c for c, _ in columns], key)
 
     def test_the_postcode_lookup_gives_what_the_tables_give_for_the_postcodes_codes(self):
-        table = {k: {r[0]: r for r in self.conn.execute(f"SELECT * FROM nbhd_{k}")} for k in ("oac", "loac", "ahah", "imd")}
+        table = {k: {r[0]: r for r in self.conn.execute(f"SELECT * FROM nbhd_{k}")} for k in ("oac", "loac", "ahah", "imd", "fpc")}
         sample = self.conn.execute("""SELECT postcode, ctry, oa21cd, lsoa21cd, lsoa11cd, easting, northing FROM postcode_lookup
                                       WHERE oa21cd <> '' ORDER BY ctry, postcode LIMIT 400""").fetchall()
         sample += self.conn.execute("SELECT postcode, ctry, oa21cd, lsoa21cd, lsoa11cd, easting, northing FROM postcode_lookup "
@@ -430,6 +434,8 @@ class NeighbourhoodTables(unittest.TestCase):
             self.assertEqual(row["oac_group"], table["oac"][oa][2] if oa in table["oac"] else None, postcode)
             self.assertEqual(row["loac_group"], table["loac"][oa][2] if oa in table["loac"] else None, postcode)
             self.assertEqual(row["ahah_decile"], table["ahah"][lsoa][4] if lsoa in table["ahah"] else None, postcode)
+            self.assertEqual(row["fpc_group"], table["fpc"][lsoa][2] if lsoa in table["fpc"] else None, postcode)
+            self.assertEqual(row["fpc_cluster"], table["fpc"][lsoa][1] if lsoa in table["fpc"] else None, postcode)
             zone = lsoa11 if ctry == "S92000003" else lsoa                    # Scotland's deprivation is on the 2011 zones
             self.assertEqual(row["imd_decile"], table["imd"][zone][6] if zone in table["imd"] else None, postcode)
             self.assertEqual(row["imd_pctile"], table["imd"][zone][5] if zone in table["imd"] else None, postcode)
@@ -485,6 +491,26 @@ class NeighbourhoodTables(unittest.TestCase):
             self.conn.execute("DELETE FROM nbhd_imd")
             self.conn.execute("INSERT INTO nbhd_imd SELECT * FROM keep")
             self.conn.execute("DROP TABLE keep")
+
+
+class SafeguardedData(unittest.TestCase):
+    """The financial precarity classification may not be published. Its download and its table are kept
+    out of git by .gitignore (twice), and these tests fail if that ever stops being true."""
+
+    def test_the_ignore_rules_for_the_safeguarded_files_are_still_there(self):
+        rules = {line.strip() for line in (config.ROOT / ".gitignore").read_text().splitlines()}
+        for rule in ("/raw-indicators/", "/raw-indicators/fpc/", "/work/", "**/nbhd_fpc.csv"):
+            self.assertIn(rule, rules, f"{rule} is missing from .gitignore: the financial precarity data could be published")
+
+    @unittest.skipUnless((config.ROOT / ".git").exists(), "not a git checkout")
+    def test_nothing_safeguarded_is_tracked_by_git(self):
+        import subprocess
+        try:
+            tracked = subprocess.run(["git", "ls-files"], cwd=config.ROOT, capture_output=True, text=True, check=True).stdout.split("\n")
+        except (OSError, subprocess.CalledProcessError):
+            self.skipTest("git is not available")
+        offending = [p for p in tracked if p.startswith(("raw-indicators/", "work/")) or "nbhd_fpc" in p or "fpc_final" in p or "fpc_label" in p]
+        self.assertEqual(offending, [], "these files are tracked by git but must never be published")
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ What it contains (see the FILL_IN block in config.py for the real names):
                    Northern Ireland (to be filtered out: we map Great Britain only). It also has
                    made-up neighbourhood codes (2021 output area, LSOA and MSOA, the 2011 LSOA, and a
                    district), a small share of them blank.
-  nbhd_oac, nbhd_loac, nbhd_ahah, nbhd_imd
+  nbhd_oac, nbhd_loac, nbhd_ahah, nbhd_imd, nbhd_fpc
                    made-up neighbourhood tables for those codes, in exactly the shape of the real ones
                    (tools/prep_neighbourhood.py), with a few areas missing. LOAC is London only, and
                    Scottish deprivation is on the 2011 data zones, like the real thing.
@@ -106,6 +106,7 @@ def fake_postcode(i):
 LONDON = 0                     # the index of London in TOWNS: the only place LOAC covers
 ETH_CODES = ("wbr wbr wbr wbr wbr wbr wir wao wao-pl wao-de baf baf-ng bca ain apk abd acn aao-ir oxx-dz").split()
 LOAC_GROUPS = "A1 A2 A3 B1 B2 C1 C2 D1 D2 D3 E1 E2 F1 F2 G1 G2".split()
+FPC_GROUPS = "A01 A02 B03 B04 B05 C06 C07 C08 D09 D10 E11 E12 E13".split()       # only the shape of the real codes; the values are invented
 IMD_COUNTRIES = {"E": ("England", "IoD2025"), "W": ("Wales", "WIMD2025"), "S": ("Scotland", "SIMD2020v2")}
 
 
@@ -147,7 +148,7 @@ def make_nbhd_tables(rng, areas):
     home towns, and about 1% of areas are missing from each table."""
     codes = {key: sorted({c for c in values if c and c[0] in "EWS"}) for key, values in areas.items()}
     keep = lambda cs: [c for c in cs if rng.random() > 0.01]
-    tables = {"oac": [], "loac": [], "ahah": [], "imd": []}
+    tables = {"oac": [], "loac": [], "ahah": [], "imd": [], "fpc": []}
 
     for c in keep(codes["oa"]):
         t, o = int(c[3:6]), int(c[6:9])
@@ -174,6 +175,11 @@ def make_nbhd_tables(rng, areas):
         for c, r in zip(own, rank):
             tables["imd"].append((c, country, source, int(r), len(own), int(_share(r, len(own), 100)),
                                   int(_share(r, len(own), 10))))
+
+    for c in keep(codes["lsoa"]):                    # last, so the draws for the tables above are as they were
+        t, o = int(c[3:6]), int(c[6:9])
+        group = FPC_GROUPS[(t * 2 + o + (0 if rng.random() < 0.7 else int(rng.integers(0, 13)))) % len(FPC_GROUPS)]
+        tables["fpc"].append((c, group[0], group))
     return tables
 
 

@@ -26,7 +26,9 @@ the census facts (historic forenames and parishes) come after the census data ha
   AHAH v5.1, and deprivation from IoD 2025 (England), WIMD 2025 (Wales) and SIMD 2020v2 (Scotland),
   each ranked within its own country and then treated as comparable (a known simplification: percentile 1 in
   Scotland counts as percentile 1 in England). Dropped: the Internet User Classification and broadband speed.
-  Not yet available: the new precarity index (a colleague is sending the file). The raw downloads are turned
+  Added 2026-09-24: the Financial Precarity Classification v2 (13 groups in 5 clusters, on the same zones as AHAH:
+  `lsoa21cd`). It is **safeguarded data**: its download and its table are never in the repository (`.gitignore`
+  twice, and a test fails if that stops being true), and no value from it may appear in code, tests or docs. The raw downloads are turned
   into small lookup tables by `tools/prep_neighbourhood.py`, one per product and keyed on `area_code`, so a new
   version of one product replaces one table. Each table is joined on the postcode-directory column that matches
   its geography (`oa21cd`, `lsoa21cd`; Scottish deprivation on `lsoa11cd`), which is why no conversion between
@@ -195,6 +197,7 @@ one), `detail` is JSON, and a name simply has no row for a fact it has no value 
 | `ahah` | most common decile (1 = healthiest, 10 = least healthy) | `distribution`: ten shares, decile 1 first | `lsoa21cd` |
 | `imd` | most common decile (1 = most deprived) | `distribution`: ten shares | `lsoa21cd` (England, Wales), `lsoa11cd` (Scotland) |
 | `imd_score` | mean deprivation percentile (the "GBNames deprivation score") | `sd` | as `imd` |
+| `fpc` | most common group, one of 13 (inside 5 clusters); safeguarded data | `distribution`: share per group | `lsoa21cd` |
 | `places` | empty | `places`: up to 10 of `{msoa, district}`, most common first, each with at least 3 people | `msoa21cd`, `lad25cd` |
 | `ethnicity` | most common census group code (`WBR`, `WAO`, ...) or `unknown` | `distribution` over groups, `codes`: the three most common codes | `eth` in the estimate table |
 | `forenames_register` | empty | `f` and `m`: up to 10 forenames each, most common first, each with at least 3 people | pooled over all register years |
@@ -263,6 +266,5 @@ I cannot see the data or run anything in the TRE, so:
    `monica_gender` and is used for now (its columns are assumed to be `name` and `gender`; it may change).
 5. **Surname keys.** The rule is: remove accents, keep the letters a to z (`O'Brien` becomes `obrien`). Does the census `sname_clean_stand` follow the same convention?
 6. **Counts that are not published.** Counts below 10 (`COUNT_FLOOR`) are dropped. That number was my choice; is it the right floor?
-7. **Classification versions: settled** (see "Decided so far"). Still to add: the precarity index, when the file arrives;
-   it becomes one more table (`tools/prep_neighbourhood.py`), one more entry in `config.FACT_QUERIES` and a few lines in
-   `s5_facts.py` (the existing `compute_groups` or `compute_deciles` will do the calculation).
+7. **Classification versions: settled** (see "Decided so far"), including the financial precarity classification. To
+   confirm with its owner: that a per-surname most common group may be published, since the source data may not be.

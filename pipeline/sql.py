@@ -272,14 +272,15 @@ def postcode_lookup(cfg, postcodes):
     areas, tables = r["areas"], cfg["facts"]["tables"]
     _, _, _, where = _register(cfg)
     joins = "\n".join(f'LEFT JOIN {tables[k]} t_{k} ON t_{k}.area_code = {_area_key(cfg, config.FACT_QUERIES[k])}'
-                      for k in ("oac", "loac", "ahah", "imd"))
+                      for k in ("oac", "loac", "ahah", "imd", "fpc"))
     listed = ",".join("'" + p.replace("'", "''") + "'" for p in postcodes)
     return f"""
 SELECT a.{r["address_key"]}, CASE WHEN {where} THEN 1 ELSE 0 END, a.{areas["country"]},
        a.{areas["oa"]}, a.{areas["lsoa"]}, a.{areas["lsoa_2011"]}, a.{areas["msoa"]}, a.{areas["district"]},
        t_oac.oac_supergroup, t_oac.oac_group, t_oac.oac_subgroup, t_loac.loac_group,
        t_ahah.ahah_rank, t_ahah.ahah_decile,
-       t_imd.imd_source, t_imd.imd_rank, t_imd.imd_areas, t_imd.imd_decile, t_imd.imd_pctile
+       t_imd.imd_source, t_imd.imd_rank, t_imd.imd_areas, t_imd.imd_decile, t_imd.imd_pctile,
+       t_fpc.fpc_cluster, t_fpc.fpc_group
 FROM {r["address_table"]} a
 {joins}
 WHERE a.{r["address_key"]} IN ({listed})"""
@@ -314,11 +315,11 @@ def nbhd_coverage(cfg, year):
     areas, tables = r["areas"], cfg["facts"]["tables"]
     join, _, _, where = _register(cfg)
     joins = "\n".join(f'LEFT JOIN {tables[k]} t_{k} ON t_{k}.area_code = {_area_key(cfg, config.FACT_QUERIES[k])}'
-                      for k in ("oac", "loac", "ahah", "imd"))
+                      for k in ("oac", "loac", "ahah", "imd", "fpc"))
     london = f"a.{areas['district']} LIKE 'E09%'"
     return f"""
 SELECT a.{areas["country"]}, COUNT(*),
-       COUNT(t_oac.area_code), COUNT(t_ahah.area_code), COUNT(t_imd.area_code),
+       COUNT(t_oac.area_code), COUNT(t_ahah.area_code), COUNT(t_imd.area_code), COUNT(t_fpc.area_code),
        SUM(CASE WHEN {london} THEN 1 ELSE 0 END),
        SUM(CASE WHEN {london} AND t_loac.area_code IS NOT NULL THEN 1 ELSE 0 END),
        SUM(CASE WHEN a.{areas["msoa"]} IS NOT NULL AND a.{areas["msoa"]} <> '' THEN 1 ELSE 0 END)

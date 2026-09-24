@@ -58,14 +58,15 @@ background). Names and addresses cannot be released from a census until it is 10
 This is individual-level data. It is never published as such: a surname's map is only built for a
 year in which it has at least 100 bearers, and nothing at all is shown below that. This repository holds
 code, not data - the two folders that could hold real or realistic-looking extracts (`data-prep/`,
-`work/`) are both git-ignored, and so is `raw-indicators/` (public downloads, see below, which are not ours to
-redistribute).
+`work/`) are both git-ignored, and so is `raw-indicators/` (downloads of neighbourhood classifications, see
+below: mostly public, but not ours to redistribute, and one of them is **safeguarded data that must never be
+published**).
 
 ### Neighbourhood classifications
 
-What the site says about the neighbourhoods a surname's bearers live in comes from public classifications,
+What the site says about the neighbourhoods a surname's bearers live in comes from published classifications,
 each looked up through a bearer's postcode using the ONS Postcode Directory (ONSPD). The downloads are kept
-in `raw-indicators/`; [`tools/prep_neighbourhood.py`](tools/prep_neighbourhood.py) turns them into four small
+in `raw-indicators/`; [`tools/prep_neighbourhood.py`](tools/prep_neighbourhood.py) turns them into five small
 lookup tables in `work/neighbourhood/`, and the `manifest.json` next to them records each table's geography,
 the direction of its scale and a checksum. The table below is the same information.
 
@@ -75,6 +76,7 @@ the direction of its scale and a checksum. The table below is the same informati
 | London OAC | 2021 | output areas 2021, London only | `oa21cd` | groups, no order |
 | AHAH (healthy neighbourhoods) | v5.1 | LSOAs 2021 (England, Wales), **data zones 2022 (Scotland)** | `lsoa21cd` | rank and decile **1 = healthiest, 10 = least healthy** |
 | Deprivation | England IoD 2025, Wales WIMD 2025, Scotland SIMD 2020v2 | LSOAs **2021** (England, Wales), data zones **2011 (Scotland)** | `lsoa21cd` (England, Wales), **`lsoa11cd` (Scotland)** | rank, decile and percentile **1 = most deprived** |
+| Financial precarity (**safeguarded: the data and its table are never in this repository**) | v2 | LSOAs 2021 (England, Wales), **data zones 2022 (Scotland)**, the same zones as AHAH | `lsoa21cd` | 13 groups inside 5 clusters, no order claimed |
 
 **Which zones, 2011 or 2021?** There is no conversion between them. ONSPD carries both the 2011 and the 2021
 (Scotland: 2022) code for every postcode, and each classification is joined on the column that matches the
