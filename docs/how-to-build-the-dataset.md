@@ -226,6 +226,18 @@ python3 -m pipeline.check_parishes --lookup conpar_lookup.csv     # also compare
 
 It reads the two small parish tables and makes one pass over each year's attributes table (about a minute or two per year, no maps and no names involved), changes nothing, and prints what it found; the lines that start with `LOOK` are the ones to read. It shows, per year, the range of parish ids the people carry, how many are id 0 (expected), have no id, or carry an id that is not in the parish table it should use (or is in the *other* table: the sign of the wrong table or column). For the tables it shows repeated ids, ids shared between the two tables, parishes without a name (`-`), counties in capitals, centroids that are missing, at 0,0 or not in metres, and whether the id columns can hold fractional ids such as `200136.3`.
 
+**Also before stage 1 for the census: the surnames.** The pipeline reads the raw surname (`sname`) and standardises it itself. The old project made a
+cleaned column, `sname_clean_stand`, with a SQL function that did more: it moved bracketed text and everything after " or " out of the name,
+removed leading initials, and emptied names that were mostly punctuation. To see how much that matters:
+
+```
+python3 -m pipeline.check_surnames | tee work/surname_check.txt
+```
+
+It makes one pass over each year's census table (a year without the cleaned column is skipped) and prints, per year, the share of people who are
+under a different name, which kind of difference it is, and the biggest cases with both readings. If the shares are small (under about 1%) the raw
+reading is fine; if they are not, the old cleaning should be rebuilt in `pipeline/names.py`.
+
 **What stage 1 prints for the census** (only when `census` is in `GBNAMES_SOURCES`), one line per year:
 `1881: 26,000,000 people; 97.1% counted; 2.3% parish id 0; 0.60% not counted although they should be ...`
 

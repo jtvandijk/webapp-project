@@ -132,6 +132,20 @@ class CheckParishes(unittest.TestCase):
         _, text, problems = self.report(conn)
         self.assertEqual(problems, [], text)
 
+    def test_ids_the_fix_list_moves_are_named_when_they_are_still_in_the_data(self):
+        # pg_conpar_dic.txt: 6598 -> 6596 (and four others); if 6598 is still in gid, the fix did not reach that column
+        _, text, problems = self.report(self.damaged("UPDATE gb1851_att SET gid = 6598 WHERE recid = 3"))
+        found = self.flagged(problems, "1851", "still holds ids that the fix list", "6598 (should be 6596)")
+        self.assertTrue(found, text)
+
+    def test_scottish_ids_without_the_1901_shift_are_named(self):
+        # in the 1901 numbering Scotland is 300,001 and up (200,001 + 100,000)
+        conn = self.damaged("UPDATE gb1901_att SET gid = 200005 WHERE recid % 20 = 0")
+        _, text, problems = self.report(conn)
+        people = conn.execute("SELECT COUNT(*) FROM gb1901_att WHERE gid = 200005").fetchone()[0]
+        self.assertTrue(self.flagged(problems, "1901", f"{people:,} people carry Scottish ids in the 200,000s"), text)
+        self.assertFalse(self.flagged(problems, "1851", "Scottish ids"))
+
     # ----- damage to the parish tables
 
     def test_a_parish_id_on_two_rows_is_flagged(self):

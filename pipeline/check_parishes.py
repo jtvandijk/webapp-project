@@ -258,6 +258,15 @@ def make_report(data, lookup=None):
                  f"the ids most often missing: {_lost_examples(s)}")
         elif s["lost"]:
             note(f"  {year}: {s['lost']:,} people have an id that is not in the table (ids most often missing: {_lost_examples(s)})")
+        stale = sorted(i for i in config.CONPAR_ID_FIXES if i in s["lost_by_id"])
+        if stale:
+            look(f"{year}: {y['att']}.{y['column']} still holds ids that the fix list (pg_conpar_dic.txt) moves: "
+                 f"{_examples([f'{i} (should be {config.CONPAR_ID_FIXES[i]})' for i in stale], 5)}")
+        if y["boundaries"] == 1901:
+            unshifted = sum(n for i, n in s["lost_by_id"].items() if 200000 < i < 200000 + config.SCOTLAND_1901_SHIFT)
+            if unshifted:
+                look(f"{year}: {unshifted:,} people carry Scottish ids in the 200,000s; in the 1901 numbering Scotland is 300,001 and up "
+                     "(pg_conpar_dic.txt: add 100,000)")
         if s["in_other"] is not None and real and s["in_other"] / real > OTHER_SHARE:
             look(f"{year}: {_pct(s['in_other'], real)} of the people carry ids that are in the OTHER parish table; is {y['column']} the right column, "
                  f"and {data['tables'][y['boundaries']]['name']} the right table, for this year?")

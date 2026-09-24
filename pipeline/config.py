@@ -99,6 +99,7 @@ _CENSUS_COLUMNS = {
     "forename": "pname",                                        # census table ("surname" set per profile below)
     "recid": "recid", "source": "source",                      # join keys, census <-> _att
     "parish": "gid", "sex": "sex",                              # _att table (parish: not in 1921, see CENSUS_PARISH_COLUMN)
+    "surname_clean": "sname_clean_stand",                       # the old cleaned surname (only some years have it); check_surnames.py
     "parish_id": "conparid", "x": "x", "y": "y",                # parish table (centroid)
     "parish_name": "parish", "county": "regcnty",
 }
@@ -200,6 +201,13 @@ CENSUS_PARISH_BOUNDARIES = {1851: 1851, 1861: 1851, 1881: 1851, 1891: 1851,
 # 1921. The ids recorded for 1921 do not link to the standardised parishes, so its records were assigned to the 1901
 # parishes by point in polygon, and that result is the column conparid1901. Any year not listed uses the profile's column.
 CENSUS_PARISH_COLUMN = {1921: "conparid1901"}
+
+# How gid was made from the ids the census files carry (the note pg_conpar_dic.txt, applied to the 1851 and 1901 numberings):
+# five ids that are in no parish list are moved to a neighbouring parish, and Scotland in the 1901 numbering has 100,000
+# added (200001-200853 became 300001-300853) so that it lines up with the 1901 geometries. Only the parish check reads these,
+# to say so when an attributes column still holds the old ids.
+CONPAR_ID_FIXES = {1903: 1891, 6598: 6596, 7283: 7289, 12412: 12414, 12413: 12414}
+SCOTLAND_1901_SHIFT = 100000
 
 
 # ---------------------------------------------------------------------------
