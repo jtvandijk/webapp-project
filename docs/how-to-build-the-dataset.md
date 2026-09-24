@@ -217,6 +217,15 @@ HPC folder; load them only if they are missing (section 2, step 0).
 | 4 | `qsub -t 1-200 pipeline/hpc/stage4.sh` (the range ends at `GBNAMES_CHUNKS`), then `python3 -m pipeline.merge_stats` | every chunk finished: as many `work/maps/*.done` as chunks; `merge_stats` warns if a stats file is missing |
 | 5 | `qsub pipeline/hpc/stage5.sh` | `work/facts/report.txt`: the "bearers covered" column and the ethnicity codes it did not recognise; the time at the end |
 
+**Before stage 1 for the census: check the parish ids.** Once the parish tables (`spatial.conpar1851`, `spatial.conpar1901`) are loaded:
+
+```
+python3 -m pipeline.check_parishes | tee work/parish_check.txt
+python3 -m pipeline.check_parishes --lookup conpar_lookup.csv     # also compare with the old lookup file
+```
+
+It reads the two small parish tables and makes one pass over each year's attributes table (about a minute or two per year, no maps and no names involved), changes nothing, and prints what it found; the lines that start with `LOOK` are the ones to read. It shows, per year, the range of parish ids the people carry, how many are id 0 (expected), have no id, or carry an id that is not in the parish table it should use (or is in the *other* table: the sign of the wrong table or column). For the tables it shows repeated ids, ids shared between the two tables, parishes without a name (`-`), counties in capitals, centroids that are missing, at 0,0 or not in metres, and whether the id columns can hold fractional ids such as `200136.3`.
+
 **What stage 1 prints for the census** (only when `census` is in `GBNAMES_SOURCES`), one line per year:
 `1881: 26,000,000 people; 97.1% counted; 2.3% parish id 0; 0.60% not counted although they should be ...`
 

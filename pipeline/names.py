@@ -37,6 +37,43 @@ def chunk_of(key, chunks):
     return int(hashlib.md5(key.encode()).hexdigest(), 16) % chunks
 
 
+def name_key(text):
+    """A county or parish name as a grouping key: lower case, single spaces - so that ABERDEEN and Aberdeen, or a
+    double space, never split one place into two."""
+    return " ".join(str(text or "").lower().split())
+
+
+_SMALL_WORDS = {"and", "of", "on", "upon", "in", "the", "with", "by", "near", "next", "le", "de", "la"}
+_WORD = re.compile(r"[A-Za-z]+(?:'[A-Za-z]+)?")
+
+
+def place_name(raw):
+    """A county or parish name as it is shown on a page. Spaces are tidied. A name in ALL CAPITALS (the Scottish
+    counties in the 1901 parish table: ABERDEEN, ROSS AND CROMARTY) becomes ordinary capitals: Aberdeen, Ross and
+    Cromarty, St Mary's, O'Neil. Any other name is left exactly as it is: str.title() would turn "Middlesex (exclusive
+    of London Districts)" into "(Exclusive Of London Districts)" and "St Mary's" into "St Mary'S"."""
+    text = " ".join(str(raw or "").split())
+    if not text or text != text.upper():
+        return text
+    first = next(_WORD.finditer(text), None)
+
+    def fix(match):
+        word = match.group(0)
+        if "'" in word:
+            head, tail = word.split("'", 1)
+            return head.capitalize() + "'" + (tail.capitalize() if len(head) == 1 else tail.lower())
+        if word.lower() in _SMALL_WORDS and match.start() != first.start():
+            return word.lower()
+        return word.capitalize()
+
+    return _WORD.sub(fix, text)
+
+
+def has_letters(text):
+    """False for "", "-" and other names that are only a placeholder."""
+    return any(ch.isalpha() for ch in str(text or ""))
+
+
 def forename_clean(raw):
     """A forename as listed on a name's page: lower case, punctuation and digits removed (so "Anne-Marie"
     becomes "annemarie"), accents kept, and at least two characters - "" when nothing usable is left.

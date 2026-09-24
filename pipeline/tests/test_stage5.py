@@ -444,19 +444,20 @@ class Stage5EndToEnd(unittest.TestCase):
     def test_parishes_are_pooled_by_name_across_the_two_boundary_versions(self):
         people, expected, merged_across_versions = self.census_people(), {}, 0
         for key in self.names:
-            counts, versions = Counter(), defaultdict(set)
+            counts, versions, spelt = Counter(), defaultdict(set), {}
             for year, _, _, county, parish in people.get(key, []):
                 counts[(county.lower(), parish.lower())] += 1
+                spelt[(county.lower(), parish.lower())] = (county, parish)       # a name is shown as the table spells it
                 versions[(county.lower(), parish.lower())].add(config.CENSUS_PARISH_BOUNDARIES[year])
             merged_across_versions += sum(len(v) == 2 for v in versions.values())
             listed = sorted(((n, c, p) for (c, p), n in counts.items() if n >= MIN), key=lambda item: (-item[0], item[1], item[2]))
             if listed:
-                expected[key] = [(c.title(), p.title()) for _, c, p in listed[:config.PLACES_TOP]]
+                expected[key] = [spelt[(c, p)] for _, c, p in listed[:config.PLACES_TOP]]
         self.assertGreater(merged_across_versions, 20)         # the fake 1851 and 1901 boundaries number the same parishes differently
         self.assertEqual(set(self.facts["parishes"]), set(expected))
         for key, row in self.facts["parishes"].items():
             listed = json.loads(row["detail"])["parishes"]
-            self.assertEqual([(p["county"], p["parish"].title()) for p in listed], expected[key], key)
+            self.assertEqual([(p["county"], p["parish"]) for p in listed], expected[key], key)
             self.assertEqual(len({(p["county"], p["parish"]) for p in listed}), len(listed), key)      # a parish is listed once
 
     def test_only_the_chosen_sources_are_worked_out_and_open_a_database(self):
@@ -668,6 +669,40 @@ class SafeguardedData(unittest.TestCase):
             self.skipTest("git is not available")
         offending = [p for p in tracked if p.startswith(("raw-indicators/", "work/")) or "nbhd_fpc" in p or "fpc_final" in p or "fpc_label" in p]
         self.assertEqual(offending, [], "these files are tracked by git but must never be published")
+
+
+
+class PlacesAreShownTidily(unittest.TestCase):
+    """compute_parishes on hand-made counts: how the county and parish names come out, and what is left out."""
+
+    def top(self, parishes):
+        tally = defaultdict(lambda: defaultdict(int))
+        rows = s5_facts.compute_parishes({"smith": parishes}, ["smith"], tally, [1851, 1901])
+        self.assertEqual(len(rows), 1)
+        return json.loads(rows[0]["detail"])["parishes"]
+
+    def test_capital_counties_are_tidied_and_other_names_left_alone(self):
+        top = self.top({("aberdeen", "aberdeen and old machar"): ["ABERDEEN", "Aberdeen and Old Machar", 50],
+                        ("ross and cromarty", "dingwall"): ["ROSS AND CROMARTY", "Dingwall", 40],
+                        ("middlesex (exclusive of london districts)", "laleham"): ["Middlesex (exclusive of London Districts)", "Laleham", 30]})
+        self.assertEqual([(p["county"], p["parish"]) for p in top],
+                         [("Aberdeen", "Aberdeen and Old Machar"), ("Ross and Cromarty", "Dingwall"),
+                          ("Middlesex (exclusive of London Districts)", "Laleham")])
+
+    def test_a_parish_with_no_name_is_not_listed_even_when_it_is_the_biggest(self):
+        # the London parishes of the 1901 table are called "-": a page must not say "smith: -, London 1"
+        top = self.top({("london 1", "-"): ["London 1", "-", 900], ("kent", "dover"): ["Kent", "Dover", 20]})
+        self.assertEqual([(p["county"], p["parish"]) for p in top], [("Kent", "Dover")])
+
+    def test_spellings_of_one_place_are_one_place(self):
+        # the same parish in capitals in one boundary table and not in the other: read_parishes adds them together
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            for year, county in ((1851, "Ross and Cromarty"), (1901, "ROSS AND CROMARTY")):
+                s5_facts._save(out, f"parishes_{year}", ["surname", "county", "parish", "n"], [("smith", county, "Dingwall", 30)], ["smith"])
+            found = s5_facts.read_parishes(out, [1851, 1901])
+        self.assertEqual(len(found["smith"]), 1)
+        self.assertEqual(list(found["smith"].values())[0][2], 60)
 
 
 if __name__ == "__main__":

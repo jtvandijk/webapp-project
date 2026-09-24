@@ -7,7 +7,37 @@ import subprocess
 import sys
 import unittest
 
-from pipeline.names import chunk_of
+from pipeline.names import chunk_of, has_letters, name_key, place_name
+
+
+class PlaceName(unittest.TestCase):
+    def test_all_capitals_become_ordinary_capitals(self):
+        for raw, shown in [("ABERDEEN", "Aberdeen"), ("ROSS AND CROMARTY", "Ross and Cromarty"), ("LONDON 1", "London 1"),
+                           ("KIRKPATRICK-FLEMING", "Kirkpatrick-Fleming"), ("SOUTH-ON-TEES", "South-on-Tees"),
+                           ("ST. ANDREWS AND ST LEONARDS", "St. Andrews and St Leonards"),
+                           ("KINCARDINE O'NEIL", "Kincardine O'Neil"), ("ST MARY'S", "St Mary's"),
+                           ("THE ISLES OF THE SEA", "The Isles of the Sea")]:
+            self.assertEqual(place_name(raw), shown, raw)
+
+    def test_a_name_that_is_not_all_capitals_is_left_alone(self):
+        # str.title() would break every one of these
+        for raw in ["Middlesex (exclusive of London Districts)", "Yorkshire, West Riding", "St Mary's", "Ross and Cromarty",
+                    "Bakewell", "Chelsfield, Orpington", "Wisborough Green (Billingshurst, Sussex)"]:
+            self.assertEqual(place_name(raw), raw, raw)
+
+    def test_spaces_are_tidied_and_nothing_gives_nothing(self):
+        self.assertEqual(place_name("London  (West Districts)"), "London (West Districts)")
+        self.assertEqual(place_name("  Kirkby   Malham "), "Kirkby Malham")
+        self.assertEqual((place_name(None), place_name(""), place_name("-")), ("", "", "-"))
+
+    def test_a_placeholder_has_no_letters(self):
+        self.assertEqual([has_letters(x) for x in ("-", "", None, "  ", "1", "Bath", "London 1")],
+                         [False, False, False, False, False, True, True])
+
+    def test_the_grouping_key_ignores_capitals_and_spaces(self):
+        self.assertEqual(name_key("ABERDEEN"), name_key(" Aberdeen "))
+        self.assertEqual(name_key("Ross  and Cromarty"), name_key("ROSS AND CROMARTY"))
+        self.assertNotEqual(name_key("Kirkby Malham"), name_key("Kirkby Malzeard"))
 
 
 class ChunkOf(unittest.TestCase):

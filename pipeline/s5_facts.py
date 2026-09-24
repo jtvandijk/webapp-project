@@ -49,7 +49,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from . import config, db, files, sql
-from .names import forename_clean, surname_key
+from .names import forename_clean, has_letters, name_key, place_name, surname_key
 from .s3_extracts import load_names
 
 FIELDS = ["surname", "fact", "version", "ref_year", "n_bearers", "value", "detail"]
@@ -195,9 +195,7 @@ def read_forenames(out_dir, stems=("forenames",)):
     return found
 
 
-def _norm(text):
-    """A county or parish name as a key: lower case, single spaces, so a spelling of the case does not split a parish."""
-    return " ".join(str(text or "").lower().split())
+_norm = name_key           # a county or parish name as a key: a spelling of the case does not split a parish
 
 
 def extract_census_forenames(conn, cfg, year, names, out_dir, refresh=False):
@@ -444,10 +442,12 @@ def compute_parishes(extracted, names, tally, years):
         parishes = extracted.get(key)
         if not parishes:
             continue
-        listed = sorted(((n, county, parish) for county, parish, n in parishes.values() if n >= config.FACT_MIN_IN_CATEGORY),
+        # a parish whose name is only a placeholder ("-": the London parishes of the 1901 table) is not a place to show
+        listed = sorted(((n, county, parish) for county, parish, n in parishes.values()
+                         if n >= config.FACT_MIN_IN_CATEGORY and has_letters(parish)),
                         key=lambda item: (-item[0], _norm(item[1]), _norm(item[2])))
         if listed:
-            top = [{"county": county.title(), "parish": parish} for _, county, parish in listed[:config.PLACES_TOP]]
+            top = [{"county": place_name(county), "parish": place_name(parish)} for _, county, parish in listed[:config.PLACES_TOP]]
             out.append(_row(key, "parishes", "", "", "", {"parishes": top, "years": list(years)}, years))
             tally["parishes"]["with_value"] += 1
     return out

@@ -88,6 +88,33 @@ GROUP BY c.{c["surname"]}
 HAVING COUNT(*) >= {config.SQL_PREFILTER}"""
 
 
+def census_tables(cfg, year):
+    """(census table, att table, parish table, columns) for one census year, as the queries use them."""
+    return _census(cfg, year)
+
+
+def parish_table_rows(cfg, year):
+    """Every row of the parish table that this census year uses: (id, x, y, parish name, county)."""
+    _, _, parish, c = _census(cfg, year)
+    return f"SELECT {c['parish_id']}, {c['x']}, {c['y']}, {c['parish_name']}, {c['county']} FROM {parish}"
+
+
+def census_parish_id_counts(cfg, year):
+    """How many people carry each parish id in this census year's attributes table: (parish id, people). One pass over
+    the table; the ids are then checked against the parish table in Python."""
+    _, att, _, c = _census(cfg, year)
+    return f"SELECT {c['parish']}, COUNT(*) FROM {att} GROUP BY {c['parish']}"
+
+
+def column_types(cfg, table):
+    """(column, type) for every column of a table. Reads the catalogue only, so it is instant."""
+    if cfg["backend"] == "postgres":
+        schema, _, name = table.rpartition(".")
+        where = f"table_schema = '{schema}'" if schema else "table_schema = current_schema()"
+        return f"SELECT column_name, data_type FROM information_schema.columns WHERE {where} AND table_name = '{name}'"
+    return f"SELECT name, type FROM pragma_table_info('{table}')"
+
+
 def census_rows(cfg, year):
     """How many people (rows) the census table of this year has."""
     table, _, _, _ = _census(cfg, year)

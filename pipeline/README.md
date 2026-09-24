@@ -13,6 +13,7 @@ The code that turns the registers and censuses into the data behind the website 
 | `config.py` | **All settings.** Table and column names, years, threshold, map settings. | done |
 | `fake_data.py` | Makes a fake database with the same shape as the real one. | done |
 | `s1_counts.py` | Stage 1: bearers per name per year, and the list of names that get a page. | done, tested |
+| `check_parishes.py` | A read-only sanity report on the census parish ids: the two parish tables, the ids each census year carries (gid; 1921 conparid1901), how they fit, and optionally a comparison with the old lookup file. Run it once the parish tables are loaded. | new, tested on fake data only |
 | `kde.py` | The map calculation for one name and year. | done, tested |
 | `rules.py` | What happens to each period: built, copied from another year (Scotland), or left out. | done, tested |
 | `preview.py` | Draws a page of maps to look at. | done |
