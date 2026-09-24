@@ -19,6 +19,57 @@ REFERENCE = Path(__file__).resolve().parent / "reference"
 
 PROFILE = os.environ.get("GBNAMES_PROFILE", "fake")
 
+# The choices that change from run to run (which database(s), how many names, how many chunks) live in the file
+# run.settings in the project folder, which is read by every qsub script and sourced by you, like .env (which holds the
+# passwords and stays out of git). They arrive here as GBNAMES_* environment variables, and every stage uses them as
+# the default for its matching flag, so a typed command and a qsub job cannot disagree; a flag still overrides them.
+# Nothing set means: both sources, 200 chunks, every name, every fact, every census year.
+ALL_CENSUS_YEARS = [1851, 1861, 1881, 1891, 1901, 1911, 1921]      # 1871 is not available
+
+
+def read_run_settings(env):
+    """The run settings from an environment (run.settings, once sourced), with their defaults, checked. A typo
+    stops the run with a message that names the setting, instead of quietly doing something else."""
+    def bad(name, why):
+        raise SystemExit(f"run.settings: GBNAMES_{name} {why}")
+
+    sources = env.get("GBNAMES_SOURCES", "register census").split()
+    if not sources or any(s not in ("register", "census") for s in sources):
+        bad("SOURCES", f'is "{env.get("GBNAMES_SOURCES")}"; use register, census or "register census"')
+    try:
+        chunks = int(env.get("GBNAMES_CHUNKS", "200") or 200)
+        if chunks < 1:
+            raise ValueError
+    except ValueError:
+        bad("CHUNKS", f'is "{env.get("GBNAMES_CHUNKS")}"; use a whole number, 1 or more')
+    limit = (env.get("GBNAMES_LIMIT") or "").strip()
+    try:
+        limit = int(limit) if limit else None
+        if limit is not None and limit < 1:
+            raise ValueError
+    except ValueError:
+        bad("LIMIT", f'is "{env.get("GBNAMES_LIMIT")}"; use a whole number, or leave it empty for every name')
+    try:
+        years = [int(y) for y in env.get("GBNAMES_CENSUS_YEARS", "").split()] or list(ALL_CENSUS_YEARS)
+    except ValueError:
+        bad("CENSUS_YEARS", f'is "{env.get("GBNAMES_CENSUS_YEARS")}"; use census years separated by spaces')
+    if any(y not in ALL_CENSUS_YEARS for y in years):
+        bad("CENSUS_YEARS", f"has a year that is not a census year we have ({' '.join(map(str, ALL_CENSUS_YEARS))})")
+    return {"sources": sources, "chunks": chunks, "limit": limit, "facts": env.get("GBNAMES_FACTS", "").split() or None,
+            "census_years": sorted(set(years)), "sources_were_set": "GBNAMES_SOURCES" in env}
+
+
+RUN = read_run_settings(os.environ)
+RUN_SOURCES, RUN_CHUNKS, RUN_LIMIT, RUN_FACTS = RUN["sources"], RUN["chunks"], RUN["limit"], RUN["facts"]
+
+
+def describe_run():
+    """One line for the top of a stage's output: which settings it is running with."""
+    return (f"run settings: sources {' '.join(RUN_SOURCES)}; chunks {RUN_CHUNKS}; "
+            f"names {'the first ' + str(RUN_LIMIT) if RUN_LIMIT else 'all'}; facts {' '.join(RUN_FACTS) if RUN_FACTS else 'all'}"
+            f"{'; census years ' + ' '.join(map(str, RUN['census_years'])) if 'census' in RUN_SOURCES else ''}"
+            " (from run.settings; a flag overrides)")
+
 # Which environment variable suffix belongs to which database group: PGHOST_LCR, PGDATABASE_ICEM,
 # and so on (see pg_env() below). Used by both this file and pipeline/db.py (for the password).
 PG_ENV_SUFFIX = {"register": "LCR", "census": "ICEM"}
@@ -128,7 +179,7 @@ def settings(profile=None):
 # 2. YEARS
 # ---------------------------------------------------------------------------
 
-CENSUS_YEARS = [1851, 1861, 1881, 1891, 1901, 1911, 1921]      # 1871 is not available
+CENSUS_YEARS = RUN["census_years"]                             # 1871 is not available; run.settings can leave a year out
 REGISTER_YEARS = list(range(1997, 2027))                       # every year we count (2026 is a part year)
 
 # The years that get a map (the slider positions on the website).

@@ -8,27 +8,29 @@
 #
 #   qsub pipeline/hpc/stage5.sh
 #
-# LIMIT below is for a SAMPLE run: the first N names of work/names.csv, the same N as a stage 3
-# sample uses. Set it to "" for the full name list. FACTS is empty for every fact of the chosen SOURCES, or
-# a list such as "oac imd" (say, after loading a new table, or to redo one that failed). SOURCES is
-# register-only for now, since the census database is not ready: the historic facts (forenames, parishes)
-# need it, so set SOURCES="register census" once it is.
+# Which names, sources and facts it works out comes from run.settings: GBNAMES_LIMIT is for a SAMPLE run (the first N
+# names of work/names.csv, the same N as a stage 3 sample uses; empty = every name), GBNAMES_FACTS is empty for every
+# fact of the chosen sources or a list such as "oac imd" (say, after loading a new table, or to redo one that failed),
+# and GBNAMES_SOURCES is register-only for now, since the census database is not ready: the historic facts
+# (forenames, parishes) need it.
 #
 # Before this: stage 1 (work/counts.csv and work/names.csv), and the neighbourhood tables loaded in
 # the TRE - check them first with  python3 -m pipeline.nbhd_tables check
 #
-# The memory and time below are GUESSES, not measured:
+# The memory and time below: 5,000 names took about 20 minutes, most of it the ethnicity query (its table has no
+# index on the surname, so each query scans it). The full name list is not measured yet:
 #  * memory: the biggest thing held is the neighbourhood query for the newest year, one row per name
 #    and neighbourhood, which on the full name list may be millions of rows. 16G is generous for a
 #    sample; the run prints how many rows each query returned, so scale from that for the full run.
-#  * time: every query scans the register, so it depends on the database, not on this node.
-#    The run prints how long each took.
+#  * time: every query scans the register, so it depends on the database, not on this node. The run prints how long
+#    each took, and its total at the end. For the full list ask for more for that one run, without editing this file:
+#      qsub -l h_rt=03:00:00 pipeline/hpc/stage5.sh
 # A finished query is saved under work/facts/extract/ and reused, so if the job is killed (too little
 # memory or time), submitting it again carries on where it stopped instead of starting over.
 #
-# Expects a .env file in the project root with PGHOST_LCR etc - see stage2.sh's comment.
+# Expects .env (database settings) and run.settings (run choices) in the project root - see stage2.sh's comment.
 #
-# One-off setup, before the FIRST qsub of any of these scripts:  mkdir -p work/logs
+# One-off setup, before the FIRST qsub of any of the stage scripts:  mkdir -p work/logs
 # (see stage2.sh's comment on why this has to happen before qsub, not inside the script).
 #
 # Activates the gbnames conda environment explicitly (via ~/.bashrc, since a non-interactive qsub
@@ -38,7 +40,7 @@
 #$ -j y
 #$ -o work/logs/
 #$ -l h_vmem=16G
-#$ -l h_rt=04:00:00
+#$ -l h_rt=01:00:00
 #$ -cwd
 
 set -euo pipefail
@@ -50,14 +52,11 @@ source ~/.bashrc
 conda activate gbnames
 set -euo pipefail
 
-SOURCES="register"   # "register census" once the census database is ready
-LIMIT="5000"    # e.g. "5000" for a sample run, or "" for the full name list
-FACTS=""        # "" for every fact of those sources, or e.g. "oac imd"
-
 set -a
 source .env
+source run.settings
 set +a
 export GBNAMES_PROFILE=tre
 export PYTHONUNBUFFERED=1    # print to the log as it happens; otherwise the log can look empty until the job ends
 
-python3 -m pipeline.s5_facts --sources $SOURCES ${LIMIT:+--limit "$LIMIT"} ${FACTS:+--facts $FACTS}
+python3 -m pipeline.s5_facts

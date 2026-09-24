@@ -5,24 +5,23 @@
 #
 #   qsub pipeline/hpc/stage3.sh
 #
-# LIMIT/CHUNKS below are for a SAMPLE run - remove --limit (or set LIMIT="") and set CHUNKS to the
-# real value (e.g. 200) once you are ready for the full name list. Keep the names-per-chunk ratio
-# similar between a sample and the real run (see pipeline/README.md's "Stage 4" section) so the
-# sample's timings mean something for sizing stage 4's own job.
+# GBNAMES_LIMIT and GBNAMES_CHUNKS in run.settings say how many names and how many chunks: a SAMPLE run sets a limit
+# (empty = every name). Keep the names-per-chunk ratio similar between a sample and the real run (see
+# pipeline/README.md's "Stage 4" section) so the sample's timings mean something for sizing stage 4's own job.
 #
-# SOURCES is register-only for now - see stage2.sh's comment on adding census later. Note: running
+# GBNAMES_SOURCES is register-only for now - see stage2.sh's comment on adding census later. Note: running
 # this against work/names.csv from a register-only s1_counts.py run means that list is not yet the
 # final one (a name that only clears the threshold via historic census bearers would be missing) -
-# fine for a sample/rehearsal run, but re-run s1_counts.py with both sources once census is ready,
+# fine for a sample/rehearsal run, but re-run stage 1 with both sources once census is ready,
 # before treating a full (non-sample) run of this stage as final.
 #
-# CHUNKS here MUST match stage4.sh's own CHUNKS (and its -t range) - s3_extracts.py writes
+# The chunk number MUST be the one stage 4 uses (run.settings has one number for both) - s3_extracts.py writes
 # work/chunks/CHUNKS with the number used, and s4_maps.py refuses to run if its own --chunks does
 # not match it, rather than silently reading the wrong names for a chunk.
 #
-# Expects a .env file in the project root with PGHOST_LCR etc - see stage2.sh's comment.
+# Expects .env and run.settings in the project root - see stage2.sh's comment.
 #
-# One-off setup, before the FIRST qsub of any of these three scripts:  mkdir -p work/logs
+# One-off setup, before the FIRST qsub of any of the stage scripts:  mkdir -p work/logs
 # (see stage2.sh's comment on why this has to happen before qsub, not inside the script).
 #
 # Activates the gbnames conda environment explicitly (via ~/.bashrc, since a non-interactive qsub
@@ -45,13 +44,11 @@ source ~/.bashrc
 conda activate gbnames
 set -euo pipefail
 
-SOURCES="register"
-LIMIT="500"     # e.g. "500" for a sample run, or "" for the full name list
-CHUNKS=4        # match this to stage4.sh's CHUNKS - see the note above
-
 set -a
 source .env
+source run.settings
 set +a
 export GBNAMES_PROFILE=tre
+export PYTHONUNBUFFERED=1    # print to the log as it happens; otherwise the log can look empty until the job ends
 
-python3 -m pipeline.s3_extracts --sources $SOURCES --chunks "$CHUNKS" ${LIMIT:+--limit "$LIMIT"}
+python3 -m pipeline.s3_extracts

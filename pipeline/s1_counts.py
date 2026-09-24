@@ -87,10 +87,11 @@ def name_list(counts):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--sources", nargs="*", choices=["register", "census"], default=["register", "census"],
-                        help="which sources to count (default: both)")
+    parser.add_argument("--sources", nargs="*", choices=["register", "census"], default=config.RUN_SOURCES,
+                        help="which sources to count (default GBNAMES_SOURCES in run.settings)")
     args = parser.parse_args()
     sources = set(args.sources)
+    print(config.describe_run(), flush=True)
 
     cfg = config.settings()
     register_conn = db.connect("register") if "register" in sources else None

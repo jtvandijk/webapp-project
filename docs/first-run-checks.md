@@ -99,7 +99,7 @@ the download does shows up at once.
 ## 6. A small run of stage 5
 
 ```
-python3 -m pipeline.s5_facts --sources register --limit 500   # or qsub pipeline/hpc/stage5.sh for the 5,000-name sample
+python3 -m pipeline.s5_facts --sources register --limit 500   # or qsub pipeline/hpc/stage5.sh (with GBNAMES_LIMIT=5000 in run.settings) for the 5,000-name sample
                                                               # (drop --sources register once the census database is ready)
 ```
 

@@ -34,10 +34,11 @@ def build_surface(conn, cfg, period):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--sources", nargs="*", choices=["register", "census"], default=["register", "census"],
-                        help="which sources to build surfaces for (default: both)")
+    parser.add_argument("--sources", nargs="*", choices=["register", "census"], default=config.RUN_SOURCES,
+                        help="which sources to build surfaces for (default GBNAMES_SOURCES in run.settings)")
     parser.add_argument("--out-dir", default=str(config.WORK / "surfaces"))
     args = parser.parse_args()
+    print(config.describe_run(), flush=True)
     sources = set(args.sources)
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)

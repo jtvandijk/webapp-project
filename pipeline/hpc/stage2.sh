@@ -8,16 +8,16 @@
 #
 #   qsub pipeline/hpc/stage2.sh
 #
-# SOURCES below is register-only for now, since the census database is not ready - this is safe to
-# run this way: stage 2 writes one file per period (work/surfaces/<period>.npy), so running it
-# again later with SOURCES="census" only adds the census periods' files, it does not touch or
-# require redoing the register ones already there.
+# Which databases it uses comes from run.settings (GBNAMES_SOURCES), register-only for now, since the census
+# database is not ready - this is safe: stage 2 writes one file per period (work/surfaces/<period>.npy), so running
+# it again later with the census added only adds the census periods' files, it does not touch or require redoing
+# the register ones already there.
 #
-# Expects a .env file in the project root with PGHOST_LCR etc (see pipeline/README.md's "Running
-# it in the TRE") - `set -a` below means every variable .env sets is exported automatically, so it
-# works whether or not the file itself says "export".
+# Expects two files in the project root: .env with PGHOST_LCR etc (see pipeline/README.md's "Running it in the
+# TRE"; passwords, not in git) and run.settings (the run choices, in git). `set -a` below means every variable they
+# set is exported automatically, so it works whether or not a file itself says "export".
 #
-# One-off setup, before the FIRST qsub of any of these three scripts:  mkdir -p work/logs
+# One-off setup, before the FIRST qsub of any of the stage scripts:  mkdir -p work/logs
 # -o below needs that directory to already exist when SGE sets up output redirection, which
 # happens before this script's own body runs - a "mkdir -p work/logs" inside the script itself
 # is too late to help, which is why it is not here.
@@ -45,11 +45,11 @@ source ~/.bashrc
 conda activate gbnames
 set -euo pipefail
 
-SOURCES="register"     # "register census" once the census database is ready
-
 set -a
 source .env
+source run.settings
 set +a
 export GBNAMES_PROFILE=tre
+export PYTHONUNBUFFERED=1    # print to the log as it happens; otherwise the log can look empty until the job ends
 
-python3 -m pipeline.s2_surfaces --sources $SOURCES
+python3 -m pipeline.s2_surfaces

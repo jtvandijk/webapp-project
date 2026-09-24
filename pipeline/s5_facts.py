@@ -512,13 +512,15 @@ def build_report(names, ref_years, counts, tally, outputs):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--facts", nargs="*", choices=ALL, help="which facts (default: all those of the chosen sources)")
-    parser.add_argument("--sources", nargs="*", choices=["register", "census"], default=["register", "census"],
-                        help="which sources' facts (default: both); only their databases are opened")
+    parser.add_argument("--facts", nargs="*", choices=ALL, default=config.RUN_FACTS,
+                        help="which facts (default GBNAMES_FACTS in run.settings, else all those of the chosen sources)")
+    parser.add_argument("--sources", nargs="*", choices=["register", "census"], default=config.RUN_SOURCES,
+                        help="which sources' facts (default GBNAMES_SOURCES in run.settings); only their databases are opened")
     parser.add_argument("--census-years", nargs="*", type=int, choices=config.CENSUS_YEARS, default=config.CENSUS_YEARS,
                         help="which census years to pool for the historic facts (default: all; leave one out while its data is not ready)")
     which = parser.add_mutually_exclusive_group()
-    which.add_argument("--limit", type=int, help="only the first N names from work/names.csv (a sample run)")
+    which.add_argument("--limit", type=int, default=config.RUN_LIMIT,
+                       help="only the first N names from work/names.csv (a sample run; default GBNAMES_LIMIT in run.settings)")
     which.add_argument("--names", nargs="*", help="only these names, which must be in work/names.csv; the results go in "
                        "work/preview_facts/, so a few names never replace the files of a fuller run")
     parser.add_argument("--refresh", action="store_true", help="query again even where a current extract exists")
@@ -531,7 +533,8 @@ def main():
     if not facts:
         raise SystemExit("Nothing to do: no facts for those sources.")
 
-    names = load_names(args.limit)
+    print(config.describe_run(), flush=True)
+    names = load_names(None if args.names else args.limit)         # a sample limit does not apply to names asked for by name
     if not names:
         raise SystemExit("No names in work/names.csv - run s1_counts.py first.")
     if args.names:

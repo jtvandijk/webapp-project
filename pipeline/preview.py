@@ -171,8 +171,10 @@ def main():
     parser.add_argument("--periods", nargs="*", help="map periods (default: 1851 1901 1911 1921 2000 2020 2026, or all the map "
                         "years of --sources)")
     parser.add_argument("--sources", nargs="*", choices=["register", "census"],
+                        default=config.RUN_SOURCES if config.RUN["sources_were_set"] else None,
                         help="use every map year of these sources as the periods, e.g. --sources register for all eight register "
-                             "years (only the databases the periods need are opened)")
+                             "years (only the databases the periods need are opened); if GBNAMES_SOURCES is set in run.settings "
+                             "that is the default")
     parser.add_argument("--variants", nargs="*", help="settings to compare, as <power>/<mode>, e.g. 0.5/mass 1/peak")
     parser.add_argument("--min-area", type=float, help="drop blobs and holes smaller than this many km2 (config MIN_AREA_KM2)")
     parser.add_argument("--smooth", type=float, help="metres to fill gaps/notches narrower than 2x this (config SMOOTH_M, now 10000)")

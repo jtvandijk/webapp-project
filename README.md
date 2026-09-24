@@ -42,7 +42,8 @@ replaces it; nothing in the rebuild depends on it.
 | `tools/` | A sample-data generator and a validator for the future website's release format, and `prep_neighbourhood.py`, which turns the downloaded neighbourhood classifications into the lookup tables that go into the TRE. |
 | `site/` | An early prototype of the static website (paused; not the current focus). |
 | `gbnames/` | The currently live Django app (source of apps.geods.ac.uk/gbnames). Being replaced. |
-| `data-prep/` | The old, one-off pipeline code this rebuild replaces, kept locally for reference. **Not tracked in git** (see `.gitignore`) - it is several GB and includes working data extracts. |
+| `data-prep/` | The old, one-off pipeline code this rebuild replaced. No longer needed, and nothing reads it: keep it outside the project. If a copy is put back here it is **not tracked in git** (see `.gitignore`); it is several GB and includes working data extracts. |
+| `run.settings` | The choices that change from run to run (which database(s), how many names and chunks, which facts). Read by every stage; in git. |
 | `raw-indicators/` | The downloaded neighbourhood classifications (OAC, LOAC, AHAH, IMD), the input to `tools/prep_neighbourhood.py`. **Not tracked in git.** |
 | `work/` | Everything `pipeline/` writes when run locally: fake databases, counts, preview pages. **Not tracked in git.** |
 

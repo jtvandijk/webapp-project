@@ -24,7 +24,8 @@ The code that turns the registers and censuses into the data behind the website 
 | `hpc/stage4.sh` | The SGE array job that runs `s4_maps.py` once per chunk. | done, not yet run on the real HPC |
 | `s5_facts.py` | Stage 5: the facts about each name (neighbourhood classifications, top neighbourhoods, ethnicity, forenames, and from the census historic forenames and parishes). One query per fact and reference year (per census year for the historic ones), saved, then computed. | done, tested on fake data; the register side has run in the TRE, the census side waits for the census database |
 | `nbhd_tables.py` | The SQL to create and load the neighbourhood tables in the TRE, and a check of them against the real register. | done, tested |
-| `hpc/stage5.sh` | The SGE job that runs `s5_facts.py`: one job, not an array. Memory and time are guesses. | done, not yet run on the real HPC |
+| `hpc/stage1.sh` ... `stage5.sh` | The SGE jobs, one per stage (stage 4 an array). Which sources, how many chunks and names come from `run.settings`; memory and time are in each script. | stages 3-5 run on the real HPC; stage 1 script new |
+| `../run.settings` | The run choices in one place (in git; passwords stay in `.env`). Every stage uses it as its default. | done, tested |
 | stage 6 | Assembling and validating the release. | to do |
 
 ## Try it on your own computer (fake data)
@@ -132,8 +133,8 @@ profile): the columns of `registers_lookup.lookup_monica` (`name` and `gender` a
 old `monica_gender`), and that `registers_derived.lcr_consol_ethest` has the same columns as
 `lcr_consol2026` plus `eth`. A wrong name gives a clear Postgres error naming it.
 
-**On the HPC, run it through qsub** (`qsub pipeline/hpc/stage5.sh`; edit `LIMIT` and `FACTS` at the top of
-the script), not on the login node: it is a few dozen queries that the database answers, plus light Python,
+**On the HPC, run it through qsub** (`qsub pipeline/hpc/stage5.sh`; the names, sources and facts come from
+`run.settings`), not on the login node: it is a few dozen queries that the database answers, plus light Python,
 so one job is enough and there is no array. Its memory (16G) and time (4h) are guesses; the run prints how
 many rows each query returned and how long it took, so a sample run tells you what the full one needs. The
 biggest fetch is the top neighbourhoods for the newest year, one row per name and neighbourhood.
@@ -148,7 +149,7 @@ is always the latest).
 
 **The historic facts** (forenames with their sex, and parishes) come from the census database: one query per census
 year, pooled. `--sources register` or `--sources census` chooses which databases are used (only the ones needed are
-opened, and `hpc/stage5.sh` has a `SOURCES` setting, register-only until the census database is ready).
+opened; `GBNAMES_SOURCES` in `run.settings` is the default, register-only until the census database is ready).
 `--census-years 1851 1861 1881 1891 1901 1911` pools only those years, for testing before 1921 is loaded; the
 years actually pooled are written in each row's `detail`. They count the same people as the census counts and maps
 (a parish that is found in that year's boundaries, and not id 0). A parish is counted by county and name, not by id,

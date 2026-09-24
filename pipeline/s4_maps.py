@@ -150,14 +150,16 @@ STATS_HEADER = ["surname", "period", "action", "bearers", "bandwidth_m", "weight
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--chunk", type=int, required=True, help="which chunk this task processes (0-based)")
-    parser.add_argument("--chunks", type=int, default=200, help="total number of chunks (must match s3_extracts.py)")
-    parser.add_argument("--sources", nargs="*", choices=["register", "census"], default=["register", "census"])
+    parser.add_argument("--chunks", type=int, default=config.RUN_CHUNKS,
+                        help="total number of chunks (must match s3_extracts.py; default GBNAMES_CHUNKS in run.settings)")
+    parser.add_argument("--sources", nargs="*", choices=["register", "census"], default=config.RUN_SOURCES)
     parser.add_argument("--chunks-dir", default=str(config.WORK / "chunks"))
     parser.add_argument("--surfaces-dir", default=str(config.WORK / "surfaces"))
     parser.add_argument("--out-dir", default=str(config.WORK / "maps"))
     parser.add_argument("--stats-dir", default=str(config.WORK / "stats"))
     parser.add_argument("--force", action="store_true", help="redo this chunk even if it already finished")
     args = parser.parse_args()
+    print(config.describe_run(), flush=True)
 
     chunks_marker = Path(args.chunks_dir) / "CHUNKS"
     if chunks_marker.exists() and chunks_marker.read_text().strip() != str(args.chunks):

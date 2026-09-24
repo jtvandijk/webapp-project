@@ -4,32 +4,34 @@ A working guide: what each step does, the commands in order, where every setting
 names before running everything, and how to follow a job. It describes what is there now. For *why* things are as
 they are, see [pipeline.md](pipeline.md); for the file format the website reads, [data-contract.md](data-contract.md).
 
-Everything runs from the project folder (the one that contains `pipeline/`, `work/` and `.env`).
+Everything runs from the project folder (the one that contains `pipeline/`, `work/`, `.env` and `run.settings`).
+For a build from scratch, with a check between the stages, go straight to section 10.
 
 ## 1. Every session in the TRE
 
 ```
 conda activate gbnames
 cd <project folder>
-set -a; source .env; set +a          # database settings, incl. passwords: PGHOST_LCR, PGHOST_ICEM, ...
+set -a; source .env; source run.settings; set +a   # .env: database settings incl. passwords (not in git); run.settings: the run choices (in git)
 export GBNAMES_PROFILE=tre           # without this the code uses the FAKE database
 ```
 
-The qsub scripts do the same thing themselves, so this is only for commands you type.
+The qsub scripts do the same thing themselves, so this is only for commands you type. Because of `run.settings`, a
+typed `python3 -m pipeline.s5_facts --names smith` uses the same sources as the qsub jobs; a flag still overrides it.
 
 ## 2. The steps
 
 | # | Step | What it does | Reads | Writes (in `work/`) | How it runs | Measured |
 |---|---|---|---|---|---|---|
 | 0 | Neighbourhood tables | Turn the downloads in `raw-indicators/` into five lookup tables and load them into the database | downloads (on your laptop) | `neighbourhood/*.csv` | laptop: `python3 tools/prep_neighbourhood.py`, then in the TRE `nbhd_tables ddl` + psql | done once, redo when a table changes |
-| 1 | Counts | Bearers of every surname in every year; the list of names that get a page | register, census | `counts.csv`, `names.csv` | typed directly (no qsub script yet) | run once per data load |
+| 1 | Counts | Bearers of every surname in every year; the list of names that get a page | register, census | `counts.csv`, `names.csv` | `qsub pipeline/hpc/stage1.sh` | not measured yet; run once per data load |
 | 2 | Surfaces | One smoothed density of *everybody* per map period, for weighting the maps | register, census | `surfaces/<period>.npy` | `qsub pipeline/hpc/stage2.sh` | minutes |
 | 3 | Extracts | One query per period pulls where every listed name's bearers are; split into chunks by name | register, census | `chunks/<period>/<n>.csv`, `chunks/CHUNKS` | `qsub pipeline/hpc/stage3.sh` | about 5 min, 5,000 names, register |
-| 4 | Maps | The map of every name and period, no database access; an array job, one task per chunk | steps 2 and 3 | `maps/chunk_<n>.jsonl`, `stats/chunk_<n>.csv` | `qsub -t 1-<CHUNKS> pipeline/hpc/stage4.sh`, then `python3 -m pipeline.merge_stats` | about 5 min, 40 chunks, register |
-| 5 | Facts | Neighbourhood classifications, top neighbourhoods, ethnicity, forenames, and from the census historic forenames and parishes | step 1, register, census, the tables of step 0 | `facts/facts.csv`, `facts/report.txt` | `qsub pipeline/hpc/stage5.sh` | 8 names about 50 s; 5,000 names: see the log |
+| 4 | Maps | The map of every name and period, no database access; an array job, one task per chunk | steps 2 and 3 | `maps/chunk_<n>.jsonl`, `stats/chunk_<n>.csv` | `qsub -t 1-<GBNAMES_CHUNKS> pipeline/hpc/stage4.sh`, then `python3 -m pipeline.merge_stats` | about 5 min, 40 chunks, register |
+| 5 | Facts | Neighbourhood classifications, top neighbourhoods, ethnicity, forenames, and from the census historic forenames and parishes | step 1, register, census, the tables of step 0 | `facts/facts.csv`, `facts/report.txt` | `qsub pipeline/hpc/stage5.sh` | 8 names about 50 s; 5,000 names about 20 min (mostly the ethnicity query) |
 | 6 | Assemble | Join maps and facts into the release, check it | steps 4 and 5 | not built yet | | |
 
-"Register" and "census" are two different databases; a step only opens the ones its `SOURCES` setting names.
+"Register" and "census" are two different databases; a step only opens the ones `GBNAMES_SOURCES` (in `run.settings`) names.
 Until the census database is ready every step is register-only.
 
 The order matters: 1, then 2 and 3, then 4; 5 needs only 1 (and the tables). A finished step can be re-run
@@ -37,18 +39,24 @@ without redoing the ones before it.
 
 ## 3. Where every setting lives
 
-This is the part that is spread out. Nothing is hidden, but you have to know where to look.
+Two files hold what changes; everything else is in `config.py`.
 
 | Setting | Where | Notes |
 |---|---|---|
-| Which databases and tables, column names, years, thresholds, all map and fact rules | `pipeline/config.py` | one file: edit this, not the code |
-| Database host, user, password | `.env` (`_LCR` = register, `_ICEM` = census) | read by every script and every qsub script |
-| Which sources (`register`, `census`) | `SOURCES=` **inside** each of `stage2.sh`, `stage3.sh`, `stage4.sh`, `stage5.sh`; or `--sources` when typing | must be the same in all four |
-| Number of chunks | `CHUNKS=` **inside** `stage3.sh` and `stage4.sh`, **and** `-t 1-<CHUNKS>` on the `qsub` command for stage 4 | three places that must agree; stage 4 refuses to run if it does not match `work/chunks/CHUNKS` |
-| How many names (a sample) | `LIMIT=` inside `stage3.sh` (now 500) and `stage5.sh` (now 5000); `--limit` when typing | empty = all names. Use the same number in 3 and 5 for a sample |
-| Which facts | `FACTS=` inside `stage5.sh`; `--facts` when typing | empty = all facts of the sources |
-| Memory and time requested | `#$ -l h_vmem=...` and `#$ -l h_rt=...` **inside** each qsub script | values in the repository: stages 2 and 3: 2G, 30 min; stage 4: 2G, 4 h; stage 5: 16G, 4 h. The TRE copies of stages 4 and 5 have been lowered to 1 h by hand, so the repository and the TRE differ. The scheduler penalises jobs that ask for much more than they use |
+| Database host, user, password | `.env` (`_LCR` = register, `_ICEM` = census) | not in git. Read by every qsub script (except stage 4, which needs no database) |
+| **Which sources** (`register`, `census`) | `GBNAMES_SOURCES` in **`run.settings`** | every stage; `--sources` overrides it for one typed command |
+| **Number of chunks** | `GBNAMES_CHUNKS` in `run.settings` | stages 3 and 4, one number for both. Stage 4 is submitted as `qsub -t 1-<that number>`; its script stops at once if the range ends anywhere else |
+| **A sample** (only the first N names) | `GBNAMES_LIMIT` in `run.settings` | stages 3 and 5; empty = every name. Not applied to `s5_facts --names`, which asks for names by name |
+| **Which facts** | `GBNAMES_FACTS` in `run.settings` | stage 5; empty = all facts of the sources |
+| **Census years in use** | `GBNAMES_CENSUS_YEARS` in `run.settings` | every stage; leave a year out while its data is not loaded |
+| Memory and time requested | `#$ -l h_vmem=...` and `#$ -l h_rt=...` at the top of each `pipeline/hpc/stage*.sh` | SGE reads these before any script runs, so they cannot come from a settings file. Repository values: stage 1: 16G, 2 h (a guess); stages 2 and 3: 2G, 30 min; stage 4: 2G, 1 h; stage 5: 16G, 1 h. To change one for a single run, use the command line: `qsub -l h_rt=03:00:00 pipeline/hpc/stage5.sh` |
+| Databases, table and column names, years, thresholds, all map and fact rules | `pipeline/config.py` | one file: edit this, not the code |
 | Output folder | `--out-dir` (steps 2 to 5); defaults are in the table in section 6 | |
+
+`run.settings` is a plain list of `NAME="value"` lines with a comment above each. It is in git (it holds nothing
+secret), so a change to it is a commit like any other. A typo in it (say `register` written `registers`) stops the run
+with a message that names the setting. Every stage prints the settings it is running with, first thing:
+`run settings: sources register; chunks 200; names all; ...`.
 
 ## 4. Looking at a few names first
 
@@ -123,8 +131,8 @@ qacct -j <jobid>                              # after it has finished, if the cl
 - **Total time.** Stage 5 prints each query's time as it goes and, at the end, `time: ... in total` (also the last line
   of `work/facts/report.txt`). For any stage `qacct -j` (where available) gives the total and the memory it really used,
   which is what to base the next `h_rt` and `h_vmem` on; otherwise add up the times in the log.
-- **The log looks empty?** Python buffers its output when it is not a terminal, so a log can stay empty for a long time
-  while the job is fine. `stage5.sh` switches this off; the other stage scripts do not yet.
+- **The log looks empty?** Python buffers its output when it is not a terminal, so a log could stay empty for a long time
+  while the job was fine. Every stage script now switches this off (`PYTHONUNBUFFERED=1`), so the log fills as the job runs.
 - Array jobs (stage 4) write one log per task: `work/logs/gbnames_stage4.o<jobid>.<task>`.
 
 ## 6. What is in `work/`
@@ -163,7 +171,8 @@ To start a stage from clean: `bash pipeline/hpc/clean.sh` (stages 3 and 4; it as
 
 The TRE has no git, so files go across one at a time. Only these are needed there:
 
-- `pipeline/*.py` and `pipeline/hpc/*.sh` (not `tests/`, not `reference/`, not `fake_data.py` unless you use it there);
+- `pipeline/*.py` and `pipeline/hpc/*.sh` (not `tests/`, not `reference/`, not `fake_data.py` unless you use it there),
+  and `run.settings` in the project folder;
 - `pipeline/reference/*.geojson` (the coastline used for the maps; it does not change);
 - the neighbourhood tables (`work/neighbourhood/nbhd_*.csv`) when they change.
 
@@ -171,22 +180,44 @@ Not needed: `docs/`, `tools/` (they run on your laptop), `site/`, `gbnames/`, `d
 After a change, the list of files that differ is `git diff --name-only <last commit you copied from> HEAD -- pipeline`.
 Replace files only when no job of yours is queued (a queued job starts with whatever is there).
 
-## 9. What is not standardised yet
+## 9. What is still not standardised
 
-An honest list, so nothing surprises you. None of it is broken; it is where the project grew unevenly.
+Most of what was spread out is now in one place (`run.settings`, section 3). What is left, so nothing surprises you:
 
-1. **Run choices are typed in four places.** `SOURCES` sits inside each of four scripts, `CHUNKS` in two scripts plus
-   the `qsub -t` range, `LIMIT` in two scripts with different values (500 and 5000). Changing one and forgetting
-   another gives a confusing failure (stage 4 does stop with a clear message if `CHUNKS` disagrees).
-2. **Memory and time are inside each script**, so changing them means editing the script in the TRE, and the TRE copies
-   can then differ from the repository (they do now: stages 4 and 5 are 1 h in the TRE, 4 h in the repository).
-3. **Step 1 has no qsub script**; it is typed directly.
-4. **Only `stage5.sh` prints unbuffered**, so the other logs can look empty while running.
-5. **No single command builds everything**; each stage is submitted by hand, in order.
-6. `preview.py` names its folders `preview_maps` and `cache`, stage 5 uses `preview_facts` and `facts`; consistent enough,
+1. **Memory and time are inside each script** (SGE needs them there), so the copies in the TRE can drift from the
+   repository if you edit them by hand. Prefer the command line for a one-off change (`qsub -l h_rt=...`), and change the
+   script in the repository, then upload it, for a lasting one.
+2. **No single command builds everything**, on purpose: each stage is submitted by hand so there is a check between
+   stages (section 10).
+3. `preview.py` names its folders `preview_maps` and `cache`, stage 5 uses `preview_facts` and `facts`; consistent enough,
    but the maps cache is not under the previews it belongs to.
 
-A tidy fix that keeps everything working: put the run choices (`GBNAMES_SOURCES`, `GBNAMES_CHUNKS`, `GBNAMES_LIMIT`,
-`GBNAMES_FACTS`) in `.env`, which every script already reads, so there is one place to change; add a `stage1.sh`; make
-every script print unbuffered; and add one small `submit_all.sh` that submits stages 2 to 5 in order, each waiting for the
-one before it. The natural moment is before the HPC folder is wiped and everything is uploaded again.
+## 10. A register-only build, start to finish
+
+Set `run.settings` first: `GBNAMES_SOURCES="register"`, `GBNAMES_CHUNKS=200`, `GBNAMES_LIMIT=""` (every name). For a
+rehearsal on a sample instead, set `GBNAMES_LIMIT=5000` and `GBNAMES_CHUNKS=40` (the same number of names per chunk).
+
+**Once, after a fresh upload of the project folder**
+
+```
+mkdir -p work/logs
+```
+
+and put `.env` (yours), `run.settings`, `pipeline/` and, if the neighbourhood tables are not in the database yet,
+`work/neighbourhood/nbhd_*.csv` in place. The neighbourhood tables live in the database, so they survive a wipe of the
+HPC folder; load them only if they are missing (section 2, step 0).
+
+**Then, one stage at a time, looking before you go on**
+
+| Stage | Submit | Look at, before the next |
+|---|---|---|
+| 1 | `qsub pipeline/hpc/stage1.sh` | the log: the postcode match rate (at least 95%), the number of names that reach the threshold; `work/names.csv` exists |
+| 2 | `qsub pipeline/hpc/stage2.sh` | one file per register map period in `work/surfaces/` (eight) |
+| 3 | `qsub pipeline/hpc/stage3.sh` | the log's line per period; `work/chunks/CHUNKS` holds the chunk number you set |
+| 4 | `qsub -t 1-200 pipeline/hpc/stage4.sh` (the range ends at `GBNAMES_CHUNKS`), then `python3 -m pipeline.merge_stats` | every chunk finished: as many `work/maps/*.done` as chunks; `merge_stats` warns if a stats file is missing |
+| 5 | `qsub pipeline/hpc/stage5.sh` | `work/facts/report.txt`: the "bearers covered" column and the ethnicity codes it did not recognise; the time at the end |
+
+Stages 2 and 3 do not depend on each other, so they can be submitted together; stage 4 needs both, and stage 5 needs
+only stage 1 (so it can run beside stages 2 to 4). When a job fails, read the end of its log in `work/logs/`, fix the
+cause and submit it again: stages 3 to 5 keep what they finished, and stage 4 skips finished chunks. For the full run of
+stage 5 ask for more time on the command line (`qsub -l h_rt=03:00:00 pipeline/hpc/stage5.sh`) until you have measured it.

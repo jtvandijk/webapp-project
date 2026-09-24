@@ -61,12 +61,15 @@ def extract_period(conn, cfg, period, names, chunks, out_dir):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--sources", nargs="*", choices=["register", "census"], default=["register", "census"],
-                        help="which sources to extract from (default: both)")
-    parser.add_argument("--limit", type=int, help="only the first N names from work/names.csv (a sample run)")
-    parser.add_argument("--chunks", type=int, default=200, help="how many chunk files per period (default 200)")
+    parser.add_argument("--sources", nargs="*", choices=["register", "census"], default=config.RUN_SOURCES,
+                        help="which sources to extract from (default GBNAMES_SOURCES in run.settings)")
+    parser.add_argument("--limit", type=int, default=config.RUN_LIMIT,
+                        help="only the first N names from work/names.csv (a sample run; default GBNAMES_LIMIT in run.settings)")
+    parser.add_argument("--chunks", type=int, default=config.RUN_CHUNKS,
+                        help="how many chunk files per period (default GBNAMES_CHUNKS in run.settings, else 200)")
     parser.add_argument("--out-dir", default=str(config.WORK / "chunks"))
     args = parser.parse_args()
+    print(config.describe_run(), flush=True)
     sources = set(args.sources)
     out_dir = Path(args.out_dir)
 

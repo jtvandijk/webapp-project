@@ -1,0 +1,31 @@
+# Run settings: the choices that change from run to run. Nothing secret is in here, so it IS in git; the passwords
+# and database addresses are in .env, which is not.
+#
+# Every qsub script (pipeline/hpc/stage*.sh) reads this file, and so does every python stage when you do not pass the
+# matching flag, so a job and a command you type always agree. To use it in a session:
+#     set -a; source .env; source run.settings; set +a
+# Change a value here, not in the scripts. A flag on the command line still overrides it for that one command.
+#
+# NOT here: memory and time (qsub -l h_vmem, h_rt). SGE reads those before any script runs, so they stay in the "#$"
+# lines at the top of each hpc/stage*.sh; to change one for a single run, use the command line, e.g.
+#     qsub -l h_rt=02:00:00 pipeline/hpc/stage5.sh
+# See docs/how-to-build-the-dataset.md.
+
+# Which database(s) to use: register, census, or both ("register census"). Every stage.
+# Register only, until the census database is ready.
+GBNAMES_SOURCES="register"
+
+# How many pieces the names are cut into (stage 3) and how many map jobs there are (stage 4): the same number in both.
+# Stage 4 is submitted with an array of exactly this size:   qsub -t 1-200 pipeline/hpc/stage4.sh
+# (it refuses to start if the array size and this number disagree).
+GBNAMES_CHUNKS=200
+
+# A SAMPLE: only the first N names (stage 3 and stage 5). Empty means every name.
+# For a sample run try 5000 names and 40 chunks (the same number of names per chunk as the full run).
+GBNAMES_LIMIT=""
+
+# Stage 5: only these facts, e.g. "oac imd fpc". Empty means every fact of the chosen sources.
+GBNAMES_FACTS=""
+
+# The census years in use, for every stage. Leave one out while its data is not loaded, e.g. all but 1921.
+GBNAMES_CENSUS_YEARS="1851 1861 1881 1891 1901 1911 1921"
