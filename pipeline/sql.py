@@ -134,7 +134,7 @@ SELECT COUNT(*),
        SUM(CASE WHEN p.{c["parish_id"]} IS NOT NULL AND p.{c["parish_id"]} <> 0 AND c.{c["surname"]} IS NOT NULL THEN 1 ELSE 0 END)
 FROM {table} c
 JOIN {att} a ON a.{c["recid"]} = c.{c["recid"]} AND a.{c["source"]} = c.{c["source"]}
-LEFT JOIN {parish} p ON p.{c["parish_id"]} = a.{c["parish"]}"""
+LEFT JOIN {parish} p ON p.{c["parish_id"]} = a.{c["parish"]} AND p.{c["parish_id"]} <> 0"""      # id 0 is not a place; the real tables have two shapes with id 0
 
 
 def duplicate_parish_ids(cfg, year):

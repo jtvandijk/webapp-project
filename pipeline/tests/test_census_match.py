@@ -73,13 +73,16 @@ class CensusMatch(unittest.TestCase):
 
     def test_a_parish_table_that_has_a_row_for_id_0_does_not_make_those_people_counted(self):
         # the real parish tables probably have a pseudo-parish 0 ("not in a parish"); joining to it must not count anybody
+        # the real shapefiles have TWO shapes with id 0 in each table; joining people to both would count every id-0 person twice
         with_zero = self.damaged("INSERT INTO conpar1851 VALUES (0, 0.0, 0.0, 'Not in a parish', 'None')",
-                                 "INSERT INTO conpar1901 VALUES (0, 0.0, 0.0, 'Not in a parish', 'None')")
+                                 "INSERT INTO conpar1851 VALUES (0, 1.0, 1.0, '-', '-')",
+                                 "INSERT INTO conpar1901 VALUES (0, 0.0, 0.0, 'Not in a parish', 'None')",
+                                 "INSERT INTO conpar1901 VALUES (0, 1.0, 1.0, '-', '-')")
         for year in (1851, 1901, 1921):
             healthy, zero_row = s1_counts.census_match(self.conn, self.cfg)[year], s1_counts.census_match(with_zero, self.cfg)[year]
             self.assertEqual(zero_row, healthy, year)
             self.assertEqual(zero_row[3], sum(n for _, n in with_zero.execute(sql.census_counts(self.cfg, year))), year)
-        self.run_report(with_zero)                                                # and it is still not an error
+        self.assertNotIn("MORE attributes rows", self.run_report(with_zero))          # and it is not reported as people appearing twice
 
     def test_a_person_with_two_attributes_rows_stops_the_run_but_a_sliver_is_only_noted(self):
         many = self.damaged("INSERT INTO gb1901_att SELECT * FROM gb1901_att WHERE recid % 10 = 0")      # about 10% twice
