@@ -124,11 +124,13 @@ def census_rows(cfg, year):
 def census_match(cfg, year):
     """How the people of one census year that have an attributes row divide up: (how many, how many with parish id 0,
     how many are counted). Parish id 0 is by design: people counted in the census who were not in a parish of the
-    country (soldiers, sailors, British people abroad). 'Counted' is exactly the people census_counts() counts."""
+    country (soldiers, sailors, British people abroad); in the years of config.CENSUS_NULL_PARISH_IS_NONE they have no
+    id at all instead. 'Counted' is exactly the people census_counts() counts."""
     table, att, parish, c = _census(cfg, year)
+    nowhere = f'a.{c["parish"]} = 0' + (f' OR a.{c["parish"]} IS NULL' if year in config.CENSUS_NULL_PARISH_IS_NONE else "")
     return f"""
 SELECT COUNT(*),
-       SUM(CASE WHEN a.{c["parish"]} = 0 THEN 1 ELSE 0 END),
+       SUM(CASE WHEN {nowhere} THEN 1 ELSE 0 END),
        SUM(CASE WHEN p.{c["parish_id"]} IS NOT NULL AND p.{c["parish_id"]} <> 0 AND c.{c["surname"]} IS NOT NULL THEN 1 ELSE 0 END)
 FROM {table} c
 JOIN {att} a ON a.{c["recid"]} = c.{c["recid"]} AND a.{c["source"]} = c.{c["source"]}
@@ -143,6 +145,17 @@ def duplicate_parish_ids(cfg, year):
 SELECT COUNT(*) FROM (
   SELECT {c["parish_id"]} FROM {parish} WHERE {c["parish_id"]} <> 0 GROUP BY {c["parish_id"]} HAVING COUNT(*) > 1
 ) d"""
+
+
+def people_in_repeated_parish_ids(cfg, year):
+    """How many people carry a parish id that appears on more than one row of the parish table: each of them would be
+    counted once per row. A repeated id that nobody carries does no harm."""
+    _, att, parish, c = _census(cfg, year)
+    return f"""
+SELECT COUNT(*) FROM {att} a
+WHERE a.{c["parish"]} IN (
+  SELECT {c["parish_id"]} FROM {parish} WHERE {c["parish_id"]} <> 0 GROUP BY {c["parish_id"]} HAVING COUNT(*) > 1
+)"""
 
 
 def register_totals(cfg, years, matched):

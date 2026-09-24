@@ -8,20 +8,24 @@ after any reload of them.
 
 It reads each parish table (about 13,000 rows) and makes one pass over each year's attributes table, counting the
 people per parish id; everything else is worked out in Python. Lines that start with LOOK are the ones to read.
+A problem with a parish table is a LOOK only if census people are in the parishes it touches, and it says how many:
+a stray shape that nobody carries is only noted.
 
 The people are joined to a parish the way every stage joins them: the parish id in the attributes table (gid; for 1921
 conparid1901) against conparid in the parish table (config.CENSUS_PARISH_COLUMN, CENSUS_PARISH_BOUNDARIES).
 """
 import argparse
 import csv
+import math
 from collections import Counter
 
 from . import config, db, sql
-from .names import has_letters, name_key
+from .names import has_letters, name_key, place_label
 
 LOST_SHARE = 0.05          # people whose parish id is not in the parish table: more than this is worth a look
 OTHER_SHARE = 0.05         # people whose id is found in the OTHER boundaries' table: the wrong table may be in use
 CAPS_LOOK = 3              # how many examples of a thing to print
+NAME_SHARE = 0.005         # parishes without a name or a county, or the neighbours of fractional ids: worth a LOOK above this share of a year's people
 
 
 def _num(value):
@@ -107,9 +111,15 @@ def read_lookup(path):
 def summarise_table(rows):
     """Facts about one parish table. rows: (id, x, y, parish name, county)."""
     grid = config.GRID
+    on_grid = lambda x, y: (grid["x0"] <= x < grid["x0"] + grid["nx"] * grid["cell"]
+                            and grid["y0"] <= y < grid["y0"] + grid["ny"] * grid["cell"])
     places = [r for r in rows if r[0] != 0]                  # parish id 0 is "not in a parish", not a place
     seen = Counter(r[0] for r in places if r[0] is not None)
     located = [(x, y) for _, x, y, _, _ in places if x is not None and y is not None]
+    no_centroid_ids = [r[0] for r in places if r[1] is None or r[2] is None]
+    zero_ids = [r[0] for r in places if r[1] == 0 and r[2] == 0]
+    off_grid_ids = [r[0] for r in places if r[1] is not None and r[2] is not None and not on_grid(r[1], r[2])]
+    label = lambda r: place_label(r[4], r[3], config.UNNAMED_PARISH_LABELS)
     names = [str(r[3]) for r in places if r[3] is not None]
     longest = max((len(n) for n in names), default=0)
     counties = {}
@@ -121,16 +131,19 @@ def summarise_table(rows):
         "zero_rows": len(rows) - len(places), "no_id_rows": sum(r[0] is None for r in rows),
         "repeated": sorted(i for i, n in seen.items() if n > 1),
         "fractional": sorted(i for i in seen if isinstance(i, float)),
-        "no_name": [r[0] for r in places if not has_letters(r[3])],
+        "no_name": [r[0] for r in places if label(r) is None],                       # no name and no label to show instead
+        "labelled": [r[0] for r in places if not has_letters(r[3]) and label(r) is not None],
         "no_county": sum(not has_letters(r[4]) for r in places),
+        "no_county_ids": [r[0] for r in places if not has_letters(r[4])],
         "caps_counties": sorted({str(r[4]).strip() for r in places if has_letters(r[4]) and str(r[4]) == str(r[4]).upper()}),
         "caps_parishes": sum(has_letters(n) and n == n.upper() for n in names),
         "several_names": sum("," in n for n in names),
         "longest": longest, "at_longest": sum(len(n) == longest for n in names),
         "counties": counties,
         "no_centroid": len(places) - len(located), "centroid_zero": sum(x == 0 and y == 0 for x, y in located),
-        "off_grid": sum(not (grid["x0"] <= x < grid["x0"] + grid["nx"] * grid["cell"]
-                             and grid["y0"] <= y < grid["y0"] + grid["ny"] * grid["cell"]) for x, y in located),
+        "off_grid": sum(not on_grid(x, y) for x, y in located),
+        "no_centroid_ids": no_centroid_ids, "centroid_zero_ids": zero_ids, "off_grid_ids": off_grid_ids,
+        "unlocated_ids": set(no_centroid_ids) | set(zero_ids) | set(off_grid_ids),
         "x_range": (min((x for x, _ in located), default=None), max((x for x, _ in located), default=None)),
         "y_range": (min((y for _, y in located), default=None), max((y for _, y in located), default=None)),
     }
@@ -188,6 +201,18 @@ def make_report(data, lookup=None):
         problems.append(text)
 
     tables = {b: summarise_table(t["rows"]) for b, t in sorted(data["tables"].items())}
+    years_of = {b: [year for year, y in sorted(data["years"].items()) if y["boundaries"] == b] for b in tables}
+    total = {year: sum(y["counts"].values()) for year, y in data["years"].items()}
+
+    def spread(b, ids):
+        """{year: people carrying one of these ids} for the census years that use table b."""
+        return {year: sum(data["years"][year]["counts"].get(i, 0) for i in ids) for year in years_of[b]}
+
+    def where(spread_):
+        return ", ".join(f"{year} {n:,} ({_pct(n, total[year])})" for year, n in spread_.items() if n)
+
+    def share(spread_):
+        return max((n / total[year] for year, n in spread_.items() if total[year]), default=0.0)
 
     note("PARISH TABLES")
     for b, s in tables.items():
@@ -195,28 +220,52 @@ def make_report(data, lookup=None):
         note(f"  {t['name']}: {s['rows']:,} rows, {s['distinct']:,} different ids from {_fmt(s['lo'])} to {_fmt(s['hi'])} "
              f"(id column: {t['id_type']}); id 0 on {s['zero_rows']:,} rows")
         if s["repeated"]:
-            look(f"{t['name']}: {len(s['repeated']):,} parish ids appear on more than one row (e.g. {_examples(s['repeated'])}); stage 1 stops on this")
+            people = spread(b, s["repeated"])
+            what = f"{t['name']}: {len(s['repeated']):,} parish ids appear on more than one row (e.g. {_examples(s['repeated'])})"
+            if any(people.values()):
+                look(f"{what}; people carry them and would be counted more than once: {where(people)}. Stage 1 stops until the table has one row per id")
+            else:
+                note(f"  {what}; no census person carries them, so nothing is counted twice, and stage 1 goes on")
         if s["no_id_rows"]:
             look(f"{t['name']}: {s['no_id_rows']:,} rows have no parish id")
         if s["fractional"]:
             note(f"  {len(s['fractional'])} ids are not whole numbers (e.g. {_examples(s['fractional'])}): the attributes columns must be able to hold them too")
         if s["no_name"]:
-            look(f"{t['name']}: {len(s['no_name']):,} parishes have no real name (blank or \"-\"; ids e.g. {_examples(s['no_name'])}). "
-                 "They are left out of the places lists")
+            people = spread(b, s["no_name"])
+            what = f"{t['name']}: {len(s['no_name']):,} parishes have no real name (blank or \"-\"; ids e.g. {_examples(sorted(set(s['no_name'])))})"
+            tail = f"; people in them: {where(people)}" if any(people.values()) else "; no census person is in them"
+            if share(people) > NAME_SHARE:
+                look(f"{what}{tail}. They are left out of the places lists, though their people are on the maps")
+            else:
+                note(f"  {what}{tail}: too few people to matter for the places lists")
+        if s["labelled"]:
+            people = spread(b, s["labelled"])
+            note(f"  {t['name']}: {len(s['labelled']):,} parishes have no name but get one for the places lists from config.UNNAMED_PARISH_LABELS "
+                 f"(ids e.g. {_examples(sorted(set(s['labelled'])))}); people in them: {where(people) or 'none'}")
         if s["no_county"]:
-            look(f"{t['name']}: {s['no_county']:,} parishes have no county")
+            people = spread(b, s["no_county_ids"])
+            what = f"{t['name']}: {s['no_county']:,} parishes have no county"
+            tail = f"; people in them: {where(people)}" if any(people.values()) else "; no census person is in them"
+            if share(people) > NAME_SHARE:
+                look(f"{what}{tail}")
+            else:
+                note(f"  {what}{tail}: too few people to matter")
         if s["caps_counties"]:
             note(f"  {len(s['caps_counties'])} counties are in ALL CAPITALS (e.g. {_examples(s['caps_counties'])}); stage 5 shows them as ordinary capitals")
         note(f"  names: {s['several_names']:,} hold several parishes in one (with a comma); the longest name has {s['longest']} characters "
              f"({s['at_longest']:,} names that long{'; a limit that cuts names short?' if s['at_longest'] > 5 and s['longest'] >= 50 else ''}); {s['caps_parishes']:,} parish names in ALL CAPITALS")
         note(f"  centroids: x from {_fmt(s['x_range'][0])} to {_fmt(s['x_range'][1])}, y from {_fmt(s['y_range'][0])} to {_fmt(s['y_range'][1])}")
-        if s["no_centroid"]:
-            look(f"{t['name']}: {s['no_centroid']:,} parishes have no x/y; their people cannot be put on a map")
-        if s["centroid_zero"]:
-            look(f"{t['name']}: {s['centroid_zero']:,} parishes have x = 0 and y = 0")
-        if s["off_grid"]:
-            look(f"{t['name']}: {s['off_grid']:,} parishes have a centroid outside the map grid. x and y should be British National Grid "
-                 "metres (x up to about 700,000, y up to about 1,250,000), not degrees")
+        for count, ids, text in (
+                (s["no_centroid"], s["no_centroid_ids"], "have no x/y; their people cannot be put on a map"),
+                (s["centroid_zero"], s["centroid_zero_ids"], "have x = 0 and y = 0"),
+                (s["off_grid"], s["off_grid_ids"], "have a centroid outside the map grid. x and y should be British National Grid "
+                                                   "metres (x up to about 700,000, y up to about 1,250,000), not degrees")):
+            if count:
+                people = spread(b, ids)
+                if any(people.values()):
+                    look(f"{t['name']}: {count:,} parishes {text}; people in them: {where(people)}")
+                else:
+                    note(f"  {t['name']}: {count:,} parishes {text}; no census person is in them")
 
     if len(tables) == 2:
         (b1, s1), (b2, s2) = tables.items()
@@ -241,6 +290,7 @@ def make_report(data, lookup=None):
         table = tables[y["boundaries"]]
         other = next((s for b, s in tables.items() if b != y["boundaries"]), None)
         s = summarise_year(y["counts"], table["ids"], None if other is None else other["ids"])
+        s["unlocated"] = sum(y["counts"].get(i, 0) for i in table["unlocated_ids"])
         used = f"{_fmt(s['lo'])} to {_fmt(s['hi'])}"
         note(f"  {year:<6}{y['column']:<16}{s['people']:>14,}  {used:<22}{_pct(s['zero'], s['people']):>7}{_pct(s['no_id'], s['people']):>7}"
              f"{_pct(s['lost'], s['people']):>14}{(_pct(s['in_other'], s['people']) if s['in_other'] is not None else 'n/a'):>16}")
@@ -253,6 +303,9 @@ def make_report(data, lookup=None):
         if not s["people"]:
             look(f"{year}: the attributes table has no rows")
             continue
+        unplaced = s["zero"] + s["no_id"] + s["lost"] + s["unlocated"]
+        note(f"  {year}: {unplaced:,} people ({_pct(unplaced, s['people'])}) cannot be put on a map: id 0 {s['zero']:,}, no id {s['no_id']:,}, "
+             f"id not in the table {s['lost']:,}, parish without a usable location {s['unlocated']:,}")
         if real and s["lost"] / real > LOST_SHARE:
             look(f"{year}: {_pct(s['lost'], real)} of the people with a parish id have one that is not in {data['tables'][y['boundaries']]['name']}; "
                  f"the ids most often missing: {_lost_examples(s)}")
@@ -270,14 +323,25 @@ def make_report(data, lookup=None):
         if s["in_other"] is not None and real and s["in_other"] / real > OTHER_SHARE:
             look(f"{year}: {_pct(s['in_other'], real)} of the people carry ids that are in the OTHER parish table; is {y['column']} the right column, "
                  f"and {data['tables'][y['boundaries']]['name']} the right table, for this year?")
-        if s["no_id"]:
+        if s["no_id"] and year in config.CENSUS_NULL_PARISH_IS_NONE:
+            note(f"  {year}: {s['no_id']:,} people ({_pct(s['no_id'], s['people'])}) have no parish id (NULL); that is how this year records people not in a parish "
+                 "(soldiers, sailors, people abroad), and stage 1 counts them with the id-0 people of the other years")
+        elif s["no_id"]:
             note(f"  {year}: {s['no_id']:,} people have no parish id at all (NULL); stage 1 counts them under \"not counted although they should be\", not under id 0")
         if _text_type(y["id_type"]) or _text_type(table_type(data, y)):
             look(f"{year}: a parish id column holds text ({y['id_type']} and {table_type(data, y)}); the join needs numbers on both sides")
         if s["fractional_people"] or table["fractional"]:
             if _integer_type(y["id_type"]):
-                look(f"{year}: the parish table has fractional ids (e.g. {_examples(table['fractional'])}) but {y['att']}.{y['column']} is {y['id_type']}, "
-                     "which cannot hold them; their people would be in the wrong parish or none")
+                # a fractional parish's people can only carry a whole number here: the one below or above (truncated or rounded)
+                around = {n for f in table["fractional"] for n in (math.floor(f), math.ceil(f))} - set(table["fractional"])
+                near = sum(y["counts"].get(i, 0) for i in around)
+                text = (f"{year}: the parish table has fractional ids (e.g. {_examples(table['fractional'])}) but {y['att']}.{y['column']} is {y['id_type']}, "
+                        f"which cannot hold them. The whole-number ids next to them carry {near:,} people ({_pct(near, s['people'])}) between them; "
+                        "that is the most who can be in the wrong parish")
+                if near / s["people"] > NAME_SHARE:
+                    look(text)
+                else:
+                    note("  " + text)
             else:
                 note(f"  {year}: {s['fractional_people']:,} people carry a fractional parish id")
 

@@ -202,6 +202,18 @@ CENSUS_PARISH_BOUNDARIES = {1851: 1851, 1861: 1851, 1881: 1851, 1891: 1851,
 # parishes by point in polygon, and that result is the column conparid1901. Any year not listed uses the profile's column.
 CENSUS_PARISH_COLUMN = {1921: "conparid1901"}
 
+# The census years in which a person who was not in a parish (soldiers, sailors, people abroad) has NO parish id (NULL),
+# where every other year records them as parish id 0. Stage 1 counts them with the id-0 people, not under "not counted
+# although they should be". 1921: checked by the data owner, the year has no id 0 at all.
+CENSUS_NULL_PARISH_IS_NONE = [1921]
+
+# A parish with no name of its own in the parish table (the name is "-") in one of these counties is shown in the places
+# lists under a name made here, and pooled with the others that get the same one: (a regular expression for the county as
+# names.name_key() writes it - lower case, single spaces -, the county to show, the parish to show). In the 1901
+# numbering London is four big units, London 1, 2 and 3 and the City, not parishes, and all of them are called "-". Any
+# other nameless parish is left out of the places lists (the parish check says how many people that is).
+UNNAMED_PARISH_LABELS = [(r"^(london [123]|city of london)$", "London", "London parishes")]
+
 # How gid was made from the ids the census files carry (the note pg_conpar_dic.txt, applied to the 1851 and 1901 numberings):
 # five ids that are in no parish list are moved to a neighbouring parish, and Scotland in the 1901 numbering has 100,000
 # added (200001-200853 became 300001-300853) so that it lines up with the 1901 geometries. Only the parish check reads these,

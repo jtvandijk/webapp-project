@@ -59,12 +59,20 @@ def report_match_rate(rates):
 
 
 def check_parish_tables(conn, cfg):
-    """Stop if a parish table has a parish twice: everybody in it would count twice."""
+    """Stop if a parish table has a parish twice AND people carry that id: each of them would count twice. A repeated id
+    that nobody carries (a stray piece of a shape, in the shapefiles: an id 0 aside, the 1851 and 1901 tables have three)
+    does no harm, and is only said."""
     for year in sorted(set(config.CENSUS_YEARS)):
         repeated = db.fetch(conn, sql.duplicate_parish_ids(cfg, year))[0][0]
-        if repeated:
-            raise SystemExit(f"The parish table used for {year} has {repeated:,} parish ids that appear more than once. "
-                             "Make it one row per parish (or fix the table name in config.py) and run again.")
+        if not repeated:
+            continue
+        people = int(db.fetch(conn, sql.people_in_repeated_parish_ids(cfg, year))[0][0] or 0)
+        if people:
+            raise SystemExit(f"The parish table used for {year} has {repeated:,} parish ids that appear more than once, and "
+                             f"{people:,} people carry them, so they would be counted more than once. Make the table one row per "
+                             "parish (python3 -m pipeline.check_parishes names the ids) or fix the table name in config.py, and run again.")
+        print(f"note: the parish table used for {year} has {repeated:,} parish ids on more than one row, but nobody in {year} "
+              "carries them, so nothing is counted twice.")
 
 
 def census_match(conn, cfg):

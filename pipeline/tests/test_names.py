@@ -7,7 +7,7 @@ import subprocess
 import sys
 import unittest
 
-from pipeline.names import chunk_of, has_letters, name_key, place_name
+from pipeline.names import chunk_of, has_letters, name_key, place_label, place_name
 
 
 class PlaceName(unittest.TestCase):
@@ -38,6 +38,28 @@ class PlaceName(unittest.TestCase):
         self.assertEqual(name_key("ABERDEEN"), name_key(" Aberdeen "))
         self.assertEqual(name_key("Ross  and Cromarty"), name_key("ROSS AND CROMARTY"))
         self.assertNotEqual(name_key("Kirkby Malham"), name_key("Kirkby Malzeard"))
+
+
+class PlaceLabel(unittest.TestCase):
+    RULES = [(r"^(london [123]|city of london)$", "London", "London parishes")]
+
+    def test_a_parish_with_a_name_is_shown_under_it(self):
+        self.assertEqual(place_label("Kent", "Chelsfield", self.RULES), ("Kent", "Chelsfield"))
+        self.assertEqual(place_label("ROSS AND CROMARTY", "COLL", self.RULES), ("Ross and Cromarty", "Coll"))
+        self.assertEqual(place_label("", "Bath"), ("", "Bath"))                       # even with no county
+
+    def test_a_nameless_parish_takes_the_label_of_its_county(self):
+        for county in ("London 1", "London  2", "LONDON 3", " City of London "):
+            self.assertEqual(place_label(county, "-", self.RULES), ("London", "London parishes"), county)
+            self.assertEqual(place_label(county, "", self.RULES), ("London", "London parishes"), county)
+
+    def test_a_nameless_parish_with_no_label_is_left_out(self):
+        for county in ("Kent", "Yorkshire, North Riding", "London 4", "Greater London", "London (Central Districts)", "", None):
+            self.assertIsNone(place_label(county, "-", self.RULES), county)
+        self.assertIsNone(place_label("London 1", "-"))                               # no rules given: nothing is invented
+
+    def test_a_named_parish_is_never_relabelled(self):
+        self.assertEqual(place_label("London 1", "Paddington", self.RULES), ("London 1", "Paddington"))
 
 
 class ChunkOf(unittest.TestCase):

@@ -97,12 +97,61 @@ class CensusMatch(unittest.TestCase):
         self.assertIn("more than 20%", str(stopped.exception))
         self.assertIn("boundaries", str(stopped.exception))
 
-    def test_a_parish_table_with_a_repeated_parish_id_is_refused(self):
+    def test_a_parish_table_with_a_repeated_parish_id_that_people_carry_is_refused(self):
         s1_counts.check_parish_tables(self.conn, self.cfg)                       # the healthy one passes
         twice = self.damaged("INSERT INTO conpar1901 SELECT * FROM conpar1901 WHERE conparid = 5001")
         with self.assertRaises(SystemExit) as stopped:
             s1_counts.check_parish_tables(twice, self.cfg)
-        self.assertIn("appear more than once", str(stopped.exception))
+        people = twice.execute("SELECT COUNT(*) FROM gb1901_att WHERE gid = 5001").fetchone()[0]
+        self.assertGreater(people, 0)
+        self.assertIn("1 parish ids that appear more than once", str(stopped.exception))
+        self.assertIn(f"{people:,} people carry them", str(stopped.exception))
+        self.assertIn("1901", str(stopped.exception))
+
+    def test_a_repeated_parish_id_that_nobody_carries_is_only_noted(self):
+        # the shapefiles have stray pieces of shapes with an id of their own, twice; no census person has that id
+        twice = self.damaged("INSERT INTO conpar1901 VALUES (9999, 500000.0, 200000.0, '-', '-')",
+                             "INSERT INTO conpar1901 VALUES (9999, 500001.0, 200001.0, '-', '-')")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            s1_counts.check_parish_tables(twice, self.cfg)                       # does not stop
+        self.assertIn("1 parish ids on more than one row, but nobody in 1901 carries them", out.getvalue())
+        self.assertIn("nothing is counted twice", out.getvalue())
+
+    def test_people_who_carry_a_repeated_id_are_counted_by_the_sql(self):
+        twice = self.damaged("INSERT INTO conpar1901 SELECT * FROM conpar1901 WHERE conparid IN (5001, 5002)")
+        for year in (1901, 1911, 1921):
+            column = "conparid1901" if year == 1921 else "gid"
+            expected = twice.execute(f"SELECT COUNT(*) FROM gb{year}_att WHERE {column} IN (5001, 5002)").fetchone()[0]
+            self.assertEqual(twice.execute(sql.people_in_repeated_parish_ids(self.cfg, year)).fetchone()[0], expected, year)
+        self.assertEqual(twice.execute(sql.people_in_repeated_parish_ids(self.cfg, 1851)).fetchone()[0], 0)   # 1851 uses the other table
+
+    def test_in_1921_people_with_no_parish_id_are_people_not_in_a_parish_but_in_another_year_they_are_unexplained(self):
+        # 1921 records "not in a parish" as no id at all; the other years as id 0
+        nulled = self.damaged("UPDATE gb1921_att SET conparid1901 = NULL WHERE recid % 40 = 1", "UPDATE gb1911_att SET gid = NULL WHERE recid % 40 = 1")
+        healthy, found = s1_counts.census_match(self.conn, self.cfg), s1_counts.census_match(nulled, self.cfg)
+        k21 = self.conn.execute("SELECT COUNT(*) FROM gb1921_att WHERE recid % 40 = 1 AND conparid1901 <> 0").fetchone()[0]      # had a parish
+        k11 = self.conn.execute("SELECT COUNT(*) FROM gb1911_att WHERE recid % 40 = 1 AND gid <> 0").fetchone()[0]
+        z11 = self.conn.execute("SELECT COUNT(*) FROM gb1911_att WHERE recid % 40 = 1 AND gid = 0").fetchone()[0]                # had id 0
+        self.assertGreater(min(k21, k11, z11), 0)
+        self.assertEqual(found[1921][2], healthy[1921][2] + k21)                # more people "in no parish" ...
+        self.assertEqual(found[1921][3], healthy[1921][3] - k21)                # ... and fewer counted
+        self.assertEqual(found[1921][1] - found[1921][2] - found[1921][3], 0)   # nobody is unexplained
+        self.assertEqual(found[1911][2], healthy[1911][2] - z11)                # 1911: a missing id is not id 0 (those who had 0 are now missing) ...
+        self.assertEqual(found[1911][1] - found[1911][2] - found[1911][3], k11 + z11)     # ... so all of them are unexplained
+        report = self.run_report(nulled)
+        self.assertIn("1921:", report)
+        self.assertRegex([line for line in report.splitlines() if line.strip().startswith("1921:")][0], r"0\.00% not counted")
+        self.assertNotRegex([line for line in report.splitlines() if line.strip().startswith("1911:")][0], r"0\.00% not counted")
+
+    def test_only_the_1921_sql_treats_a_missing_id_as_no_parish(self):
+        tre = config.settings("tre")
+        self.assertIn("a.conparid1901 = 0 OR a.conparid1901 IS NULL", sql.census_match(tre, 1921))
+        for year in (1851, 1861, 1881, 1891, 1901, 1911):
+            self.assertNotIn("IS NULL", sql.census_match(tre, year), year)
+        self.assertIn("HAVING COUNT(*) > 1", sql.people_in_repeated_parish_ids(tre, 1901))
+        self.assertIn("FROM census.gb1901_att a", sql.people_in_repeated_parish_ids(tre, 1901))
+        self.assertIn("FROM spatial.conpar1851", sql.people_in_repeated_parish_ids(tre, 1861))
 
     def test_an_empty_census_table_is_refused_with_a_clear_message(self):
         empty = self.damaged("DELETE FROM gb1851")

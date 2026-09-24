@@ -690,9 +690,30 @@ class PlacesAreShownTidily(unittest.TestCase):
                           ("Middlesex (exclusive of London Districts)", "Laleham")])
 
     def test_a_parish_with_no_name_is_not_listed_even_when_it_is_the_biggest(self):
-        # the London parishes of the 1901 table are called "-": a page must not say "smith: -, London 1"
-        top = self.top({("london 1", "-"): ["London 1", "-", 900], ("kent", "dover"): ["Kent", "Dover", 20]})
+        # a page must not say "smith: -, Kent"
+        top = self.top({("kent", "-"): ["Kent", "-", 900], ("yorkshire, north riding", ""): ["Yorkshire, North Riding", "", 500],
+                        ("kent", "dover"): ["Kent", "Dover", 20]})
         self.assertEqual([(p["county"], p["parish"]) for p in top], [("Kent", "Dover")])
+
+    def test_the_nameless_london_units_of_1901_are_one_place_called_london_parishes(self):
+        # in the 1901 numbering London is London 1, 2, 3 and the City, all named "-" (config.UNNAMED_PARISH_LABELS)
+        top = self.top({("london 1", "-"): ["London 1", "-", 300], ("london 2", "-"): ["London 2", "-", 250],
+                        ("london 3", "-"): ["LONDON 3", "-", 200], ("city of london", "-"): ["City of London", "-", 5],
+                        ("kent", "dover"): ["Kent", "Dover", 400]})
+        self.assertEqual([(p["county"], p["parish"]) for p in top], [("London", "London parishes"), ("Kent", "Dover")])
+
+    def test_the_london_label_is_pooled_before_the_minimum_is_applied(self):
+        # none of the four units has enough people alone; together they do
+        few = config.FACT_MIN_IN_CATEGORY // 2 + 1
+        self.assertLess(few, config.FACT_MIN_IN_CATEGORY)
+        self.assertGreaterEqual(4 * few, config.FACT_MIN_IN_CATEGORY)
+        units = {(f"london {i}", "-"): [f"London {i}", "-", few] for i in (1, 2, 3)}
+        units[("city of london", "-")] = ["City of London", "-", few]
+        self.assertEqual(self.top(units), [{"county": "London", "parish": "London parishes"}])
+
+    def test_a_named_london_parish_is_not_relabelled(self):
+        top = self.top({("london (central districts)", "st luke"): ["London (Central Districts)", "St Luke", 50]})
+        self.assertEqual(top, [{"county": "London (Central Districts)", "parish": "St Luke"}])
 
     def test_spellings_of_one_place_are_one_place(self):
         # the same parish in capitals in one boundary table and not in the other: read_parishes adds them together

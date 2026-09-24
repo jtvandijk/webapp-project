@@ -148,9 +148,24 @@ class CheckParishes(unittest.TestCase):
 
     # ----- damage to the parish tables
 
-    def test_a_parish_id_on_two_rows_is_flagged(self):
-        _, _, problems = self.report(self.damaged("INSERT INTO conpar1901 VALUES (5001, 400000.0, 400000.0, 'Twice', 'Kent')"))
-        self.assertTrue(self.flagged(problems, "conpar1901", "more than one row", "5001"))
+    def test_a_parish_id_on_two_rows_that_people_carry_is_flagged_with_the_numbers(self):
+        conn = self.damaged("INSERT INTO conpar1901 VALUES (5001, 400000.0, 400000.0, 'Twice', 'Kent')")
+        _, _, problems = self.report(conn)
+        found = self.flagged(problems, "conpar1901", "more than one row", "5001")
+        self.assertTrue(found)
+        for year, column in ((1901, "gid"), (1911, "gid"), (1921, "conparid1901")):
+            people = conn.execute(f"SELECT COUNT(*) FROM gb{year}_att WHERE {column} = 5001").fetchone()[0]
+            self.assertGreater(people, 0, year)
+            self.assertIn(f"{year} {people:,} (", found[0])
+        self.assertIn("Stage 1 stops", found[0])
+
+    def test_a_parish_id_on_two_rows_that_nobody_carries_is_only_noted(self):
+        # the shapefiles have small pieces of shapes with an id of their own, on two rows; no census person has that id
+        conn = self.damaged("INSERT INTO conpar1901 VALUES (9999, 400000.0, 400000.0, '-', '-')",
+                            "INSERT INTO conpar1901 VALUES (9999, 400001.0, 400001.0, '-', '-')")
+        _, text, problems = self.report(conn)
+        self.assertEqual(problems, [], text)
+        self.assertIn("1 parish ids appear on more than one row (e.g. 9999); no census person carries them, so nothing is counted twice", text)
 
     def test_two_id_0_rows_are_not_a_repeat_and_are_not_places(self):
         # the 1851 shapefile has two shapes with id 0
@@ -163,12 +178,49 @@ class CheckParishes(unittest.TestCase):
         _, _, problems = self.report(self.damaged("INSERT INTO conpar1901 VALUES (1, 400000.0, 400000.0, 'Same as 1851', 'Kent')"))
         self.assertTrue(self.flagged(problems, "share 1 parish ids"), problems)
 
-    def test_no_name_and_blank_county_are_flagged(self):
+    def test_no_name_and_blank_county_are_flagged_when_they_hold_many_people(self):
+        conn = self.damaged("UPDATE conpar1901 SET parish = '-' WHERE conparid < 5200", "UPDATE conpar1901 SET regcnty = NULL WHERE conparid BETWEEN 5001 AND 5100")
+        _, _, problems = self.report(conn)
+        nameless = self.flagged(problems, "conpar1901", "199 parishes have no real name", "5001")
+        countyless = self.flagged(problems, "conpar1901", "100 parishes have no county")
+        self.assertTrue(nameless, problems)
+        self.assertTrue(countyless, problems)
+        for year in (1901, 1911, 1921):
+            column = "conparid1901" if year == 1921 else "gid"
+            people = conn.execute(f"SELECT COUNT(*) FROM gb{year}_att WHERE {column} BETWEEN 5001 AND 5199").fetchone()[0]
+            self.assertIn(f"{year} {people:,} (", nameless[0])
+        self.assertIn("left out of the places lists", nameless[0])
+
+    def test_a_few_parishes_without_a_name_or_county_are_only_noted_with_their_people(self):
         conn = self.damaged("UPDATE conpar1901 SET parish = '-' WHERE conparid = 5002", "UPDATE conpar1901 SET parish = '' WHERE conparid = 5003",
                             "UPDATE conpar1901 SET regcnty = NULL WHERE conparid = 5004")
-        _, _, problems = self.report(conn)
-        self.assertTrue(self.flagged(problems, "conpar1901", "2 parishes have no real name", "5002"))
-        self.assertTrue(self.flagged(problems, "conpar1901", "1 parishes have no county"))
+        _, text, problems = self.report(conn)
+        self.assertEqual(problems, [], text)
+        people = conn.execute("SELECT COUNT(*) FROM gb1901_att WHERE gid IN (5002, 5003)").fetchone()[0]
+        self.assertGreater(people, 0)
+        self.assertIn("conpar1901: 2 parishes have no real name", text)
+        self.assertIn(f"people in them: 1901 {people:,} (", text)
+        self.assertIn("too few people to matter for the places lists", text)
+        self.assertIn("conpar1901: 1 parishes have no county", text)
+
+    def test_a_repeated_nameless_id_is_listed_once_in_the_examples(self):
+        conn = self.damaged("INSERT INTO conpar1901 VALUES (9999, 400000.0, 400000.0, '-', '-')", "INSERT INTO conpar1901 VALUES (9999, 400001.0, 400001.0, '-', '-')")
+        _, text, _ = self.report(conn)
+        self.assertIn("conpar1901: 2 parishes have no real name (blank or \"-\"; ids e.g. 9999)", text)      # two rows, one id
+
+    def test_the_nameless_london_units_get_a_label_and_are_not_counted_as_nameless(self):
+        conn = self.damaged("UPDATE conpar1901 SET parish = '-', regcnty = 'London 1' WHERE conparid = 5002",
+                            "UPDATE conpar1901 SET parish = '-', regcnty = 'London 2' WHERE conparid = 5003",
+                            "UPDATE conpar1901 SET parish = '-', regcnty = 'City of London' WHERE conparid = 5004",
+                            "UPDATE conpar1901 SET parish = '-' WHERE conparid = 5005")                # nameless, in a county with no label
+        data, text, problems = self.report(conn)
+        summary = cp.summarise_table(data["tables"][1901]["rows"])
+        self.assertEqual(summary["labelled"], [5002, 5003, 5004])
+        self.assertEqual(summary["no_name"], [5005])
+        self.assertIn("conpar1901: 3 parishes have no name but get one for the places lists from config.UNNAMED_PARISH_LABELS", text)
+        self.assertIn("conpar1901: 1 parishes have no real name", text)
+        people = conn.execute("SELECT COUNT(*) FROM gb1901_att WHERE gid IN (5002, 5003, 5004)").fetchone()[0]
+        self.assertIn(f"people in them: 1901 {people:,} (", text.split("get one for the places lists")[1].split("\n")[0])
 
     def test_capital_counties_and_several_names_are_noted_not_flagged(self):
         conn = self.damaged("UPDATE conpar1901 SET regcnty = 'ROSS AND CROMARTY' WHERE conparid = 5005",
@@ -192,15 +244,53 @@ class CheckParishes(unittest.TestCase):
         self.assertTrue(self.flagged(problems, "conpar1901", "outside the map grid"))
         self.assertTrue(self.flagged(problems, "conpar1901", "no x/y"))
 
-    def test_fractional_ids_need_a_column_that_can_hold_them(self):
-        # ids like 200136.3 (Coll) exist in the old lookup; an integer attributes column cannot hold them
+    def test_a_centroid_problem_of_a_parish_nobody_is_in_is_only_noted(self):
+        conn = self.damaged("INSERT INTO conpar1901 VALUES (9999, 0.0, 0.0, 'Nobody lives here', 'Kent')")
+        _, text, problems = self.report(conn)
+        self.assertEqual(problems, [], text)
+        self.assertIn("conpar1901: 1 parishes have x = 0 and y = 0; no census person is in them", text)
+
+    def test_fractional_ids_in_an_integer_column_are_noted_with_the_people_next_to_them(self):
+        # ids like 200136.3 (Coll) exist in the old lookup; an integer attributes column cannot hold them, so the people of
+        # such a parish carry the whole number next to it. A few people there is not worth a LOOK
         conn = self.damaged("INSERT INTO conpar1851 VALUES (200136.3, 150000.0, 750000.0, 'Coll', 'ARGYLL')")
         data, text, problems = self.report(conn)
         self.assertIn("1 ids are not whole numbers (e.g. 200136.3)", text)
-        self.assertTrue(self.flagged(problems, "1851: the parish table has fractional ids", "cannot hold"), problems)
-        data["years"][1851]["id_type"] = "double precision"
+        line = [l for l in text.splitlines() if l.strip().startswith("1851: the parish table has fractional ids")][0]
+        self.assertIn("The whole-number ids next to them carry 0 people (0.0%) between them", line)
+        self.assertFalse(self.flagged(problems, "1851: the parish table has fractional"), problems)
+
+    def test_many_people_on_the_whole_numbers_beside_a_fractional_id_are_flagged(self):
+        conn = self.damaged("INSERT INTO conpar1851 VALUES (200136.3, 150000.0, 750000.0, 'Coll', 'ARGYLL')",
+                            "INSERT INTO conpar1851 VALUES (200137, 150000.0, 750000.0, 'Tiree', 'ARGYLL')",
+                            "UPDATE gb1851_att SET gid = 200136 WHERE recid % 10 = 0", "UPDATE gb1851_att SET gid = 200137 WHERE recid % 10 = 1")
+        data, text, problems = self.report(conn)
+        near = conn.execute("SELECT COUNT(*) FROM gb1851_att WHERE gid IN (200136, 200137)").fetchone()[0]
+        found = self.flagged(problems, "1851: the parish table has fractional ids")
+        self.assertTrue(found, problems)
+        self.assertIn(f"carry {near:,} people", found[0])
+        data["years"][1851]["id_type"] = "double precision"                     # a column that can hold them: no such problem
         _, problems = cp.make_report(data)
         self.assertFalse(self.flagged(problems, "1851: the parish table has fractional"))
+
+    # ----- how many people cannot be put on a map
+
+    def test_each_year_says_how_many_people_cannot_be_put_on_a_map(self):
+        busiest = self.conn.execute("SELECT gid FROM gb1881_att WHERE gid > 0 GROUP BY gid ORDER BY COUNT(*) DESC, gid LIMIT 1").fetchone()[0]
+        conn = self.damaged("UPDATE gb1881_att SET gid = NULL WHERE recid % 50 = 0", "UPDATE gb1881_att SET gid = 99999 WHERE recid % 50 = 1",
+                            f"UPDATE conpar1851 SET x = NULL WHERE conparid = {busiest}")
+        _, text, _ = self.report(conn)
+        count = lambda where: conn.execute(f"SELECT COUNT(*) FROM gb1881_att WHERE {where}").fetchone()[0]
+        zero, nulls, lost, unlocated = count("gid = 0"), count("gid IS NULL"), count("gid = 99999"), count(f"gid = {busiest}")
+        self.assertTrue(all((zero, nulls, lost, unlocated)))
+        line = [l for l in text.splitlines() if l.strip().startswith("1881:") and "cannot be put on a map" in l][0]
+        self.assertIn(f"{zero + nulls + lost + unlocated:,} people", line)
+        self.assertIn(f"id 0 {zero:,}, no id {nulls:,}, id not in the table {lost:,}, parish without a usable location {unlocated:,}", line)
+
+    def test_in_1921_a_missing_id_is_said_to_be_how_the_year_records_people_not_in_a_parish(self):
+        _, text, problems = self.report(self.damaged("UPDATE gb1921_att SET conparid1901 = NULL WHERE recid % 50 = 0"))
+        self.assertIn("that is how this year records people not in a parish", text)
+        self.assertEqual(problems, [], text)
 
     def test_a_text_id_column_is_flagged(self):
         data, _, _ = self.report()

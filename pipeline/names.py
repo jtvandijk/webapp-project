@@ -74,6 +74,20 @@ def has_letters(text):
     return any(ch.isalpha() for ch in str(text or ""))
 
 
+def place_label(county, parish, unnamed=()):
+    """(county, parish) as a place is shown in a list, or None if there is no name to show. A parish with a real name is
+    shown under it (place_name tidies the capitals). A parish whose name is only a placeholder ("-") is shown under the
+    name that `unnamed` gives its county - a list of (county pattern, county to show, parish to show), the pattern
+    matched against name_key(county) - or, when no pattern fits, left out (None)."""
+    if has_letters(parish):
+        return place_name(county), place_name(parish)
+    key = name_key(county)
+    for pattern, county_label, parish_label in unnamed:
+        if re.match(pattern, key):
+            return county_label, parish_label
+    return None
+
+
 def forename_clean(raw):
     """A forename as listed on a name's page: lower case, punctuation and digits removed (so "Anne-Marie"
     becomes "annemarie"), accents kept, and at least two characters - "" when nothing usable is left.

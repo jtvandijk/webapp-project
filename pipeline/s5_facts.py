@@ -49,7 +49,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from . import config, db, files, sql
-from .names import forename_clean, has_letters, name_key, place_name, surname_key
+from .names import forename_clean, name_key, place_label, surname_key
 from .s3_extracts import load_names
 
 FIELDS = ["surname", "fact", "version", "ref_year", "n_bearers", "value", "detail"]
@@ -442,12 +442,17 @@ def compute_parishes(extracted, names, tally, years):
         parishes = extracted.get(key)
         if not parishes:
             continue
-        # a parish whose name is only a placeholder ("-": the London parishes of the 1901 table) is not a place to show
-        listed = sorted(((n, county, parish) for county, parish, n in parishes.values()
-                         if n >= config.FACT_MIN_IN_CATEGORY and has_letters(parish)),
+        # a place is shown under its label (config.UNNAMED_PARISH_LABELS gives the nameless London units of the 1901 table one
+        # name, so they add up to one place); a parish with no name and no label is not a place to show
+        pooled = {}
+        for county, parish, n in parishes.values():
+            label = place_label(county, parish, config.UNNAMED_PARISH_LABELS)
+            if label:
+                pooled.setdefault((_norm(label[0]), _norm(label[1])), [label[0], label[1], 0])[2] += n
+        listed = sorted(((n, county, parish) for county, parish, n in pooled.values() if n >= config.FACT_MIN_IN_CATEGORY),
                         key=lambda item: (-item[0], _norm(item[1]), _norm(item[2])))
         if listed:
-            top = [{"county": place_name(county), "parish": place_name(parish)} for _, county, parish in listed[:config.PLACES_TOP]]
+            top = [{"county": county, "parish": parish} for _, county, parish in listed[:config.PLACES_TOP]]
             out.append(_row(key, "parishes", "", "", "", {"parishes": top, "years": list(years)}, years))
             tally["parishes"]["with_value"] += 1
     return out
