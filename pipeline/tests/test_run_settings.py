@@ -83,6 +83,17 @@ class TheShippedFilesAndScripts(unittest.TestCase):
             self.assertEqual(self._guard(last, 200).returncode, 0, last)
 
 
+class BeforeStageOneHasRun(unittest.TestCase):
+    def test_a_missing_names_or_counts_file_says_to_run_stage_1(self):
+        with tempfile.TemporaryDirectory() as empty, mock.patch.object(config, "WORK", Path(empty)):
+            for action in (lambda: s3_extracts.load_names(), lambda: s5_facts.load_counts(),
+                           lambda: (sys.argv.__setitem__(slice(None), ["s5_facts", "--names", "smith"]), s5_facts.main())):
+                with self.assertRaises(SystemExit) as stopped:
+                    action()
+                self.assertIn("stage1.sh", str(stopped.exception))                  # not a raw "no such file" error
+                self.assertIn("run  qsub", str(stopped.exception))
+
+
 class StagesFollowTheSettings(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

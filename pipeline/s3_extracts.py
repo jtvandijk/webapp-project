@@ -27,7 +27,11 @@ from .names import chunk_of, surname_key
 def load_names(limit=None):
     """The names that get a page (work/names.csv, stage 1), sorted - optionally only the first
     `limit`, for a small sample run. Sorting first makes --limit reproducible run to run."""
-    with open(config.WORK / "names.csv", newline="") as f:
+    path = config.WORK / "names.csv"
+    if not path.exists():
+        raise SystemExit(f"{path} does not exist yet. Stage 1 makes it (with counts.csv): run  qsub pipeline/hpc/stage1.sh  first "
+                         "- see docs/how-to-build-the-dataset.md, section 10.")
+    with open(path, newline="") as f:
         names = sorted(row["surname"] for row in csv.DictReader(f))
     return names[:limit] if limit else names
 

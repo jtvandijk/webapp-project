@@ -66,7 +66,11 @@ POOLED = ["forenames_register", "forenames_census", "parishes"]    # facts about
 
 def load_counts(path=None):
     """{(source, year, key): n} from counts.csv (stage 1)."""
-    with open(path or config.WORK / "counts.csv", newline="") as f:
+    path = path or config.WORK / "counts.csv"
+    if not Path(path).exists():
+        raise SystemExit(f"{path} does not exist yet. Stage 1 makes it (with names.csv): run  qsub pipeline/hpc/stage1.sh  first "
+                         "- see docs/how-to-build-the-dataset.md, section 10.")
+    with open(path, newline="") as f:
         return {(row["source"], int(row["year"]), row["surname"]): int(row["n"]) for row in csv.DictReader(f)}
 
 
