@@ -34,6 +34,7 @@ import hashlib
 import json
 import math
 import random
+import textwrap
 import time
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -219,9 +220,14 @@ def _with_tie(detail, tied):
     return detail
 
 
+def _tally_covered(tally, fact, total):
+    """Bearers who live where the classification has a value, counted for every name that has any, whether or
+    not the fact is then reported for that name (the report's coverage is about the data, not about the rule)."""
+    tally[fact]["covered"] += total
+
+
 def _tally_value(tally, fact, total, tied=False):
     tally[fact]["with_value"] += 1
-    tally[fact]["bearers_with_value"] += total
     tally[fact]["ties"] += tied
 
 
@@ -233,6 +239,7 @@ def compute_groups(fact, extracted, ref_years, tally):
         for (value,), n, _ in rows:
             by_value[value] += n
         total = sum(by_value.values())
+        _tally_covered(tally, fact, total)
         if max(by_value.values(), default=0) < config.FACT_MIN_IN_CATEGORY:
             continue
         value, tied = pick_mode(by_value, f"{key}|{fact}")
@@ -250,6 +257,7 @@ def compute_deciles(fact, extracted, ref_years, tally):
         for (value,), n, _ in rows:
             by_value[value] += n
         total = sum(by_value.values())
+        _tally_covered(tally, fact, total)
         if max(by_value.values(), default=0) < config.FACT_MIN_IN_CATEGORY:
             continue
         value, tied = pick_mode(by_value, f"{key}|{fact}")
@@ -264,6 +272,7 @@ def compute_imd_score(extracted, ref_years, tally):
     out = []
     for key, rows in sorted(extracted.items()):
         total = sum(n for _, n, _ in rows)
+        _tally_covered(tally, "imd_score", total)
         if total < config.FACT_MIN_IN_CATEGORY:
             continue
         s, ss = sum(sums[0] for _, _, sums in rows), sum(sums[1] for _, _, sums in rows)
@@ -283,6 +292,7 @@ def compute_places(extracted, ref_years, tally):
             by_area[area] += n
             district.setdefault(area, dist)
         total = sum(by_area.values())
+        _tally_covered(tally, "places", total)
         listed = sorted(((a, n) for a, n in by_area.items() if n >= config.PLACES_MIN), key=lambda an: (-an[1], an[0]))
         if not listed:
             continue
@@ -313,6 +323,7 @@ def compute_ethnicity(extracted, ref_years, tally):
             groups[group] += n
             codes[code.strip().upper()] += n
         total = sum(groups.values())
+        _tally_covered(tally, "ethnicity", total)
         if max(groups.values(), default=0) < config.FACT_MIN_IN_CATEGORY:
             out.append(_row(key, "ethnicity", ref_years[key], total, config.ETH_UNKNOWN, {}))
             tally["ethnicity"]["unknown"] += 1
@@ -378,20 +389,27 @@ def build_report(names, ref_years, counts, tally, outputs):
              f"with a reference year (a register year with {config.THRESHOLD['register']}+ bearers): {len(ref_years):,}"
              f"; the other {len(names) - len(ref_years):,} get no contemporary facts",
              "reference years: " + "  ".join(f"{y}: {n:,}" for y, n in sorted(years.items(), reverse=True)[:8]),
-             "", f"{'fact':20} {'names with a value':>19} {'no value':>9} {'ties broken':>12} {'bearers with a value':>21}"]
+             "", f"{'fact':20} {'names with a value':>19} {'no value':>9} {'ties broken':>12} {'bearers covered':>16}"]
     for fact in outputs:
         t = tally[fact]
         scope = len(names) if fact == "forenames_register" else len(ref_years)
-        coverage = "" if fact == "forenames_register" or not registered else f"{t['bearers_with_value'] / registered:>20.1%}"
+        coverage = "" if fact == "forenames_register" or not registered else f"{t['covered'] / registered:>15.1%}"
         lines.append(f"{fact:20} {t['with_value']:>19,} {scope - t['with_value'] - t['unknown']:>9,} "
-                     f"{t['ties']:>12,} {coverage:>21}")
+                     f"{t['ties']:>12,} {coverage:>16}")
     if "ethnicity" in outputs:
         lines.append(f"\nethnicity: {tally['ethnicity']['unknown']:,} names are 'unknown' (no census group with at least "
                      f"{config.FACT_MIN_IN_CATEGORY} bearers)")
         if tally["unmapped codes"]:
             lines.append("ethnicity codes not in config.ETH_GROUPS, left out of the counts (code: bearers): " +
                          ", ".join(f"{c}: {n:,}" for c, n in tally["unmapped codes"].most_common(20)))
-    lines.append("\n'bearers with a value' is the share of all bearers, in the reference years, who have a value for it.")
+    lines.append("")
+    lines += textwrap.wrap(
+        "'bearers covered' is about the data, not about the names: of ALL the bearers of these names, in their reference "
+        "years, the share who live where the classification has a value (whether or not the fact is then reported for "
+        "their name). About 99.9% is expected for OAC, AHAH, IMD, FPC and places; a lower share for one of them means a "
+        "join problem. LOAC covers London only, so its share is about London's share of the bearers (roughly one in "
+        "seven), by design, and it barely moves when a small name is added, since big names dominate the total. "
+        "Ethnicity depends on how many bearers have a code.", width=100)
     return lines
 
 

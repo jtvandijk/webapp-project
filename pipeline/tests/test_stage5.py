@@ -74,6 +74,12 @@ class ComputeRules(unittest.TestCase):
             spread = extract(*[((str(d),), MIN - 1) for d in range(1, 11)])
             self.assertEqual(compute({"smith": spread}), [])
 
+    def test_coverage_counts_every_bearer_with_a_value_even_where_no_fact_is_reported(self):
+        s5_facts.compute_groups("loac", {"smith": extract((("A1",), 2), (("B2",), 2))}, self.ref, self.tally)     # 4 bearers: below the floor
+        s5_facts.compute_groups("loac", {"jones": extract((("A1",), 9), (("B2",), 1))}, {"jones": 2025}, self.tally)
+        self.assertEqual(self.tally["loac"]["covered"], 4 + 10)
+        self.assertEqual(self.tally["loac"]["with_value"], 1)                        # only jones gets a LOAC group
+
     def test_a_fact_that_few_bearers_have_is_still_reported_when_its_category_is_big_enough(self):
         # LOAC-like: only 11 bearers live in London, but 6 of them in the same group
         (row,) = s5_facts.compute_groups("loac", {"smith": extract((("A1",), MIN + 1), (("B2",), 3), (("C1",), 2))}, self.ref, self.tally)
@@ -270,7 +276,10 @@ class Stage5EndToEnd(unittest.TestCase):
                 json.loads(row["detail"])
                 self.assertEqual(row["version"], config.FACT_VERSIONS[fact])
         self.assertEqual(set(self.facts), {"oac", "loac", "ahah", "imd", "imd_score", "fpc", "places", "ethnicity", "forenames_register"})
-        self.assertTrue((self.out / "report.txt").read_text().startswith("names in this run"))
+        report = (self.out / "report.txt").read_text()
+        self.assertTrue(report.startswith("names in this run"))
+        self.assertIn("bearers covered", report)
+        self.assertIn("LOAC covers London only", " ".join(report.split()))            # the reason its share is low, by design
 
     def test_only_names_with_a_reference_year_get_a_contemporary_fact(self):
         for fact in ("oac", "loac", "ahah", "imd", "imd_score", "fpc", "places", "ethnicity"):
