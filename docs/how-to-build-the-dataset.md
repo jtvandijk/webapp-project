@@ -134,6 +134,21 @@ qacct -j <jobid>                              # after it has finished, if the cl
 - **The log looks empty?** Python buffers its output when it is not a terminal, so a log could stay empty for a long time
   while the job was fine. Every stage script now switches this off (`PYTHONUNBUFFERED=1`), so the log fills as the job runs.
 - Array jobs (stage 4) write one log per task: `work/logs/gbnames_stage4.o<jobid>.<task>`.
+- **Stopped by its time limit (`h_rt`) or memory limit (`h_vmem`)?** The scheduler ends the job without a word: no `Traceback`, the log just stops, and
+  the closing line below is missing. The job is gone from `qstat`; `qacct -j <jobid>` (where available) usually shows `exit_status 137` and, for the time limit,
+  a `ru_wallclock` just over `h_rt` (for memory, a `maxvmem` near what was asked). What a stage leaves behind, and what a second `qsub` does:
+
+  | Stage | Closing line of the log | If it was stopped |
+  |---|---|---|
+  | 1 | `names with a map, by period: ...` | **Nothing is kept**: `counts.csv` and `names.csv` are written at the very end. The whole stage runs again, so give it enough time |
+  | 2 | `N surfaces written to work/surfaces` | Each period's file is kept, but a second `qsub` **starts again from the first period** (census periods come first) and is stopped at the same place unless it has more time. `manifest.csv` only exists after a full run |
+  | 3 | `N names, N chunks, N periods written to work/chunks` | The same, and `work/chunks/CHUNKS` is only written at the very end: a stopped run leaves a mix of new and old files, so run `bash pipeline/hpc/clean.sh --stage34` before running it again |
+  | 4 | `chunk N done: ...` in every task's log | Finished chunks are kept (`ls work/maps/*.done \| wc -l` says how many); submit the same `qsub -t 1-N` again and only the missing ones are done |
+  | 5 | `N facts in ...` and `time: ... in total` | Every saved query is kept; submit it again and it carries on from there |
+
+- **With the census on, the times change.** Every census period is a pass over a table of about 30 million people (person table, attributes table and parish table
+  joined). The repository limits were set for the register alone. For a first run with the census ask for much more on the command line (`qsub -l h_rt=06:00:00
+  pipeline/hpc/stage1.sh`, and so on for stages 2, 3 and 5), read the times in the logs or from `qacct`, and set the repository values from those afterwards.
 
 ## 6. What is in `work/`
 
@@ -292,7 +307,7 @@ An index on `sname` is not used.
 - *parish id 0*: **expected, not a fault.** Some people were counted in the census but not in a parish of Great Britain (soldiers, sailors, British citizens in the colonies and protectorates). They are left out on purpose.
 - *not counted although they should be*: a parish id other than 0 that is not in the boundaries for that year, no surname, or no attributes row. A few per cent is normal (the boundary files are a clean-up of the original). Above 5% stage 1 says so; above 20% it stops, because the ids then almost certainly belong to other boundaries (say the 1851 ones for 1911).
 - *1921 is the one year whose attributes table is read differently:* its parish id is the column `conparid1901`, not `gid`. The ids originally recorded for 1921 do not link to the standardised parishes, so the 1921 records were assigned to the 1901 parishes by point in polygon. `CENSUS_PARISH_COLUMN` in `config.py` says so; the parish names and counties of the places lists come from the parish tables (`parish` and `regcnty` in `spatial.conpar1851` / `conpar1901`), so every census stage needs those tables.
-- Stage 1 also stops, and writes nothing, if a parish id appears twice in a parish table or if there are more than 1% more attributes rows than people (a person would count twice).
+- Stage 1 also stops, and writes nothing, if people carry a parish id that appears twice in a parish table (a repeated id nobody carries is only noted) or if there are more than 1% more attributes rows than people (a person would count twice).
 
 Stages 2 and 3 do not depend on each other, so they can be submitted together; stage 4 needs both, and stage 5 needs
 only stage 1 (so it can run beside stages 2 to 4). When a job fails, read the end of its log in `work/logs/`, fix the
