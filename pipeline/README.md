@@ -30,7 +30,7 @@ The code that turns the registers and censuses into the data behind the website 
 pip install -r pipeline/requirements.txt          # once (a virtual environment is a good idea)
 python3 -m pipeline.fake_data                     # a fake database in work/ (a few seconds)
 python3 -m pipeline.s1_counts                     # counts and the name list, into work/
-python3 -m pipeline.preview                       # then open work/preview.html in a browser
+python3 -m pipeline.preview                       # then open work/preview_maps/preview1.html in a browser (the next run makes preview2.html)
 python3 -m unittest discover -s pipeline/tests -t .    # the tests (a few seconds)
 ```
 
@@ -139,7 +139,9 @@ The first run is the slow one: one query per fact and reference year, each scann
 under `work/facts/extract/`. After that `--compute-only` redoes the calculation from the saved extracts
 without touching the database, so changing a rule (say `FACT_MIN_IN_CATEGORY`) is quick, and a job that was
 killed carries on where it stopped when submitted again. `--facts oac imd` runs only some facts.
-`--names smith macdonald --out-dir work/facts_try` works out just those names, to look at by eye.
+`--names smith macdonald` works out just those names, to look at by eye: it writes to `work/preview_facts/` and also
+keeps each run as `facts1.csv`, `report1.txt`, `facts2.csv`, ... so an earlier set of names is not lost (`facts.csv`
+is always the latest).
 
 **A saved extract is trusted while the names it was made for are unchanged. It cannot notice that the
 database, or a neighbourhood table, has changed since.** After a new register load, or a new version of a

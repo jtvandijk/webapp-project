@@ -12,8 +12,10 @@ instead (this turns --auto-level-mass off). A variant is  <weighting power>/<lev
 config.py), for example  0.5/mass:0.75,0.5,0.25. With several variants every name gets one group of
 maps per variant, side by side.
 
-Writes work/preview.html. It is one plain file with the maps drawn inside it, so it also opens on a
-machine with no internet (the TRE). Below the maps is a table with the bandwidth, the time each map
+Writes work/preview_maps/preview<N>.html, one more than the highest N already there, so an earlier
+preview is never overwritten and you can compare runs (the page says at the top which command made it;
+--out writes to a file of your choice instead). It is one plain file with the maps drawn inside it, so it
+also opens on a machine with no internet (the TRE). Below the maps is a table with the bandwidth, the time each map
 took and the size of the output file.
 
 Use it to judge the settings in config.py. Maps that are left out say why (too few bearers for that
@@ -36,13 +38,15 @@ import hashlib
 import html
 import json
 import pickle
+import sys
+from pathlib import Path
 
 import numpy as np
 from pyproj import Transformer
 from shapely.geometry import shape
 from shapely.ops import transform, unary_union
 
-from . import config, db, fake_data, kde, rules, sql
+from . import config, db, fake_data, files, kde, rules, sql
 from .names import surname_key
 
 COLOURS = {1: "#6baed6", 2: "#4292c6", 3: "#2171b5"}
@@ -179,8 +183,14 @@ def main():
                         help="per-name LEVEL_MASS from kde.size_level_mass() - the default whenever --variants is not given (pass --variants to "
                              "compare specific settings manually instead)")
     parser.add_argument("--refresh-cache", action="store_true", help="ignore work/cache/ and re-query, e.g. after a new register or census load")
-    parser.add_argument("--out", default=str(config.WORK / "preview.html"))
+    parser.add_argument("--out", help="write here instead of the next numbered file in work/preview_maps/")
     args = parser.parse_args()
+    if args.out:
+        out = Path(args.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+    else:
+        folder = config.WORK / "preview_maps"
+        out = folder / f"preview{files.next_number(folder, 'preview', '.html')}.html"
     if args.variants is None and not args.auto_level_mass:
         args.auto_level_mass = True    # the confirmed way to run, now the default - pass --variants for manual comparisons instead
     if args.min_area is not None:
@@ -307,6 +317,7 @@ figure{{margin:0}}figcaption{{font-size:11px;color:#445;text-align:center;max-wi
 table{{border-collapse:collapse;margin-top:8px}}td,th{{padding:2px 10px;border-bottom:1px solid #dde;text-align:right}}
 td:first-child,th:first-child{{text-align:left}}</style>
 <h1>Map preview</h1>
+<p><small>{html.escape(out.name)}: python3 -m pipeline.preview {html.escape(" ".join(sys.argv[1:]))}</small></p>
 <p>{"<b>--auto-level-mass</b>: LEVEL_MASS from kde.size_level_mass() per name (exploratory, see its "
    "docstring) - each name's own resolved setting is labelled below its maps." if args.auto_level_mass else
    "Variant(s) run (weighting power, level mode, levels - see WEIGHT_POWER, LEVEL_MODE, LEVEL_MASS, "
@@ -325,12 +336,12 @@ score high; this can.</p>
 <table><tr><th>name</th><th>variant</th><th>period</th><th>bearers</th><th>bandwidth km</th>
 <th>action</th><th>ms</th><th>separate areas</th><th>points</th><th>KB as GeoJSON</th><th>concentration</th>
 <th>second blob</th></tr>{table}</table>"""
-    with open(args.out, "w", encoding="utf-8") as f:
+    with open(out, "w", encoding="utf-8") as f:
         f.write(page)
     if stats:
         built = [s[5] for s in stats if s[6] == "build"]
         timing = f"median {np.median(built):.0f} ms, " if built else ""
-        print(f"wrote {args.out}: {len(stats)} maps ({len(built)} built, {len(stats) - len(built)} reused), "
+        print(f"wrote {out}: {len(stats)} maps ({len(built)} built, {len(stats) - len(built)} reused), "
               f"{timing}largest {max(s[9] for s in stats):.0f} KB")
 
 

@@ -106,7 +106,7 @@ Read `work/facts/report.txt`. Expect most names to have a reference year of 2026
 close to 100% for OAC, AHAH, IMD and places (lower for ethnicity, depending on how many people have a code,
 and around a tenth for LOAC, which covers London only); and look at any ethnicity codes listed as not recognised. Then look at a few
 names you know, kept apart from the rest:
-`python3 -m pipeline.s5_facts --names smith macdonald --out-dir work/facts_try` (a Scottish name should
+`python3 -m pipeline.s5_facts --names smith macdonald` (it writes to `work/preview_facts/`; a Scottish name should
 come out with Scottish neighbourhood codes, a London one with London ones).
 
 ## 7. One name, worked out by hand

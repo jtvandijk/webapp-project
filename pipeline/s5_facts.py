@@ -2,7 +2,7 @@
 
     python3 -m pipeline.s5_facts                      # every fact, for every name in work/names.csv
     python3 -m pipeline.s5_facts --limit 500          # a sample run: the first 500 names, as in stage 3
-    python3 -m pipeline.s5_facts --names smith macdonald --out-dir work/facts_try   # a few names, to look at by eye
+    python3 -m pipeline.s5_facts --names smith macdonald   # a few names, to look at by eye: work/preview_facts/
     python3 -m pipeline.s5_facts --facts oac imd      # only some facts (say, after loading a new table)
     python3 -m pipeline.s5_facts --compute-only       # no database: redo the calculation from the saved extracts
 
@@ -21,7 +21,9 @@ Two steps, so a change of rule never needs the database again:
      extract is reused while the names it was made for are unchanged (--refresh forces a new query).
   2. compute: the facts and the report, from the extracts.
 
-Writes (work/facts/):
+Writes (work/facts/, or work/preview_facts/ for a --names run, which also keeps a numbered copy of each run's
+facts.csv and report.txt as facts<N>.csv and report<N>.txt, so an earlier run is never lost; --out-dir chooses
+another folder):
   by_fact/<fact>.csv   one file per fact, so a run of only some facts leaves the others as they were
   facts.csv            all of them together: surname, fact, version, ref_year, n_bearers, value, detail
   report.txt           how many names got each fact, why others did not, and what looked odd
@@ -39,7 +41,7 @@ import time
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from . import config, db, sql
+from . import config, db, files, sql
 from .names import forename_clean, surname_key
 from .s3_extracts import load_names
 
@@ -420,13 +422,14 @@ def main():
     parser.add_argument("--facts", nargs="*", choices=ALL, default=ALL, help="which facts (default: all)")
     which = parser.add_mutually_exclusive_group()
     which.add_argument("--limit", type=int, help="only the first N names from work/names.csv (a sample run)")
-    which.add_argument("--names", nargs="*", help="only these names, which must be in work/names.csv; give --out-dir "
-                       "as well, so a few names do not replace the files of a fuller run")
+    which.add_argument("--names", nargs="*", help="only these names, which must be in work/names.csv; the results go in "
+                       "work/preview_facts/, so a few names never replace the files of a fuller run")
     parser.add_argument("--refresh", action="store_true", help="query again even where a current extract exists")
     parser.add_argument("--compute-only", action="store_true", help="no database: use the saved extracts")
-    parser.add_argument("--out-dir", default=str(config.WORK / "facts"))
+    parser.add_argument("--out-dir", help="where to write (default: work/facts, or work/preview_facts for a --names run)")
     args = parser.parse_args()
-    out_dir, facts = Path(args.out_dir), list(args.facts)
+    out_dir = Path(args.out_dir) if args.out_dir else config.WORK / ("preview_facts" if args.names else "facts")
+    facts = list(args.facts)
 
     names = load_names(args.limit)
     if not names:
@@ -501,6 +504,11 @@ def main():
     (out_dir / "report.txt").write_text("\n".join(report) + "\n")
     print("\n".join(report))
     print(f"\n{total:,} facts in {out_dir / 'facts.csv'}")
+    if args.names:                     # keep this run, so the next set of names does not replace it
+        number = files.next_number(out_dir, "facts", ".csv")
+        (out_dir / f"facts{number}.csv").write_bytes((out_dir / "facts.csv").read_bytes())
+        (out_dir / f"report{number}.txt").write_bytes((out_dir / "report.txt").read_bytes())
+        print(f"kept as {out_dir / f'facts{number}.csv'} and report{number}.txt")
 
 
 if __name__ == "__main__":
