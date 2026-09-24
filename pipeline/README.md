@@ -1,5 +1,8 @@
 # The GBNames pipeline
 
+Looking for the steps in order, every setting and where it lives, and how to preview a few names? See
+[docs/how-to-build-the-dataset.md](../docs/how-to-build-the-dataset.md). This file is the reference for the code.
+
 The code that turns the registers and censuses into the data behind the website (the format is in
 [docs/data-contract.md](../docs/data-contract.md), the plan in [docs/pipeline.md](../docs/pipeline.md)).
 

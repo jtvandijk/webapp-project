@@ -268,6 +268,16 @@ def pick_mode(counts, seed):
     return random.Random(seed).choice(tied), True
 
 
+def _duration(seconds):
+    """45 s, 3 min 12 s, 1 h 05 min: a time you can read in a log."""
+    seconds = int(round(seconds))
+    if seconds < 60:
+        return f"{seconds} s"
+    if seconds < 3600:
+        return f"{seconds // 60} min {seconds % 60:02d} s"
+    return f"{seconds // 3600} h {seconds % 3600 // 60:02d} min"
+
+
 def _share(n, total):
     return round(n / total, config.SHARE_DECIMALS)
 
@@ -539,8 +549,12 @@ def main():
     register_facts = [f for f in REGISTER_FACTS if f in facts]
     census_facts = [f for f in CENSUS_FACTS if f in facts]
 
-    def report_time(label, rows, started):
-        print(f"{label}: " + ("saved extract reused" if rows is None else f"{rows:,} rows, {time.perf_counter() - started:.1f}s"))
+    began, spent = time.perf_counter(), defaultdict(float)     # seconds in the database, by fact
+
+    def report_time(fact, label, rows, started):
+        if rows is not None:
+            spent[fact] += time.perf_counter() - started
+        print(f"{label}: " + ("saved extract reused" if rows is None else f"{rows:,} rows, {time.perf_counter() - started:.1f}s"), flush=True)
 
     if not args.compute_only:
         if register_facts:
@@ -550,17 +564,17 @@ def main():
                 for year, keys in by_year.items():
                     started = time.perf_counter()
                     rows = extract_fact(conn, cfg, fact, year, keys, out_dir, args.refresh)
-                    report_time(f"{fact} {year} ({len(keys):,} names)", rows, started)
+                    report_time(fact, f"{fact} {year} ({len(keys):,} names)", rows, started)
             if "forenames" in facts:
                 started = time.perf_counter()
-                report_time("forenames", extract_forenames(conn, cfg, names, out_dir, args.refresh), started)
+                report_time("forenames", "forenames", extract_forenames(conn, cfg, names, out_dir, args.refresh), started)
             conn.close()
         if census_facts:
             conn = db.connect("census")
             for fact, extractor in (("forenames_census", extract_census_forenames), ("parishes", extract_parishes)):
                 for year in (census_years if fact in facts else []):
                     started = time.perf_counter()
-                    report_time(f"{fact} {year}", extractor(conn, cfg, year, names, out_dir, args.refresh), started)
+                    report_time(fact, f"{fact} {year}", extractor(conn, cfg, year, names, out_dir, args.refresh), started)
             conn.close()
 
     # the extracts must be for the names now in scope, whether or not this run made them
@@ -610,6 +624,8 @@ def main():
         write_fact(out_dir, fact, rows)
     total = merge_facts(out_dir)
     report = build_report(names, ref_years, counts, tally, list(results))
+    queried = ", ".join(f"{fact} {_duration(sec)}" for fact, sec in spent.items()) or "none: every extract was reused"
+    report += ["", f"time: {_duration(time.perf_counter() - began)} in total; time in the database by fact: {queried}"]
     (out_dir / "report.txt").write_text("\n".join(report) + "\n")
     print("\n".join(report))
     print(f"\n{total:,} facts in {out_dir / 'facts.csv'}")

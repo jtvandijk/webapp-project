@@ -30,6 +30,7 @@ replaces it; nothing in the rebuild depends on it.
 | [docs/data-contract.md](docs/data-contract.md) | The file format the rebuild produces, and that the future website reads: one JSON file per surname. |
 | [docs/pipeline.md](docs/pipeline.md) | The plan for turning individual-level records into that release: stages, decisions made, what is still open. |
 | [pipeline/README.md](pipeline/README.md) | How to run the pipeline - on fake data locally, or for real in the TRE. |
+| [docs/how-to-build-the-dataset.md](docs/how-to-build-the-dataset.md) | The steps in order, every setting and where it lives, how to preview a few names, how to follow a job. |
 | [docs/first-run-checks.md](docs/first-run-checks.md) | What to check on the first real run in the TRE, before anything is exported. |
 
 ## Repository layout

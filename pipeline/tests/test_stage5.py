@@ -80,6 +80,10 @@ class ComputeRules(unittest.TestCase):
         self.assertEqual(self.tally["loac"]["covered"], 4 + 10)
         self.assertEqual(self.tally["loac"]["with_value"], 1)                        # only jones gets a LOAC group
 
+    def test_durations_are_written_so_they_can_be_read(self):
+        for seconds, text in ((0.4, "0 s"), (45, "45 s"), (192, "3 min 12 s"), (3900, "1 h 05 min")):
+            self.assertEqual(s5_facts._duration(seconds), text)
+
     def test_a_fact_that_few_bearers_have_is_still_reported_when_its_category_is_big_enough(self):
         # LOAC-like: only 11 bearers live in London, but 6 of them in the same group
         (row,) = s5_facts.compute_groups("loac", {"smith": extract((("A1",), MIN + 1), (("B2",), 3), (("C1",), 2))}, self.ref, self.tally)
@@ -319,6 +323,7 @@ class Stage5EndToEnd(unittest.TestCase):
         report = (self.out / "report.txt").read_text()
         self.assertTrue(report.startswith("names in this run"))
         self.assertIn("bearers covered", report)
+        self.assertRegex(report, r"time: .+ in total; time in the database by fact: ")
         self.assertIn("LOAC covers London only", " ".join(report.split()))            # the reason its share is low, by design
 
     def test_only_names_with_a_reference_year_get_a_contemporary_fact(self):

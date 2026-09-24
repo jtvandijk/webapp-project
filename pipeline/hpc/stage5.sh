@@ -58,5 +58,6 @@ set -a
 source .env
 set +a
 export GBNAMES_PROFILE=tre
+export PYTHONUNBUFFERED=1    # print to the log as it happens; otherwise the log can look empty until the job ends
 
 python3 -m pipeline.s5_facts --sources $SOURCES ${LIMIT:+--limit "$LIMIT"} ${FACTS:+--facts $FACTS}
