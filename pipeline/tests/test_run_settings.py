@@ -90,6 +90,24 @@ class TheShippedFilesAndScripts(unittest.TestCase):
             self.assertEqual(self._guard("stage6.sh", last, 200).returncode, 0, last)
 
 
+    def _chunk_chosen(self, script, task_id):
+        text = (HPC / script).read_text().split("\n")
+        block = "\n".join(text[[i for i, l in enumerate(text) if l.startswith("# --- task id")][0]:
+                               [i for i, l in enumerate(text) if l.startswith("# --- end task id")][0]])
+        env = {"PATH": "/usr/bin:/bin"}
+        if task_id is not None:
+            env["SGE_TASK_ID"] = str(task_id)
+        done = subprocess.run(["bash", "-c", "set -euo pipefail\n" + block + '\necho "$CHUNK"'], env=env, capture_output=True, text=True)
+        return done.returncode, done.stdout.strip()
+
+    def test_an_array_task_does_its_own_chunk_and_a_plain_qsub_does_chunk_0(self):
+        for script in ("stage4.sh", "stage6.sh"):
+            self.assertEqual(self._chunk_chosen(script, 1), (0, "0"), script)
+            self.assertEqual(self._chunk_chosen(script, 200), (0, "199"), script)
+            self.assertEqual(self._chunk_chosen(script, "undefined"), (0, "0"), script)    # what SGE sets outside an array job
+            self.assertEqual(self._chunk_chosen(script, None), (0, "0"), script)           # run by hand
+
+
 class BeforeStageOneHasRun(unittest.TestCase):
     def test_a_missing_names_or_counts_file_says_to_run_stage_1(self):
         with tempfile.TemporaryDirectory() as empty, mock.patch.object(config, "WORK", Path(empty)):

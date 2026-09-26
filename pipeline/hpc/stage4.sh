@@ -61,9 +61,13 @@ if [ -n "${SGE_TASK_LAST:-}" ] && [ "$SGE_TASK_LAST" != "undefined" ] && [ "$SGE
 fi
 # --- end array guard
 
-# SGE only sets SGE_TASK_ID for an array job (qsub -t ...) - defaults to 1 (chunk 0) so a plain
-# "qsub pipeline/hpc/stage4.sh" with no -t still runs, as a quick single-chunk sanity check, rather
-# than hitting "unbound variable" under set -u.
-CHUNK=$((${SGE_TASK_ID:-1} - 1))
+# SGE sets SGE_TASK_ID for an array job (qsub -t ...) and, outside one, to the word "undefined" (unset if the script is
+# run by hand). Both of those mean chunk 0, so a plain "qsub pipeline/hpc/stage4.sh" with no -t runs as a quick
+# single-chunk trial rather than hitting "unbound variable" under set -u.
+# --- task id
+TASK_ID="${SGE_TASK_ID:-undefined}"
+if [ "$TASK_ID" = "undefined" ]; then TASK_ID=1; fi
+CHUNK=$((TASK_ID - 1))
+# --- end task id
 
 python3 -m pipeline.s4_maps --chunk "$CHUNK"

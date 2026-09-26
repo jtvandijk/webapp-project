@@ -7,6 +7,7 @@
 #   bash pipeline/hpc/clean.sh --stage34    # stage 3 + 4 only, does not ask about stage 1 + 2
 #   bash pipeline/hpc/clean.sh --all        # stage 1 + 2 + 3 + 4, no question asked
 #   bash pipeline/hpc/clean.sh --facts      # stage 5 only (work/facts: the saved queries and the facts)
+#   bash pipeline/hpc/clean.sh --release    # stage 6 only (work/release, and its per-chunk slices of counts and facts)
 #
 # Real incident this exists to help avoid (2026-09-23): a partial manual cleanup between two runs
 # emptied work/stats/ but left work/maps/'s .done/.jsonl files behind from an earlier, differently
@@ -31,12 +32,14 @@ WORK="work"
 ask_stage12=1
 clean_stage12=0
 only_facts=0
+only_release=0
 for arg in "$@"; do
     case "$arg" in
         --all)     clean_stage12=1; ask_stage12=0 ;;
         --stage34) clean_stage12=0; ask_stage12=0 ;;
         --facts)   only_facts=1 ;;
-        *) echo "Unknown option: $arg (expected --all, --stage34 or --facts)"; exit 1 ;;
+        --release) only_release=1 ;;
+        *) echo "Unknown option: $arg (expected --all, --stage34, --facts or --release)"; exit 1 ;;
     esac
 done
 
@@ -59,6 +62,23 @@ if [ "$only_facts" -eq 1 ]; then
     if [[ "$reply" =~ ^[Yy] ]]; then
         rm -rf "$WORK/facts"
         echo "Deleted: $WORK/facts"
+    else
+        echo "Left in place."
+    fi
+    exit 0
+fi
+
+if [ "$only_release" -eq 1 ]; then
+    # Stage 6 only reads stage 4's maps and stage 5's facts (and stage 1's counts); it never changes them, so this
+    # is safe at any time and they stay. The two chunks folders are stage 6's own slices of counts.csv and facts.csv
+    # (not the files they were cut from). s6_assemble.py --force redoes finished chunks without deleting anything.
+    echo "Stage 6 output under $WORK/ (the assembled name files, the facts table, the slices):"
+    show_sizes "$WORK/release" "$WORK/facts/chunks" "$WORK/counts/chunks"
+    read -r -p "Delete the above? [y/N] " reply
+    if [[ "$reply" =~ ^[Yy] ]]; then
+        rm -rf "$WORK/release" "$WORK/facts/chunks" "$WORK/counts/chunks"
+        rmdir "$WORK/counts" 2>/dev/null || true       # only if now empty
+        echo "Deleted: $WORK/release, $WORK/facts/chunks, $WORK/counts/chunks"
     else
         echo "Left in place."
     fi

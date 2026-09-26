@@ -6,7 +6,9 @@ test_stage234.py's Stage234EndToEnd.
 
 Run from the project root:   python3 -m unittest discover -s pipeline/tests -t .
 """
+import contextlib
 import csv
+import io
 import json
 import os
 import shutil
@@ -262,6 +264,7 @@ class AssembleChunkOperations(unittest.TestCase):
                 {"surname": "beta", "period": "2026", "action": "build", "bearers": 300, "geojson": self.SHAPE},
                 {"surname": "gamma", "period": "2026", "action": "omit", "bearers": 40, "reason": "too few"}]
         (self.root / "maps" / "chunk_0.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+        (self.root / "maps" / "chunk_0.done").write_text("3 names\n")            # stage 4's own marker: this chunk is finished
         (self.root / "facts").mkdir()
         with open(self.root / "facts" / "facts.csv", "w", newline="") as f:
             out = csv.DictWriter(f, fieldnames=s6_assemble.FACTS_HEADER)
@@ -333,6 +336,31 @@ class AssembleChunkOperations(unittest.TestCase):
         self.assertNotIn("alpha", self.written())
         self.assemble("--force")
         self.assertIn("alpha", self.written())
+
+    def test_a_chunk_stage_4_has_not_finished_is_refused_and_nothing_is_written(self):
+        (self.root / "maps" / "chunk_0.done").unlink()                           # stage 4 is still writing (or was killed)
+        self.prepared()
+        with self.assertRaises(SystemExit) as stopped:
+            self.assemble()
+        self.assertIn("Stage 4 has not finished chunk 0", str(stopped.exception))
+        self.assertEqual(self.written(), [])
+        self.assertFalse((self.root / "release" / "chunk_0.done").exists())
+
+    def test_a_finished_chunk_is_redone_when_stage_4_or_prepare_made_its_input_again(self):
+        for stale in ("maps/chunk_0.jsonl", "facts/chunks/0.csv", "counts/chunks/0.csv"):
+            with self.subTest(input_made_again=stale):
+                self.prepared()
+                for path in ("maps/chunk_0.jsonl", "facts/chunks/0.csv", "counts/chunks/0.csv"):
+                    os.utime(self.root / path, (1_000_000_000, 1_000_000_000))       # long ago, whatever an earlier round did to them
+                self.assemble("--force")
+                marker = self.root / "release" / "chunk_0.done"
+                (self.root / "release" / "names" / "al" / "alpha.json").unlink()
+                self.assemble()
+                self.assertNotIn("alpha", self.written(), "unchanged inputs: the finished chunk is skipped")
+                later = marker.stat().st_mtime + 10
+                os.utime(self.root / stale, (later, later))
+                self.assemble()
+                self.assertIn("alpha", self.written(), f"{stale} is newer than the finished chunk: it has to be redone")
 
     def test_a_done_marker_from_a_different_chunks_value_is_not_trusted(self):
         self.prepared()
@@ -418,6 +446,126 @@ class AssembleChunkOperations(unittest.TestCase):
         with mock.patch.object(s6_assemble, "build_bundle", flaky):
             self.assemble("--free-maps")
         self.assertTrue((self.root / "maps" / "chunk_0.jsonl").exists(), "the raw rows are still needed to see why alpha failed")
+
+
+class StreamingAtRealScale(unittest.TestCase):
+    """Stage 6 meets real sizes: the facts table has millions of rows and a chunk's maps are gigabytes once parsed, so
+    neither may be held whole in memory (the login node for --prepare, a 2 GB job for a chunk task)."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        patch = mock.patch.object(config, "WORK", self.root)
+        patch.start()
+        self.addCleanup(patch.stop)
+
+    def write_jsonl(self, rows):
+        (self.root / "maps").mkdir(exist_ok=True)
+        (self.root / "maps" / "chunk_0.jsonl").write_text("".join(json.dumps(r, separators=(",", ":")) + "\n" for r in rows))
+
+    def row(self, name, period, **more):
+        return {"surname": name, "period": period, "action": "build", "bearers": 100, **more}
+
+    def test_the_maps_are_read_one_name_at_a_time_not_all_at_once(self):
+        self.write_jsonl([self.row(n, p) for n in ("alpha", "beta", "gamma") for p in ("1851", "1861", "1901")])
+        parsed = []
+        real = json.loads
+
+        def counting(text, *args, **kwargs):
+            parsed.append(text)
+            return real(text, *args, **kwargs)
+        lines_read = [0]
+
+        class CountingFile:
+            def __init__(self, path):
+                self.handle = open(path)
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                self.handle.close()
+
+            def __iter__(self):
+                for line in self.handle:
+                    lines_read[0] += 1
+                    yield line
+        with mock.patch.object(s6_assemble.json, "loads", counting), mock.patch.object(s6_assemble, "open", CountingFile, create=True):
+            first = next(s6_assemble.iter_maps_by_name(self.root / "maps", 0))
+        self.assertEqual(first[0], "alpha")
+        self.assertEqual([r["period"] for r in first[1]], ["1851", "1861", "1901"])
+        self.assertLessEqual(len(parsed), 3 + 1, "reading the first name parsed the whole file")
+        self.assertLessEqual(lines_read[0], 3 + 1, "reading the first name read the whole file (one line ahead is the most a group-by needs)")
+
+    def test_a_name_is_found_without_parsing_its_line_and_odd_lines_are_parsed_properly(self):
+        with mock.patch.object(s6_assemble.json, "loads", side_effect=AssertionError("should not parse")):
+            self.assertEqual(s6_assemble._surname_of('{"surname":"smith","period":"1851","geojson":{"a":1}}\n'), "smith")
+        self.assertEqual(s6_assemble._surname_of('{ "period": "1851", "surname": "jones" }\n'), "jones")       # another layout: parsed
+
+    def test_a_maps_file_with_a_name_coming_back_or_out_of_order_is_refused(self):
+        for order in (["alpha", "beta", "alpha"], ["beta", "alpha"]):
+            self.write_jsonl([self.row(n, "1851") for n in order])
+            with self.assertRaises(SystemExit) as stopped:
+                list(s6_assemble.iter_maps_by_name(self.root / "maps", 0))
+            self.assertIn("sorted order", str(stopped.exception), order)
+
+    def test_an_empty_maps_file_is_no_names_not_an_error(self):
+        self.write_jsonl([])
+        self.assertEqual(list(s6_assemble.iter_maps_by_name(self.root / "maps", 0)), [])
+
+    def test_the_split_keeps_quotes_commas_and_newlines_inside_a_cell_and_the_row_order(self):
+        (self.root / "facts").mkdir()
+        awkward = json.dumps({"note": 'say "hi", then\nleave', "list": [1, 2, 3]})
+        rows = [fact_row("oac", "3b", {"n": i}) for i in range(5)] + [fact_row("places", "", {"x": 1})]
+        rows[2]["detail"] = awkward
+        with open(self.root / "facts" / "facts.csv", "w", newline="") as f:
+            out = csv.DictWriter(f, fieldnames=s6_assemble.FACTS_HEADER)
+            out.writeheader()
+            out.writerows(rows)
+        self.assertEqual(s6_assemble.split_by_chunk("facts", s6_assemble.FACTS_HEADER, 1), 6)
+        with open(self.root / "facts" / "chunks" / "0.csv", newline="") as f:
+            back = list(csv.DictReader(f))
+        self.assertEqual([r["detail"] for r in back], [r["detail"] for r in rows])          # the awkward cell and the order survive
+
+    def test_the_split_reads_one_row_at_a_time(self):
+        # measured, not assumed: how many source rows had been read when the FIRST data row was written. A stream has read
+        # the header and that one row (2); loading the whole source first would have read all 51
+        (self.root / "facts").mkdir()
+        with open(self.root / "facts" / "facts.csv", "w", newline="") as f:
+            out = csv.DictWriter(f, fieldnames=s6_assemble.FACTS_HEADER)
+            out.writeheader()
+            out.writerows([{**fact_row("oac", "3b", {}), "surname": f"name{i}"} for i in range(50)])
+        read, at_write = [0], []
+        real_reader, real_writer = csv.reader, csv.writer
+
+        def counting_reader(handle):
+            def rows():
+                for row in real_reader(handle):
+                    read[0] += 1
+                    yield row
+            return rows()
+
+        def counting_writer(handle):
+            inner = real_writer(handle)
+
+            class Counting:
+                def writerow(self, row):
+                    at_write.append(read[0])
+                    inner.writerow(row)
+            return Counting()
+        chunks = 4
+        with mock.patch.object(s6_assemble.csv, "reader", counting_reader), mock.patch.object(s6_assemble.csv, "writer", counting_writer):
+            self.assertEqual(s6_assemble.split_by_chunk("facts", s6_assemble.FACTS_HEADER, chunks), 50)
+        self.assertEqual(len(at_write), chunks + 50)                    # a header per chunk file, then a write per row
+        self.assertEqual(at_write[chunks], 2)                           # the first data row was written after reading the header and it
+
+    def test_a_source_with_the_wrong_columns_is_refused_not_split_wrongly(self):
+        (self.root / "facts").mkdir()
+        (self.root / "facts" / "facts.csv").write_text("name,fact,data\nsmith,oac,{}\n")          # the PUBLIC table's columns, not stage 5's
+        with self.assertRaises(SystemExit) as stopped:
+            s6_assemble.split_by_chunk("facts", s6_assemble.FACTS_HEADER, 3)
+        self.assertIn("expected", str(stopped.exception))
 
 
 class Stage6EndToEnd(unittest.TestCase):
@@ -711,6 +859,79 @@ class DemoReleaseTool(unittest.TestCase):
             self.assertNotEqual(done.returncode, 0)
             self.assertIn("not being cleared", done.stderr + done.stdout)
             self.assertEqual((folder / "thesis.txt").read_text(), "keep me")
+
+
+class ValidatorWithoutLookups(unittest.TestCase):
+    """--skip-lookups: a release straight out of stage 6 has no lookups.json (its wording is a person's job, later), and the
+    validator is the only thing that can check 390,000 files before they leave the TRE - so it has to run without one,
+    and still catch everything that is not "is this group code in lookups.json"."""
+
+    SHAPE = ValidatorCopyOfChecks.SHAPE
+
+    def release(self, tmp, counts=None, maps=None, facts_csv='name,fact,data\nsmith,oac,"{""group"":""ZZ9""}"\n'):
+        root = Path(tmp)
+        (root / "names" / "sm").mkdir(parents=True)
+        (root / "index").mkdir()
+        (root / "masks").mkdir()
+        (root / "masks" / "scotland.json").write_text(json.dumps({"type": "FeatureCollection", "features": []}))
+        (root / "manifest.json").write_text(json.dumps(merge_release.build_manifest("t")))
+        bundle = {"schema": 1, "name": "smith", "counts": counts or {"census": {"1901": 500}}, "maps": maps or {"1901": self.SHAPE}}
+        (root / "names" / "sm" / "smith.json").write_text(json.dumps(bundle))
+        (root / "index" / "sm.json").write_text(json.dumps(["smith"]))
+        (root / "facts.csv").write_text(facts_csv)
+        return root
+
+    def validate(self, root, *flags):
+        out = io.StringIO()
+        with mock.patch.object(sys, "argv", ["validate_data", str(root), *flags]), contextlib.redirect_stdout(out):
+            code = validate_data.main()
+        return code, out.getvalue()
+
+    def test_without_the_flag_a_missing_lookups_file_is_an_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, text = self.validate(self.release(tmp))
+            self.assertEqual(code, 1)
+            self.assertIn("lookups.json", text)
+
+    def test_with_the_flag_a_good_release_passes_and_says_what_it_did_not_check(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, text = self.validate(self.release(tmp), "--skip-lookups")
+            self.assertEqual(code, 0, text)
+            self.assertIn("not checked (--skip-lookups)", text)
+            self.assertIn("OK: 1 names", text)                             # the unknown group code ZZ9 was not held against anyone
+
+    def test_with_the_flag_everything_else_is_still_checked(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, text = self.validate(self.release(tmp, counts={"census": {"1901": 40}}), "--skip-lookups")     # below the threshold
+            self.assertEqual(code, 1)
+            self.assertIn("below the threshold", text)
+        with tempfile.TemporaryDirectory() as tmp:
+            code, text = self.validate(self.release(tmp, facts_csv='name,fact,data\nnobody,oac,"{""group"":""3b""}"\n'), "--skip-lookups")
+            self.assertEqual(code, 1)
+            self.assertIn("no file", text)                                 # facts for a name that is not published
+        with tempfile.TemporaryDirectory() as tmp:
+            bad = {"1901": {**self.SHAPE, "features": [{**self.SHAPE["features"][0], "geometry": {"type": "Polygon", "coordinates": [[[400000, 500000], [400100, 500000], [400100, 500100], [400000, 500000]]]}}]}}
+            code, text = self.validate(self.release(tmp, maps=bad), "--skip-lookups")                          # British National Grid metres
+            self.assertEqual(code, 1)
+            self.assertIn("not longitude/latitude", text)
+
+    def test_with_the_flag_a_broken_manifest_still_stops_the_run(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.release(tmp)
+            manifest = json.loads((root / "manifest.json").read_text())
+            manifest["masks"]["scotland"]["url"] = "masks/not_there.json"
+            (root / "manifest.json").write_text(json.dumps(manifest))
+            code, text = self.validate(root, "--skip-lookups")
+            self.assertEqual(code, 1)
+            self.assertIn("does not exist", text)
+
+    def test_the_lookups_checks_are_only_skipped_not_invented(self):
+        errors = []
+        report = validate_data.Report()
+        validate_data.check_facts({"oac": {"group": "ZZ9"}, "eth": {"group": "QQQ"}}, None, "x", report)
+        self.assertEqual(report.errors, [])
+        validate_data.check_facts({"oac": {"group": "ZZ9"}}, {"oac": {"groups": {"3b": {}}}}, "x", report)      # with lookups it is still an error
+        self.assertTrue([e for e in report.errors if "ZZ9" in e])
 
 
 class MergeReleaseTests(unittest.TestCase):

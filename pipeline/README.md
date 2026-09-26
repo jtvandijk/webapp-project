@@ -27,7 +27,7 @@ The code that turns the registers and censuses into the data behind the website 
 | `s6_assemble.py` | Stage 6: stage 4's maps.jsonl + stage 5's facts.csv -> one JSON file per surname with its counts and maps, and the facts as one table (docs/data-contract.md). An array job like stage 4, no database access. `lookups.json` and `mapNotes` are deferred - see docs/pipeline.md's stage 6 row. | done, tested on fake data |
 | `merge_release.py` | Combines stage 6's per-chunk output into `facts.csv` (one table, streamed), the search index, `manifest.json` and the real `masks/scotland.json`. | done, tested |
 | `preview_web.py` | A quick look at already-assembled release files: a name's maps and a plain facts table, no database, no computation, stdlib only. | done, tested |
-| `hpc/stage1.sh` ... `stage6.sh` | The SGE jobs, one per stage (stages 4 and 6 an array). Which sources, how many chunks and names come from `run.settings`; memory and time are in each script. | stages 1-5 have run on the real HPC; stage 6 not yet |
+| `hpc/stage1.sh` ... `stage6.sh` | The SGE jobs, one per stage (stages 4 and 6 an array). Which sources, how many chunks and names come from `run.settings`; memory and time are in each script. | stages 1-5 have run on the real HPC; stage 6 not yet (how to run it: docs/how-to-build-the-dataset.md, end of section 10) |
 | `../run.settings` | The run choices in one place (in git; passwords stay in `.env`). Every stage uses it as its default. | done, tested |
 
 ## Try it on your own computer (fake data)

@@ -3,6 +3,7 @@
 
 Usage:   python3 tools/validate_data.py site/data
          python3 tools/validate_data.py path/to/release --threshold 100
+         python3 tools/validate_data.py work/release --skip-lookups      # straight out of stage 6: no lookups.json yet
 
 Run this on every release BEFORE it leaves the TRE and again before it goes on the web server.
 Exit code 0 = no errors (warnings are allowed), 1 = at least one error.
@@ -196,6 +197,8 @@ def check_group(fact, where, report):
 
 
 def check_facts(facts, lookups, where, report):
+    """lookups is lookups.json, or None (--skip-lookups): then everything else about a fact is still checked, only
+    "is this group code known to lookups.json" is not."""
     for key in facts:
         if key not in FACT_KEYS:
             report.warn(where, f"facts.{key} is not part of the contract and will be ignored")
@@ -213,11 +216,11 @@ def check_facts(facts, lookups, where, report):
         if scheme not in facts:
             continue
         check_group(facts[scheme], f"{where} {scheme}", report)
-        if facts[scheme].get("group") not in lookups.get(scheme, {}).get("groups", {}):
+        if lookups is not None and facts[scheme].get("group") not in lookups.get(scheme, {}).get("groups", {}):
             report.error(where, f"{scheme}.group {facts[scheme].get('group')!r} is not in lookups.json")
     if "eth" in facts:
         eth = facts["eth"]
-        if str(eth.get("group")) not in lookups.get("eth", {}):
+        if lookups is not None and str(eth.get("group")) not in lookups.get("eth", {}):
             report.error(where, f"eth.group {eth.get('group')!r} is not in lookups.json")
         countries = eth.get("countries")
         if countries is not None and (not isinstance(countries, list) or len(countries) > 3 or
@@ -349,19 +352,24 @@ def check_facts_table(path, names, lookups, report):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("release", type=Path, help="folder that holds manifest.json, lookups.json, names/ ...")
+    parser.add_argument("release", type=Path, help="folder that holds manifest.json, lookups.json (not needed with --skip-lookups), names/ ...")
     parser.add_argument("--threshold", type=int, help="override the threshold in the manifest (only to be stricter)")
+    parser.add_argument("--skip-lookups", action="store_true",
+                        help="there is no lookups.json yet (the release straight out of stage 6): check everything else, but not group codes against it")
     args = parser.parse_args()
     root = args.release
     report = Report()
 
     manifest = load(root / "manifest.json", report)
-    lookups = load(root / "lookups.json", report)
-    if manifest is None or lookups is None:
+    lookups = None if args.skip_lookups else load(root / "lookups.json", report)
+    if manifest is None or (lookups is None and not args.skip_lookups):
         print("\n".join(report.errors))
         return 1
     check_manifest(manifest, root, report)
-    check_lookups(lookups, report)
+    if lookups is not None:
+        check_lookups(lookups, report)
+    else:
+        report.warn("lookups.json", "not checked (--skip-lookups): group codes are not compared with it")
     if report.errors:  # no point checking names against a broken manifest
         print("\n".join(report.errors))
         return 1

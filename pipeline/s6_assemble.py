@@ -43,6 +43,10 @@ chunks are split by a hash of the name, not alphabetically, so two different chu
 names/sm/) and work/release/chunk_N.done, reusing stage 4's exact done-marker logic (a marker is only
 trusted if it names the same --chunks this run is using and its own output is still actually present).
 
+A chunk is refused if stage 4 has not finished it (no work/maps/chunk_N.done: the maps file may be half written), and
+a finished chunk is redone, not skipped, if its maps or its --prepare slices are newer than its own .done (stage 4 or
+--prepare was run again since), so a re-run stage cannot leave stale files quietly in the release.
+
 A single name's own facts/maps failing to combine (a genuinely unexpected shape) does not take the rest
 of the chunk down with it - logged to work/release/chunk_N.errors.log and skipped, the same as stage 4.
 
@@ -56,12 +60,15 @@ needed to look at why.
 import argparse
 import copy
 import csv
+import errno
+import itertools
 import json
 import re
 import sys
 import time
 import traceback
 from collections import defaultdict
+from contextlib import ExitStack
 from pathlib import Path
 
 from . import config
@@ -209,25 +216,38 @@ def split_current(stem, chunks):
 def split_by_chunk(stem, header, chunks):
     """Splits work/counts.csv or work/facts/facts.csv into work/<stem>/chunks/<n>.csv by chunk_of() on its
     "surname" column - the same partitioning stage 3 used for the point extracts, so a name's facts/counts
-    land in exactly the chunk its maps already are in. Returns the number of rows split."""
+    land in exactly the chunk its maps already are in. Returns the number of rows split.
+
+    A stream: one row at a time from the source to the chunk file it belongs to, with every chunk file open at
+    once (one per chunk, so a few hundred). The facts table has millions of rows, and holding it all in memory
+    to sort it into chunks would need several GB on the login node this is meant to run on."""
     source = _source_csv(stem)
     if not source.exists():
         raise SystemExit(f"{source} does not exist - run stage {'5 (facts)' if stem == 'facts' else '1 (counts)'} first.")
     out_dir = _chunk_dir(stem)
     out_dir.mkdir(parents=True, exist_ok=True)
-    by_chunk = defaultdict(list)
-    with open(source, newline="") as f:
-        reader = csv.DictReader(f)
-        rows = list(reader)
-    for row in rows:
-        by_chunk[chunk_of(row["surname"], chunks)].append(row)
-    for chunk in range(chunks):
-        with open(out_dir / f"{chunk}.csv", "w", newline="") as f:
-            out = csv.DictWriter(f, fieldnames=header)
-            out.writeheader()
-            out.writerows(by_chunk.get(chunk, []))
+    rows = 0
+    with ExitStack() as stack, open(source, newline="") as f:
+        reader = csv.reader(f)
+        found_header = next(reader, None)
+        if found_header != header:
+            raise SystemExit(f"{source} has the columns {found_header}, expected {header}.")
+        surname = header.index("surname")
+        try:
+            writers = []
+            for chunk in range(chunks):
+                writer = csv.writer(stack.enter_context(open(out_dir / f"{chunk}.csv", "w", newline="")))
+                writer.writerow(header)                         # every chunk file exists, even if it stays empty
+                writers.append(writer)
+        except OSError as error:
+            if error.errno == errno.EMFILE:
+                raise SystemExit(f"Cannot open {chunks} files at once (the limit is set by `ulimit -n`): raise it, or use fewer chunks.")
+            raise
+        for row in reader:
+            writers[chunk_of(row[surname], chunks)].writerow(row)
+            rows += 1
     (out_dir / "CHUNKS").write_text(str(chunks))
-    return len(rows)
+    return rows
 
 
 def load_chunk_csv(stem, chunk):
@@ -242,18 +262,37 @@ def load_chunk_csv(stem, chunk):
     return grouped
 
 
-def load_maps_chunk(maps_dir, chunk):
-    """{name: [row, ...]} for one chunk's maps.jsonl (stage 4), and the full list of names it owns (every
-    name that has at least one row, in any period, whatever its action)."""
+_ROW_START = '{"surname":"'
+
+
+def _surname_of(line):
+    """The surname a maps.jsonl line is about, without parsing the line (a build row carries a whole GeoJSON): stage 4
+    writes every row as {"surname":"<name>","period":...} in that order, and a surname is letters a-z only. A line that
+    does not start that way is parsed properly instead, so the shortcut can only ever save time, never be wrong."""
+    if line.startswith(_ROW_START):
+        end = line.find('"', len(_ROW_START))
+        if end > 0:
+            return line[len(_ROW_START):end]
+    return json.loads(line)["surname"]
+
+
+def iter_maps_by_name(maps_dir, chunk):
+    """(name, [row, ...]) for each name of one chunk's maps.jsonl (stage 4), one name at a time - the file holds
+    a name's rows together, names in sorted order, so only one name's maps are ever in memory (a whole chunk of real
+    GeoJSON would be a gigabyte or more once parsed). A name that comes back later, or out of order, means the
+    file is not what stage 4 writes: stopped, not guessed at, since everything after relies on the order (the
+    facts parts must come out sorted for merge_release.py)."""
     path = Path(maps_dir) / f"chunk_{chunk}.jsonl"
     if not path.exists():
         raise SystemExit(f"No {path} - run s4_maps.py first (with a matching --chunks).")
-    grouped = defaultdict(list)
+    previous = None
     with open(path) as f:
-        for line in f:
-            row = json.loads(line)
-            grouped[row["surname"]].append(row)
-    return grouped
+        for name, lines in itertools.groupby(f, key=_surname_of):
+            if previous is not None and name <= previous:
+                raise SystemExit(f"{path}: {name!r} comes after {previous!r} - the names in a chunk's maps file are meant to be "
+                                 "together and in sorted order, as s4_maps.py writes them.")
+            previous = name
+            yield name, [json.loads(line) for line in lines]
 
 
 # ---------------------------------------------------------------------------
@@ -299,30 +338,40 @@ def main():
     done_marker = out_dir / f"chunk_{args.chunk}.done"
     index_path = index_dir / f"chunk_{args.chunk}.txt"
     facts_path = facts_dir / f"chunk_{args.chunk}.csv"
+    maps_path = Path(args.maps_dir) / f"chunk_{args.chunk}.jsonl"
     if done_marker.exists() and not args.force:
         marker_text = done_marker.read_text()
         marker_chunks = re.search(r"chunks=(\d+)", marker_text)
         stale_partitioning = marker_chunks is None or int(marker_chunks.group(1)) != args.chunks
         missing_output = not (index_path.exists() and facts_path.exists())
-        if not stale_partitioning and not missing_output:
+        # stage 4 or --prepare run again since this chunk was assembled: what it was made from has changed
+        inputs = [maps_path, _chunk_dir("facts") / f"{args.chunk}.csv", _chunk_dir("counts") / f"{args.chunk}.csv"]
+        outdated = any(p.exists() and p.stat().st_mtime > done_marker.stat().st_mtime for p in inputs)
+        if not stale_partitioning and not missing_output and not outdated:
             print(f"chunk {args.chunk} already finished ({done_marker}) - skipping. Use --force to redo it.")
             return
-        why = "it was made under a different --chunks value" if stale_partitioning else "its index or facts part is missing even though .done exists"
+        why = ("it was made under a different --chunks value" if stale_partitioning
+               else "its index or facts part is missing even though .done exists" if missing_output
+               else "its maps, facts or counts have been made again since")
         print(f"chunk {args.chunk}: {done_marker} exists but {why} - redoing it.")
 
+    stage4_done = maps_path.with_suffix(".done")
+    if not stage4_done.exists():
+        raise SystemExit(f"Stage 4 has not finished chunk {args.chunk} ({stage4_done} is missing): its maps file may be half written. "
+                         "Wait for stage 4 (or run it again), then submit this again.")
+
     started = time.perf_counter()
-    maps_by_name = load_maps_chunk(args.maps_dir, args.chunk)
-    facts_by_name = load_chunk_csv("facts", args.chunk)
+    facts_by_name = load_chunk_csv("facts", args.chunk)            # these two are small: the chunk's own slice of each
     counts_by_name = load_chunk_csv("counts", args.chunk)
-    names = sorted(maps_by_name)
-    print(f"chunk {args.chunk}: {len(names):,} names, loaded in {time.perf_counter() - started:.1f}s")
+    maps = iter_maps_by_name(args.maps_dir, args.chunk)            # this is not: one name at a time
+    print(f"chunk {args.chunk}: facts and counts loaded in {time.perf_counter() - started:.1f}s", flush=True)
 
     errors_path = out_dir / f"chunk_{args.chunk}.errors.log"
     written, skipped, failed, facts_rows = [], [], [], []
     with open(errors_path, "w") as errors_file:
-        for name in names:
+        for name, map_rows in maps:
             try:
-                bundle = build_bundle(name, maps_by_name[name], facts_by_name.get(name, []), counts_by_name.get(name, []),
+                bundle = build_bundle(name, map_rows, facts_by_name.get(name, []), counts_by_name.get(name, []),
                                       include_facts=args.facts_in_names)
                 rows = facts_table_rows(name, facts_by_name.get(name, [])) if bundle is not None else []
             except Exception:
@@ -338,6 +387,8 @@ def main():
             path.write_text(json.dumps(bundle, separators=(",", ":"), ensure_ascii=False))
             written.append(name)
             facts_rows.extend(rows)
+            if len(written) % 500 == 0:
+                print(f"chunk {args.chunk}: {len(written):,} names written, {time.perf_counter() - started:.1f}s elapsed", flush=True)
 
     with open(facts_path, "w", newline="") as f:
         out = csv.writer(f)
