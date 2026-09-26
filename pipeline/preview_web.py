@@ -74,9 +74,13 @@ def land_path(path=None):
     return "".join(_path(f["geometry"]) for f in doc["features"])
 
 
-def panel(geojson, caption, land=""):
-    """One period's map as a small inline SVG figure over the coastline."""
-    layers = [f'<path d="{land}" fill="#dfe5ea" stroke="#c4ccd3" stroke-width="0.5"/>'] if land else []
+LAND_ID = "gbland"
+
+
+def panel(geojson, caption, land=False):
+    """One period's map as a small inline SVG figure. With land=True it is drawn over the coastline, which the page
+    defines once (land_defs) and every panel refers to - not repeated in each of them."""
+    layers = [f'<use href="#{LAND_ID}" fill="#dfe5ea" stroke="#c4ccd3" stroke-width="0.5"/>'] if land else []
     for feature in geojson.get("features", []):
         level = feature["properties"]["level"]
         layers.append(f'<path d="{_path(feature["geometry"])}" fill="{COLOURS[level]}" fill-rule="evenodd"/>')
@@ -93,7 +97,12 @@ def bearers_in(bundle, period_id):
     return None
 
 
-def maps_block(bundle, land=""):
+def land_defs(land):
+    """The coastline, defined once at the top of the page for every panel's <use> to point at ("" if there is none)."""
+    return f'<svg width="0" height="0" style="position:absolute"><defs><path id="{LAND_ID}" d="{land}"/></defs></svg>' if land else ""
+
+
+def maps_block(bundle, land=False):
     row = []
     for pid, geojson in sorted(bundle.get("maps", {}).items(), key=lambda kv: int(kv[0])):
         n = bearers_in(bundle, pid)
@@ -213,7 +222,7 @@ def main():
             continue
         bundle["facts"] = {**bundle.get("facts", {}), **table_facts.get(key, {})}
         blocks.append(f"""<h2>{html.escape(key)}</h2>
-{maps_block(bundle, land)}
+{maps_block(bundle, bool(land))}
 <h3>bearers per year</h3>{counts_block(bundle)}
 <h3>facts</h3>{facts_table(bundle)}""")
     for key in missing:
@@ -233,7 +242,7 @@ td:first-child{{white-space:nowrap;color:#345}}</style>
 <h1>Release preview</h1>
 <p><small>{html.escape(out.name)}: python3 -m pipeline.preview_web {html.escape(" ".join(sys.argv[1:]))}. Each map is over a rough
 coastline; the number after the year is the bearers that year. Blue shades: level 1 (outer) to level 3 (most concentrated).</small></p>
-{"".join(blocks)}"""
+{land_defs(land)}{"".join(blocks)}"""
     out.write_text(page, encoding="utf-8")
     print(f"wrote {out}: {len(blocks)} names" + (f", {len(missing)} not found" if missing else ""))
 

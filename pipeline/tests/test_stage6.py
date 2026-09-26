@@ -825,11 +825,27 @@ class PreviewWebTests(unittest.TestCase):
 
     def test_a_panel_is_drawn_over_the_coastline_when_there_is_one(self):
         shape = {"type": "FeatureCollection", "features": []}
-        with_land = preview_web.panel(shape, "1901", land="M1,2L3,4Z")
-        self.assertIn('d="M1,2L3,4Z"', with_land)
-        self.assertLess(with_land.index("M1,2L3,4Z"), with_land.index("</svg>"))
-        self.assertNotIn("M1,2L3,4Z", preview_web.panel(shape, "1901"))
-        self.assertIn("M1,2L3,4Z", preview_web.maps_block({"maps": {"1901": shape}}, land="M1,2L3,4Z"))
+        with_land = preview_web.panel(shape, "1901", land=True)
+        self.assertIn('href="#gbland"', with_land)                               # drawn from the one definition on the page
+        self.assertLess(with_land.index("gbland"), with_land.index("</svg>"))
+        self.assertNotIn("gbland", preview_web.panel(shape, "1901"))
+        self.assertIn('href="#gbland"', preview_web.maps_block({"maps": {"1901": shape}}, land=True))
+        self.assertIn('<path id="gbland" d="M1,2L3,4Z"/>', preview_web.land_defs("M1,2L3,4Z"))
+        self.assertEqual(preview_web.land_defs(""), "")
+
+    def test_the_page_defines_the_coastline_once_however_many_maps(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            names_dir = Path(tmp) / "names"
+            (names_dir / "sm").mkdir(parents=True)
+            shape = {"type": "FeatureCollection", "features": []}
+            (names_dir / "sm" / "smith.json").write_text(json.dumps({"schema": 1, "name": "smith", "counts": {},
+                                                                     "maps": {"1901": shape, "1911": shape, "1921": shape}}))
+            out = Path(tmp) / "out.html"
+            with mock.patch.object(sys, "argv", ["preview_web", "--names", "smith", "--names-dir", str(names_dir), "--out", str(out)]):
+                preview_web.main()
+            page = out.read_text()
+            self.assertEqual(page.count('id="gbland"'), 1)
+            self.assertEqual(page.count('href="#gbland"'), 3)
 
     def test_the_coastline_is_a_few_pieces_of_longitude_latitude_and_becomes_one_path(self):
         doc = json.loads((config.REFERENCE / "gb_outline_lonlat.geojson").read_text())
