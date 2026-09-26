@@ -1,60 +1,51 @@
 # Disclosure control in the GBNames release
 
-*As configured on 2026-09-26. Every number below is set in one file, `pipeline/config.py`; if one changes, this page should too.*
+*As configured on 2026-09-26. The numbers are set in one file, `pipeline/config.py`.*
 
-GBNames turns individual-level records (the register, and the historic censuses 1851-1921) into precomputed surname maps
-and facts. All of that happens inside the Trusted Research Environment (TRE). The only thing meant to leave it is the
-finished **release folder**: one small file per surname holding counts, map outlines and a few summary facts. It contains
-no individual record, no address or postcode, and no point locations.
+GBNames turns individual-level records (the register, and the historic censuses 1851-1921) into a set of precomputed
+surname pages. All of that happens inside the Trusted Research Environment (TRE); the only thing meant to leave it is the
+finished release: one small file per surname. It contains no individual record, address, postcode or point location.
 
-## The measures in one table
+## What a surname page contains
 
-| # | Measure | Rule | What it means in practice |
+**Counts.** How many bearers the surname has in each year.
+
+**Maps.** One map per year, showing where the surname is concentrated. Each map has three nested shades. Every shade is
+the smallest area that holds a set percentage of the surname's smoothed density (roughly 40%, 65% and 85%), so the darkest
+shade is the core and the lightest is the wider region. The percentages are calibrated for each surname, because a
+surname with hundreds of thousands of bearers and one with a few hundred cannot be drawn with the same cut-offs. The
+density is smoothed over many kilometres and partly adjusted for population, so a map shows where a surname is
+concentrated, not simply where most people live.
+
+**Facts.** Where the surname's bearers live, described through their neighbourhoods. Each bearer is linked to the small
+area they live in, and the page then says which types of neighbourhood the surname is most concentrated in: the general
+neighbourhood classification (OAC, and LOAC for London), the financial precarity classification, deprivation and access
+to healthy assets (in tenths), and a name-based ethnicity estimate. For example, *"31% of bearers live in neighbourhoods of
+type X, 22% in type Y"* (made-up numbers). It also lists the ten most common neighbourhoods today, the ten most common historic
+parishes, and the ten most common forenames for women and for men.
+
+## The disclosure principles
+
+| # | Principle | Rule | Effect |
 |---|---|---|---|
-| 1 | **Small counts are never kept** | A surname's bearers in one year, in either source, are not kept if there are fewer than **10** (`COUNT_FLOOR`) | A surname with under 10 bearers in every year appears nowhere in the release. For a surname that is published, a year with under 10 bearers simply has no number. |
-| 2 | **Small surnames get no page** | Fewer than **100** bearers (`THRESHOLD`, both sources) | A surname gets a page only if, in at least one of the 15 map years, it has 100 or more bearers. Each map needs 100 or more bearers *in that year*. No map, no facts and no search suggestion for anything below. |
-| 3 | **Small patches are removed from maps** | A separate patch on a map is dropped if it holds fewer than **5** bearers (`MIN_BLOB_BEARERS`), less than 2% of the surname's total (`MIN_BLOB_SHARE`), or covers under 25 km² (`MIN_AREA_KM2`) | A handful of people living on their own somewhere are not drawn as a "cluster". |
-| 4 | **Maps are blurred, never points** | Bearers are counted in 1 km squares and smoothed over an 8 to 18 km radius (wider for bigger surnames); outlines are simplified to 400 m and written to about 100 m (3 decimals) | Only the outlines of three density bands are released. Nothing can be traced to a street or a household. Census bearers are placed at their parish centre, not an address. |
-| 5 | **Facts need at least 5 people** | The most common group or decile must have at least **5** bearers, and every neighbourhood, parish or forename listed needs at least **5** people (`FACT_MIN_IN_CATEGORY`) | Otherwise the fact is left out. Register facts are also only made for a surname with 100 or more register bearers in some year. Ethnicity says "unknown" when no group reaches 5. |
-| 6 | **Lists are short and carry no counts** | 10 forenames per sex, 10 neighbourhoods, 10 parishes (`FORENAMES_TOP`, `PLACES_TOP`) | Ranked lists only: the number of people behind each entry is not released. |
-| 7 | **The safeguarded classification stays safeguarded** | The Financial Precarity Classification's area-to-group lookup is safeguarded data and is never released | Only a surname's most common group (one of 13) and the shares per group are released, never which areas belong to which group. |
-| 8 | **Only aggregates leave** | The pipeline runs in the TRE; only the release folder is intended to leave | The search index lists only surnames that have a page, so it does not reveal which other names exist. |
+| 1 | **Small counts are not kept** | A surname's bearers in one year are not kept if there are fewer than **10** (either source) | A surname with under 10 bearers in every year appears nowhere. In a published surname, a year with under 10 has no number. |
+| 2 | **Small surnames get no page** | Fewer than **100** bearers | A surname gets a page only if it has 100 or more bearers in at least one map year, and each map needs 100 or more bearers in that year. Below that: no map, no facts, no search suggestion. |
+| 3 | **Small patches are removed from maps** | A separate patch is dropped if it holds fewer than **5** bearers, under 2% of the surname's total, or covers under 25 km² | A handful of people living on their own somewhere are not drawn as a cluster. |
+| 4 | **Maps are blurred and never show points** | Bearers are counted in 1 km squares, smoothed over 8 to 18 km (wider for bigger surnames); outlines are simplified to 400 m | Only the outlines of the three shades are released. Nothing points to a street or household. Census bearers are placed at their parish centre. |
+| 5 | **Facts need at least 5 people** | The most common group, and every neighbourhood, parish or forename listed, must have at least **5** bearers | Otherwise it is left out. Register facts are only made for a surname with 100 or more register bearers in some year. |
+| 6 | **Lists are short and carry no counts** | At most 10 entries per list | Ranked lists only: the number of people behind each entry is not released. |
+| 7 | **Safeguarded data stays safeguarded** | The financial precarity classification's area-to-group lookup is never released | Only a surname's most common group and its shares over the 13 groups are released, never which areas belong to which group. |
 
-The historic census (1851-1921) is over 100 years old and is treated as carrying no disclosure risk. The same rules are
-applied to it anyway, so the two sources behave alike and the maps are not thin or noisy.
+The historic census (1851-1921) is over 100 years old and carries no disclosure risk; the same rules are applied to it
+anyway, so the two sources behave alike.
 
-## How each measure is enforced, and checked
+## Still to be decided
 
-| Stage | What it does for disclosure control |
-|---|---|
-| 1. Counts | Applies the floor of 10 before anything else is written, and makes the list of surnames with 100 or more bearers in some map year. |
-| 4. Maps | For each surname and year: builds a map only from 100 or more bearers, otherwise leaves it out. Removes small patches (measure 3). |
-| 5. Facts | Applies the minimum of 5 (measure 5) and keeps the lists short (measure 6). |
-| 6. Assemble | Writes a file only for a surname that has at least one map, and facts only for surnames that have a file. |
-| Validator (`tools/validate_data.py`) | Checks the finished files independently of the pipeline: no map for a year whose count is under 100 (for a copied map, the count of the year it was copied from), no facts for a surname without a file, the search index lists exactly the published names, coordinates are plausible. It was tested by deliberately breaking files, and every break was caught. |
-
-The pipeline also has an automated test suite (over 340 tests), including checks that a rule really does stop what it is
-meant to stop when the rule is deliberately broken.
-
-One rule worth knowing: in 1911 and 1921 the census does not cover Scotland, so a mostly Scottish surname shows its 1901
-map for those years. That only happens if the 1901 map itself had 100 or more bearers, and the validator checks the 1901
-count.
-
-## What is not covered, or still to be decided
-
-Listed so that nobody has to find them:
-
-1. **Shares over all groups.** The rule of 5 applies to the headline group and to every listed item, but the shares for
-   the neighbourhood classifications, the deprivation deciles and the ethnicity groups run over *every* group with any
-   bearer, to 3 decimals. For a surname with 100 bearers, a group with 1 to 4 bearers appears as 1 to 4 percent, and
-   since a surname's bearers per year are published, the count behind it can usually be worked out. Suppressing or merging
-   groups under 5 is possible and is a decision for the group.
-2. **The minimum of 5 for map patches is a starting judgement, not a validated value.** A patch that just survives
-   represents about 5 people, drawn as a blurred area at least 8 km across, never as points.
-3. **Counts are exact, not rounded.** A published surname shows its exact bearer count for every year with 10 or more,
-   including years below 100 that have no map.
-4. **The validator does not re-check the floor of 10 or the minimum of 5.** Those are enforced when the numbers are
-   calculated, and again only through the tests.
-5. **This page covers what the pipeline itself enforces.** The TRE's own output checking is separate and still applies.
-6. **Numbers from the real run** (how many surnames get a page, how many maps and facts were left out by each rule) are
-   not in this page yet; they can be added once the validation of the full release is finished.
+1. **Shares over all groups.** The minimum of 5 applies to the most common group and to every listed item, but the
+   shares over the neighbourhood classifications, deprivation tenths and ethnicity groups cover *every* group with any
+   bearer, to 3 decimals. For a surname with 100 bearers, a group of 1 to 4 people shows as 1 to 4 percent. Merging groups
+   under 5 into "other" is possible.
+2. **The minimum of 5 bearers for a map patch is a starting judgement, not a validated value.** A patch that just
+   survives represents about 5 people, drawn as a blurred area at least 8 km across.
+3. **Counts are exact, not rounded**, for every year with 10 or more bearers, including years under 100 that have no map.
+4. This page covers what the pipeline enforces. The TRE's own output checking is separate and still applies.
