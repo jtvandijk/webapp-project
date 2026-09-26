@@ -4,6 +4,11 @@
 # not change where it should run, only how big a job to ask for.
 #
 #   qsub pipeline/hpc/stage3.sh
+#   qsub -l h_vmem=16G pipeline/hpc/stage3.sh --sources register     # anything after the script name goes to s3_extracts.py
+#
+# There is no resume: every run re-queries and rewrites each period it is given, and CHUNKS is written only when the run
+# finishes. After a job was killed part-way, re-run just the sources that did not finish (--sources register or census);
+# the other source's finished periods are left alone.
 #
 # GBNAMES_LIMIT and GBNAMES_CHUNKS in run.settings say how many names and how many chunks: a SAMPLE run sets a limit
 # (empty = every name). Keep the names-per-chunk ratio similar between a sample and the real run (see
@@ -57,4 +62,4 @@ set +a
 export GBNAMES_PROFILE=tre
 export PYTHONUNBUFFERED=1    # print to the log as it happens; otherwise the log can look empty until the job ends
 
-python3 -m pipeline.s3_extracts
+python3 -m pipeline.s3_extracts "$@"
