@@ -20,7 +20,7 @@ concentrated, not simply where most people live.
 **Facts.** Where the surname's bearers live, described through their neighbourhoods. Each bearer is linked to the small
 area they live in, and the page then says which types of neighbourhood the surname is most concentrated in: the general
 neighbourhood classification (OAC, and LOAC for London), the financial precarity classification, deprivation and access
-to healthy assets (in tenths), and a name-based ethnicity estimate. For example, *"31% of bearers live in neighbourhoods of
+to healthy assets (both as deciles), and a name-based ethnicity estimate. For example, *"31% of bearers live in neighbourhoods of
 type X, 22% in type Y"* (made-up numbers). It also lists the ten most common neighbourhoods today, the ten most common historic
 parishes, and the ten most common forenames for women and for men.
 
@@ -39,13 +39,9 @@ parishes, and the ten most common forenames for women and for men.
 The historic census (1851-1921) is over 100 years old and carries no disclosure risk; the same rules are applied to it
 anyway, so the two sources behave alike.
 
-## Still to be decided
+## To note
 
-1. **Shares over all groups.** The minimum of 5 applies to the most common group and to every listed item, but the
-   shares over the neighbourhood classifications, deprivation tenths and ethnicity groups cover *every* group with any
-   bearer, to 3 decimals. For a surname with 100 bearers, a group of 1 to 4 people shows as 1 to 4 percent. Merging groups
-   under 5 into "other" is possible.
-2. **The minimum of 5 bearers for a map patch is a starting judgement, not a validated value.** A patch that just
-   survives represents about 5 people, drawn as a blurred area at least 8 km across.
-3. **Counts are exact, not rounded**, for every year with 10 or more bearers, including years under 100 that have no map.
-4. This page covers what the pipeline enforces. The TRE's own output checking is separate and still applies.
+The minimum of 5 applies to the most common group and to every listed item, but the shares over the neighbourhood
+classifications, deprivation and healthy-assets deciles and ethnicity groups cover *every* group with any bearer, to 3
+decimals. For a surname with 100 bearers, a group of 1 to 4 people shows as 1 to 4 percent. Merging groups under 5 into
+"other" is possible.
