@@ -12,8 +12,7 @@
 # See docs/how-to-build-the-dataset.md.
 
 # Which database(s) to use: register, census, or both ("register census"). Every stage.
-# Register only, until the census database is ready.
-GBNAMES_SOURCES="register"
+GBNAMES_SOURCES="register census"
 
 # How many pieces the names are cut into (stage 3) and how many map jobs there are (stage 4): the same number in both.
 # Stage 4 is submitted with an array of exactly this size:   qsub -t 1-200 pipeline/hpc/stage4.sh

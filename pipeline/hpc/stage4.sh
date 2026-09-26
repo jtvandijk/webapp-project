@@ -15,8 +15,8 @@
 # last chunks unbuilt), and s4_maps.py checks the number against work/chunks/CHUNKS and refuses to run if they
 # disagree, rather than silently reading the wrong names for a chunk.
 #
-# GBNAMES_SOURCES (run.settings) is the same one stages 2 and 3 used - register-only for now (see stage2.sh's
-# comment) - or this looks for census surfaces/chunks that do not exist yet and fails.
+# GBNAMES_SOURCES (run.settings) must be the same one stages 2 and 3 were run with - or this looks for a
+# source's surfaces/chunks that do not exist yet and fails.
 #
 # h_vmem and h_rt below come from a real sample run: the longest of 40 chunks of about 125 names took 260 s, so an
 # hour is generous. For a very different size of run, size them again from a sample: run stage 3 with a limit and a

@@ -8,10 +8,9 @@
 #
 #   qsub pipeline/hpc/stage2.sh
 #
-# Which databases it uses comes from run.settings (GBNAMES_SOURCES), register-only for now, since the census
-# database is not ready - this is safe: stage 2 writes one file per period (work/surfaces/<period>.npy), so running
-# it again later with the census added only adds the census periods' files, it does not touch or require redoing
-# the register ones already there.
+# Which databases it uses comes from run.settings (GBNAMES_SOURCES: register, census, or both). It is safe to change
+# this between runs - stage 2 writes one file per period (work/surfaces/<period>.npy), so adding a source later only
+# adds that source's periods' files, it does not touch or require redoing the ones already there.
 #
 # Expects two files in the project root: .env with PGHOST_LCR etc (see pipeline/README.md's "Running it in the
 # TRE"; passwords, not in git) and run.settings (the run choices, in git). `set -a` below means every variable they
