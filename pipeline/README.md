@@ -272,7 +272,7 @@ One name, one year, start to finish (`kde.py`, numbered as in its module docstri
 6. **Tidy.** Small gaps and notches are closed (`SMOOTH_M`), tiny specks removed (`MIN_AREA_KM2`),
    and the outline clipped to the coastline and simplified (`SIMPLIFY_M`) for a smaller file.
 7. **Band.** The three nested areas become three non-overlapping bands (each level minus the one inside it).
-8. **Write.** The bands become GeoJSON, in longitude/latitude, 4 decimal places.
+8. **Write.** The bands become GeoJSON, in longitude/latitude, 3 decimal places (`GEOJSON_DECIMALS`).
 
 The whole thing (population surfaces aside, which are shared across every name in a period) takes
 tens of milliseconds per map - the database query dominates the real runtime, not this calculation.

@@ -15,7 +15,7 @@ The steps, for one surname in one year (the numbers live in config.py):
   6. tidy: fill small gaps, drop specks, clip to the coast,
      simplify                                                      tidy
   7. turn the nested areas into three bands that do not overlap    make_bands
-  8. write GeoJSON in longitude/latitude, 4 decimals               geojson
+  8. write GeoJSON in longitude/latitude (config.GEOJSON_DECIMALS)  geojson
 
 The old pipeline did the same in spirit, but ran R and Python for every single map. Here the
 heavy part (step 2) takes a few hundredths of a second, because the smoothing is done on the
@@ -466,20 +466,32 @@ def size_level_mass(n, second_share=0.0):
 _to_lonlat = Transformer.from_crs(27700, 4326, always_xy=True, allow_ballpark=True)
 
 
+def _rounded(coordinates, decimals):
+    """A GeoJSON coordinates structure (nested lists/tuples of numbers) with every number rounded to `decimals`.
+    shapely.set_precision() snaps a shape to a grid, but the snapped numbers are computed as n * grid size, so
+    about a third of them come out as 50.755900000000004 - written to the file in full, several times longer than
+    50.7559. Rounding them here is what makes the file really hold `decimals` decimals."""
+    if coordinates and isinstance(coordinates[0], (int, float)):
+        return [round(float(c), decimals) for c in coordinates]
+    return [_rounded(part, decimals) for part in coordinates]
+
+
 def geojson(bands):
-    """The bands as a GeoJSON FeatureCollection in longitude/latitude with 4 decimals, as the data
-    contract asks. Level 1 is the outermost band."""
+    """The bands as a GeoJSON FeatureCollection in longitude/latitude with config.GEOJSON_DECIMALS decimals
+    (the data contract says which). Level 1 is the outermost band."""
+    decimals = config.GEOJSON_DECIMALS
     features = []
     for level, band in enumerate(bands, start=1):
         if band.is_empty:
             continue
         lonlat = _repair(shapely.transform(band, lambda c: np.column_stack(_to_lonlat.transform(c[:, 0], c[:, 1]))))
         try:
-            lonlat = shapely.set_precision(lonlat, 0.0001)          # 4 decimals, about 11 m
+            lonlat = shapely.set_precision(lonlat, 10.0 ** -decimals)
         except shapely.errors.GEOSException:
-            lonlat = _repair(shapely.transform(lonlat, lambda c: np.round(c, 4)))
+            lonlat = _repair(shapely.transform(lonlat, lambda c: np.round(c, decimals)))
         polygons = _polygons(lonlat)
         if polygons:
-            geometry = polygons[0] if len(polygons) == 1 else MultiPolygon(polygons)
-            features.append({"type": "Feature", "properties": {"level": level}, "geometry": mapping(geometry)})
+            geometry = mapping(polygons[0] if len(polygons) == 1 else MultiPolygon(polygons))
+            geometry["coordinates"] = _rounded(geometry["coordinates"], decimals)
+            features.append({"type": "Feature", "properties": {"level": level}, "geometry": geometry})
     return {"type": "FeatureCollection", "features": features} if features else None

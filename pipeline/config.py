@@ -314,6 +314,12 @@ LEVEL_PEAK = (0.10, 0.25, 0.45)
 SMOOTH_M = 10000           # fills gaps and notches narrower than 2x this
 SIMPLIFY_M = 400           # fewer points, smaller files
 MIN_AREA_KM2 = 25          # blobs and holes smaller than this are dropped
+# Decimals of longitude/latitude written to the maps: 4 is about 11 m, 3 about 110 m north-south (65 m east-west). The outlines are
+# already simplified to SIMPLIFY_M = 400 m, so 3 changes them by well under that. Measured on 317 maps (2026-09-26): 3 instead of 4 is
+# 10% smaller raw and 19% smaller gzipped and moves an outline by 0.5% of its own area on average (1.2% at worst); 2 is 5% (13% at
+# worst), too coarse. Written as exactly this many decimals: kde.geojson() also rounds away the floating-point noise that snapping
+# to a grid leaves (50.755900000000004), which by itself was a third of the file size.
+GEOJSON_DECIMALS = 3
 
 
 # ---------------------------------------------------------------------------

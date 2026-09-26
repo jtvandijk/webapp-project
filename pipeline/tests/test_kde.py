@@ -66,6 +66,43 @@ class MapCalculation(unittest.TestCase):
         self.assertAlmostEqual(lat, 51.48, delta=0.4)
         self.assertEqual(contract_errors(collection), [])
 
+    def test_the_file_really_holds_no_more_decimals_than_the_setting_says(self):
+        # snapping to a grid leaves numbers like 50.755900000000004; written out as they are, about a third of all the
+        # numbers in a map were 15 to 20 characters long, and "4 decimals" was 8 on average
+        import json
+        import re
+        bands = self.make(2000)
+        for decimals in (4, 3, 2):
+            with mock.patch.object(config, "GEOJSON_DECIMALS", decimals):
+                text = json.dumps(kde.geojson(bands), separators=(",", ":"))
+            numbers = re.findall(r"-?\d+\.\d+", text)
+            self.assertGreater(len(numbers), 100)
+            self.assertLessEqual(max(len(n.split(".")[1]) for n in numbers), decimals, decimals)
+
+    def test_fewer_decimals_make_a_smaller_file_and_the_shipped_setting_is_three(self):
+        import json
+        bands = self.make(2000)
+        sizes = {}
+        for decimals in (4, 3, 2):
+            with mock.patch.object(config, "GEOJSON_DECIMALS", decimals):
+                sizes[decimals] = len(json.dumps(kde.geojson(bands), separators=(",", ":")))
+        self.assertLess(sizes[3], sizes[4])
+        self.assertLess(sizes[2], sizes[3])
+        self.assertEqual(config.GEOJSON_DECIMALS, 3)
+
+    def test_three_decimals_move_an_outline_by_a_small_share_of_its_area(self):
+        # the yardstick behind the choice of 3: against a nearly exact copy, the snapped shape may differ by a percent or two
+        # of its area at most (the outline is simplified to 400 m anyway), and is still a valid shape
+        from shapely.geometry import shape
+        bands = self.make(2000)
+        with mock.patch.object(config, "GEOJSON_DECIMALS", 7):
+            exact = kde.geojson(bands)
+        rough = kde.geojson(bands)
+        for a, b in zip(rough["features"], exact["features"]):
+            near, far = shape(a["geometry"]), shape(b["geometry"])
+            self.assertTrue(near.is_valid)
+            self.assertLess(near.symmetric_difference(far).area / far.area, 0.03)
+
     def test_bands_do_not_overlap_and_stay_on_land(self):
         bands = self.make(2000)
         for i in range(3):
