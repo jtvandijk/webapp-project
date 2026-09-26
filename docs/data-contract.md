@@ -61,14 +61,14 @@ An example (numbers made up, shape exactly as the validator expects; `maps` shor
     "forenames": { "census":   { "f": ["mary", "elizabeth"], "m": ["john", "william"] },
                    "register": { "f": ["sarah", "emma"],     "m": ["david", "james"] } },
     "places":    { "census":   [ { "area": "Lancashire", "name": "Liverpool" } ],
-                   "register": [ { "area": "Leeds",      "name": "Headingley" } ] },
-    "oac":  { "group": "3b" },
-    "loac": { "group": "A1" },
-    "iuc":  { "group": 4 },
-    "eee":  { "group": 3 },
+                   "register": [ { "area": "E08000035", "name": "E02002331" } ] },
+    "oac":  { "group": "3b", "distribution": { "3b": 0.62, "2a": 0.11, "6c": 0.07 } },
+    "loac": { "group": "A1", "distribution": { "A1": 0.55, "B2": 0.2 } },
+    "fpc":  { "group": "4", "distribution": { "4": 0.4, "9": 0.15 } },
     "imd":  { "mode": 4, "mean": 4.2, "sd": 2.4, "distribution": [0.02, 0.08, 0.11, 0.2, 0.18, 0.14, 0.11, 0.08, 0.05, 0.03] },
     "ahah": { "mode": 6, "distribution": [ ... 10 numbers ... ] },
-    "bbs":  { "mode": 7, "distribution": [ ... 10 numbers ... ] }
+    "eth":  { "group": "WBR", "distribution": { "WBR": 0.71, "WIR": 0.06 },
+              "countries": [ ["WBR-EN", 0.4], ["WBR-SC", 0.2], ["WIR-IE", 0.06] ] }
   }
 }
 ```
@@ -80,14 +80,14 @@ Rules:
 | `name` | Lowercase letters a to z only. It must equal the file name. This is the search key. |
 | `counts` | Number of bearers per year, for **every** year we have, not only the mapped ones. Grouped by source (`census`, `register`). Years are text keys. |
 | `maps` | One entry per map period, keyed by the period `id` from the manifest. A period is only present if the name has **at least the threshold** (100) bearers that year. A file with no map at all is not published. **Open (agreed 2026-09-23): a missing period should say why** ("no map because too few bearers that year" vs "no map because the concentration wasn't strong enough to show" vs other reasons) rather than the visitor just seeing that slider position is absent - `rules.Resolution.reason` already has this text internally in the pipeline for every omitted period, it just doesn't reach the published files yet. Needs a field (e.g. a `mapNotes` object alongside `maps`, keyed the same way) and website text for it - not yet designed or built. |
-| `copyOf` | Optional, on a map entry (a GeoJSON "foreign member" next to `type` and `features`): the period id whose map this one is. Present exactly when the pipeline copied another year's map instead of building one: a heavily Scottish name shows its 1901 map for 1911 and 1921 (`"1911": { "type": "FeatureCollection", "copyOf": "1901", ... }`), because Scotland is missing from those censuses. **Decided 2026-09-26: the website draws a period's mask (Scotland, blanked out) only on a map WITHOUT `copyOf`.** A built 1911 or 1921 map has no Scottish people in it, and without the mask a name like Smith looks as if it had vanished from Scotland; a copied map is 1901's, which has Scotland, so it gets no mask, and the page says it shows 1901. Stage 6 writes it; the validator should check that the period named exists in the same file, has a map of its own and is not itself a copy. Not yet built. |
+| `copyOf` | Optional, on a map entry (a GeoJSON "foreign member" next to `type` and `features`): the period id whose map this one is. Present exactly when the pipeline copied another year's map instead of building one: a heavily Scottish name shows its 1901 map for 1911 and 1921 (`"1911": { "type": "FeatureCollection", "copyOf": "1901", ... }`), because Scotland is missing from those censuses. **Decided 2026-09-26: the website draws a period's mask (Scotland, blanked out) only on a map WITHOUT `copyOf`.** A built 1911 or 1921 map has no Scottish people in it, and without the mask a name like Smith looks as if it had vanished from Scotland; a copied map is 1901's, which has Scotland, so it gets no mask, and the page says it shows 1901. Written by `pipeline/s6_assemble.py`; `tools/validate_data.py` checks that the period named exists in the same file, has a map of its own and is not itself a copy. |
 | map shape | Standard GeoJSON, longitude/latitude (EPSG:4326), 4 decimal places, `Polygon` or `MultiPolygon`. Each feature has `properties.level` 1, 2 or 3 (1 = concentrated, 3 = most concentrated). The three levels are bands that do not overlap. |
 | `facts` | Every entry is optional. **Missing means no data**; the page then says so. Lists are ordered most common first. |
 | `forenames` | Lowercase, at most 10 per sex (`f`, `m`) per source. |
 | `places` | At most 10 rows per source, most frequent first. The page shows the first 5. `census` are parishes (`area` = registration county or district), `register` are neighbourhoods (`area` = local authority). |
-| `oac`, `loac` | The most common **group** code (`"3b"`, `"A1"`). The supergroup follows from the group, via `lookups.json`. |
-| `iuc`, `eee` | The most common group number. |
-| `imd`, `ahah`, `bbs` | `mode` = most common decile (1 to 10). `distribution` (optional) = share of bearers in each decile, ten numbers adding up to 1. `mean` and `sd` (optional) = average and spread of the decile. |
+| `oac`, `loac`, `fpc` | The most common **group** code (`"3b"`, `"A1"`, `"4"`). `distribution` = share of bearers in every group seen, keyed by group code (adding up to 1). The supergroup follows from the group, via `lookups.json`. |
+| `imd`, `ahah` | `mode` = most common decile (1 to 10; for `ahah`, 1 is healthiest). `distribution` = share of bearers in each decile, ten numbers adding up to 1. `imd` also has `mean` and `sd`: average and spread of the deprivation percentile (the "GBNames deprivation score") - `ahah` does not. |
+| `eth` | The most common Ethnicity Estimator census group (`"WBR"` = White British; see `config.ETH_GROUPS`), or `"unknown"` if no group had enough bearers - a real, published value, not a missing field. `distribution` = share per group. `countries`: the three most common underlying codes (group and country, e.g. `"WBR-EN"`), most common first. |
 | `synthetic` | Only in sample data: `true`. Real releases must not have it (see checks below). |
 
 ## `manifest.json`: what this release contains
@@ -110,8 +110,10 @@ Everything that used to be typed into the code as a list of years now lives here
 
 - `cards`: titles and explanatory text for every box on the page (so text can be edited without touching code).
 - `oac`, `loac`: `supergroups` and `groups`, each with name, colour, description.
-- `iuc`, `eee`: name and colour per group number.
-- `scales`: colours (and text) for the 10-step decile bars (`imd`, `ahah`, `bbs`).
+- `fpc`: name and colour per group, and per cluster (`config.py`'s `ETH_GROUPS`-style fixed list; the
+  group-to-area lookup itself stays safeguarded, only the group names are ever public).
+- `eth`: name per Ethnicity Estimator group (`config.ETH_GROUPS`) and for `"unknown"`.
+- `scales`: colours (and text) for the 10-step decile bars (`imd`, `ahah`).
 
 ## `index/<xx>.json`: search suggestions
 
@@ -136,7 +138,7 @@ One request per search. Today a search is about 22 database queries plus up to 9
 
 - any **map exists for a year with fewer bearers than the threshold** (the disclosure guard);
 - a map is not longitude/latitude inside Great Britain (catches un-projected or swapped coordinates);
-- a code (OAC group, IUC group, ...) is not in `lookups.json`;
+- a code (OAC group, FPC group, ...) is not in `lookups.json`;
 - a file is in the wrong folder, or the name does not match the file name;
 - the `synthetic` flag disagrees with the manifest (sample data can never pass as real, or the reverse);
 - the `index` does not list exactly the files that exist.
@@ -199,6 +201,6 @@ before the long run starts.
 | `iuc` | Most common group. | **Dropped.** |
 | `imd` | Most common decile, plus mean and sd (England/Wales 2019, Scotland 2020). | **England 2025, Wales 2025, Scotland 2020v2.** Each country is ranked on its own, then treated as comparable (a known simplification). Decile 1 = most deprived. The "GBNames deprivation score" is the mean and sd of the percentile. |
 | `ahah` | Most common decile (version 3). | **Version 5.1.** Decile 1 = **healthiest**, 10 = least healthy: the opposite way round from `imd`, and the legend must say so. |
-| `fpc` (new; was called precarity) | Did not exist. | **Financial Precarity Classification**: most common group (13, inside 5 clusters), joined on `lsoa21cd`. Its lookup from area to group is **safeguarded**, so the download and the lookup table are never in the repository; the classification's names, and a per-surname most common group, may be published (confirmed 2026-09-24). Not yet part of the fact list of the file format above. |
+| `fpc` (new; was called precarity) | Did not exist. | **Financial Precarity Classification**: most common group (13, inside 5 clusters), joined on `lsoa21cd`. Its lookup from area to group is **safeguarded**, so the download and the lookup table are never in the repository; the classification's names, and a per-surname most common group, may be published (confirmed 2026-09-24). Now in the file format above as `fpc`. |
 | `bbs` | Most common broadband class (from a lookup file that appears to be 2017). | **Dropped.** |
-| `eee` | Looked up from the surname itself (ONOMAP), no address data. | **Replaced by the Ethnicity Estimator** (modal census group, top three countries). Source: `registers_derived.lcr_consol_ethest`, the register with a person-level `eth` (worked out from forename and surname). The most common `eth` per surname in the reference year; a surname with no usable class is shown as `Unknown` (the page says there are too few data points). The old surname-only ONOMAP lookup is no longer used. What `eth` holds (census groups or country-level codes) is still to confirm. |
+| `eee` | Looked up from the surname itself (ONOMAP), no address data. | **Replaced by the Ethnicity Estimator** (modal census group, top three countries). Source: `registers_derived.lcr_consol_ethest`, the register with a person-level `eth` (worked out from forename and surname). The most common `eth` per surname in the reference year; a surname with no usable class is shown as `Unknown` (the page says there are too few data points). The old surname-only ONOMAP lookup is no longer used. Now in the file format above as `eth`: a census group, plus the three most common underlying codes. |

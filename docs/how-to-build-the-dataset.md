@@ -31,10 +31,10 @@ typed `python3 -m pipeline.s5_facts --names smith` uses the same sources as the 
 | 3 | Extracts | One query per period pulls where every listed name's bearers are; split into chunks by name | register, census | `chunks/<period>/<n>.csv`, `chunks/CHUNKS` | `qsub pipeline/hpc/stage3.sh` | about 21 min, both sources, a 5,000-name sample; not yet measured on the full list |
 | 4 | Maps | The map of every name and period, no database access; an array job, one task per chunk | steps 2 and 3 | `maps/chunk_<n>.jsonl`, `stats/chunk_<n>.csv` | `qsub -t 1-<GBNAMES_CHUNKS> pipeline/hpc/stage4.sh`, then `python3 -m pipeline.merge_stats` | about 2-3 min per chunk, 200 chunks, both sources, a 5,000-name sample |
 | 5 | Facts | Neighbourhood classifications, top neighbourhoods, ethnicity, forenames, and from the census historic forenames and parishes | step 1, register, census, the tables of step 0 | `facts/facts.csv`, `facts/report.txt` | `qsub pipeline/hpc/stage5.sh` | about 23 min, both sources, a 5,000-name sample; not yet measured on the full list |
-| 6 | Assemble | Join maps and facts into the release, check it | steps 4 and 5 | not built yet | | |
+| 6 | Assemble | Turn stage 4's maps and stage 5's facts into one JSON file per surname (`docs/data-contract.md`); the search index; `manifest.json`; the real Scotland mask | step 1 (counts.csv), steps 4 and 5 | `release/names/<xx>/<name>.json`, `release/index/<xx>.json`, `release/manifest.json`, `release/masks/scotland.json` | once: `python3 -m pipeline.s6_assemble --prepare`, then `qsub -t 1-<GBNAMES_CHUNKS> pipeline/hpc/stage6.sh`, then `python3 -m pipeline.merge_release` | built, tested on fake data; not yet run on real output. `lookups.json` and *why* a period has no map (`mapNotes`) are deliberately not built yet (docs/pipeline.md) |
 
-"Register" and "census" are two different databases; a step only opens the ones `GBNAMES_SOURCES` (in `run.settings`) names.
-Until the census database is ready every step is register-only.
+"Register" and "census" are two different databases; a step only opens the ones `GBNAMES_SOURCES` (in `run.settings`) names -
+currently both.
 
 The order matters: 1, then 2 and 3, then 4; 5 needs only 1 (and the tables). A finished step can be re-run
 without redoing the ones before it.
@@ -120,6 +120,20 @@ report says how many names got each fact and how much of the data was covered.
 Reading `facts.csv`: `value` is the headline, `detail` the rest (shares, lists); see "Stage 5 output" in
 [pipeline.md](pipeline.md).
 
+### The assembled release: `python3 -m pipeline.preview_web`
+
+Once stage 6 has run (even just for a chunk or two), a quick look at what it actually wrote - no database,
+no computation, so it can run anywhere stage 6 itself ran:
+
+```
+python3 -m pipeline.preview_web --names smith macdonald davies
+python3 -m pipeline.preview_web --sample 20              # a random sample of whatever is already assembled
+```
+
+Writes `work/preview_web/preview<N>.html`: a small picture of each of a name's maps (which periods it has,
+and whether one is a copy of another year's), and its facts and counts as plain tables. `--names` on a name
+with no assembled file yet is just noted, not an error.
+
 ## 5. Following a qsub job
 
 ```
@@ -163,8 +177,11 @@ Everything here is written by the pipeline and ignored by git. Deleting a folder
 | `chunks/` | step 3 | the points of each name, split into chunks (and `CHUNKS`, the number used) |
 | `maps/`, `stats/`, `stats.csv` | step 4, merge | one line per name and period (GeoJSON), and its statistics |
 | `facts/` | step 5 | `facts.csv`, `report.txt`, `by_fact/`, and `extract/` (the saved queries) |
+| `facts/chunks/`, `counts/chunks/` | step 6's `--prepare` | `facts.csv`/`counts.csv` split by chunk, so an array task reads only its own slice |
+| `release/` | step 6, merge | `names/<xx>/<name>.json` (the release itself), `index_parts/` (each chunk's own name list), `index/`, `manifest.json`, `masks/scotland.json`, and per-chunk `.done`/`errors.log` |
 | `preview_maps/`, `cache/` | `preview.py` | numbered preview pages; the data they fetched |
 | `preview_facts/` | `s5_facts --names` | facts of a few names, each run kept |
+| `preview_web/` | `preview_web.py` | numbered preview pages of already-assembled release files |
 | `neighbourhood/` | `tools/prep_neighbourhood.py` | the five lookup tables (**one is safeguarded data: never leaves this machine or the TRE**) |
 | `logs/` | qsub | one log per job (create it once: `mkdir -p work/logs`, before the first qsub) |
 | `fake.db`, `fake_truth.json` | `fake_data.py` | the fake database, for development on a laptop |
@@ -176,13 +193,14 @@ To start a stage from clean: `bash pipeline/hpc/clean.sh` (stages 3 and 4; it as
 
 | What changed | Run again |
 |---|---|
-| A new register or census load | 1, then 2, 3, 4 and 5 (`--refresh`); check what step 1 prints: the postcode match rate (register) and how the census people divide up (census) |
-| The list of names (thresholds in `config.py`) | 1, then 3, 4, 5 |
-| The grid (`GRID`) | 2, 3 and 4 |
-| The smoothing of the population (`POPULATION_BANDWIDTH_M`) | 2, then 4 |
-| How a map is drawn (bandwidth, weighting, levels, smoothing, blob rules) | 4 again (`--force`, or `clean.sh --stage34`) |
-| A new version of a neighbourhood table | 0 (load it), then 5 with `--facts <that fact> --refresh` |
-| A rule for the facts (`FACT_MIN_IN_CATEGORY`, list lengths) | 5 with `--compute-only` |
+| A new register or census load | 1, then 2, 3, 4 and 5 (`--refresh`), then 6; check what step 1 prints: the postcode match rate (register) and how the census people divide up (census) |
+| The list of names (thresholds in `config.py`) | 1, then 3, 4, 5, 6 |
+| The grid (`GRID`) | 2, 3 and 4, then 6 |
+| The smoothing of the population (`POPULATION_BANDWIDTH_M`) | 2, then 4, then 6 |
+| How a map is drawn (bandwidth, weighting, levels, smoothing, blob rules) | 4 again (`--force`, or `clean.sh --stage34`), then 6 |
+| A new version of a neighbourhood table | 0 (load it), then 5 with `--facts <that fact> --refresh`, then 6 |
+| A rule for the facts (`FACT_MIN_IN_CATEGORY`, list lengths) | 5 with `--compute-only`, then 6 |
+| Step 6's own field mapping, or `manifest.json`/masks (`s6_assemble.py`, `merge_release.py`) | 6 only - `python3 -m pipeline.s6_assemble --prepare --force` first if facts.csv/counts.csv did not themselves change (a plain re-run skips `--prepare` when it is already current), then every chunk with `--force`, then `merge_release.py` |
 
 ## 8. What to put in the TRE when code changes
 
@@ -242,6 +260,7 @@ HPC folder; load them only if they are missing (section 2, step 0).
 | 3 | `qsub pipeline/hpc/stage3.sh` | the log's line per period; `work/chunks/CHUNKS` holds the chunk number you set |
 | 4 | `qsub -t 1-200 pipeline/hpc/stage4.sh` (the range ends at `GBNAMES_CHUNKS`), then `python3 -m pipeline.merge_stats` | every chunk finished: as many `work/maps/*.done` as chunks; `merge_stats` warns if a stats file is missing |
 | 5 | `qsub pipeline/hpc/stage5.sh` | `work/facts/report.txt`: the "bearers covered" column and the ethnicity codes it did not recognise; the time at the end |
+| 6 | `python3 -m pipeline.s6_assemble --prepare` (once, on the login node), then `qsub -t 1-200 pipeline/hpc/stage6.sh`, then `python3 -m pipeline.merge_release` | as many `work/release/chunk_*.done` as chunks; `merge_release`'s printed total; a quick look with `python3 -m pipeline.preview_web --sample 20` |
 
 **What stage 1 prints for the census** (only when `census` is in `GBNAMES_SOURCES`), one line per year:
 `1881: 26,000,000 people; 97.1% counted; 2.3% parish id 0; 0.60% not counted although they should be ...`

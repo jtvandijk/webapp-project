@@ -55,7 +55,7 @@ class TheShippedFilesAndScripts(unittest.TestCase):
 
     def test_every_stage_script_reads_run_settings_and_types_no_run_choices(self):
         scripts = sorted(HPC.glob("stage*.sh"))
-        self.assertEqual([s.name for s in scripts], [f"stage{n}.sh" for n in range(1, 6)])
+        self.assertEqual([s.name for s in scripts], [f"stage{n}.sh" for n in range(1, 7)])
         for script in scripts:
             text = script.read_text()
             self.assertEqual(subprocess.run(["bash", "-n", str(script)]).returncode, 0, f"{script.name} has a syntax error")
@@ -64,10 +64,10 @@ class TheShippedFilesAndScripts(unittest.TestCase):
             self.assertIn("export PYTHONUNBUFFERED=1", commands, script.name)
             for typed in ("SOURCES=", "LIMIT=", "CHUNKS=", "FACTS="):
                 self.assertFalse([c for c in commands if c.startswith(typed)], f"{script.name} types {typed} itself")
-            self.assertEqual("source .env" in commands, script.name != "stage4.sh", script.name)   # stage 4 needs no database
+            self.assertEqual("source .env" in commands, script.name not in ("stage4.sh", "stage6.sh"), script.name)   # neither needs a database
 
-    def _guard(self, last, chunks):
-        text = (HPC / "stage4.sh").read_text().split("\n")
+    def _guard(self, script, last, chunks):
+        text = (HPC / script).read_text().split("\n")
         block = "\n".join(text[[i for i, l in enumerate(text) if l.startswith("# --- array guard")][0]:
                                [i for i, l in enumerate(text) if l.startswith("# --- end array guard")][0]])
         env = {"GBNAMES_CHUNKS": str(chunks), "PATH": "/usr/bin:/bin"}
@@ -76,11 +76,18 @@ class TheShippedFilesAndScripts(unittest.TestCase):
         return subprocess.run(["bash", "-c", "set -euo pipefail\n" + block], env=env, capture_output=True, text=True)
 
     def test_stage_4_refuses_an_array_range_that_does_not_match_the_chunks(self):
-        wrong = self._guard(100, 200)
+        wrong = self._guard("stage4.sh", 100, 200)
         self.assertNotEqual(wrong.returncode, 0)
         self.assertIn("qsub -t 1-200", wrong.stderr)                  # tells you the command that would be right
         for last in (200, "undefined", None):                       # the right range, and jobs that are not arrays
-            self.assertEqual(self._guard(last, 200).returncode, 0, last)
+            self.assertEqual(self._guard("stage4.sh", last, 200).returncode, 0, last)
+
+    def test_stage_6_has_the_same_array_guard_as_stage_4(self):
+        wrong = self._guard("stage6.sh", 100, 200)
+        self.assertNotEqual(wrong.returncode, 0)
+        self.assertIn("qsub -t 1-200 pipeline/hpc/stage6.sh", wrong.stderr)
+        for last in (200, "undefined", None):
+            self.assertEqual(self._guard("stage6.sh", last, 200).returncode, 0, last)
 
 
 class BeforeStageOneHasRun(unittest.TestCase):

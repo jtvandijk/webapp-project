@@ -21,7 +21,9 @@ LAT_RANGE = (49.5, 61.5)
 NAME_RE = re.compile(r"^[a-z]+$")
 YEAR_RE = re.compile(r"^\d{4}$")
 TOP_LEVEL_KEYS = {"schema", "name", "synthetic", "counts", "maps", "facts"}
-FACT_KEYS = {"forenames", "places", "oac", "loac", "iuc", "eee", "imd", "ahah", "bbs"}
+FACT_KEYS = {"forenames", "places", "oac", "loac", "fpc", "imd", "ahah", "eth"}
+GROUP_SCHEMES = ("oac", "loac", "fpc")          # a most-common group code, plus a distribution over every group seen
+DECILE_SCHEMES = ("imd", "ahah")                # a most-common decile (1-10), plus a 10-number distribution
 
 
 class Report:
@@ -122,15 +124,17 @@ def check_lookups(lookups, report):
             for field in ("name", "colour"):
                 if not group.get(field):
                     report.error(where, f"{scheme} group {code} has no {field}")
-    for scheme in ("iuc", "eee"):
-        if not lookups.get(scheme):
-            report.error(where, f"{scheme} is empty")
-    for scale in ("imd", "ahah", "bbs"):
+    # fpc has no supergroup concept (yet): just a name and colour per group
+    for code, group in lookups.get("fpc", {}).get("groups", {}).items():
+        for field in ("name", "colour"):
+            if not group.get(field):
+                report.error(where, f"fpc group {code} has no {field}")
+    if not lookups.get("eth"):
+        report.error(where, "eth is empty")
+    for scale in ("imd", "ahah"):
         colours = lookups.get("scales", {}).get(scale, {}).get("colours", [])
         if len(colours) != 10:
             report.error(where, f"scales.{scale}.colours needs exactly 10 colours")
-    if len(lookups.get("scales", {}).get("bbs", {}).get("labels", [])) != 10:
-        report.error(where, "scales.bbs.labels needs exactly 10 labels")
 
 
 # ---------------------------------------------------------------------------
@@ -163,7 +167,7 @@ def check_map(fc, levels, where, report):
                 return
 
 
-def check_decile(fact, where, report, needs_stats=False):
+def check_decile(fact, where, report):
     if not (is_int(fact.get("mode")) and 1 <= fact["mode"] <= 10):
         report.error(where, "mode must be a whole number from 1 to 10")
     dist = fact.get("distribution")
@@ -175,6 +179,18 @@ def check_decile(fact, where, report, needs_stats=False):
     for field in ("mean", "sd"):
         if field in fact and not is_number(fact[field]):
             report.error(where, f"{field} must be a number")
+
+
+def check_group(fact, where, report):
+    """oac, loac, fpc: a most-common group code, plus (optional) the share of bearers in every group seen."""
+    if not (isinstance(fact.get("group"), str) and fact["group"]):
+        report.error(where, "group must be a non-empty string")
+    dist = fact.get("distribution")
+    if dist is not None:
+        if not (isinstance(dist, dict) and dist and all(is_number(v) and v >= 0 for v in dist.values())):
+            report.error(where, "distribution must be a non-empty {group code: share}")
+        elif not 0.97 <= sum(dist.values()) <= 1.03:
+            report.error(where, f"distribution adds up to {sum(dist.values()):.3f}, expected 1")
 
 
 def check_facts(facts, lookups, where, report):
@@ -191,13 +207,24 @@ def check_facts(facts, lookups, where, report):
         if len(rows) > 10 or not all(isinstance(r, dict) and r.get("area") and r.get("name") for r in rows):
             report.error(where, f"places.{source} must be at most 10 rows of {{area, name}}")
 
-    for scheme in ("oac", "loac"):
-        if scheme in facts and facts[scheme].get("group") not in lookups.get(scheme, {}).get("groups", {}):
+    for scheme in GROUP_SCHEMES:
+        if scheme not in facts:
+            continue
+        check_group(facts[scheme], f"{where} {scheme}", report)
+        if facts[scheme].get("group") not in lookups.get(scheme, {}).get("groups", {}):
             report.error(where, f"{scheme}.group {facts[scheme].get('group')!r} is not in lookups.json")
-    for scheme in ("iuc", "eee"):
-        if scheme in facts and str(facts[scheme].get("group")) not in lookups.get(scheme, {}):
-            report.error(where, f"{scheme}.group {facts[scheme].get('group')!r} is not in lookups.json")
-    for scale in ("imd", "ahah", "bbs"):
+    if "eth" in facts:
+        eth = facts["eth"]
+        if str(eth.get("group")) not in lookups.get("eth", {}):
+            report.error(where, f"eth.group {eth.get('group')!r} is not in lookups.json")
+        countries = eth.get("countries")
+        if countries is not None and (not isinstance(countries, list) or len(countries) > 3 or
+                                      not all(isinstance(c, list) and len(c) == 2 and isinstance(c[0], str) and is_number(c[1]) for c in countries)):
+            report.error(where, "eth.countries must be at most 3 [code, share] pairs")
+        dist = eth.get("distribution")
+        if dist is not None and not (isinstance(dist, dict) and all(is_number(v) and v >= 0 for v in dist.values())):
+            report.error(where, "eth.distribution must be a {group code: share}")
+    for scale in DECILE_SCHEMES:
         if scale in facts:
             check_decile(facts[scale], f"{where} {scale}", report)
 
@@ -243,12 +270,30 @@ def check_bundle(path, manifest, lookups, threshold, report):
         if pid not in periods:
             report.error(where, f"maps.{pid}: not a period in the manifest")
             continue
+        copy_of = fc.get("copyOf") if isinstance(fc, dict) else None
+        if copy_of is not None:
+            # a copied map shows ANOTHER year's geometry, built from THAT year's bearers - so it is that
+            # year's count the disclosure guard has to check, not this period's own (which is exactly why
+            # a copy was made: this period's own count on its own is not a fair picture, e.g. Scotland
+            # missing from the census that year)
+            if copy_of not in periods:
+                report.error(where, f"maps.{pid}: copyOf {copy_of!r} is not a period in the manifest")
+                continue
+            if copy_of not in maps:
+                report.error(where, f"maps.{pid}: copyOf {copy_of!r} has no map of its own in this file")
+                continue
+            if isinstance(maps[copy_of], dict) and maps[copy_of].get("copyOf") is not None:
+                report.error(where, f"maps.{pid}: copyOf {copy_of!r} is itself a copy - copy the original, not a copy of a copy")
+                continue
+            disclosure_pid = copy_of
+        else:
+            disclosure_pid = pid
         # disclosure guard: no map for a name-year with fewer bearers than the threshold
-        count = counts.get(periods[pid]["source"], {}).get(pid)
+        count = counts.get(periods[disclosure_pid]["source"], {}).get(disclosure_pid)
         if count is None:
-            report.error(where, f"maps.{pid}: there is no count for this year, so the threshold cannot be checked")
+            report.error(where, f"maps.{pid}: there is no count for {disclosure_pid}, so the threshold cannot be checked")
         elif count < threshold:
-            report.error(where, f"maps.{pid}: only {count} bearers, below the threshold of {threshold}")
+            report.error(where, f"maps.{pid}: only {count} bearers in {disclosure_pid}, below the threshold of {threshold}")
         check_map(fc, levels, f"{where} maps.{pid}", report)
 
     check_facts(bundle.get("facts", {}), lookups, where, report)

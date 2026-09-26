@@ -12,22 +12,23 @@ The code that turns the registers and censuses into the data behind the website 
 |---|---|---|
 | `config.py` | **All settings.** Table and column names, years, threshold, map settings. | done |
 | `fake_data.py` | Makes a fake database with the same shape as the real one. | done |
-| `s1_counts.py` | Stage 1: bearers per name per year, and the list of names that get a page. | done, tested |
-| `check_parishes.py` | A read-only sanity report on the census parish ids: the two parish tables, the ids each census year carries (gid; 1921 conparid1901), how they fit, and optionally a comparison with the old lookup file. Run it once the parish tables are loaded. | new, tested on fake data only |
+| `s1_counts.py` | Stage 1: bearers per name per year, and the list of names that get a page. | done, tested, run on the real HPC (about 27 minutes, both sources) |
+| `check_parishes.py` | A read-only sanity report on the census parish ids: the two parish tables, the ids each census year carries (gid; 1921 conparid1901), how they fit, and optionally a comparison with the old lookup file. Run it once the parish tables are loaded. | done, run on the real data (2026-09-26): 12 things to look at, all explained, none a real problem |
 | `kde.py` | The map calculation for one name and year. | done, tested |
 | `rules.py` | What happens to each period: built, copied from another year (Scotland), or left out. | done, tested |
 | `preview.py` | Draws a page of maps to look at. | done |
 | `sql.py`, `db.py`, `names.py` | The queries, the two database connections, the surname rule, `chunk_of()`. | done |
-| `s2_surfaces.py` | Stage 2: the population surface for one map period, once, shared by every name's map. | done, tested |
-| `s3_extracts.py` | Stage 3: one query per period pulls every listed name's cells at once, split into chunk files. | done, tested |
-| `s4_maps.py` | Stage 4 (the heavy step): every name and period in one chunk - no database access at all. | done, tested |
+| `s2_surfaces.py` | Stage 2: the population surface for one map period, once, shared by every name's map. | done, tested, run on the real HPC (about 12 minutes, both sources) |
+| `s3_extracts.py` | Stage 3: one query per period pulls every listed name's cells at once, split into chunk files. | done, tested, run on the real HPC (a 5,000-name sample so far) |
+| `s4_maps.py` | Stage 4 (the heavy step): every name and period in one chunk - no database access at all. | done, tested, run on the real HPC (a 5,000-name sample so far) |
 | `merge_stats.py` | Combines stage 4's per-chunk stats CSVs into one file. | done |
-| `hpc/stage4.sh` | The SGE array job that runs `s4_maps.py` once per chunk. | done, not yet run on the real HPC |
-| `s5_facts.py` | Stage 5: the facts about each name (neighbourhood classifications, top neighbourhoods, ethnicity, forenames, and from the census historic forenames and parishes). One query per fact and reference year (per census year for the historic ones), saved, then computed. | done, tested on fake data; the register side has run in the TRE, the census side waits for the census database |
+| `s5_facts.py` | Stage 5: the facts about each name (neighbourhood classifications, top neighbourhoods, ethnicity, forenames, and from the census historic forenames and parishes). One query per fact and reference year (per census year for the historic ones), saved, then computed. | done; both register and census have run in the TRE (a 5,000-name sample so far, about 23 minutes; the full name list is being run now) |
 | `nbhd_tables.py` | The SQL to create and load the neighbourhood tables in the TRE, and a check of them against the real register. | done, tested |
-| `hpc/stage1.sh` ... `stage5.sh` | The SGE jobs, one per stage (stage 4 an array). Which sources, how many chunks and names come from `run.settings`; memory and time are in each script. | stages 3-5 run on the real HPC; stage 1 script new |
+| `s6_assemble.py` | Stage 6: stage 4's maps.jsonl + stage 5's facts.csv -> one JSON file per surname (docs/data-contract.md). An array job like stage 4, no database access. `lookups.json` and `mapNotes` are deferred - see docs/pipeline.md's stage 6 row. | done, tested on fake data |
+| `merge_release.py` | Combines stage 6's per-chunk output into the search index, `manifest.json` and the real `masks/scotland.json`. | done, tested |
+| `preview_web.py` | A quick look at already-assembled release files: a name's maps and a plain facts table, no database, no computation, stdlib only. | done, tested |
+| `hpc/stage1.sh` ... `stage6.sh` | The SGE jobs, one per stage (stages 4 and 6 an array). Which sources, how many chunks and names come from `run.settings`; memory and time are in each script. | stages 1-5 have run on the real HPC; stage 6 not yet |
 | `../run.settings` | The run choices in one place (in git; passwords stay in `.env`). Every stage uses it as its default. | done, tested |
-| stage 6 | Assembling and validating the release. | to do |
 
 ## Try it on your own computer (fake data)
 

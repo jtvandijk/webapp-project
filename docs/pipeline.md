@@ -3,14 +3,15 @@
 The plan for turning individual-level records (inside the TRE) into the release described in
 [data-contract.md](data-contract.md).
 
-**Status.** Stages 1 to 4 are built and tested (first on fake data, then checked and calibrated
-against real names on the HPC): counts and name list, population surfaces, point extracts and the
-map-building array job, including the Scotland rule and the settled real-data calibration (see
-"Decided so far" below). See [pipeline/README.md](../pipeline/README.md)'s "Stage 4" section for how
-to run a sample first, then the full name list. Not yet run for real on the HPC at full scale.
-Stage 5 (facts) is built, for the register and for the census (historic forenames and parishes), and tested on fake
-data; the register side has run in the TRE, the census side waits for the census database. Stage 6
-(assemble, validate, release) is still to do.
+**Status (2026-09-26).** Stages 1 to 5 are built and tested, both sources (register and census), and
+have all run for real on the HPC, including the Scotland rule and the settled real-data calibration
+(see "Decided so far" below). Stages 1 and 2 have real, full-name-list timings (about 27 and 12
+minutes); stages 3 to 5 are measured so far on a 5,000-name sample (about 21, 2-3 minutes per chunk,
+and 23 minutes) - the full name list is being run now, see pipeline/hpc/stage3.sh's/stage5.sh's own
+comments for the current (estimated) time limits, to be tightened once that run's own numbers are in.
+Stage 6 (`s6_assemble.py`, `merge_release.py`, `pipeline/hpc/stage6.sh`, `preview_web.py`) is built and
+tested on fake data, deliberately deferring `lookups.json` and `mapNotes` (see its row below) - not yet
+run against a real stage 4/5 output.
 
 ## Decided so far
 
@@ -183,7 +184,7 @@ counts -> name list ---> point extracts -> MAPS (array job) --+
 | 3 | **Point extracts** (`s3_extracts.py`, done) | For each map period, one query pulls `(surname, x, y, count)` for every listed name at once, aggregated (spelling variants merged) and split into K chunk files by name (`names.chunk_of()`, a pure function of the name - no chunk assignment is written down anywhere for stage 4 to look up). One query per period, not one per name. | One query per period. |
 | 4 | **Maps** (the heavy step, `s4_maps.py` + `pipeline/hpc/stage4.sh`, done) | An SGE array job with K tasks. Task k reads chunk k of every period and loads the grid and surfaces **once** - no database access at all. For each name and period at or above the threshold: density, weight by population, cut into a per-name `LEVEL_MASS` (`kde.size_level_mass()`), make outlines, clip to the coast, simplify. Each task writes **two files** (one line per name-period each): a GeoJSON-carrying one for a "build" period (a "substitute" period only names which period to copy, resolved later, not duplicated here) and a stats one (bearers, bandwidth, resolved levels, concentration/second-blob measures, shape) kept separate from the GeoJSON so the website never downloads it. A `.done` marker per chunk makes re-submitting after a partial failure safe. | The long one - not yet measured on real data (do a sample run first, see pipeline/README.md). |
 | 5 | **Facts** (`s5_facts.py`, register side done) | For every name, in its reference year: the most common OAC, LOAC, AHAH and deprivation values, the deprivation score, the top neighbourhoods and the ethnicity estimate; forenames pooled over all years. One query per fact and reference year, saved to disk, then computed in Python, so changing a rule never needs the database again. Writes `facts.csv` (see "Stage 5 output" below). | Hours, not days (not measured yet: do a sample run). |
-| 6 | **Assemble and validate** | Join 1, 4 and 5 into the per-name files, the index, `manifest.json` and `lookups.json` - including resolving each "substitute" period against its reference, and (see data-contract.md) publishing why a period has no map. Run `tools/validate_data.py`. Pack the release as one archive for output checking. | Minutes. |
+| 6 | **Assemble and validate** (`s6_assemble.py` + `merge_release.py` + `pipeline/hpc/stage6.sh`, an array job like stage 4, no database) | Join 1, 4 and 5 into the per-name files and the search index; `manifest.json` straight from `config.py`; the real `masks/scotland.json` (reprojected from `pipeline/reference/scotland_outline.geojson`). Resolves each "substitute" period into a copy of its reference's geometry, with `copyOf` (data-contract.md). Run `tools/validate_data.py`. **Deferred (2026-09-26, confirmed with the user): `lookups.json`** (classification names, colours, page text - human-authored, not derivable from the data) **and publishing *why* a period has no map** (`mapNotes`) - both still marked "not yet built" in data-contract.md; `preview_web.py` shows raw codes and a plain facts table until then. | Minutes; no database access, so it can run right after stages 4 and 5. |
 
 Stages 1 to 5 touch individual-level records, so they run in the TRE. Only the finished, checked
 release folder leaves it.
