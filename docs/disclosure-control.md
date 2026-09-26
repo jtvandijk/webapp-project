@@ -3,7 +3,7 @@
 *As configured on 2026-09-26. The numbers are set in one file, `pipeline/config.py`.*
 
 GBNames turns individual-level records (the register, and the historic censuses 1851-1921) into a set of precomputed
-surname pages. All of that happens inside the Trusted Research Environment (TRE); the only thing meant to leave it is the
+surname pages. All of that happens inside the Trusted Research Environment (the DSH); the only thing meant to leave it is the
 finished release: one small file per surname. It contains no individual record, address, postcode or point location.
 
 ## What a surname page contains
