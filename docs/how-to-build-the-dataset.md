@@ -31,7 +31,7 @@ typed `python3 -m pipeline.s5_facts --names smith` uses the same sources as the 
 | 3 | Extracts | One query per period pulls where every listed name's bearers are; split into chunks by name | register, census | `chunks/<period>/<n>.csv`, `chunks/CHUNKS` | `qsub pipeline/hpc/stage3.sh` | about 21 min, both sources, a 5,000-name sample; not yet measured on the full list |
 | 4 | Maps | The map of every name and period, no database access; an array job, one task per chunk | steps 2 and 3 | `maps/chunk_<n>.jsonl`, `stats/chunk_<n>.csv` | `qsub -t 1-<GBNAMES_CHUNKS> pipeline/hpc/stage4.sh`, then `python3 -m pipeline.merge_stats` | about 2-3 min per chunk, 200 chunks, both sources, a 5,000-name sample |
 | 5 | Facts | Neighbourhood classifications, top neighbourhoods, ethnicity, forenames, and from the census historic forenames and parishes | step 1, register, census, the tables of step 0 | `facts/facts.csv`, `facts/report.txt` | `qsub pipeline/hpc/stage5.sh` | about 23 min, both sources, a 5,000-name sample; not yet measured on the full list |
-| 6 | Assemble | Turn stage 4's maps and stage 5's facts into one JSON file per surname (`docs/data-contract.md`); the search index; `manifest.json`; the real Scotland mask | step 1 (counts.csv), steps 4 and 5 | `release/names/<xx>/<name>.json`, `release/index/<xx>.json`, `release/manifest.json`, `release/masks/scotland.json` | once: `python3 -m pipeline.s6_assemble --prepare`, then `qsub -t 1-<GBNAMES_CHUNKS> pipeline/hpc/stage6.sh`, then `python3 -m pipeline.merge_release` | built, tested on fake data; not yet run on real output. `lookups.json` and *why* a period has no map (`mapNotes`) are deliberately not built yet (docs/pipeline.md) |
+| 6 | Assemble | Turn stage 4's maps and stage 5's facts into one JSON file per surname (`docs/data-contract.md`); the search index; `manifest.json`; the real Scotland mask | step 1 (counts.csv), steps 4 and 5 | `release/names/<xx>/<name>.json` (counts and maps), `release/facts.csv` (all the facts, one row per name and fact), `release/index/<xx>.json`, `release/manifest.json`, `release/masks/scotland.json` | once: `python3 -m pipeline.s6_assemble --prepare`, then `qsub -t 1-<GBNAMES_CHUNKS> pipeline/hpc/stage6.sh`, then `python3 -m pipeline.merge_release` | built, tested on fake data; not yet run on real output. `lookups.json` and *why* a period has no map (`mapNotes`) are deliberately not built yet (docs/pipeline.md) |
 
 "Register" and "census" are two different databases; a step only opens the ones `GBNAMES_SOURCES` (in `run.settings`) names -
 currently both.
@@ -131,8 +131,13 @@ python3 -m pipeline.preview_web --sample 20              # a random sample of wh
 ```
 
 Writes `work/preview_web/preview<N>.html`: a small picture of each of a name's maps (which periods it has,
-and whether one is a copy of another year's), and its facts and counts as plain tables. `--names` on a name
+and whether one is a copy of another year's), and its facts (read from `release/facts.csv`) and counts as plain tables. `--names` on a name
 with no assembled file yet is just noted, not an error.
+
+To see what an assembled release and this page look like before there is any real output (or after changing stage 6
+or the maps), on your own computer with no database: `python3 tools/build_demo_release.py` builds one from the fake
+data in `work/demo_release/` (about 15 seconds) and writes `work/demo_release/preview_web/preview.html`. Made-up names
+and shapes, real code and file formats. It cannot reach the real database, whatever `GBNAMES_PROFILE` says.
 
 ## 5. Following a qsub job
 
@@ -178,7 +183,7 @@ Everything here is written by the pipeline and ignored by git. Deleting a folder
 | `maps/`, `stats/`, `stats.csv` | step 4, merge | one line per name and period (GeoJSON), and its statistics |
 | `facts/` | step 5 | `facts.csv`, `report.txt`, `by_fact/`, and `extract/` (the saved queries) |
 | `facts/chunks/`, `counts/chunks/` | step 6's `--prepare` | `facts.csv`/`counts.csv` split by chunk, so an array task reads only its own slice |
-| `release/` | step 6, merge | `names/<xx>/<name>.json` (the release itself), `index_parts/` (each chunk's own name list), `index/`, `manifest.json`, `masks/scotland.json`, and per-chunk `.done`/`errors.log` |
+| `release/` | step 6, merge | `names/<xx>/<name>.json` (counts and maps), `facts.csv` (the facts, one table), `index_parts/` and `facts_parts/` (each chunk's own name list and facts), `index/`, `manifest.json`, `masks/scotland.json`, and per-chunk `.done`/`errors.log` |
 | `preview_maps/`, `cache/` | `preview.py` | numbered preview pages; the data they fetched |
 | `preview_facts/` | `s5_facts --names` | facts of a few names, each run kept |
 | `preview_web/` | `preview_web.py` | numbered preview pages of already-assembled release files |

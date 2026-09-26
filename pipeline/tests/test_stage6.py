@@ -11,6 +11,7 @@ import json
 import os
 import shutil
 import sqlite3
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -147,12 +148,33 @@ class BuildBundle(unittest.TestCase):
         # data-contract.md: a file with no map is not published
         self.assertIsNone(s6_assemble.build_bundle("smith", [{"period": "1851", "action": "omit"}], [], []))
 
+    MAP_ROWS = [{"period": "1851", "action": "build", "geojson": {"type": "FeatureCollection", "features": []}}]
+
     def test_a_name_with_a_map_but_no_facts_still_gets_a_file(self):
-        rows = [{"period": "1851", "action": "build", "geojson": {"type": "FeatureCollection", "features": []}}]
-        bundle = s6_assemble.build_bundle("smith", rows, [], [])
+        bundle = s6_assemble.build_bundle("smith", self.MAP_ROWS, [], [])
         self.assertEqual(bundle["schema"], 1)
         self.assertEqual(bundle["name"], "smith")
         self.assertNotIn("facts", bundle)                              # no facts rows -> no facts key at all
+
+    def test_facts_stay_out_of_the_file_unless_asked_for(self):
+        # decided 2026-09-26: a name file is counts and maps; the facts are one table
+        facts = [fact_row("oac", "3b", {"distribution": {"3b": 1.0}})]
+        self.assertNotIn("facts", s6_assemble.build_bundle("smith", self.MAP_ROWS, facts, []))
+        self.assertEqual(s6_assemble.build_bundle("smith", self.MAP_ROWS, facts, [], include_facts=True)["facts"],
+                         {"oac": {"group": "3b", "distribution": {"3b": 1.0}}})
+
+
+class FactsTableRows(unittest.TestCase):
+    def test_one_row_per_public_fact_sorted_with_the_same_json_as_in_a_name_file(self):
+        rows = [fact_row("imd", "4", {"distribution": [0.1] * 10}), fact_row("imd_score", "4.2", {"sd": 2.4}),
+                fact_row("oac", "3b", {"distribution": {"3b": 1.0}})]
+        table = s6_assemble.facts_table_rows("smith", rows)
+        self.assertEqual([r[:2] for r in table], [["smith", "imd"], ["smith", "oac"]])      # imd_score is folded into imd: no row of its own
+        self.assertEqual(json.loads(table[0][2]), s6_assemble.build_facts(rows)["imd"])
+        self.assertNotIn(" ", table[1][2])                                                # compact JSON
+
+    def test_a_name_with_no_facts_has_no_rows(self):
+        self.assertEqual(s6_assemble.facts_table_rows("smith", []), [])
 
 
 class SplitByChunk(unittest.TestCase):
@@ -245,6 +267,7 @@ class AssembleChunkOperations(unittest.TestCase):
             out = csv.DictWriter(f, fieldnames=s6_assemble.FACTS_HEADER)
             out.writeheader()
             out.writerow({**fact_row("oac", "3b", {"distribution": {"3b": 1.0}}), "surname": "alpha"})
+            out.writerow({**fact_row("oac", "2a", {"distribution": {"2a": 1.0}}), "surname": "gamma"})       # gamma has no map: not published
         with open(self.root / "counts.csv", "w", newline="") as f:
             out = csv.DictWriter(f, fieldnames=s6_assemble.COUNTS_HEADER)
             out.writeheader()
@@ -273,14 +296,34 @@ class AssembleChunkOperations(unittest.TestCase):
         self.assertIn("2 names", marker)
         self.assertIn("1 with no map (not published)", marker)                   # said, so it is not a silent drop
 
-    def test_facts_and_counts_from_the_chunk_slices_land_in_the_right_file(self):
+    def facts_part(self):
+        with open(self.root / "release" / "facts_parts" / "chunk_0.csv", newline="") as f:
+            return list(csv.DictReader(f))
+
+    def test_counts_are_in_the_name_file_and_facts_go_to_the_facts_part_not_the_file(self):
         self.prepared()
         self.assemble()
+        alpha = json.loads((self.root / "release" / "names" / "al" / "alpha.json").read_text())
+        self.assertEqual(alpha["counts"], {"register": {"2026": 500}})
+        self.assertNotIn("facts", alpha)                                         # by default a name file is counts and maps
+        rows = self.facts_part()
+        self.assertEqual([(r["name"], r["fact"]) for r in rows], [("alpha", "oac")])
+        self.assertEqual(json.loads(rows[0]["data"]), {"group": "3b", "distribution": {"3b": 1.0}})
+
+    def test_an_unpublished_name_has_no_facts_row(self):
+        # gamma has a fact row in facts.csv but no map, so no file: it must not turn up in the facts either
+        self.prepared()
+        self.assemble()
+        self.assertNotIn("gamma", [r["name"] for r in self.facts_part()])
+
+    def test_facts_in_names_puts_them_in_the_file_as_well(self):
+        self.prepared()
+        self.assemble("--facts-in-names")
         alpha = json.loads((self.root / "release" / "names" / "al" / "alpha.json").read_text())
         beta = json.loads((self.root / "release" / "names" / "be" / "beta.json").read_text())
         self.assertEqual(alpha["facts"]["oac"]["group"], "3b")
         self.assertNotIn("facts", beta)                                          # beta has no fact rows at all
-        self.assertEqual(alpha["counts"], {"register": {"2026": 500}})
+        self.assertEqual([r["name"] for r in self.facts_part()], ["alpha"])      # and the table has them too
 
     def test_a_finished_chunk_is_skipped_and_force_redoes_it(self):
         self.prepared()
@@ -308,6 +351,15 @@ class AssembleChunkOperations(unittest.TestCase):
         self.assemble()
         self.assertIn("alpha", self.written())
 
+    def test_a_missing_facts_part_makes_a_done_marker_untrustworthy_too(self):
+        self.prepared()
+        self.assemble()
+        (self.root / "release" / "facts_parts" / "chunk_0.csv").unlink()
+        (self.root / "release" / "names" / "al" / "alpha.json").unlink()
+        self.assemble()
+        self.assertIn("alpha", self.written())
+        self.assertTrue((self.root / "release" / "facts_parts" / "chunk_0.csv").exists())
+
     def test_running_a_chunk_before_prepare_is_refused_with_the_command_to_run(self):
         with self.assertRaises(SystemExit) as stopped:
             self.assemble()
@@ -332,10 +384,10 @@ class AssembleChunkOperations(unittest.TestCase):
         self.prepared()
         real = s6_assemble.build_bundle
 
-        def flaky(name, *args):
+        def flaky(name, *args, **kwargs):
             if name == "alpha":
                 raise RuntimeError("simulated unexpected shape")
-            return real(name, *args)
+            return real(name, *args, **kwargs)
         with mock.patch.object(s6_assemble, "build_bundle", flaky):
             self.assemble()                                                      # must not raise
         self.assertEqual(self.written(), ["beta"])
@@ -359,10 +411,10 @@ class AssembleChunkOperations(unittest.TestCase):
         self.prepared()
         real = s6_assemble.build_bundle
 
-        def flaky(name, *args):
+        def flaky(name, *args, **kwargs):
             if name == "alpha":
                 raise RuntimeError("simulated")
-            return real(name, *args)
+            return real(name, *args, **kwargs)
         with mock.patch.object(s6_assemble, "build_bundle", flaky):
             self.assemble("--free-maps")
         self.assertTrue((self.root / "maps" / "chunk_0.jsonl").exists(), "the raw rows are still needed to see why alpha failed")
@@ -474,6 +526,29 @@ class Stage6EndToEnd(unittest.TestCase):
         self.assertGreaterEqual(page.count("<path"), 3)
         self.assertNotIn("nan", page.lower().replace("nation", ""))            # no NaN coordinates from a bad projection
 
+    def facts_table(self):
+        with open(self.root / "release" / "facts.csv", newline="") as f:
+            return list(csv.DictReader(f))
+
+    def test_name_files_hold_counts_and_maps_and_the_facts_are_one_table(self):
+        for path in self.all_files():
+            self.assertNotIn("facts", json.loads(path.read_text()), path.name)
+        table = self.facts_table()
+        self.assertTrue(table, "the fake data should have given some facts")
+        self.assertEqual([(r["name"], r["fact"]) for r in table], sorted((r["name"], r["fact"]) for r in table))   # sorted, so it can be streamed
+        self.assertLessEqual({r["name"] for r in table}, {p.stem for p in self.all_files()})                   # only published names
+        for row in table:
+            json.loads(row["data"])                                                                            # every data cell is JSON
+
+    def test_the_facts_table_has_the_same_facts_as_stage_5_made(self):
+        with open(self.root / "facts" / "facts.csv", newline="") as f:
+            made = {(r["surname"], r["fact"]) for r in csv.DictReader(f)}
+        published = {p.stem for p in self.all_files()}
+        wanted = {(name, {"ethnicity": "eth", "parishes": "places", "places": "places", "imd_score": "imd",
+                          "forenames_register": "forenames", "forenames_census": "forenames"}.get(fact, fact))
+                  for name, fact in made if name in published}
+        self.assertEqual({(r["name"], r["fact"]) for r in self.facts_table()}, wanted)
+
     def test_validate_data_accepts_the_whole_release(self):
         manifest = json.loads((self.root / "release" / "manifest.json").read_text())
         lookups = self.minimal_lookups(manifest)
@@ -485,19 +560,21 @@ class Stage6EndToEnd(unittest.TestCase):
         for path in self.all_files():
             validate_data.check_bundle(path, manifest, lookups, manifest["threshold"], report)
         self.assertEqual(report.errors, [], report.errors)
+        rows = validate_data.check_facts_table(self.root / "release" / "facts.csv", {p.stem for p in self.all_files()}, lookups, report)
+        self.assertEqual(report.errors, [], report.errors)
+        self.assertEqual(rows, len(self.facts_table()))
 
     def minimal_lookups(self, manifest):
         """Just enough lookups.json for every code actually produced in this run to be found - lookups.json
         itself is out of scope for stage 6 (its wording needs a person, not the database), but validating
         assemble's own output still needs some lookup table to check group codes against."""
         codes = {"oac": set(), "loac": set(), "fpc": set(), "eth": set()}
-        for path in self.all_files():
-            facts = json.loads(path.read_text()).get("facts", {})
-            for scheme in ("oac", "loac", "fpc"):
-                if scheme in facts:
-                    codes[scheme].add(facts[scheme]["group"])
-            if "eth" in facts:
-                codes["eth"].add(str(facts["eth"]["group"]))
+        for row in self.facts_table():
+            fact, data = row["fact"], json.loads(row["data"])
+            if fact in ("oac", "loac", "fpc"):
+                codes[fact].add(data["group"])
+            if fact == "eth":
+                codes["eth"].add(str(data["group"]))
         lookups = {"schema": 1, "eth": {c: {"name": c} for c in codes["eth"]}, "scales": {}}
         for scheme in ("oac", "loac"):
             lookups[scheme] = {"supergroups": {"x": {"name": "x", "colour": "#000"}},
@@ -561,6 +638,81 @@ class ValidatorCopyOfChecks(unittest.TestCase):
         self.assertTrue([e for e in errors if "maps.1921" in e and "itself a copy" in e], errors)
 
 
+class ValidatorFactsTable(unittest.TestCase):
+    """tools/validate_data.py's checks of facts.csv (name, fact, data), on hand-built tables."""
+
+    LOOKUPS = {"oac": {"groups": {"3b": {}}}, "eth": {"WBR": {}}}
+
+    def errors_for(self, text, names=("alpha", "beta")):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "facts.csv"
+            path.write_text(text)
+            report = validate_data.Report()
+            validate_data.check_facts_table(path, set(names), self.LOOKUPS, report)
+            return report.errors
+
+    GOOD = 'name,fact,data\nalpha,oac,"{""group"":""3b""}"\nbeta,eth,"{""group"":""WBR""}"\n'
+
+    def test_a_good_table_passes(self):
+        self.assertEqual(self.errors_for(self.GOOD), [])
+
+    def test_a_wrong_header_is_refused(self):
+        self.assertTrue([e for e in self.errors_for("surname,fact,data\n") if "header" in e])
+
+    def test_a_name_with_no_file_is_refused(self):
+        errors = self.errors_for(self.GOOD + 'zulu,oac,"{""group"":""3b""}"\n')
+        self.assertTrue([e for e in errors if "zulu" in e and "no file" in e], errors)
+
+    def test_an_unsorted_or_repeated_row_is_refused(self):
+        unsorted = 'name,fact,data\nbeta,eth,"{""group"":""WBR""}"\nalpha,oac,"{""group"":""3b""}"\n'
+        self.assertTrue([e for e in self.errors_for(unsorted) if "sorted" in e])
+        repeated = 'name,fact,data\nalpha,oac,"{""group"":""3b""}"\nalpha,oac,"{""group"":""3b""}"\n'
+        self.assertTrue([e for e in self.errors_for(repeated) if "sorted" in e])
+
+    def test_data_that_is_not_json_is_refused(self):
+        self.assertTrue([e for e in self.errors_for("name,fact,data\nalpha,oac,not json\n") if "not valid JSON" in e])
+
+    def test_a_group_code_that_is_not_in_lookups_is_refused_just_as_inside_a_name_file(self):
+        errors = self.errors_for('name,fact,data\nalpha,oac,"{""group"":""9z""}"\n')
+        self.assertTrue([e for e in errors if "9z" in e and "not in lookups" in e], errors)
+
+    def test_a_row_with_the_wrong_number_of_columns_is_refused(self):
+        self.assertTrue([e for e in self.errors_for("name,fact,data\nalpha,oac\n") if "3 columns" in e])
+
+
+class DemoReleaseTool(unittest.TestCase):
+    """tools/build_demo_release.py: fake data through stages 1-6 and the preview page, in a folder of its own."""
+
+    def run_tool(self, folder, **env):
+        return subprocess.run([sys.executable, str(config.ROOT / "tools" / "build_demo_release.py"), "--folder", str(folder), "--persons", "8000"],
+                              cwd=config.ROOT, env={**os.environ, **env}, capture_output=True, text=True)
+
+    def test_it_builds_a_release_and_a_page_whatever_the_shell_says_and_rebuilds_its_own_folder(self):
+        # the shell of someone working in the TRE has GBNAMES_PROFILE=tre and run.settings' variables set; a typo in one
+        # of them would stop a run that read it, and the profile would point at the real database - neither may matter here
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp) / "demo"
+            done = self.run_tool(folder, GBNAMES_PROFILE="tre", GBNAMES_SOURCES="nonsense", GBNAMES_CHUNKS="many")
+            self.assertEqual(done.returncode, 0, done.stderr[-2000:])
+            page = (folder / "preview_web" / "preview.html").read_text()
+            self.assertIn("<svg", page)
+            self.assertTrue(list((folder / "release" / "names").glob("*/*.json")))
+            self.assertTrue((folder / "release" / "facts.csv").exists())
+            (folder / "stray.txt").write_text("left over")                    # a folder it made itself is cleared and rebuilt
+            self.assertEqual(self.run_tool(folder).returncode, 0)
+            self.assertFalse((folder / "stray.txt").exists())
+
+    def test_it_will_not_empty_a_folder_it_did_not_make(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp) / "precious"
+            folder.mkdir()
+            (folder / "thesis.txt").write_text("keep me")
+            done = self.run_tool(folder)
+            self.assertNotEqual(done.returncode, 0)
+            self.assertIn("not being cleared", done.stderr + done.stdout)
+            self.assertEqual((folder / "thesis.txt").read_text(), "keep me")
+
+
 class MergeReleaseTests(unittest.TestCase):
     def test_index_groups_by_first_two_letters_and_sorts(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -574,6 +726,40 @@ class MergeReleaseTests(unittest.TestCase):
             written = json.loads((Path(tmp) / "out" / "index" / "sm.json").read_text())
             self.assertEqual(len(written), 9)
             self.assertEqual(written, sorted(written))       # tools/validate_data.py refuses an unsorted index; nine names make a lucky set order a 1 in 362,880 chance
+
+    def write_part(self, folder, number, rows):
+        path = Path(folder) / f"chunk_{number}.csv"
+        with open(path, "w", newline="") as f:
+            out = csv.writer(f)
+            out.writerow(["name", "fact", "data"])
+            out.writerows(rows)
+
+    def test_the_facts_table_merges_sorted_parts_into_one_sorted_file_with_one_header(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            parts = Path(tmp) / "parts"
+            parts.mkdir()
+            self.write_part(parts, 0, [["alpha", "oac", "{}"], ["gamma", "imd", "{}"], ["gamma", "oac", "{}"]])
+            self.write_part(parts, 1, [["beta", "oac", "{}"], ["delta", "eth", "{}"]])
+            self.write_part(parts, 2, [["beta", "ahah", "{}"], ["zeta", "oac", "{}"]])
+            out = Path(tmp) / "facts.csv"
+            n = merge_release.build_facts_table(parts, out)
+            with open(out, newline="") as f:
+                rows = list(csv.reader(f))
+            self.assertEqual(rows[0], ["name", "fact", "data"])
+            self.assertEqual(n, 7)
+            self.assertEqual([tuple(r[:2]) for r in rows[1:]], [("alpha", "oac"), ("beta", "ahah"), ("beta", "oac"), ("delta", "eth"),
+                                                                ("gamma", "imd"), ("gamma", "oac"), ("zeta", "oac")])
+            self.assertEqual(sum(r == ["name", "fact", "data"] for r in rows), 1)            # the parts' own headers are not repeated
+
+    def test_a_json_cell_with_commas_and_quotes_survives_the_table(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            parts = Path(tmp) / "parts"
+            parts.mkdir()
+            data = json.dumps({"group": "3b", "distribution": {"3b": 0.5, "2a": 0.5}, "note": 'say "hi", ok'})
+            self.write_part(parts, 0, [["alpha", "oac", data]])
+            merge_release.build_facts_table(parts, Path(tmp) / "facts.csv")
+            with open(Path(tmp) / "facts.csv", newline="") as f:
+                self.assertEqual(json.loads(list(csv.DictReader(f))[0]["data"]), json.loads(data))
 
     def test_scotland_mask_is_reprojected_to_longitude_latitude(self):
         mask = merge_release.build_scotland_mask(config.ROOT / "pipeline" / "reference" / "scotland_outline.geojson")
@@ -607,8 +793,52 @@ class PreviewWebTests(unittest.TestCase):
     def test_a_copied_map_says_which_year_it_shows(self):
         shape = {"type": "FeatureCollection", "features": []}
         block = preview_web.maps_block({"maps": {"1901": shape, "1911": {**shape, "copyOf": "1901"}}})
-        self.assertIn("1911: shows 1901&#x27;s map", block)          # html-escaped apostrophe
-        self.assertNotIn("1901: shows", block)                        # the original itself is not labelled a copy
+        self.assertIn("1911 - shows 1901&#x27;s map", block)          # html-escaped apostrophe
+        self.assertNotIn("1901 - shows", block)                        # the original itself is not labelled a copy
+
+    def test_a_maps_caption_carries_that_years_bearers(self):
+        shape = {"type": "FeatureCollection", "features": []}
+        block = preview_web.maps_block({"maps": {"1901": shape, "2026": shape}, "counts": {"census": {"1901": 1234}, "register": {"2026": 56}}})
+        self.assertIn("1901: 1,234", block)
+        self.assertIn("2026: 56", block)
+
+    def test_counts_are_one_line_per_source_with_every_year(self):
+        block = preview_web.counts_block({"counts": {"census": {"1851": 68, "1861": 81}, "register": {"1997": 1200}}})
+        self.assertIn("1851: 68", block)
+        self.assertIn("1861: 81", block)
+        self.assertIn("1997: 1,200", block)
+        self.assertEqual(block.count("<p"), 2)                          # one line each for census and register, not a row per year
+
+    def test_facts_read_as_text_not_json(self):
+        bundle = {"facts": {"forenames": {"register": {"f": ["mary", "ann"], "m": ["john"]}},
+                            "oac": {"group": "3b", "distribution": {"2a": 0.10, "3b": 0.85, "6c": 0.004}},
+                            "ahah": {"mode": 6, "distribution": [0.1, 0.9] + [0.0] * 8},
+                            "eth": {"group": "WBR", "countries": [["WBR-EN", 0.4]]},
+                            "places": {"census": [{"area": "Kent", "name": "Dover"}]}}}
+        table = preview_web.facts_table(bundle)
+        self.assertIn("f: mary, ann; m: john", table)                       # names run on
+        self.assertIn("3b 85%, 2a 10%, 6c &lt;1%", table)                    # biggest share first, a tiny one as <1%
+        self.assertIn("1: 10%, 2: 90%", table)                              # a decile distribution in order
+        self.assertIn("WBR-EN 40%", table)
+        self.assertIn("Kent / Dover", table)
+        self.assertNotIn("{", table)                                        # no JSON braces on the page
+
+    def test_a_panel_is_drawn_over_the_coastline_when_there_is_one(self):
+        shape = {"type": "FeatureCollection", "features": []}
+        with_land = preview_web.panel(shape, "1901", land="M1,2L3,4Z")
+        self.assertIn('d="M1,2L3,4Z"', with_land)
+        self.assertLess(with_land.index("M1,2L3,4Z"), with_land.index("</svg>"))
+        self.assertNotIn("M1,2L3,4Z", preview_web.panel(shape, "1901"))
+        self.assertIn("M1,2L3,4Z", preview_web.maps_block({"maps": {"1901": shape}}, land="M1,2L3,4Z"))
+
+    def test_the_coastline_is_a_few_pieces_of_longitude_latitude_and_becomes_one_path(self):
+        doc = json.loads((config.REFERENCE / "gb_outline_lonlat.geojson").read_text())
+        lon_lat = [p for f in doc["features"] for ring in preview_web._rings(f["geometry"]) for p in ring]
+        self.assertTrue(all(-9 <= lon <= 2.5 and 49.5 <= lat <= 61.5 for lon, lat in lon_lat))     # not British National Grid metres
+        self.assertLess((config.REFERENCE / "gb_outline_lonlat.geojson").stat().st_size, 60_000)   # a rough outline, not the 470 KB coast
+        path = preview_web.land_path()
+        self.assertTrue(path.startswith("M") and path.count("Z") >= 5)
+        self.assertEqual(preview_web.land_path(Path("/nonexistent.geojson")), "")                  # no coastline file: maps still draw, without it
 
     def test_a_bundle_with_no_map_is_reported_but_does_not_crash(self):
         self.assertEqual(preview_web.maps_block({"maps": {}}), "<p><i>no maps at all - should not happen for a published file</i></p>")
@@ -617,6 +847,26 @@ class PreviewWebTests(unittest.TestCase):
         table = preview_web.facts_table({"facts": {"oac": {"group": "3b"}}})
         self.assertIn("oac", table)
         self.assertIn("3b", table)
+
+    def test_read_facts_table_picks_out_only_the_wanted_names(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "facts.csv"
+            path.write_text('name,fact,data\nalpha,oac,"{""group"":""3b""}"\nbeta,oac,"{""group"":""2a""}"\nbeta,eth,"{""group"":""WBR""}"\n')
+            found = preview_web.read_facts_table(path, ["beta"])
+            self.assertEqual(found, {"beta": {"oac": {"group": "2a"}, "eth": {"group": "WBR"}}})
+            self.assertEqual(preview_web.read_facts_table(Path(tmp) / "missing.csv", ["beta"]), {})
+
+    def test_the_page_shows_facts_from_the_table_when_the_name_file_has_none(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            names_dir = Path(tmp) / "names"
+            (names_dir / "sm").mkdir(parents=True)
+            (names_dir / "sm" / "smith.json").write_text(json.dumps({"schema": 1, "name": "smith", "counts": {}, "maps": {}}))
+            (Path(tmp) / "facts.csv").write_text('name,fact,data\nsmith,oac,"{""group"":""7q""}"\n')
+            out = Path(tmp) / "out.html"
+            with mock.patch.object(sys, "argv", ["preview_web", "--names", "smith", "--names-dir", str(names_dir),
+                                                "--facts-file", str(Path(tmp) / "facts.csv"), "--out", str(out)]):
+                preview_web.main()
+            self.assertIn("7q", out.read_text())
 
     def test_end_to_end_on_a_hand_built_bundle(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -9,6 +9,10 @@ Cheap and safe to re-run at any point during a long array job, to check progress
 require the .done markers, it just reads whatever chunk index files already exist (same pattern as
 merge_stats.py). Writes, under --out-dir (default work/release):
 
+    facts.csv            the facts table: every chunk's work/release/facts_parts/chunk_N.csv in one file, columns
+                         name,fact,data (data = the JSON of that fact, as data-contract.md has it under facts.<fact>),
+                         sorted by name then fact. One table instead of facts inside 380,000 name files (decided
+                         2026-09-26). Merged as a stream (each part is already sorted), so it never holds it all in memory.
     index/<xx>.json      the search index: every name that got a file, per first two letters, sorted
     masks/scotland.json  the Scotland mask, reprojected from pipeline/reference/scotland_outline.geojson
                          the same way stage 4 reprojects every map (kde._to_lonlat, kde._repair)
@@ -19,9 +23,12 @@ merge_stats.py). Writes, under --out-dir (default work/release):
                          to edit, not a final answer, the same way lookups.json is left for later entirely.
 """
 import argparse
+import csv
 import datetime
+import heapq
 import json
 from collections import defaultdict
+from contextlib import ExitStack
 from pathlib import Path
 
 import numpy as np
@@ -29,6 +36,7 @@ import shapely
 from shapely.geometry import mapping, shape
 
 from . import config, kde
+from .s6_assemble import FACTS_TABLE_HEADER
 
 # The same fixed text tools/build_sample_data.py already uses (a real, working choice for this project,
 # not made up) - see the module docstring above.
@@ -68,6 +76,26 @@ def build_index(index_parts_dir, out_dir):
     for prefix, names in by_prefix.items():
         write_json(Path(out_dir) / "index" / f"{prefix}.json", sorted(names))
     return by_prefix
+
+
+def build_facts_table(parts_dir, out_path):
+    """Merges every chunk's facts part (each already sorted by name, then fact) into one sorted file, as a stream
+    - a chunk file at a time is never all in memory, only one row per part. Returns the number of rows."""
+    paths = sorted(Path(parts_dir).glob("chunk_*.csv"))
+    rows = 0
+    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+    with ExitStack() as stack, open(out_path, "w", newline="") as out_file:
+        readers = []
+        for path in paths:
+            reader = csv.reader(stack.enter_context(open(path, newline="")))
+            next(reader, None)                               # each part repeats the header
+            readers.append(reader)
+        out = csv.writer(out_file)
+        out.writerow(FACTS_TABLE_HEADER)
+        for row in heapq.merge(*readers, key=lambda r: (r[0], r[1])):
+            out.writerow(row)
+            rows += 1
+    return rows
 
 
 def build_scotland_mask(reference_path):
@@ -119,6 +147,7 @@ def write_json(path, obj):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--index-parts-dir", default=str(config.WORK / "release" / "index_parts"))
+    parser.add_argument("--facts-parts-dir", default=str(config.WORK / "release" / "facts_parts"))
     parser.add_argument("--out-dir", default=str(config.WORK / "release"))
     parser.add_argument("--reference", default=str(config.ROOT / "pipeline" / "reference" / "scotland_outline.geojson"))
     parser.add_argument("--chunks", type=int, default=config.RUN_CHUNKS, help="how many chunks to expect (default GBNAMES_CHUNKS in run.settings)")
@@ -136,11 +165,13 @@ def main():
              f"{', '.join(map(str, missing))}. This merge will NOT include them.")
 
     by_prefix = build_index(args.index_parts_dir, out_dir)
+    n_facts = build_facts_table(args.facts_parts_dir, out_dir / "facts.csv")
     write_json(out_dir / "masks" / "scotland.json", build_scotland_mask(args.reference))
     write_json(out_dir / "manifest.json", build_manifest(args.version, args.synthetic))
 
     n_names = sum(len(v) for v in by_prefix.values())
-    print(f"{n_names:,} names in {len(by_prefix)} index files, manifest.json and masks/scotland.json written to {out_dir}")
+    print(f"{n_names:,} names in {len(by_prefix)} index files, {n_facts:,} rows in facts.csv, manifest.json and "
+          f"masks/scotland.json written to {out_dir}")
 
 
 if __name__ == "__main__":

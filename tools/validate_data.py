@@ -8,6 +8,8 @@ Run this on every release BEFORE it leaves the TRE and again before it goes on t
 Exit code 0 = no errors (warnings are allowed), 1 = at least one error.
 """
 import argparse
+import csv
+import itertools
 import json
 import re
 import sys
@@ -300,6 +302,47 @@ def check_bundle(path, manifest, lookups, threshold, report):
     return bundle
 
 
+def check_facts_table(path, names, lookups, report):
+    """facts.csv: one row per name and fact (name, fact, data - data the JSON of that fact, as it would sit under
+    facts.<fact> in the name file). The same per-fact rules as the facts inside a name file, plus: the table is
+    sorted by name then fact with no repeats (so it can be read as a stream, one name at a time - it can have
+    millions of rows), and it never has facts for a name that has no file (a name below the threshold must not
+    turn up in the facts). Returns the number of rows."""
+    where = "facts.csv"
+    count = 0
+    with open(path, newline="", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        if next(reader, None) != ["name", "fact", "data"]:
+            report.error(where, "header must be: name,fact,data")
+            return 0
+
+        def rows():
+            nonlocal count
+            previous = None
+            for line, row in enumerate(reader, start=2):
+                if len(row) != 3:
+                    report.error(where, f"line {line}: needs exactly 3 columns")
+                    continue
+                if previous is not None and (row[0], row[1]) <= previous:
+                    report.error(where, f"line {line}: must be sorted by name then fact, with no repeats (after {previous})")
+                previous = (row[0], row[1])
+                count += 1
+                yield row
+
+        for name, group in itertools.groupby(rows(), key=lambda r: r[0]):
+            if name not in names:
+                report.error(where, f"facts for {name!r}, which has no file in names/ (a name that is not published has no facts either)")
+                continue
+            facts = {}
+            for _, fact, data in group:
+                try:
+                    facts[fact] = json.loads(data)
+                except ValueError:
+                    report.error(f"{where} {name}", f"{fact}: data is not valid JSON")
+            check_facts(facts, lookups, f"{where} {name}", report)
+    return count
+
+
 # ---------------------------------------------------------------------------
 # whole release
 # ---------------------------------------------------------------------------
@@ -345,6 +388,9 @@ def main():
             report.error(f"index/{shard_path.name}", "does not match the files in names/" + shard_path.stem)
     for prefix in set(found) - {p.stem for p in (root / "index").glob("*.json")}:
         report.error(f"index/{prefix}.json", "missing")
+
+    if (root / "facts.csv").exists():
+        check_facts_table(root / "facts.csv", set().union(*found.values()) if found else set(), lookups, report)
 
     n_names = sum(len(v) for v in found.values())
     for line in report.warnings + report.errors:

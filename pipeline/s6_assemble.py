@@ -26,7 +26,14 @@ own facts/counts slices (from --prepare), and for every name that chunk owns:
             renamed to {area, name} (already the shape tools/validate_data.py expects); forenames_register
             + forenames_census merge into one forenames object; ethnicity is renamed to eth. Only the
             fields data-contract.md actually asks for are copied across - not "tie" or "years", which are
-            for stage 5's own report, not the public file.
+            for stage 5's own report, not the public file. NOT put in the name files by default (decided
+            2026-09-26): they go to one table instead, work/release/facts_parts/chunk_N.csv per chunk (merged by
+            merge_release.py into facts.csv: one row per name and fact, name,fact,data with data the same JSON
+            that would sit under facts.<fact> in the name file). A name file is then only counts and maps -
+            plain static files that never change when a classification does - and folding the facts into them,
+            or into a database, is a job for the website build outside the TRE. --facts-in-names writes them
+            into the name files as well, as data-contract.md's original shape has it. Only names that get a
+            file get facts rows.
     counts  every (source, year) this name has, straight from counts.csv - not only the mapped years.
 
 Also writes work/release/index_parts/chunk_N.txt (the names this chunk wrote, one per line - the input to
@@ -62,6 +69,7 @@ from .names import chunk_of
 
 FACTS_HEADER = ["surname", "fact", "version", "ref_year", "n_bearers", "value", "detail"]
 COUNTS_HEADER = ["source", "year", "surname", "n"]
+FACTS_TABLE_HEADER = ["name", "fact", "data"]         # the public facts table (merge_release.py's facts.csv)
 
 # fact -> (public key, how to build its public object from {"value": str, "detail": dict}). A scheme not
 # listed here (imd_score, forenames_register, forenames_census, places, parishes) is folded into another
@@ -155,18 +163,26 @@ def build_maps(rows):
     return maps
 
 
-def build_bundle(name, map_rows, fact_rows, count_rows):
-    """The full per-name JSON, or None if it would have no map at all (data-contract.md: a file with no
-    map is not published - every name on the list should clear this, since that is what put it on the
-    list, but a name is skipped rather than published broken if it somehow does not)."""
+def build_bundle(name, map_rows, fact_rows, count_rows, include_facts=False):
+    """The per-name JSON (counts and maps; the facts too if include_facts), or None if it would have no map
+    at all (data-contract.md: a file with no map is not published - every name on the list should clear this,
+    since that is what put it on the list, but a name is skipped rather than published broken if it somehow
+    does not)."""
     maps = build_maps(map_rows)
     if not maps:
         return None
     bundle = {"schema": 1, "name": name, "counts": build_counts(count_rows), "maps": maps}
-    facts = build_facts(fact_rows)
-    if facts:
-        bundle["facts"] = facts
+    if include_facts:
+        facts = build_facts(fact_rows)
+        if facts:
+            bundle["facts"] = facts
     return bundle
+
+
+def facts_table_rows(name, fact_rows):
+    """[name, fact, data] rows for one name's facts table: one row per public fact key, data the compact JSON
+    of that fact's object (the same as it would be under facts.<fact> in the name file)."""
+    return [[name, key, json.dumps(obj, separators=(",", ":"), ensure_ascii=False)] for key, obj in sorted(build_facts(fact_rows).items())]
 
 
 # ---------------------------------------------------------------------------
@@ -252,6 +268,8 @@ def main():
     parser.add_argument("--maps-dir", default=str(config.WORK / "maps"))
     parser.add_argument("--out-dir", default=str(config.WORK / "release"))
     parser.add_argument("--force", action="store_true", help="redo --prepare or this chunk even if it already finished")
+    parser.add_argument("--facts-in-names", action="store_true",
+                        help="also put the facts in each name's file (data-contract.md's original shape); by default they go to the one facts table only")
     parser.add_argument("--free-maps", action="store_true",
                         help="after a chunk assembles with no failures, delete its work/maps/chunk_N.jsonl (only if storage is tight; cannot be undone)")
     args = parser.parse_args()
@@ -274,19 +292,22 @@ def main():
     out_dir = Path(args.out_dir)
     names_dir = out_dir / "names"
     index_dir = out_dir / "index_parts"
+    facts_dir = out_dir / "facts_parts"
     names_dir.mkdir(parents=True, exist_ok=True)
     index_dir.mkdir(parents=True, exist_ok=True)
+    facts_dir.mkdir(parents=True, exist_ok=True)
     done_marker = out_dir / f"chunk_{args.chunk}.done"
     index_path = index_dir / f"chunk_{args.chunk}.txt"
+    facts_path = facts_dir / f"chunk_{args.chunk}.csv"
     if done_marker.exists() and not args.force:
         marker_text = done_marker.read_text()
         marker_chunks = re.search(r"chunks=(\d+)", marker_text)
         stale_partitioning = marker_chunks is None or int(marker_chunks.group(1)) != args.chunks
-        missing_output = not index_path.exists()
+        missing_output = not (index_path.exists() and facts_path.exists())
         if not stale_partitioning and not missing_output:
             print(f"chunk {args.chunk} already finished ({done_marker}) - skipping. Use --force to redo it.")
             return
-        why = "it was made under a different --chunks value" if stale_partitioning else "its index is missing even though .done exists"
+        why = "it was made under a different --chunks value" if stale_partitioning else "its index or facts part is missing even though .done exists"
         print(f"chunk {args.chunk}: {done_marker} exists but {why} - redoing it.")
 
     started = time.perf_counter()
@@ -297,11 +318,13 @@ def main():
     print(f"chunk {args.chunk}: {len(names):,} names, loaded in {time.perf_counter() - started:.1f}s")
 
     errors_path = out_dir / f"chunk_{args.chunk}.errors.log"
-    written, skipped, failed = [], [], []
+    written, skipped, failed, facts_rows = [], [], [], []
     with open(errors_path, "w") as errors_file:
         for name in names:
             try:
-                bundle = build_bundle(name, maps_by_name[name], facts_by_name.get(name, []), counts_by_name.get(name, []))
+                bundle = build_bundle(name, maps_by_name[name], facts_by_name.get(name, []), counts_by_name.get(name, []),
+                                      include_facts=args.facts_in_names)
+                rows = facts_table_rows(name, facts_by_name.get(name, [])) if bundle is not None else []
             except Exception:
                 failed.append(name)
                 errors_file.write(f"=== {name} ===\n{traceback.format_exc()}\n")
@@ -314,7 +337,12 @@ def main():
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(bundle, separators=(",", ":"), ensure_ascii=False))
             written.append(name)
+            facts_rows.extend(rows)
 
+    with open(facts_path, "w", newline="") as f:
+        out = csv.writer(f)
+        out.writerow(FACTS_TABLE_HEADER)
+        out.writerows(facts_rows)                       # names iterate sorted and each name's facts are sorted: merge_release relies on it
     index_path.write_text("\n".join(written) + ("\n" if written else ""))
     note = ""
     if skipped:

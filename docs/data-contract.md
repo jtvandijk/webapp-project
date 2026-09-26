@@ -8,12 +8,15 @@ handshake between the two halves of the project:
 
 If both sides keep to this document, they can be built at the same time and swapped freely.
 
-> **Open question (September 2026): how the facts are served.** Everything below describes the flat-file
-> plan: the facts sit inside each surname's JSON file, and there is no database. That is the current default,
-> not a settled decision. Stage 5 already keeps the facts as one long table (`facts.csv`: a row per surname,
-> fact and version), so a new classification is new rows, not a change to every name file. Whether the release
-> keeps folding the facts into the name files, or serves them from one database file (SQLite, or Parquet/Arrow),
-> waits for the database confirmation. The maps stay plain files either way, and stages 1 to 5 do not change.
+> **How the facts are served (September 2026; leaning decided 2026-09-26).** A surname's file describes its
+> facts below (`facts`), and the flat-file plan folds them into it. But **what leaves the TRE is one table,
+> `facts.csv`, not facts inside 380,000 files**: stage 6 writes each name's file as counts and maps only (plain
+> static files that never change when a classification does), and the facts as one long table, a row per
+> name and fact (`name,fact,data`, `data` being exactly the JSON that would sit under `facts.<fact>` in the
+> name file). A new classification is then new rows, not a rewrite of every name file. Whether the website
+> build folds the facts into the name files, or serves them from a database file (SQLite, or Parquet/Arrow),
+> is decided outside the TRE, once the database question is settled; `s6_assemble.py --facts-in-names` writes
+> them into the name files as well, if that shape is wanted.
 
 ## The idea in one paragraph
 
@@ -32,7 +35,8 @@ data/
   lookups.json           shared words and colours (classification names and descriptions, page text)
   masks/scotland.json    extra outline shown on top of the map for some years
   index/<xx>.json        list of surnames per first-two-letters, used for search suggestions
-  names/<xx>/<name>.json ONE FILE PER SURNAME: counts, maps and facts
+  names/<xx>/<name>.json ONE FILE PER SURNAME: counts and maps (and facts, if folded in: see above)
+  facts.csv              every fact of every published name, one row per name and fact
 ```
 
 `<xx>` is the first two letters of the surname (`sm`), as in the current KDE folders. This keeps
@@ -82,7 +86,7 @@ Rules:
 | `maps` | One entry per map period, keyed by the period `id` from the manifest. A period is only present if the name has **at least the threshold** (100) bearers that year. A file with no map at all is not published. **Open (agreed 2026-09-23): a missing period should say why** ("no map because too few bearers that year" vs "no map because the concentration wasn't strong enough to show" vs other reasons) rather than the visitor just seeing that slider position is absent - `rules.Resolution.reason` already has this text internally in the pipeline for every omitted period, it just doesn't reach the published files yet. Needs a field (e.g. a `mapNotes` object alongside `maps`, keyed the same way) and website text for it - not yet designed or built. |
 | `copyOf` | Optional, on a map entry (a GeoJSON "foreign member" next to `type` and `features`): the period id whose map this one is. Present exactly when the pipeline copied another year's map instead of building one: a heavily Scottish name shows its 1901 map for 1911 and 1921 (`"1911": { "type": "FeatureCollection", "copyOf": "1901", ... }`), because Scotland is missing from those censuses. **Decided 2026-09-26: the website draws a period's mask (Scotland, blanked out) only on a map WITHOUT `copyOf`.** A built 1911 or 1921 map has no Scottish people in it, and without the mask a name like Smith looks as if it had vanished from Scotland; a copied map is 1901's, which has Scotland, so it gets no mask, and the page says it shows 1901. Written by `pipeline/s6_assemble.py`; `tools/validate_data.py` checks that the period named exists in the same file, has a map of its own and is not itself a copy. |
 | map shape | Standard GeoJSON, longitude/latitude (EPSG:4326), 3 decimal places (about 110 m north-south; `config.GEOJSON_DECIMALS`, chosen 2026-09-26: the outlines are simplified to 400 m anyway, and 3 instead of 4 is about 19% smaller gzipped), `Polygon` or `MultiPolygon`. Each feature has `properties.level` 1, 2 or 3 (1 = concentrated, 3 = most concentrated). The three levels are bands that do not overlap. |
-| `facts` | Every entry is optional. **Missing means no data**; the page then says so. Lists are ordered most common first. |
+| `facts` | Inside a name file (if folded in) or as rows of `facts.csv` (`name,fact,data`; `data` is the object below, one row per key: `forenames`, `places`, `oac`, ...). Every entry is optional. **Missing means no data**; the page then says so. Lists are ordered most common first. `facts.csv` is sorted by name then fact, and only has facts for names that have a file: a name below the threshold has no facts either (`tools/validate_data.py` checks both). |
 | `forenames` | Lowercase, at most 10 per sex (`f`, `m`) per source. |
 | `places` | At most 10 rows per source, most frequent first. The page shows the first 5. `census` are parishes (`area` = registration county or district), `register` are neighbourhoods (`area` = local authority). |
 | `oac`, `loac`, `fpc` | The most common **group** code (`"3b"`, `"A1"`, `"4"`). `distribution` = share of bearers in every group seen, keyed by group code (adding up to 1). The supergroup follows from the group, via `lookups.json`. |
