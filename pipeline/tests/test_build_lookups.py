@@ -28,9 +28,10 @@ class BuildLookups(unittest.TestCase):
     def test_ethnicity_has_every_configured_group_and_unknown(self):
         self.assertEqual(set(self.lookups["eth"]), set(config.ETH_GROUPS) | {config.ETH_UNKNOWN})
 
-    def test_the_two_fpc_typos_are_handled(self):
+    def test_the_fpc_typos_are_handled(self):
         names = {g["name"] for g in self.lookups["fpc"]["groups"].values()}
         self.assertIn("Underprivileged dependent", names)
+        self.assertIn("Ageing Blue-collar households", names)
         self.assertFalse([n for n in names if "  " in n or ":" in n], "a name still carries its code prefix or a double space")
 
     def test_the_ahah_text_matches_the_direction_of_the_data(self):

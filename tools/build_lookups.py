@@ -32,11 +32,11 @@ from pipeline import config
 FPC_RAW = ROOT / "raw-indicators" / "fpc" / "fpc_label_colors.csv"
 GROUP_NAMES = ROOT / "pipeline" / "reference" / "group_names.json"
 
-# The published FPC file has one typo (confirmed by the user 2026-09-24); the other spelling differences stay as published.
-FPC_TYPOS = {"Underprivilege dependent": "Underprivileged dependent"}
+# Corrections to the published FPC labels, confirmed by the user (E12 on 2026-09-24, E13 on 2026-09-27).
+FPC_TYPOS = {"Underprivilege dependent": "Underprivileged dependent", "Aging Blue-collar households": "Ageing Blue-collar households"}
 
-# Ethnicity Estimator colours: the old site's Set3 colours for the groups it had; the three new groups (Black - Caribbean,
-# Asian - Pakistani, Asian - Bangladeshi) take the three Set3 colours the old site did not use.
+# Ethnicity Estimator colours: the old site had nine (css btn-eee1 to btn-eee9, ColorBrewer Set3) and none of its own for Black - Caribbean,
+# Asian - Pakistani or Asian - Bangladeshi, so those three take the three Set3 colours the old site did not use. Change them here.
 ETH_COLOURS = {"WBR": "#fccde5", "WIR": "#b3de69", "WAO": "#fdb462", "BAF": "#ffffb3", "BCA": "#bc80bd",
                "AIN": "#bebada", "APK": "#ccebc5", "ABD": "#ffed6f", "ACN": "#fb8072", "AAO": "#80b1d3",
                "OXX": "#8dd3c7", config.ETH_UNKNOWN: "#d9d9d9"}
