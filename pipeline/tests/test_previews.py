@@ -1,6 +1,8 @@
 """Tests for the things you look at while working: the numbered preview files, and where a few-names run of
 stage 5 writes. Run from the project root:   python3 -m unittest discover -s pipeline/tests -t ."""
+import contextlib
 import csv
+import io
 import sys
 import tempfile
 import unittest
@@ -95,6 +97,53 @@ class PreviewsAreNeverOverwritten(unittest.TestCase):
             s5_facts.main()
         self.assertTrue((self.root / "facts" / "facts.csv").exists())
         self.assertEqual(list((self.root / "facts").glob("facts[0-9]*.csv")), [])              # numbered copies are for --names runs
+
+    def test_prints_the_database_time_per_period_and_the_kde_time_per_name(self):
+        # so a slow preview says which of the two it is slow in (2026-09-26: a real one turned out to be the database)
+        # --out, not the default numbered file: this must not touch the shared preview_maps numbering other tests rely on
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.run_preview("--refresh-cache", "--out", str(self.root / "timed1.html"))
+        text = out.getvalue()
+        self.assertIn("2000 (register): names query,", text)
+        self.assertIn("2000 (register): population query", text)
+        self.assertIn("2020 (register): names query,", text)
+        self.assertIn("2020 (register): population query", text)
+        self.assertIn(f"{self.names[0]}: computed in", text)
+        # every period's own two lines are printed before any name's - the database is fetched once, up front,
+        # never interleaved with the (per-name, per-variant) KDE work that follows
+        self.assertLess(text.index("2020 (register): population query"), text.index(f"{self.names[0]}: computed in"))
+
+    def test_a_cached_run_prints_no_fetch_lines_but_still_computes_the_maps(self):
+        self.run_preview("--refresh-cache", "--out", str(self.root / "timed2.html"))     # warms the cache
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.run_preview("--out", str(self.root / "timed3.html"))                    # everything now cached: nothing to fetch
+        text = out.getvalue()
+        self.assertNotIn("names query", text)
+        self.assertNotIn("population query", text)
+        self.assertIn(f"{self.names[0]}: computed in", text)         # the KDE work is never cached, only the fetch
+
+
+class OpenConnection(unittest.TestCase):
+    """preview.open_connection(): only Postgres gets the nested-loop-off setting - a stage script's own
+    connection (db.connect(), called directly, not through here) is never touched by this at all."""
+
+    def test_postgres_turns_off_nested_loop_joins_on_this_connection(self):
+        stub = object()
+        with mock.patch.object(preview.db, "connect", return_value=stub) as connect, \
+             mock.patch.object(preview.db, "execute") as execute:
+            conn = preview.open_connection({"backend": "postgres"}, "census")
+        connect.assert_called_once_with("census")
+        execute.assert_called_once_with(stub, "SET enable_nestloop = off")
+        self.assertIs(conn, stub)
+
+    def test_the_fake_sqlite_backend_is_left_alone(self):
+        # sqlite has no such setting at all; calling db.execute on it here would break every fake-data preview test
+        with mock.patch.object(preview.db, "connect", return_value=object()), \
+             mock.patch.object(preview.db, "execute") as execute:
+            preview.open_connection({"backend": "sqlite"}, "register")
+        execute.assert_not_called()
 
 
 if __name__ == "__main__":

@@ -80,6 +80,18 @@ def fetch(conn, sql):
         cursor.close()
 
 
+def execute(conn, sql):
+    """Run a statement that returns no rows (SET, VACUUM, ...) - fetch() would fail on these, since there is
+    nothing to fetch. Not committed: a session-level SET (unlike SET LOCAL) takes effect immediately and lasts for
+    the connection regardless, which suits how this pipeline's read connections are used (never committed, since
+    nothing here writes)."""
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql)
+    finally:
+        cursor.close()
+
+
 def _unfilled(cfg, path=""):
     found = []
     for key, value in cfg.items():

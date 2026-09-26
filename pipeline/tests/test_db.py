@@ -35,5 +35,37 @@ class Missing(unittest.TestCase):
         self.assertNotIn("connections.register.host", missing, "should not look at the other group at all")
 
 
+class _Cursor:
+    """A stand-in for a driver's cursor: records what it was asked to run, optionally raising instead."""
+    def __init__(self, log, fail=None):
+        self.log, self.fail = log, fail
+
+    def execute(self, sql):
+        if self.fail:
+            raise self.fail
+        self.log.append(sql)
+
+    def close(self):
+        self.log.append("closed")
+
+
+class Execute(unittest.TestCase):
+    """db.execute(): for a statement that returns no rows (fetch() would fail on these - there is nothing
+    to fetch). Used so far by preview.py's own connection (SET enable_nestloop = off)."""
+
+    def test_runs_the_statement_and_closes_the_cursor(self):
+        log = []
+        conn = type("Conn", (), {"cursor": lambda self: _Cursor(log)})()
+        db.execute(conn, "SET enable_nestloop = off")
+        self.assertEqual(log, ["SET enable_nestloop = off", "closed"])
+
+    def test_the_cursor_is_still_closed_if_the_statement_fails(self):
+        log = []
+        conn = type("Conn", (), {"cursor": lambda self: _Cursor(log, fail=RuntimeError("boom"))})()
+        with self.assertRaises(RuntimeError):
+            db.execute(conn, "bad sql")
+        self.assertEqual(log, ["closed"])
+
+
 if __name__ == "__main__":
     unittest.main()

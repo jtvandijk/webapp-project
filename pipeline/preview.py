@@ -25,6 +25,14 @@ map instead, since Scotland is missing from both censuses; the caption says so.
 
 Only connects to the database(s) that `--periods` actually needs - a register-only `--periods`
 (e.g. `1997 2000 2005 2010 2015 2020 2025 2026`) works with no working census connection at all.
+On Postgres its connection turns off one planner choice (nested-loop joins) that suits a stage
+script's own bulk query but can make a preview's own handful of names much slower than it should
+be (open_connection()) - a stage script's connection is unaffected, since it never calls this.
+
+Prints one line per period as it is fetched (query time; a cache hit prints nothing, since it did
+not query anything) and one line per name once its maps are drawn (KDE time) - so a slow preview
+says which of the two it is slow in: the database (the period lines), or this machine's own work
+(the per-name lines, which only start once every period line above them is done).
 
 What is fetched from the database is cached in work/cache/ (per period: the names asked for so
 far, and the population surface), since comparing KDE settings (bandwidth, weighting, levels, blob
@@ -40,6 +48,7 @@ import html
 import json
 import pickle
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -75,6 +84,20 @@ def _save(path, value):
         pickle.dump(value, f)
 
 
+def open_connection(cfg, source):
+    """One connection for a database group ("register" or "census"), set up for a preview's own query: a HANDFUL
+    of names (that is the whole point of this tool), never the hundreds or thousands a stage script's own query
+    asks for. Seen repeatedly on the real database (2026-09-26): the few-name filter can make Postgres choose a
+    plan that probes an index once per candidate person - fine at a handful of names, minutes instead of seconds
+    once the table is not tiny - where the very same filter with a stage's much longer name list gets the plain
+    scan-and-hash-join it needs instead. Off for this connection only, so a stage script's own connection (which
+    never calls this) is unaffected."""
+    conn = db.connect(source)
+    if cfg["backend"] == "postgres":
+        db.execute(conn, "SET enable_nestloop = off")
+    return conn
+
+
 def fetch_period(connect, cfg, period, surnames=None, use_cache=True, refresh_cache=False, population_bandwidth=None):
     """{name: (cell x, cell y, n)} and the smoothed surface of everybody for one map period.
     surnames: the standardised keys being previewed - always pass this on a real database, or the
@@ -102,14 +125,27 @@ def fetch_period(connect, cfg, period, surnames=None, use_cache=True, refresh_ca
     by_name = by_name if by_name is not None else {}
     missing = sorted(set(surnames or []) - by_name.keys())
     if missing or not names_path:
-        by_name.update(kde.group_by_name(db.fetch(connect(), make(cfg, period["year"], surnames=missing or surnames))))
+        asked = missing or surnames
+        started = time.perf_counter()
+        rows = db.fetch(connect(), make(cfg, period["year"], surnames=asked))
+        # printed so a slow preview can be told apart: this line is the database (query time, on the server, over
+        # the network); anything slow AFTER it (no more of these until the next period) is this machine's own work
+        print(f"{period['id']} ({period['source']}): names query, {len(asked):,} names, {len(rows):,} rows, "
+              f"{time.perf_counter() - started:.1f}s")
+        by_name.update(kde.group_by_name(rows))
         if names_path:
             _save(names_path, by_name)
 
     population = None if refresh_cache else (_load(pop_path) if pop_path else None)
     if population is None:
-        ix, iy, n = (np.array(c) for c in zip(*db.fetch(connect(), make(cfg, period["year"], by_surname=False))))
+        started = time.perf_counter()
+        rows = db.fetch(connect(), make(cfg, period["year"], by_surname=False))
+        queried = time.perf_counter() - started
+        ix, iy, n = (np.array(c) for c in zip(*rows))
         population = kde.population_surface(ix.astype(int), iy.astype(int), n.astype(float), pop_bw)
+        # split the same way: the query (database) against the smoothing that follows it (numpy, on this machine)
+        print(f"{period['id']} ({period['source']}): population query {queried:.1f}s, {len(rows):,} cells, "
+              f"smoothing {time.perf_counter() - started - queried:.1f}s")
         if pop_path:
             _save(pop_path, population)
 
@@ -241,7 +277,7 @@ def main():
 
     def connect_once(source):
         if source not in connections:
-            connections[source] = db.connect(source)
+            connections[source] = open_connection(cfg, source)
         return connections[source]
 
     surnames = [key for key, _ in names]
@@ -251,6 +287,7 @@ def main():
 
     stats, blocks = [], []
     for key, label in names:
+        started = time.perf_counter()
         by_period = {pid: data[pid][0].get(key) for pid in data}
         have = [c for c in by_period.values() if c is not None]
         if not have:
@@ -307,6 +344,10 @@ def main():
             tag = f"<div class='variant'>{variant_label}</div>" if len(name_variants) > 1 or args.auto_level_mass else ""
             rows.append(f"<div>{tag}<div class='row'>{''.join(row)}</div></div>")
         blocks.append(f"<h2>{html.escape(key)} <small>{label}</small></h2><div class='groups'>{''.join(rows)}</div>")
+        # every fetch_period() print above happened before this loop even started - so a name that is slow to
+        # appear here, with the periods' own lines long since printed, is slow in this machine's own KDE work,
+        # not the database
+        print(f"{key}: computed in {time.perf_counter() - started:.1f}s")
 
     reference = ""
     old = [(config.ROOT / "gbnames/static/kde/sm/smith" / f"smith_{y}.json", f"Smith {y}") for y in (1901, 2016)] \
