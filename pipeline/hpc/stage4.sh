@@ -18,12 +18,13 @@
 # GBNAMES_SOURCES (run.settings) must be the same one stages 2 and 3 were run with - or this looks for a
 # source's surfaces/chunks that do not exist yet and fails.
 #
-# h_vmem and h_rt below come from a real sample run: the longest of 40 chunks of about 125 names took 260 s, so an
-# hour is generous. For a very different size of run, size them again from a sample: run stage 3 with a limit and a
-# chunk number that gives a sample chunk about as many names as a full-run chunk will (a sample split into many small
-# chunks times fast, which is a misleadingly small number to plan the real run's -l h_rt from), time a few chunks,
-# then set h_rt generously above the slowest one - not exactly equal to it, since a real chunk varies. To change it
-# for one run only:  qsub -l h_rt=02:00:00 -t 1-200 pipeline/hpc/stage4.sh
+# h_vmem and h_rt below come from the real full run (43,093 names, 200 chunks of about 216 names, both sources): the slowest
+# task took about 700 s and none used more than about 230 MB, so 30 minutes and 1G leave a wide margin. For a very
+# different size of run, size them again from a sample: run stage 3 with a limit and a chunk number that gives a sample
+# chunk about as many names as a full-run chunk will (a sample split into many small chunks times fast, which is a
+# misleadingly small number to plan the real run's -l h_rt from), time a few chunks, then set h_rt generously above the
+# slowest one - not exactly equal to it, since a real chunk varies. To change it for one run only:
+#   qsub -l h_rt=02:00:00 -t 1-200 pipeline/hpc/stage4.sh
 #
 # No .env/GBNAMES_PROFILE needed here, unlike stage2.sh/stage3.sh - this stage makes no database
 # queries at all, only reads what they already wrote to work/surfaces/ and work/chunks/. It still
@@ -36,8 +37,8 @@
 #$ -N gbnames_stage4
 #$ -j y
 #$ -o work/logs/
-#$ -l h_vmem=2G
-#$ -l h_rt=01:00:00
+#$ -l h_vmem=1G
+#$ -l h_rt=00:30:00
 #$ -cwd
 
 set -euo pipefail
