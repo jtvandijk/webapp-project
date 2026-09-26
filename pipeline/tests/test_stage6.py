@@ -1079,6 +1079,31 @@ class PreviewWebTests(unittest.TestCase):
         self.assertNotIn("Average score", self.cards({"ahah": {"mode": 6, "distribution": [0.1, 0.9] + [0.0] * 8}}))     # ahah has no score
         self.assertIn('<td class="num">0%</td>', self.cards({"ahah": {"mode": 6, "distribution": [0.1, 0.9] + [0.0] * 8}}))   # an empty decile is 0%, not <1%
 
+    def test_ahah_deciles_run_the_other_way_from_imd_and_the_page_says_so(self):
+        html_ = self.cards({"ahah": {"mode": 3, "distribution": [0.1, 0.2, 0.4] + [0.1, 0.05, 0.05, 0.04, 0.03, 0.02, 0.01]}})
+        self.assertIn("Decile 1 (healthiest)", html_)
+        self.assertIn("Decile 10 (least healthy)", html_)
+        self.assertIn("Decile 1 is the healthiest, 10 the least healthy.", html_)
+        self.assertNotIn("(worst)", html_)
+
+    def test_the_page_shows_the_top_row_on_a_grey_band_facts_in_one_column_and_maps_at_the_wider_size(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            names_dir = Path(tmp) / "names"
+            (names_dir / "sm").mkdir(parents=True)
+            square = {"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {"level": 1}, "geometry": {
+                "type": "Polygon", "coordinates": [[[-1, 52], [-1, 53], [0, 53], [0, 52], [-1, 52]]]}}]}
+            (names_dir / "sm" / "smith.json").write_text(json.dumps({"schema": 1, "name": "smith", "counts": {"census": {"1901": 500}},
+                                                                     "maps": {"1901": square}, "facts": {"oac": {"group": "3b"}}}))
+            out = Path(tmp) / "page.html"
+            argv = ["preview_web", "--names", "smith", "--names-dir", str(names_dir), "--out", str(out)]
+            with mock.patch.object(sys, "argv", argv), contextlib.redirect_stdout(io.StringIO()):
+                preview_web.main()
+            page = out.read_text(encoding="utf-8")
+        self.assertRegex(page, r"tr\.top td\{font-weight:600;background:#[0-9a-f]{6}\}")
+        self.assertIn(".cards{display:flex;flex-direction:column", page)
+        self.assertIn(f'viewBox="0 0 {preview_web.PANEL_W} {preview_web.PANEL_H}" width="{preview_web.PANEL_SHOWN_W}"', page)
+        self.assertGreater(preview_web.PANEL_SHOWN_W, preview_web.PANEL_W)
+
     def test_ethnicity_uses_the_group_names_and_says_unknown_plainly(self):
         html_ = self.cards({"eth": {"group": "WBR", "distribution": {"WBR": 0.9, "APK": 0.1}, "countries": [["WBR-EN", 0.4]]}})
         self.assertIn("White - British", html_)

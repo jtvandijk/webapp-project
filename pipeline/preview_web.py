@@ -33,7 +33,8 @@ from pathlib import Path
 from . import config, files
 
 COLOURS = {1: "#6baed6", 2: "#4292c6", 3: "#2171b5"}      # the same shades preview.py uses for the same levels
-PANEL_W, PANEL_H = 120, 210
+PANEL_W, PANEL_H = 120, 210       # the drawing's own coordinate box
+PANEL_SHOWN_W = 160               # how wide a map is shown on the page, in pixels (its height follows)
 
 # A fixed box around Great Britain, longitude/latitude - used for every panel, so panels are comparable
 # to each other. This needs no shapely/pyproj, only the assembled GeoJSON, which is already longitude/latitude.
@@ -88,9 +89,9 @@ def panel(geojson, caption, land=False):
     for feature in geojson.get("features", []):
         level = feature["properties"]["level"]
         layers.append(f'<path d="{_path(feature["geometry"])}" fill="{COLOURS[level]}" fill-rule="evenodd"/>')
-    return (f'<figure style="margin:0"><svg viewBox="0 0 {PANEL_W} {PANEL_H}" width="{PANEL_W}">'
+    return (f'<figure style="margin:0"><svg viewBox="0 0 {PANEL_W} {PANEL_H}" width="{PANEL_SHOWN_W}">'
             f'<rect width="{PANEL_W}" height="{PANEL_H}" fill="#f3f5f7"/>{"".join(layers)}</svg>'
-            f'<figcaption style="font-size:11px;color:#445;text-align:center;max-width:{PANEL_W}px">{html.escape(caption)}</figcaption></figure>')
+            f'<figcaption style="font-size:11px;color:#445;text-align:center;max-width:{PANEL_SHOWN_W}px">{html.escape(caption)}</figcaption></figure>')
 
 
 def bearers_in(bundle, period_id):
@@ -237,10 +238,13 @@ def distribution_rows(distribution, top_code, label):
     return rows
 
 
-def decile_rows(distribution, mode):
+DECILE_ENDS = {"imd": ("worst", "best"), "ahah": ("healthiest", "least healthy")}      # what decile 1 and decile 10 mean
+
+
+def decile_rows(distribution, mode, ends=DECILE_ENDS["imd"]):
     rows = []
     for i, share in enumerate(distribution, start=1):
-        end = " (worst)" if i == 1 else " (best)" if i == 10 else ""
+        end = f" ({ends[0]})" if i == 1 else f" ({ends[1]})" if i == 10 else ""
         rows.append((f"Decile {i}{end}", share, i == mode))
     return rows
 
@@ -271,8 +275,9 @@ def fact_cards(facts, names):
             extra = ""
             if fact.get("mean") is not None:
                 extra = f'Average score {fact["mean"]:.1f}' + (f' (spread {fact["sd"]:.1f})' if fact.get("sd") is not None else "")
-            cards[scale] = card(FACT_TITLES[scale], share_table(decile_rows(fact["distribution"], fact.get("mode"))),
-                                "Decile 1 is the worst, 10 the best." + (" " + extra if extra else ""))
+            first, last = DECILE_ENDS[scale]
+            cards[scale] = card(FACT_TITLES[scale], share_table(decile_rows(fact["distribution"], fact.get("mode"), (first, last))),
+                                f"Decile 1 is the {first}, 10 the {last}." + (" " + extra if extra else ""))
     fore = facts.get("forenames")
     if isinstance(fore, dict) and fore:
         sources = [(key, title) for key, title in (("register", "Recent (register)"), ("census", "Historical (census)")) if key in fore]
@@ -383,23 +388,23 @@ body{{font:14px system-ui,sans-serif;margin:20px;max-width:1150px;color:#223}}
 h2{{margin:34px 0 6px;padding-top:10px;border-top:2px solid #cfd8e0}}
 h3{{margin:16px 0 5px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#678}}
 table{{border-collapse:collapse}}
-td,th{{padding:2px 10px 2px 0;border-bottom:1px solid #e6ebf0;text-align:left;vertical-align:top}}
+td,th{{padding:2px 10px 2px 4px;border-bottom:1px solid #e6ebf0;text-align:left;vertical-align:top}}
 th{{font-weight:600;color:#456;font-size:12px}}
 td.num{{text-align:right;white-space:nowrap}}
 table.counts{{margin:0 0 6px}} table.counts td.num,table.counts th{{padding:2px 14px 2px 0}}
-.cards{{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}}
-.card{{border:1px solid #dbe2e9;border-radius:6px;padding:8px 12px 10px;flex:0 1 340px;box-sizing:border-box;background:#fff}}
+.cards{{display:flex;flex-direction:column;gap:12px;max-width:640px}}
+.card{{border:1px solid #dbe2e9;border-radius:6px;padding:8px 12px 10px;box-sizing:border-box;background:#fff}}
 .card h4{{margin:0 0 5px;font-size:13px;color:#234}}
 .card table{{width:100%}}
 .note{{margin:0 0 5px;font-size:12px;color:#667}}
 .code{{color:#889;font-size:11px}}
-tr.top td{{font-weight:600}}
+tr.top td{{font-weight:600;background:#e2e6eb}}
 .bar{{display:inline-block;height:8px;background:#4292c6;border-radius:2px}}
 </style>
 <h1>Release preview</h1>
 <p><small>{html.escape(out.name)}: python3 -m pipeline.preview_web {html.escape(" ".join(sys.argv[1:]))}. Each map is over a rough
 coastline; the number after the year is the bearers that year. Blue shades: level 1 (outer) to level 3 (most concentrated).
-In a facts table the most common group is in bold.</small></p>
+In a facts table the most common group is in bold on a grey band.</small></p>
 {land_defs(land)}{"".join(blocks)}"""
     out.write_text(page, encoding="utf-8")
     print(f"wrote {out}: {len(blocks)} names" + (f", {len(missing)} not found" if missing else ""))
