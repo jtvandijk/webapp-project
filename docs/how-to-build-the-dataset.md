@@ -51,7 +51,7 @@ Two files hold what changes; everything else is in `config.py`.
 | **A sample** (only the first N names) | `GBNAMES_LIMIT` in `run.settings` | stages 3 and 5; empty = every name. Not applied to `s5_facts --names`, which asks for names by name |
 | **Which facts** | `GBNAMES_FACTS` in `run.settings` | stage 5; empty = all facts of the sources |
 | **Census years in use** | `GBNAMES_CENSUS_YEARS` in `run.settings` | every stage; leave a year out while its data is not loaded |
-| Memory and time requested | `#$ -l h_vmem=...` and `#$ -l h_rt=...` at the top of each `pipeline/hpc/stage*.sh` | SGE reads these before any script runs, so they cannot come from a settings file. Repository values (2026-09-26, register + census): stage 1: 16G, 2 h (measured on the full run: 1,591s, 11.3G); stage 2: 2G, 30 min (738s, 126M); stage 3: 12G, 1h30 (measured on the full list: register periods peak at 7.1G; census 1,253s + register 1,514s); stage 4: 1G, 30 min per chunk (measured on the full run: 200 chunks of about 216 names, the slowest took about 700s, none used more than about 230M); stage 5: 16G, 3 h (scaled from a 5,000-name sample, 22m41s; not measured on the full list); stage 6: 2G, 1 h per chunk (a guess: nothing has run yet, so time one chunk first, section 10). Tighten a limit once `qacct` gives the real numbers. To change one for a single run, use the command line: `qsub -l h_rt=01:00:00 pipeline/hpc/stage5.sh` |
+| Memory and time requested | `#$ -l h_vmem=...` and `#$ -l h_rt=...` at the top of each `pipeline/hpc/stage*.sh` | SGE reads these before any script runs, so they cannot come from a settings file. Repository values (2026-09-26, register + census): stage 1: 16G, 2 h (measured on the full run: 1,591s, 11.3G); stage 2: 2G, 30 min (738s, 126M); stage 3: 12G, 1h30 (measured on the full list: register periods peak at 7.1G; census 1,253s + register 1,514s); stage 4: 1G, 30 min per chunk (measured on the full run: 200 chunks of about 216 names, the slowest took about 700s, none used more than about 230M); stage 5: 16G, 2 h (measured on the full list: 1h20, 9G); stage 6: 2G, 1 h per chunk (a guess: nothing has run yet, so time one chunk first, section 10). Tighten a limit once `qacct` gives the real numbers. To change one for a single run, use the command line: `qsub -l h_rt=01:00:00 pipeline/hpc/stage5.sh` |
 | Databases, table and column names, years, thresholds, all map and fact rules | `pipeline/config.py` | one file: edit this, not the code |
 | Output folder | `--out-dir` (steps 2 to 5); defaults are in the table in section 6 | |
 
@@ -169,8 +169,8 @@ qacct -j <jobid>                              # after it has finished, if the cl
 | 6 | `chunk N done: N names written to ...` in every task's log | Finished chunks are kept (`ls work/release/chunk_*.done \| wc -l` says how many); submit the same `qsub -t 1-N` again and only the missing ones are done. A chunk that was stopped part-way has no `.done`, so it starts again from its own beginning. `--prepare` is not part of the array job and is skipped when it is already current |
 
 - **With the census on, the times change.** Every census period is a pass over a table of about 30 million people (person table, attributes table and parish table
-  joined). The repository limits (section 3) already allow for this - stages 1, 2 and 3 from real full runs, stage 5 estimated with headroom from a
-  5,000-name sample, not yet measured on the full name list. Read the times in the logs or from `qacct` and tighten 5 once you have real numbers.
+  joined). The repository limits (section 3) already allow for this - stages 1 to 5 from real full runs; stage 6 is still a guess.
+  Read the times in the logs or from `qacct` and tighten 6 once you have real numbers.
 
 ## 6. What is in `work/`
 
