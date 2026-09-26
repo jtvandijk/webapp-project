@@ -1,0 +1,165 @@
+{
+ "_about": "Group names only (no colours or descriptions), for pipeline/preview_web.py. OAC and LOAC: the 2021 classifications, taken from the website's lookups.json; FPC: the classification's published group names, spelling corrected. Same shape as the name parts of lookups.json, which replaces this file (preview_web.py --lookups) once it exists.",
+ "oac": {
+  "groups": {
+   "1a": {
+    "name": "Spacious Rural Living"
+   },
+   "1b": {
+    "name": "Small Town Suburbia"
+   },
+   "1c": {
+    "name": "Established Mature Families"
+   },
+   "2a": {
+    "name": "Inner Suburbs & Small Town Living"
+   },
+   "2b": {
+    "name": "Rural Amenity"
+   },
+   "2c": {
+    "name": "Ageing Communities"
+   },
+   "3a": {
+    "name": "Student Living & Professional Footholds"
+   },
+   "3b": {
+    "name": "Ethnically Diverse Young Families"
+   },
+   "3c": {
+    "name": "Diverse Educated Urban Singles"
+   },
+   "4a": {
+    "name": "Ethnically Diverse Families in Less Connected Locations"
+   },
+   "4b": {
+    "name": "Established Multi-Ethnic Communities"
+   },
+   "4c": {
+    "name": "Challenged Multicultural Communities & Students"
+   },
+   "5a": {
+    "name": "Outer Suburbs"
+   },
+   "5b": {
+    "name": "Suburban Professionals"
+   },
+   "6a": {
+    "name": "Challenged Communities"
+   },
+   "6b": {
+    "name": "Legacy Industrial & Coastal Communities"
+   },
+   "6c": {
+    "name": "Multicultural Inner Suburbs"
+   },
+   "7a": {
+    "name": "Established but Challenged"
+   },
+   "7b": {
+    "name": "Young Families in Industrial Towns"
+   },
+   "8a": {
+    "name": "Routine Occupations or Retirement"
+   },
+   "8b": {
+    "name": "Legacy & Demographically Mixed Communities"
+   }
+  }
+ },
+ "loac": {
+  "groups": {
+   "A1": {
+    "name": "Established Homeowners with Children"
+   },
+   "A2": {
+    "name": "Inner London Working Professionals"
+   },
+   "A3": {
+    "name": "European Enclaves"
+   },
+   "B1": {
+    "name": "Social Rented Sector Professional Support Workers"
+   },
+   "B2": {
+    "name": "Skilled Trades and Construction Workers"
+   },
+   "C1": {
+    "name": "Young Asian Family Terraces"
+   },
+   "C2": {
+    "name": "Settled Semi-Detached Asians"
+   },
+   "D1": {
+    "name": "City Support Workers"
+   },
+   "D2": {
+    "name": "Central and City"
+   },
+   "D3": {
+    "name": "Senior Professionals"
+   },
+   "E1": {
+    "name": "Challenged Inner London Communities"
+   },
+   "E2": {
+    "name": "Social Rented Sector Pockets"
+   },
+   "F1": {
+    "name": "Terraced and Semi-Detached Suburbs"
+   },
+   "F2": {
+    "name": "Social Rented Sector and Diverse Origins"
+   },
+   "G1": {
+    "name": "Professional Periphery"
+   },
+   "G2": {
+    "name": "London Fringe"
+   }
+  }
+ },
+ "fpc": {
+  "groups": {
+   "A01": {
+    "name": "Student and Young City Strivers"
+   },
+   "A02": {
+    "name": "Wealthy Independent Workers and Professionals"
+   },
+   "B03": {
+    "name": "Balanced Homeowning Families"
+   },
+   "B04": {
+    "name": "Young Striving Families"
+   },
+   "B05": {
+    "name": "Senior Asset Owners"
+   },
+   "C06": {
+    "name": "Secure Lone Pensioners"
+   },
+   "C07": {
+    "name": "Financially Leveraged Seniors"
+   },
+   "C08": {
+    "name": "Stable Intermediate Families"
+   },
+   "D09": {
+    "name": "Ageing Renters"
+   },
+   "D10": {
+    "name": "Vulnerable Lone-Parent Households"
+   },
+   "E11": {
+    "name": "Overcrowded and Overburdened"
+   },
+   "E12": {
+    "name": "Underprivileged dependent"
+   },
+   "E13": {
+    "name": "Aging Blue-collar households"
+   }
+  }
+ }
+}

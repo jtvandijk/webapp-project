@@ -131,8 +131,12 @@ python3 -m pipeline.preview_web --sample 20              # a random sample of wh
 ```
 
 Writes `work/preview_web/preview<N>.html`: a small picture of each of a name's maps (which periods it has,
-and whether one is a copy of another year's), and its facts (read from `release/facts.csv`) and counts as plain tables. `--names` on a name
-with no assembled file yet is just noted, not an error.
+and whether one is a copy of another year's), its bearers per year, and its facts, each fact a small card with a heading and a
+table (share of bearers per group, with a bar; the most common group in bold; forenames and places as plain tables). The OAC, LOAC
+and FPC groups are shown with their names (`pipeline/reference/group_names.json`; `--lookups` points at a different file of
+the same shape, such as `lookups.json` once it exists); a code that is not in it is shown as the code. The facts come from
+`release/facts.csv`, so run `merge_release` first. `--names` on a name with no assembled file yet is just noted, not an error.
+`--sample 20 --seed 3` gives the same twenty names every time (without `--seed` they differ each run).
 
 To see what an assembled release and this page look like before there is any real output (or after changing stage 6
 or the maps), on your own computer with no database: `python3 tools/build_demo_release.py` builds one from the fake

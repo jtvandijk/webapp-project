@@ -12,6 +12,10 @@ A name's file holds its counts and maps; its facts are in the one facts table, w
 merge_release.py), read here as a stream for just the names asked for. Facts inside the name file itself
 (s6_assemble.py --facts-in-names) are shown too.
 
+Facts are shown as small cards (a heading and a table each). The OAC, LOAC and FPC groups carry their names, from
+pipeline/reference/group_names.json (--lookups points at another file of the same shape, such as a lookups.json); a
+group that is not in it is shown as its code.
+
 Writes work/preview_web/preview<N>.html, one file with everything inline (small hand-drawn SVGs, no map
 library, no internet needed to open it) - the next number, so an earlier preview is never overwritten. The
 coastline under the maps is pipeline/reference/gb_outline_lonlat.geojson (rough, a few KB; made by
@@ -116,24 +120,39 @@ def maps_block(bundle, land=False):
     return f'<div style="display:flex;flex-wrap:wrap;gap:8px">{"".join(row)}</div>'
 
 
+YEARS_PER_ROW = 15                   # the register has about 30 years: wrapped, so the table stays inside the page
+
+
 def counts_block(bundle):
-    """Every year's bearers, one line per source: 1851: 68 - 1861: 81 - ..."""
+    """Every year's bearers: one small table per source, the years across the top (wrapped after YEARS_PER_ROW)."""
     counts = bundle.get("counts", {})
     if not counts:
         return "<p><i>no counts</i></p>"
-    lines = [f"<p style=\"margin:2px 0\"><b>{html.escape(source)}</b> &nbsp; " +
-             " &middot; ".join(f"{html.escape(year)}: {n:,}" for year, n in sorted(years.items())) + "</p>"
-             for source, years in sorted(counts.items())]
-    return "".join(lines)
+    tables = []
+    for source, years in sorted(counts.items()):
+        years = sorted(years.items())
+        rows = []
+        for i in range(0, len(years), YEARS_PER_ROW):
+            part = years[i:i + YEARS_PER_ROW]
+            label = html.escape(source.capitalize()) if i == 0 else ""
+            head = "".join(f"<th>{html.escape(year)}</th>" for year, _ in part)
+            cells = "".join(f'<td class="num">{n:,}</td>' for _, n in part)
+            rows.append(f"<tr><th>{label}</th>{head}</tr><tr><td>bearers</td>{cells}</tr>")
+        tables.append(f'<table class="counts">{"".join(rows)}</table>')
+    return "".join(tables)
 
 
 def _percent(share):
+    if share is None:
+        return ""
+    if share == 0:
+        return "0%"
     return f"{100 * share:.0f}%" if share >= 0.01 else "<1%"
 
 
 def readable(key, value):
-    """A fact's value as a short line of text a person can read - not JSON. Lists of names run on, a share
-    is a percentage, a distribution is its biggest shares first."""
+    """A fact's value as a short line of text a person can read - not JSON. Only used for a fact the cards below do
+    not know about, and for a list of [code, share] pairs."""
     if isinstance(value, dict):
         if key == "distribution":                                             # {group: share}: the biggest shares first
             return ", ".join(f"{k} {_percent(v)}" for k, v in sorted(value.items(), key=lambda kv: -kv[1]))
@@ -149,17 +168,135 @@ def readable(key, value):
     return str(value)
 
 
-def facts_table(bundle):
+# ---------------------------------------------------------------------------
+# facts: one small card per fact - a heading and a table
+# ---------------------------------------------------------------------------
+
+FACT_TITLES = {
+    "oac": "UK Output Area Classification (OAC)",
+    "loac": "London Output Area Classification (LOAC)",
+    "fpc": "Financial Precarity Classification (FPC)",
+    "eth": "Ethnicity estimate",
+    "imd": "Index of Multiple Deprivation (IMD)",
+    "ahah": "Access to Healthy Assets and Hazards (AHAH)",
+}
+SHOW_GROUPS = 6                       # rows of a group distribution before the rest are lumped into one line
+CARD_ORDER = ("oac", "loac", "fpc", "eth", "imd", "ahah", "forenames", "places")
+
+
+def load_names(path):
+    """The group names, in the shape of lookups.json ({scheme: {"groups": {code: {"name": ...}}}}); {} if there is no file."""
+    path = Path(path) if path else None
+    return json.loads(path.read_text(encoding="utf-8")) if path and path.exists() else {}
+
+
+def group_name(names, scheme, code):
+    """The name of a group code, or None if it is not known (the page then shows the code alone)."""
+    if scheme == "eth":
+        if code == config.ETH_UNKNOWN:
+            return "Unknown (too few bearers with a usable code)"
+        entry = names.get("eth", {}).get(code)
+        if isinstance(entry, dict):
+            entry = entry.get("name")
+        return entry or config.ETH_GROUPS.get(code)
+    entry = names.get(scheme, {}).get("groups", {}).get(code)
+    return entry.get("name") if isinstance(entry, dict) else None
+
+
+def group_label(names, scheme, code):
+    name = group_name(names, scheme, code)
+    if name is None:
+        return html.escape(str(code))
+    return f'{html.escape(name)} <span class="code">{html.escape(str(code))}</span>'
+
+
+def card(title, body, note=""):
+    note = f'<p class="note">{note}</p>' if note else ""
+    return f'<section class="card"><h4>{html.escape(title)}</h4>{note}{body}</section>'
+
+
+def share_table(rows):
+    """rows: [(label as html, share or None, is the most common one)] as a small table, a bar for each share."""
+    lines = []
+    for label, share, top in rows:
+        row_class = ' class="top"' if top else ""
+        bar = f'<span class="bar" style="width:{max(1, round(100 * share))}px"></span>' if share else ""
+        lines.append(f'<tr{row_class}><td>{label}</td><td class="num">{html.escape(_percent(share))}</td><td>{bar}</td></tr>')
+    return f'<table>{"".join(lines)}</table>'
+
+
+def distribution_rows(distribution, top_code, label):
+    """The biggest few groups of a {code: share} distribution, the most common one first, the rest as one line."""
+    if not distribution:
+        return [(label(top_code), None, True)]
+    ordered = sorted(distribution.items(), key=lambda kv: (kv[0] != top_code, -kv[1], str(kv[0])))
+    rows = [(label(code), share, code == top_code) for code, share in ordered[:SHOW_GROUPS]]
+    rest = ordered[SHOW_GROUPS:]
+    if rest:
+        rows.append((f'<span class="code">{len(rest)} more groups</span>', sum(share for _, share in rest), False))
+    return rows
+
+
+def decile_rows(distribution, mode):
+    rows = []
+    for i, share in enumerate(distribution, start=1):
+        end = " (worst)" if i == 1 else " (best)" if i == 10 else ""
+        rows.append((f"Decile {i}{end}", share, i == mode))
+    return rows
+
+
+def _list_table(head, rows):
+    heads = "".join(f"<th>{html.escape(h)}</th>" for h in head)
+    body = "".join("<tr>" + "".join(f"<td>{html.escape(str(c))}</td>" for c in row) + "</tr>" for row in rows)
+    return f"<table><tr>{heads}</tr>{body}</table>"
+
+
+def fact_cards(facts, names):
+    """Every fact of a name as a card, in a fixed order; a fact this does not know is shown as text, not dropped."""
+    cards = {}
+    for scheme in ("oac", "loac", "fpc"):
+        fact = facts.get(scheme)
+        if isinstance(fact, dict):
+            cards[scheme] = card(FACT_TITLES[scheme], share_table(distribution_rows(
+                fact.get("distribution"), fact.get("group"), lambda code, scheme=scheme: group_label(names, scheme, code))))
+    fact = facts.get("eth")
+    if isinstance(fact, dict):
+        origins = fact.get("countries")
+        note = ("Most common origin codes: " + html.escape(readable("countries", origins))) if origins else ""
+        cards["eth"] = card(FACT_TITLES["eth"], share_table(distribution_rows(
+            fact.get("distribution"), fact.get("group"), lambda code: group_label(names, "eth", code))), note)
+    for scale in ("imd", "ahah"):
+        fact = facts.get(scale)
+        if isinstance(fact, dict) and isinstance(fact.get("distribution"), list):
+            extra = ""
+            if fact.get("mean") is not None:
+                extra = f'Average score {fact["mean"]:.1f}' + (f' (spread {fact["sd"]:.1f})' if fact.get("sd") is not None else "")
+            cards[scale] = card(FACT_TITLES[scale], share_table(decile_rows(fact["distribution"], fact.get("mode"))),
+                                "Decile 1 is the worst, 10 the best." + (" " + extra if extra else ""))
+    fore = facts.get("forenames")
+    if isinstance(fore, dict) and fore:
+        sources = [(key, title) for key, title in (("register", "Recent (register)"), ("census", "Historical (census)")) if key in fore]
+        rows = [(label, *[", ".join(fore[key].get(sex, [])) for key, _ in sources]) for sex, label in (("f", "Female"), ("m", "Male"))]
+        cards["forenames"] = card("Most common forenames", _list_table(["", *[title for _, title in sources]], rows))
+    places = facts.get("places")
+    if isinstance(places, dict):
+        parts = []
+        if places.get("register"):
+            parts.append(card("Top areas today (register)", _list_table(["Area", "Neighbourhood"], [(r["area"], r["name"]) for r in places["register"]]),
+                              "Area codes; names are added later."))
+        if places.get("census"):
+            parts.append(card("Top historical parishes (census)", _list_table(["County", "Parish"], [(r["area"], r["name"]) for r in places["census"]])))
+        cards["places"] = "".join(parts)
+    for key in sorted(set(facts) - set(CARD_ORDER)):
+        cards[key] = card(key, f"<p>{html.escape(readable(key, facts[key]))}</p>")
+    return "".join(cards[key] for key in (*CARD_ORDER, *sorted(set(cards) - set(CARD_ORDER))) if key in cards)
+
+
+def facts_block(bundle, names=None):
     facts = bundle.get("facts", {})
     if not facts:
         return "<p><i>no facts</i></p>"
-    rows = []
-    for fact, value in sorted(facts.items()):
-        # a fact with parts (forenames and places: register and census) is one row per part
-        parts = list(value.items()) if fact in ("forenames", "places") else [("", value)]
-        for part, inner in parts:
-            rows.append(f"<tr><td>{html.escape(f'{fact} {part}'.strip())}</td><td>{html.escape(readable(fact if not part else '', inner))}</td></tr>")
-    return f'<table><tr><th>fact</th><th>value</th></tr>{"".join(rows)}</table>'
+    return f'<div class="cards">{fact_cards(facts, names or {})}</div>'
 
 
 def read_facts_table(path, wanted):
@@ -203,6 +340,8 @@ def main():
     parser.add_argument("--seed", type=int, help="--sample is otherwise different every run; pass this to repeat the same sample")
     parser.add_argument("--names-dir", default=str(config.WORK / "release" / "names"))
     parser.add_argument("--facts-file", default=str(config.WORK / "release" / "facts.csv"), help="the facts table (default work/release/facts.csv)")
+    parser.add_argument("--lookups", default=str(config.REFERENCE / "group_names.json"),
+                        help="the names of the OAC, LOAC and FPC groups (default pipeline/reference/group_names.json; a lookups.json works too)")
     parser.add_argument("--out", help="write here instead of the next numbered file in work/preview_web/")
     args = parser.parse_args()
 
@@ -213,6 +352,9 @@ def main():
     table_facts = read_facts_table(args.facts_file, names)
     if not Path(args.facts_file).exists():
         print(f"note: no facts table at {args.facts_file} (merge_release.py makes it); showing only facts inside the name files")
+    names_of_groups = load_names(args.lookups)
+    if not names_of_groups:
+        print(f"note: no group names at {args.lookups}; groups are shown as codes")
     land = land_path()
     blocks, missing = [], []
     for key in names:
@@ -223,8 +365,8 @@ def main():
         bundle["facts"] = {**bundle.get("facts", {}), **table_facts.get(key, {})}
         blocks.append(f"""<h2>{html.escape(key)}</h2>
 {maps_block(bundle, bool(land))}
-<h3>bearers per year</h3>{counts_block(bundle)}
-<h3>facts</h3>{facts_table(bundle)}""")
+<h3>Bearers per year</h3>{counts_block(bundle)}
+<h3>Facts</h3>{facts_block(bundle, names_of_groups)}""")
     for key in missing:
         print(f"note: no assembled file for {key!r}, left out")
 
@@ -236,12 +378,28 @@ def main():
         out = folder / f"preview{files.next_number(folder, 'preview', '.html')}.html"
 
     page = f"""<!doctype html><meta charset="utf-8"><title>Release preview</title>
-<style>body{{font:14px system-ui,sans-serif;margin:20px;max-width:1100px}}h2{{margin:30px 0 6px}}h3{{margin:14px 0 2px;font-size:13px;color:#345}}
-table{{border-collapse:collapse;margin-top:4px}}td,th{{padding:3px 12px 3px 0;border-bottom:1px solid #dde;text-align:left;vertical-align:top}}
-td:first-child{{white-space:nowrap;color:#345}}</style>
+<style>
+body{{font:14px system-ui,sans-serif;margin:20px;max-width:1150px;color:#223}}
+h2{{margin:34px 0 6px;padding-top:10px;border-top:2px solid #cfd8e0}}
+h3{{margin:16px 0 5px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#678}}
+table{{border-collapse:collapse}}
+td,th{{padding:2px 10px 2px 0;border-bottom:1px solid #e6ebf0;text-align:left;vertical-align:top}}
+th{{font-weight:600;color:#456;font-size:12px}}
+td.num{{text-align:right;white-space:nowrap}}
+table.counts{{margin:0 0 6px}} table.counts td.num,table.counts th{{padding:2px 14px 2px 0}}
+.cards{{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}}
+.card{{border:1px solid #dbe2e9;border-radius:6px;padding:8px 12px 10px;flex:0 1 340px;box-sizing:border-box;background:#fff}}
+.card h4{{margin:0 0 5px;font-size:13px;color:#234}}
+.card table{{width:100%}}
+.note{{margin:0 0 5px;font-size:12px;color:#667}}
+.code{{color:#889;font-size:11px}}
+tr.top td{{font-weight:600}}
+.bar{{display:inline-block;height:8px;background:#4292c6;border-radius:2px}}
+</style>
 <h1>Release preview</h1>
 <p><small>{html.escape(out.name)}: python3 -m pipeline.preview_web {html.escape(" ".join(sys.argv[1:]))}. Each map is over a rough
-coastline; the number after the year is the bearers that year. Blue shades: level 1 (outer) to level 3 (most concentrated).</small></p>
+coastline; the number after the year is the bearers that year. Blue shades: level 1 (outer) to level 3 (most concentrated).
+In a facts table the most common group is in bold.</small></p>
 {land_defs(land)}{"".join(blocks)}"""
     out.write_text(page, encoding="utf-8")
     print(f"wrote {out}: {len(blocks)} names" + (f", {len(missing)} not found" if missing else ""))

@@ -1023,26 +1023,132 @@ class PreviewWebTests(unittest.TestCase):
         self.assertIn("1901: 1,234", block)
         self.assertIn("2026: 56", block)
 
-    def test_counts_are_one_line_per_source_with_every_year(self):
+    def test_counts_are_one_small_table_per_source_with_every_year(self):
         block = preview_web.counts_block({"counts": {"census": {"1851": 68, "1861": 81}, "register": {"1997": 1200}}})
-        self.assertIn("1851: 68", block)
-        self.assertIn("1861: 81", block)
-        self.assertIn("1997: 1,200", block)
-        self.assertEqual(block.count("<p"), 2)                          # one line each for census and register, not a row per year
+        self.assertEqual(block.count("<table"), 2)                       # census and register, each its own
+        for text in ("<th>1851</th>", "<th>1861</th>", "<th>1997</th>", '<td class="num">68</td>', '<td class="num">1,200</td>'):
+            self.assertIn(text, block)
+        self.assertLess(block.index("Census"), block.index("Register"))
 
-    def test_facts_read_as_text_not_json(self):
-        bundle = {"facts": {"forenames": {"register": {"f": ["mary", "ann"], "m": ["john"]}},
-                            "oac": {"group": "3b", "distribution": {"2a": 0.10, "3b": 0.85, "6c": 0.004}},
-                            "ahah": {"mode": 6, "distribution": [0.1, 0.9] + [0.0] * 8},
-                            "eth": {"group": "WBR", "countries": [["WBR-EN", 0.4]]},
-                            "places": {"census": [{"area": "Kent", "name": "Dover"}]}}}
-        table = preview_web.facts_table(bundle)
-        self.assertIn("f: mary, ann; m: john", table)                       # names run on
-        self.assertIn("3b 85%, 2a 10%, 6c &lt;1%", table)                    # biggest share first, a tiny one as <1%
-        self.assertIn("1: 10%, 2: 90%", table)                              # a decile distribution in order
-        self.assertIn("WBR-EN 40%", table)
-        self.assertIn("Kent / Dover", table)
-        self.assertNotIn("{", table)                                        # no JSON braces on the page
+    def test_a_long_run_of_years_wraps_instead_of_running_off_the_page(self):
+        years = {str(y): 10 + y % 7 for y in range(1997, 2027)}           # the register: 30 years
+        block = preview_web.counts_block({"counts": {"register": years}})
+        self.assertEqual(block.count("<table"), 1)
+        self.assertEqual(block.count("<th>19") + block.count("<th>20"), 30)      # every year is there ...
+        self.assertEqual(block.count("<tr>"), 2 * 2)                              # ... in two rows of years (each with its bearers row)
+        self.assertEqual(block.count("Register"), 1)                              # the source is named once, not on every row
+
+    def cards(self, facts, names=None):
+        return preview_web.facts_block({"facts": facts}, names)
+
+    def test_a_group_shows_its_name_and_code_and_the_most_common_is_bold_and_first(self):
+        names = {"oac": {"groups": {"3b": {"name": "Big City Living"}, "2a": {"name": "Quiet Towns"}}}}
+        html_ = self.cards({"oac": {"group": "3b", "distribution": {"2a": 0.10, "3b": 0.85, "6c": 0.004}}}, names)
+        self.assertIn("UK Output Area Classification (OAC)", html_)
+        self.assertLess(html_.index("Big City Living"), html_.index("Quiet Towns"))     # biggest share first
+        self.assertIn('<tr class="top"><td>Big City Living <span class="code">3b</span></td><td class="num">85%</td>', html_)
+        self.assertIn("6c", html_)                                                          # a group with no name is its code alone
+        self.assertIn("&lt;1%", html_)                                                      # a tiny share is <1%, not 0%; escaped for html
+        self.assertNotIn('width:0px', html_)                                                # ... and still gets a visible sliver of bar
+        self.assertNotIn("{", html_)                                                        # no JSON on the page
+
+    def test_the_most_common_group_comes_first_even_when_another_has_the_same_share(self):
+        html_ = self.cards({"oac": {"group": "6c", "distribution": {"2a": 0.5, "6c": 0.5}}})
+        self.assertLess(html_.index("6c"), html_.index("2a"))
+
+    def test_only_the_biggest_groups_are_listed_and_the_rest_are_one_line_with_their_total(self):
+        distribution = {f"g{i}": 0.1 for i in range(10)}                    # ten groups of 10%
+        html_ = self.cards({"fpc": {"group": "g0", "distribution": distribution}})
+        self.assertEqual(html_.count('<span class="bar"'), preview_web.SHOW_GROUPS + 1)
+        self.assertIn("4 more groups", html_)
+        self.assertIn("40%", html_)                                                          # what the four left out add up to
+
+    def test_a_group_with_no_distribution_is_shown_alone_without_a_share(self):
+        html_ = self.cards({"loac": {"group": "A1"}}, {"loac": {"groups": {"A1": {"name": "Old Homeowners"}}}})
+        self.assertIn("Old Homeowners", html_)
+        self.assertNotIn("%", html_)
+
+    def test_a_decile_fact_is_ten_rows_worst_to_best_with_the_most_common_in_bold(self):
+        html_ = self.cards({"imd": {"mode": 2, "distribution": [0.1, 0.5] + [0.05] * 8, "mean": 23.44, "sd": 8.06}})
+        self.assertIn("Index of Multiple Deprivation (IMD)", html_)
+        self.assertEqual(html_.count("Decile "), 10 + 1)                                    # ten rows and the note "Decile 1 is the worst"
+        self.assertIn("Decile 1 (worst)", html_)
+        self.assertIn("Decile 10 (best)", html_)
+        self.assertIn('<tr class="top"><td>Decile 2</td><td class="num">50%</td>', html_)
+        self.assertIn("Average score 23.4 (spread 8.1)", html_)
+        self.assertNotIn("Average score", self.cards({"ahah": {"mode": 6, "distribution": [0.1, 0.9] + [0.0] * 8}}))     # ahah has no score
+        self.assertIn('<td class="num">0%</td>', self.cards({"ahah": {"mode": 6, "distribution": [0.1, 0.9] + [0.0] * 8}}))   # an empty decile is 0%, not <1%
+
+    def test_ethnicity_uses_the_group_names_and_says_unknown_plainly(self):
+        html_ = self.cards({"eth": {"group": "WBR", "distribution": {"WBR": 0.9, "APK": 0.1}, "countries": [["WBR-EN", 0.4]]}})
+        self.assertIn("White - British", html_)
+        self.assertIn("Asian - Pakistani", html_)
+        self.assertIn("WBR-EN 40%", html_)
+        self.assertIn("too few bearers", self.cards({"eth": {"group": "unknown", "distribution": {"unknown": 1.0}}}))
+
+    def test_forenames_are_one_table_female_and_male_for_each_source(self):
+        html_ = self.cards({"forenames": {"register": {"f": ["mary", "ann"], "m": ["john"]}, "census": {"f": ["jane"], "m": ["will", "tom"]}}})
+        for text in ("Recent (register)", "Historical (census)", "Female", "Male", "mary, ann", "john", "will, tom"):
+            self.assertIn(text, html_)
+        self.assertEqual(html_.count("<table"), 1)
+        register_only = self.cards({"forenames": {"register": {"f": ["mary"], "m": ["john"]}}})
+        self.assertNotIn("Historical", register_only)
+
+    def test_places_are_a_table_each_for_the_register_and_the_census(self):
+        html_ = self.cards({"places": {"register": [{"area": "E09000001", "name": "E02000001"}], "census": [{"area": "Kent", "name": "Dover"}]}})
+        self.assertIn("Top areas today (register)", html_)
+        self.assertIn("Top historical parishes (census)", html_)
+        for text in ("E09000001", "E02000001", "Kent", "Dover", "<th>County</th>", "<th>Parish</th>"):
+            self.assertIn(text, html_)
+        self.assertNotIn("Top areas today", self.cards({"places": {"census": [{"area": "Kent", "name": "Dover"}]}}))
+
+    def test_cards_come_in_a_fixed_order_and_a_fact_it_does_not_know_is_still_shown(self):
+        html_ = self.cards({"imd": {"mode": 1, "distribution": [1.0] + [0.0] * 9}, "zzz": {"a": 1},
+                            "oac": {"group": "3b"}, "forenames": {"register": {"f": ["a"], "m": ["b"]}}})
+        positions = [html_.index(t) for t in ("Output Area Classification", "Deprivation", "Most common forenames", "zzz")]
+        self.assertEqual(positions, sorted(positions))
+        self.assertIn("a: 1", html_)
+
+    def test_a_name_with_no_facts_says_so(self):
+        self.assertEqual(preview_web.facts_block({}), "<p><i>no facts</i></p>")
+
+    def test_the_group_names_file_has_every_group_of_each_classification_and_clean_names(self):
+        names = json.loads((config.REFERENCE / "group_names.json").read_text())
+        self.assertEqual({k: len(v["groups"]) for k, v in names.items() if k != "_about"}, {"oac": 21, "loac": 16, "fpc": 13})
+        self.assertEqual(sorted(names["fpc"]["groups"]), [f"{c}{n:02d}" for c, ns in zip("ABCDE", ([1, 2], [3, 4, 5], [6, 7, 8], [9, 10], [11, 12, 13])) for n in ns])
+        for scheme in ("oac", "loac", "fpc"):
+            for code, entry in names[scheme]["groups"].items():
+                name = entry["name"]
+                self.assertTrue(name and name == name.strip() and "  " not in name and not name.startswith(code), (scheme, code, name))
+        self.assertEqual(preview_web.group_name(names, "oac", "1a"), names["oac"]["groups"]["1a"]["name"])
+        self.assertIsNone(preview_web.group_name(names, "oac", "9z"))
+
+    def test_the_group_codes_the_fake_database_uses_are_all_named(self):
+        names = json.loads((config.REFERENCE / "group_names.json").read_text())
+        self.assertEqual(set(fake_data.FPC_GROUPS), set(names["fpc"]["groups"]))            # the real codes' shape, so the real ones will match
+
+    def test_lookups_option_swaps_the_names_and_a_missing_file_shows_codes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            names_dir = Path(tmp) / "names"
+            (names_dir / "sm").mkdir(parents=True)
+            (names_dir / "sm" / "smith.json").write_text(json.dumps({"schema": 1, "name": "smith", "counts": {}, "maps": {},
+                                                                     "facts": {"oac": {"group": "3b"}}}))
+            other = Path(tmp) / "lookups.json"
+            other.write_text(json.dumps({"oac": {"groups": {"3b": {"name": "Named In Another File"}}}}))
+            outputs = {}
+            for label, lookups in (("other", other), ("missing", Path(tmp) / "no.json"), ("default", None)):
+                out = Path(tmp) / f"{label}.html"
+                argv = ["preview_web", "--names", "smith", "--names-dir", str(names_dir), "--out", str(out)]
+                if lookups:
+                    argv += ["--lookups", str(lookups)]
+                with mock.patch.object(sys, "argv", argv), contextlib.redirect_stdout(io.StringIO()) as said:
+                    preview_web.main()
+                outputs[label] = (out.read_text(), said.getvalue())
+            self.assertIn("Named In Another File", outputs["other"][0])
+            self.assertNotIn("Named In Another File", outputs["missing"][0])
+            self.assertIn("3b", outputs["missing"][0])
+            self.assertIn("no group names", outputs["missing"][1])
+            self.assertIn("Ethnically Diverse Young Families", outputs["default"][0])          # the shipped names, by default
 
     def test_a_panel_is_drawn_over_the_coastline_when_there_is_one(self):
         shape = {"type": "FeatureCollection", "features": []}
@@ -1079,11 +1185,6 @@ class PreviewWebTests(unittest.TestCase):
 
     def test_a_bundle_with_no_map_is_reported_but_does_not_crash(self):
         self.assertEqual(preview_web.maps_block({"maps": {}}), "<p><i>no maps at all - should not happen for a published file</i></p>")
-
-    def test_facts_table_shows_every_fact_and_no_technical_keys_leak_in(self):
-        table = preview_web.facts_table({"facts": {"oac": {"group": "3b"}}})
-        self.assertIn("oac", table)
-        self.assertIn("3b", table)
 
     def test_read_facts_table_picks_out_only_the_wanted_names(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -1128,7 +1229,7 @@ class PreviewWebTests(unittest.TestCase):
             out = Path(tmp) / "out.html"
             with mock.patch.object(sys, "argv", ["preview_web", "--names", "nosuchname", "--names-dir", tmp, "--out", str(out)]):
                 preview_web.main()          # must not raise
-            self.assertNotIn("<h2>nosuchname</h2>", out.read_text())     # the name is still echoed in the command line at the top
+            self.assertNotIn(">nosuchname</h2>", out.read_text())     # the name is still echoed in the command line at the top
 
 
 if __name__ == "__main__":
