@@ -27,7 +27,8 @@
 # The memory below: a 5,000-name sample (register + all 7 census years) took 905MB, but the full list (43,093 names)
 # died at 6G in the register periods, which hold 16-17 million name-cell rows each in memory (1997: 16.2M, 2000: 16.8M).
 # The register-only re-run peaked at 7.1GB (qacct maxvmem), so 12G leaves headroom; the census periods are far smaller.
-# The time is still an estimate: qacct -j <jobid> gives the real total. For one run only, without editing this file:
+# The time: census periods 1,253s + register periods 1,514s = about 46 minutes for both sources (a quiet database). There is no
+# resume, so a run killed at the time limit starts over: 1h30 leaves about twice that. For one run only, without editing this file:
 #   qsub -l h_rt=04:00:00 pipeline/hpc/stage3.sh
 #
 # Expects .env and run.settings in the project root - see stage2.sh's comment.
@@ -43,7 +44,7 @@
 #$ -j y
 #$ -o work/logs/
 #$ -l h_vmem=12G
-#$ -l h_rt=02:00:00
+#$ -l h_rt=01:30:00
 #$ -cwd
 
 set -euo pipefail
