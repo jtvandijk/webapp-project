@@ -11,7 +11,7 @@ merge_stats.py). Writes, under --out-dir (default work/release):
 
     facts.csv            the facts table: every chunk's work/release/facts_parts/chunk_N.csv in one file, columns
                          name,fact,data (data = the JSON of that fact, as data-contract.md has it under facts.<fact>),
-                         sorted by name then fact. One table instead of facts inside 380,000 name files (decided
+                         sorted by name then fact. One table instead of facts inside every name file (decided
                          2026-09-26). Merged as a stream (each part is already sorted), so it never holds it all in memory.
     index/<xx>.json      the search index: every name that got a file, per first two letters, sorted
     masks/scotland.json  the Scotland mask, reprojected from pipeline/reference/scotland_outline.geojson

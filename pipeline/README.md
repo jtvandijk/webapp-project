@@ -78,7 +78,7 @@ python3 -m pipeline.merge_stats                             # combine the sample
 **Do a sample run first**, not the full name list straight away - `s3_extracts.py --limit N` takes
 the first N names from `work/names.csv` (already sorted, so this is reproducible). Pick `--chunks`
 so a sample chunk has roughly as many names as a real chunk will (e.g. `--limit 500 --chunks 4` for
-~125 names/chunk, matching a real run's `--limit`-free `--chunks 200` over ~25,000 names) - a sample
+~125 names/chunk; the real run has 43,093 names over `--chunks 200`, about 215 per chunk, which `--limit 860 --chunks 4` matches) - a sample
 split into many small, fast chunks gives a misleadingly optimistic time to plan the real run's `-l h_rt`
 from. Time a few chunks (`s4_maps.py` prints its own elapsed time) and look at the actual file sizes
 in `work/maps/` and `work/stats.csv` before committing to the full run.

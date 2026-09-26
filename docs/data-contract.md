@@ -10,7 +10,7 @@ If both sides keep to this document, they can be built at the same time and swap
 
 > **How the facts are served (September 2026; leaning decided 2026-09-26).** A surname's file describes its
 > facts below (`facts`), and the flat-file plan folds them into it. But **what leaves the TRE is one table,
-> `facts.csv`, not facts inside 380,000 files**: stage 6 writes each name's file as counts and maps only (plain
+> `facts.csv`, not facts inside the 43,000 or so name files**: stage 6 writes each name's file as counts and maps only (plain
 > static files that never change when a classification does), and the facts as one long table, a row per
 > name and fact (`name,fact,data`, `data` being exactly the JSON that would sit under `facts.<fact>` in the
 > name file). A new classification is then new rows, not a rewrite of every name file. Whether the website
@@ -25,7 +25,7 @@ When a visitor searches for "smith", the browser downloads `names/sm/smith.json`
 page from it. There is no server code and no query, so a viral day costs the same as a quiet one:
 the files are just handed out (and can be cached by a CDN). Words that are the same for every
 surname (what "OAC group 3b" is called, its description, its colour) live in one shared file
-instead of being repeated in 25,000 files.
+instead of being repeated in 43,000 files.
 
 ## What is in a release
 
@@ -182,7 +182,7 @@ after the counting step of the pipeline.
    (Easy to split later if it matters.)
 2. **Plain GeoJSON** for map shapes. Easy to inspect, and Leaflet or MapLibre read it directly.
    A more compact encoding could halve the size if needed.
-3. **Codes in the surname files, words in `lookups.json`.** Descriptions can be corrected without regenerating 25,000 files.
+3. **Codes in the surname files, words in `lookups.json`.** Descriptions can be corrected without regenerating 43,000 files.
 4. **Missing means no data**, instead of placeholder values such as `["No data", "No data"]`.
 5. **Named fields** instead of the old positional array (`stats[6]`), which broke silently when the order changed.
 6. **Not-found is a single message.** The old site could say "we hold records for this name but too few";
