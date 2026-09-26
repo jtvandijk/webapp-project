@@ -33,11 +33,10 @@
 #
 # Once every chunk is done: python3 -m pipeline.merge_release
 #
-# h_vmem and h_rt below are an initial guess, not yet measured: this stage does no KDE computation at
-# all (no shapely/pyproj), only JSON reshaping, one name at a time (memory is one name's maps plus the chunk's own
-# small slices of facts and counts), so it should be lighter and faster than stage 4's own per-chunk cost. Read the
-# trial's numbers from qacct and set these to about twice what it used. For one run only, without editing this file:
-#   qsub -l h_rt=02:00:00 -t 1-200 pipeline/hpc/stage6.sh
+# h_vmem and h_rt below come from the real full run (43,093 names, 200 chunks): the slowest task took 15 s and none used
+# more than 45 MB, so 1G and 10 minutes leave a very wide margin (this stage does no KDE computation, only JSON reshaping,
+# one name at a time). For one run only, without editing this file:
+#   qsub -l h_rt=00:30:00 -t 1-200 pipeline/hpc/stage6.sh
 #
 # One-off setup, before the FIRST qsub of any of the stage scripts:  mkdir -p work/logs
 # (see stage2.sh's comment on why this has to happen before qsub, not inside the script).
@@ -45,8 +44,8 @@
 #$ -N gbnames_stage6
 #$ -j y
 #$ -o work/logs/
-#$ -l h_vmem=2G
-#$ -l h_rt=01:00:00
+#$ -l h_vmem=1G
+#$ -l h_rt=00:10:00
 #$ -cwd
 
 set -euo pipefail
