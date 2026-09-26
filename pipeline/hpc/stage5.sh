@@ -11,20 +11,23 @@
 # Which names, sources and facts it works out comes from run.settings: GBNAMES_LIMIT is for a SAMPLE run (the first N
 # names of work/names.csv, the same N as a stage 3 sample uses; empty = every name), GBNAMES_FACTS is empty for every
 # fact of the chosen sources or a list such as "oac imd" (say, after loading a new table, or to redo one that failed),
-# and GBNAMES_SOURCES is register-only for now, since the census database is not ready: the historic facts
-# (forenames, parishes) need it.
+# and GBNAMES_SOURCES names both once the census is loaded: the historic facts (forenames, parishes) need it.
 #
 # Before this: stage 1 (work/counts.csv and work/names.csv), and the neighbourhood tables loaded in
 # the TRE - check them first with  python3 -m pipeline.nbhd_tables check
 #
-# The memory and time below: 5,000 names took about 20 minutes, most of it the ethnicity query (its table has no
-# index on the surname, so each query scans it). The full name list is not measured yet:
+# The memory and time below: a 5,000-name, both-sources sample took about 20 minutes then, later, more like 5-10s per
+# contemporary query - most likely the ethnicity table now has its surname index (it had none, so every query
+# scanned it) and/or a quieter database, rather than anything to do with the name count. But 5,000 names of
+# work/names.csv (sorted alphabetically) is not a fair sample of how many of the full list clear the register's own
+# facts either - the first letters skew towards old English/Scottish/Welsh surnames that a historic census count can
+# put on the list even with very few contemporary bearers, or none. The full name list is not measured yet:
 #  * memory: the biggest thing held is the neighbourhood query for the newest year, one row per name
 #    and neighbourhood, which on the full name list may be millions of rows. 16G is generous for a
 #    sample; the run prints how many rows each query returned, so scale from that for the full run.
 #  * time: every query scans the register, so it depends on the database, not on this node. The run prints how long
-#    each took, and its total at the end. For the full list ask for more for that one run, without editing this file:
-#      qsub -l h_rt=03:00:00 pipeline/hpc/stage5.sh
+#    each took, and its total at the end. Widened below for a full-list run; tighten it once qacct gives the real
+#    total. For one run only, without editing this file:  qsub -l h_rt=01:00:00 pipeline/hpc/stage5.sh
 # A finished query is saved under work/facts/extract/ and reused, so if the job is killed (too little
 # memory or time), submitting it again carries on where it stopped instead of starting over.
 #
@@ -40,7 +43,7 @@
 #$ -j y
 #$ -o work/logs/
 #$ -l h_vmem=16G
-#$ -l h_rt=01:00:00
+#$ -l h_rt=03:00:00
 #$ -cwd
 
 set -euo pipefail

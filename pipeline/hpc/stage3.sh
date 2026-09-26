@@ -9,7 +9,7 @@
 # (empty = every name). Keep the names-per-chunk ratio similar between a sample and the real run (see
 # pipeline/README.md's "Stage 4" section) so the sample's timings mean something for sizing stage 4's own job.
 #
-# GBNAMES_SOURCES is register-only for now - see stage2.sh's comment on adding census later. Note: running
+# GBNAMES_SOURCES: whichever of register/census run.settings names (both, once the census is loaded). Note: running
 # this against work/names.csv from a register-only s1_counts.py run means that list is not yet the
 # final one (a name that only clears the threshold via historic census bearers would be missing) -
 # fine for a sample/rehearsal run, but re-run stage 1 with both sources once census is ready,
@@ -18,6 +18,12 @@
 # The chunk number MUST be the one stage 4 uses (run.settings has one number for both) - s3_extracts.py writes
 # work/chunks/CHUNKS with the number used, and s4_maps.py refuses to run if its own --chunks does
 # not match it, rather than silently reading the wrong names for a chunk.
+#
+# The memory and time below: a 5,000-name, both-sources sample (register + all 7 census years, 15 periods in total)
+# took 1,280s and 905MB. The full name list is several times longer, and every period's query filters on the whole
+# list at once (a bigger IN-list), so both below are scaled up from that with headroom, not measured on the full
+# list - the run prints seconds and rows per period, and qacct -j <jobid> gives the real total; tighten these once
+# you have that. For one run only, without editing this file:  qsub -l h_rt=04:00:00 pipeline/hpc/stage3.sh
 #
 # Expects .env and run.settings in the project root - see stage2.sh's comment.
 #
@@ -31,8 +37,8 @@
 #$ -N gbnames_stage3
 #$ -j y
 #$ -o work/logs/
-#$ -l h_vmem=2G
-#$ -l h_rt=00:30:00
+#$ -l h_vmem=6G
+#$ -l h_rt=02:00:00
 #$ -cwd
 
 set -euo pipefail
