@@ -165,7 +165,9 @@ class StagesFollowTheSettings(unittest.TestCase):
         def spy(group, profile=None):
             opened.append(group)
             return real(group, profile)
-        wanted = [self.names[0], self.names[-1]]                       # the last name is far outside a limit of 1
+        with_facts = sorted(s5_facts.reference_years(s5_facts.load_counts(), self.names))     # register facts need a register year with 100+ bearers
+        wanted = [with_facts[0], with_facts[-1]]
+        self.assertGreater(self.names.index(with_facts[-1]), 0)         # the last one is outside a limit of 1
         with mock.patch.object(config, "RUN_SOURCES", ["register"]), mock.patch.object(config, "RUN_LIMIT", 1), \
                 mock.patch.object(db, "connect", spy), \
                 mock.patch.object(sys, "argv", ["s5_facts", "--out-dir", str(self.root / "s5"), "--names", *wanted]):

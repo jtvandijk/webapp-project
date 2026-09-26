@@ -218,8 +218,11 @@ each group or decile (`distribution`), the spread (`sd`, for the score), the thr
 (`codes`), or, for `places` and `forenames_register`, the lists themselves (which have no single headline, so their
 `value` is empty). `n_bearers` is how many bearers the value rests on. Which of these a fact has is in the table.
 
-**When a fact is reported.** The 100-bearer floor applies to the name as a whole, through the reference year. A fact
-is then only written when the category it reports (the most common group or decile, or census group) has at least
+**When a fact is reported.** The 100-bearer floor applies to the name as a whole, through the reference year, and each
+source only gives facts to a name that has 100 or more bearers in that source in some year (decided 2026-09-26): the register
+facts, forenames included, need a register year with 100+, the historic facts (census forenames, parishes) a census year with
+100+. So a name whose page rests on its register bearers alone has no historic forenames or parishes, and the other way round -
+a list drawn from a handful of people in one source next to a headline from the other looked odd. A fact is then only written when the category it reports (the most common group or decile, or census group) has at least
 5 bearers (`FACT_MIN_IN_CATEGORY`); `imd_score` needs 5 bearers with a value; and a neighbourhood, a parish or a forename is
 listed with at least 5 people. One number for everything. (The historic census is over 100 years old and needs no
 disclosure floor; it uses the same number to keep the two sources alike.) So a name can have LOAC from a few London

@@ -18,6 +18,10 @@ The rules (all in config.py, section 6):
     the same answer, and the output says when it happened).
   * Forenames are the exception: pooled over every register year, since a name with no bearers in
     the newest year should still have forenames.
+  * A source gives facts only to a name that has at least THRESHOLD[source] bearers in at least one year of that
+    source: the register facts (forenames included) need 100 register bearers in some year, the historic facts need
+    100 census bearers in some census year. So a name with a page only for its register bearers has no historic
+    forenames or parishes, and a name that is only a historic one has no contemporary facts.
   * Historic facts come from the census and are pooled over the census years: forenames (with the sex in
     the census) and parishes, the most common first, each with at least FACT_MIN_IN_CATEGORY people. A parish is
     counted by county and name, so it is one parish whichever boundaries (1851 or 1901) number it. Which
@@ -84,6 +88,14 @@ def reference_years(counts, names):
         if source == "register" and n >= config.THRESHOLD["register"] and key in wanted and year > best.get(key, 0):
             best[key] = year
     return best
+
+
+def names_with_enough(counts, names, source, years=None):
+    """The `names` with at least THRESHOLD[source] bearers in at least one year of `source` (only among `years`, if
+    given): the names that source may give facts to."""
+    wanted, threshold = set(names), config.THRESHOLD[source]
+    return sorted({key for (src, year, key), n in counts.items()
+                   if src == source and n >= threshold and key in wanted and (years is None or year in years)})
 
 
 def names_by_year(ref_years):
@@ -485,7 +497,7 @@ def merge_facts(out_dir):
     return len(rows)
 
 
-def build_report(names, ref_years, counts, tally, outputs):
+def build_report(names, ref_years, counts, tally, outputs, pooled_scopes=None):
     """The lines of the report: what was worked out, and what to look at."""
     registered = sum(counts.get(("register", year, key), 0) for key, year in ref_years.items())
     years = Counter(ref_years.values())
@@ -496,7 +508,7 @@ def build_report(names, ref_years, counts, tally, outputs):
              "", f"{'fact':20} {'names with a value':>19} {'no value':>9} {'ties broken':>12} {'bearers covered':>16}"]
     for fact in outputs:
         t = tally[fact]
-        scope = len(names) if fact in POOLED else len(ref_years)
+        scope = (pooled_scopes or {}).get(fact, len(names)) if fact in POOLED else len(ref_years)
         coverage = "" if fact in POOLED or not registered else f"{t['covered'] / registered:>15.1%}"
         lines.append(f"{fact:20} {t['with_value']:>19,} {scope - t['with_value'] - t['unknown']:>9,} "
                      f"{t['ties']:>12,} {coverage:>16}")
@@ -555,7 +567,9 @@ def main():
     counts = load_counts()
     ref_years = reference_years(counts, names)
     by_year = names_by_year(ref_years)
-    print(f"{len(names):,} names, {len(ref_years):,} with a reference year, in {len(by_year)} different years")
+    census_names = names_with_enough(counts, names, "census", census_years)
+    print(f"{len(names):,} names, {len(ref_years):,} with a reference year, in {len(by_year)} different years; "
+          f"{len(census_names):,} with {config.THRESHOLD['census']}+ census bearers in some year")
 
     cfg = config.settings()
     register_facts = [f for f in REGISTER_FACTS if f in facts]
@@ -625,17 +639,18 @@ def main():
     if "eth" in facts:
         results["ethnicity"] = compute_ethnicity(load("eth"), ref_years, tally)
     if "forenames" in facts:
-        results["forenames_register"] = compute_forenames(read_forenames(out_dir), names, tally)
+        results["forenames_register"] = compute_forenames(read_forenames(out_dir), sorted(ref_years), tally)     # a reference year = a register year with enough bearers
     if "forenames_census" in facts:
         pooled = read_forenames(out_dir, [f"forenames_census_{y}" for y in census_years])
-        results["forenames_census"] = compute_forenames(pooled, names, tally, "forenames_census", census_years)
+        results["forenames_census"] = compute_forenames(pooled, census_names, tally, "forenames_census", census_years)
     if "parishes" in facts:
-        results["parishes"] = compute_parishes(read_parishes(out_dir, census_years), names, tally, census_years)
+        results["parishes"] = compute_parishes(read_parishes(out_dir, census_years), census_names, tally, census_years)
 
     for fact, rows in results.items():
         write_fact(out_dir, fact, rows)
     total = merge_facts(out_dir)
-    report = build_report(names, ref_years, counts, tally, list(results))
+    report = build_report(names, ref_years, counts, tally, list(results),
+                          {"forenames_register": len(ref_years), "forenames_census": len(census_names), "parishes": len(census_names)})
     queried = ", ".join(f"{fact} {_duration(sec)}" for fact, sec in spent.items()) or "none: every extract was reused"
     report += ["", f"time: {_duration(time.perf_counter() - began)} in total; time in the database by fact: {queried}"]
     (out_dir / "report.txt").write_text("\n".join(report) + "\n")

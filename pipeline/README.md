@@ -108,7 +108,8 @@ rules are in [docs/pipeline.md](../docs/pipeline.md) ("Stage 5") and `config.py`
 everything but forenames is worked out in each name's *reference year* (its latest register year with
 100+ bearers, from `counts.csv`), a fact is only reported when the category it reports has at least 5 bearers
 (`FACT_MIN_IN_CATEGORY`), and forenames are
-pooled over every year.
+pooled over every year. Each source only gives facts to a name with 100+ bearers in that source in some year (the census
+forenames and parishes need a census year with 100+, the register facts a register year with 100+).
 
 The neighbourhood facts join the register to neighbourhood tables, which have to be in the TRE first:
 

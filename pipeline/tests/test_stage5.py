@@ -12,6 +12,7 @@ import contextlib
 import csv
 import io
 import json
+import shutil
 import sqlite3
 import statistics
 import sys
@@ -52,6 +53,26 @@ class ReferenceYear(unittest.TestCase):
                   ("census", 1901, "c"): 500, ("register", 2026, "c"): 40,        # listed for its census bearers only
                   ("register", 2026, "d"): 900}                                   # not one of the names asked for
         self.assertEqual(s5_facts.reference_years(counts, ["a", "b", "c"]), {"a": 2026, "b": 2020})
+
+
+class NamesWithEnoughBearers(unittest.TestCase):
+    """A source gives facts only to a name with at least THRESHOLD[source] bearers in at least one year of that source."""
+
+    counts = {("census", 1851, "a"): 60, ("census", 1861, "a"): 100,                  # one year is enough
+              ("census", 1851, "b"): 99, ("census", 1861, "b"): 99,                    # never 100 in a single year, though 198 in all
+              ("register", 2026, "c"): 500, ("census", 1901, "c"): 40,                 # a register name with few census bearers
+              ("census", 1911, "d"): 300, ("register", 2026, "d"): 90,                 # a census name with few register bearers
+              ("census", 1921, "e"): 400}
+
+    def test_the_census_needs_a_hundred_in_some_single_census_year(self):
+        self.assertEqual(s5_facts.names_with_enough(self.counts, "abcde", "census"), ["a", "d", "e"])
+
+    def test_the_register_needs_a_hundred_in_some_register_year(self):
+        self.assertEqual(s5_facts.names_with_enough(self.counts, "abcde", "register"), ["c"])
+
+    def test_only_the_years_in_use_count_and_only_the_names_asked_for(self):
+        self.assertEqual(s5_facts.names_with_enough(self.counts, "abcde", "census", [1851, 1861, 1901]), ["a"])     # 1911 and 1921 left out
+        self.assertEqual(s5_facts.names_with_enough(self.counts, ["d", "zzz"], "census"), ["d"])
 
 
 class ComputeRules(unittest.TestCase):
@@ -256,6 +277,7 @@ class Stage5EndToEnd(unittest.TestCase):
         cls.counts = s5_facts.load_counts()
         cls.names = s5_facts.load_names()
         cls.ref = s5_facts.reference_years(cls.counts, cls.names)
+        cls.census_names = s5_facts.names_with_enough(cls.counts, cls.names, "census", config.CENSUS_YEARS)
         cls.tables = {k: dict(cls.conn.execute(f"SELECT area_code, {col} FROM nbhd_{k}"))
                       for k, col in (("oac", "oac_group"), ("loac", "loac_group"), ("ahah", "ahah_decile"), ("imd", "imd_decile"),
                                   ("fpc", "fpc_group"))}
@@ -426,7 +448,7 @@ class Stage5EndToEnd(unittest.TestCase):
 
     def test_historic_forenames_are_pooled_over_the_census_years(self):
         people, expected = self.census_people(), {}
-        for key in self.names:
+        for key in self.census_names:
             lists = {}
             for sex in ("F", "M"):
                 counts = Counter(forename_clean(f) for _, f, s, _, _ in people.get(key, []) if s == sex and forename_clean(f))
@@ -443,7 +465,7 @@ class Stage5EndToEnd(unittest.TestCase):
 
     def test_parishes_are_pooled_by_name_across_the_two_boundary_versions(self):
         people, expected, merged_across_versions = self.census_people(), {}, 0
-        for key in self.names:
+        for key in self.census_names:
             counts, versions, spelt = Counter(), defaultdict(set), {}
             for year, _, _, county, parish in people.get(key, []):
                 counts[(county.lower(), parish.lower())] += 1
@@ -459,6 +481,51 @@ class Stage5EndToEnd(unittest.TestCase):
             listed = json.loads(row["detail"])["parishes"]
             self.assertEqual([(p["county"], p["parish"]) for p in listed], expected[key], key)
             self.assertEqual(len({(p["county"], p["parish"]) for p in listed}), len(listed), key)      # a parish is listed once
+
+    def test_a_source_only_gives_facts_to_names_with_enough_bearers_in_it(self):
+        for fact in ("forenames_census", "parishes"):
+            self.assertTrue(set(self.facts[fact]) <= set(self.census_names), fact)
+        self.assertTrue(set(self.facts["forenames_register"]) <= set(self.ref))
+        for fact in ("oac", "places", "ethnicity"):
+            self.assertTrue(set(self.facts[fact]) <= set(self.ref), fact)
+
+    def test_a_higher_census_bar_takes_the_historic_facts_away_from_the_names_below_it(self):
+        best = defaultdict(int)                                    # each name's biggest census year
+        for (source, _, key), n in self.counts.items():
+            if source == "census":
+                best[key] = max(best[key], n)
+        bar = sorted(best[k] for k in self.names)[len(self.names) // 2] + 1          # about half of the names are now below it
+        higher = Path(self.tmp.name) / "higher_bar"
+        shutil.copytree(self.out, higher)
+        with mock.patch.dict(config.THRESHOLD, {"census": bar}), mock.patch.object(sys, "argv", ["s5_facts", "--out-dir", str(higher), "--compute-only"]):
+            s5_facts.main()
+        after = defaultdict(set)
+        with open(higher / "facts.csv", newline="") as f:
+            for row in csv.DictReader(f):
+                after[row["fact"]].add(row["surname"])
+        for fact in ("forenames_census", "parishes"):
+            self.assertTrue(after[fact], fact)
+            self.assertLess(len(after[fact]), len(self.facts[fact]), fact)                     # some lost theirs ...
+            self.assertTrue(all(best[k] >= bar for k in after[fact]), fact)                    # ... exactly those below the bar
+        self.assertEqual(after["forenames_register"], set(self.facts["forenames_register"]))    # the register facts do not change with it
+        self.assertEqual(after["oac"], set(self.facts["oac"]))
+
+    def test_a_higher_register_bar_takes_the_register_forenames_away_from_the_names_below_it(self):
+        best = defaultdict(int)                                    # each name's biggest register year
+        for (source, _, key), n in self.counts.items():
+            if source == "register":
+                best[key] = max(best[key], n)
+        bar = sorted(best[k] for k in self.names)[len(self.names) // 2] + 1
+        higher = Path(self.tmp.name) / "higher_register_bar"
+        shutil.copytree(self.out, higher)
+        with mock.patch.dict(config.THRESHOLD, {"register": bar}), \
+                mock.patch.object(sys, "argv", ["s5_facts", "--out-dir", str(higher), "--compute-only", "--facts", "forenames"]):
+            s5_facts.main()
+        with open(higher / "facts.csv", newline="") as f:
+            after = {row["surname"] for row in csv.DictReader(f) if row["fact"] == "forenames_register"}
+        self.assertTrue(after)
+        self.assertLess(len(after), len(self.facts["forenames_register"]))
+        self.assertTrue(all(best[k] >= bar for k in after))
 
     def test_only_the_chosen_sources_are_worked_out_and_open_a_database(self):
         chosen, real = self.names[:2], db.connect

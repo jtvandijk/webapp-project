@@ -344,6 +344,9 @@ SCOTLAND_MAX_SHARE = 0.30
 # Contemporary facts (neighbourhood classifications, top neighbourhoods, ethnicity) are worked out
 # in each name's REFERENCE YEAR: the latest register year in which it has at least THRESHOLD["register"]
 # bearers (from counts.csv, stage 1). Forenames are the exception: pooled over every register year.
+# Each source only gives facts to a name that has THRESHOLD[source] bearers in at least one year of that source: the
+# register facts need 100 register bearers in some year, the historic facts (census forenames, parishes) need 100 census
+# bearers in some census year. A list built from a few people in one source next to a headline from the other looked odd.
 # A fact is only reported when the category it reports (the most common group, decile or census group)
 # has at least FACT_MIN_IN_CATEGORY bearers, so nothing is ever said about fewer people than that. The
 # 100-bearer floor applies to the name as a whole, through the reference year above, not to each fact. This
