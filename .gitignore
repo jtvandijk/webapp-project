@@ -24,6 +24,10 @@ _meta.txt
 #raw downloads of neighbourhood indicators (OAC, LOAC, AHAH, IMD), not redistributed
 /raw-indicators/
 
+#the real release copied out of the TRE (5 GB, about 43,000 files): never commit it. site/data/ is NOT this folder: it holds the
+#small synthetic prototype release, which IS tracked, so the real release must not be copied into it
+/release/
+
 #a scratch folder for looking at things (shapefiles and so on); never commit it
 /tmp/
 
