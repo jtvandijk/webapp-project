@@ -4,7 +4,7 @@
 # not change where it should run, only how big a job to ask for.
 #
 #   qsub pipeline/hpc/stage3.sh
-#   qsub -l h_vmem=16G pipeline/hpc/stage3.sh --sources register     # anything after the script name goes to s3_extracts.py
+#   qsub pipeline/hpc/stage3.sh --sources register     # anything after the script name goes to s3_extracts.py
 #
 # There is no resume: every run re-queries and rewrites each period it is given, and CHUNKS is written only when the run
 # finishes. After a job was killed part-way, re-run just the sources that did not finish (--sources register or census);
@@ -24,11 +24,11 @@
 # work/chunks/CHUNKS with the number used, and s4_maps.py refuses to run if its own --chunks does
 # not match it, rather than silently reading the wrong names for a chunk.
 #
-# The memory and time below: a 5,000-name, both-sources sample (register + all 7 census years, 15 periods in total)
-# took 1,280s and 905MB. The full name list is several times longer, and every period's query filters on the whole
-# list at once (a bigger IN-list), so both below are scaled up from that with headroom, not measured on the full
-# list - the run prints seconds and rows per period, and qacct -j <jobid> gives the real total; tighten these once
-# you have that. For one run only, without editing this file:  qsub -l h_rt=04:00:00 pipeline/hpc/stage3.sh
+# The memory below: a 5,000-name sample (register + all 7 census years) took 905MB, but the full list (43,093 names)
+# died at 6G in the register periods, which hold 16-17 million name-cell rows each in memory (1997: 16.2M, 2000: 16.8M).
+# The register-only re-run peaked at 7.1GB (qacct maxvmem), so 12G leaves headroom; the census periods are far smaller.
+# The time is still an estimate: qacct -j <jobid> gives the real total. For one run only, without editing this file:
+#   qsub -l h_rt=04:00:00 pipeline/hpc/stage3.sh
 #
 # Expects .env and run.settings in the project root - see stage2.sh's comment.
 #
@@ -42,7 +42,7 @@
 #$ -N gbnames_stage3
 #$ -j y
 #$ -o work/logs/
-#$ -l h_vmem=6G
+#$ -l h_vmem=12G
 #$ -l h_rt=02:00:00
 #$ -cwd
 
