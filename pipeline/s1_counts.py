@@ -8,6 +8,10 @@ Writes (in the work folder, see config.py):
   counts.csv   source, year, surname, n         every name and year with at least COUNT_FLOOR bearers
   names.csv    surname, map_periods, max_n, periods
                the names that get a page: at least THRESHOLD[source] bearers in at least one map period
+  register_population.csv   year, people        the register's own total tracked population (postcode-matched
+               rows) in EVERY register year, not just the ones with a map - a byproduct of the postcode match-rate
+               check below, this run's own numbers, only written when register is in --sources. Stage 6 reads it
+               to make a second, "standardised" bearer count (config.STANDARD_BASE_YEAR).
 
 A run with --sources only covers those sources; counts.csv and names.csv only hold what was
 actually counted this run, not a full release.
@@ -159,8 +163,9 @@ def main():
     cfg = config.settings()
     register_conn = db.connect("register") if "register" in sources else None
     census_conn = db.connect("census") if "census" in sources else None
-    if register_conn:
-        report_match_rate(match_rate(register_conn, cfg))
+    rates = match_rate(register_conn, cfg) if register_conn else None
+    if rates is not None:
+        report_match_rate(rates)
     if census_conn:
         check_parish_tables(census_conn, cfg)
         report_census_match(census_match(census_conn, cfg))
@@ -185,6 +190,13 @@ def main():
             biggest[key] = max(biggest[key], n)
         for key in sorted(listed):
             out.writerow([key, len(listed[key]), biggest[key], ";".join(listed[key])])
+    if rates is not None:
+        with open(config.WORK / "register_population.csv", "w", newline="") as f:
+            out = csv.writer(f)
+            out.writerow(["year", "people"])
+            for year in sorted(rates):
+                out.writerow([year, rates[year][0]])          # the matched (usable-coordinates) total: the same "everybody who counts" rule as counts.csv
+        print(f"{len(rates):,} years of register population written to {config.WORK / 'register_population.csv'}")
 
     per_period = defaultdict(int)
     for periods in listed.values():

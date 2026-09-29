@@ -26,18 +26,18 @@ typed `python3 -m pipeline.s5_facts --names smith` uses the same sources as the 
 | # | Step | What it does | Reads | Writes (in `work/`) | How it runs | Measured |
 |---|---|---|---|---|---|---|
 | 0 | Neighbourhood tables | Turn the downloads in `raw-indicators/` into five lookup tables and load them into the database | downloads (on your laptop) | `neighbourhood/*.csv` | laptop: `python3 tools/prep_neighbourhood.py`, then in the TRE `nbhd_tables ddl` + psql | done once, redo when a table changes |
-| 1 | Counts | Bearers of every surname in every year; the list of names that get a page | register, census | `counts.csv`, `names.csv` | `qsub pipeline/hpc/stage1.sh` | about 27 min, both sources, full run |
+| 1 | Counts | Bearers of every surname in every year; the list of names that get a page; the register's own total population per year | register, census | `counts.csv`, `names.csv`, `register_population.csv` | `qsub pipeline/hpc/stage1.sh` | about 27 min, both sources, full run |
 | 2 | Surfaces | One smoothed density of *everybody* per map period, for weighting the maps | register, census | `surfaces/<period>.npy` | `qsub pipeline/hpc/stage2.sh` | about 12 min, both sources, full run (15 periods) |
 | 3 | Extracts | One query per period pulls where every listed name's bearers are; split into chunks by name | register, census | `chunks/<period>/<n>.csv`, `chunks/CHUNKS` | `qsub pipeline/hpc/stage3.sh` | about 46 min, both sources, the full name list (a quiet database) |
 | 4 | Maps | The map of every name and period, no database access; an array job, one task per chunk | steps 2 and 3 | `maps/chunk_<n>.jsonl`, `stats/chunk_<n>.csv` | `qsub -t 1-<GBNAMES_CHUNKS> pipeline/hpc/stage4.sh`, then `python3 -m pipeline.merge_stats` | about 2-3 min per chunk, 200 chunks, both sources, a 5,000-name sample |
 | 5 | Facts | Neighbourhood classifications, top neighbourhoods, ethnicity, forenames, and from the census historic forenames and parishes | step 1, register, census, the tables of step 0 | `facts/facts.csv`, `facts/report.txt` | `qsub pipeline/hpc/stage5.sh` | about 23 min, both sources, a 5,000-name sample; not yet measured on the full list |
-| 6 | Assemble | Turn stage 4's maps and stage 5's facts into one JSON file per surname (`docs/data-contract.md`); the search index; `manifest.json`; the real Scotland mask; a standardised register bearer count (`counts_standardised`, 2026-09-29) | step 1 (counts.csv), step 2 (surfaces/manifest.csv, for the standardised count), steps 4 and 5 | `release/names/<xx>/<name>.json` (counts and maps), `release/facts.csv` (all the facts, one row per name and fact), `release/index/<xx>.json`, `release/manifest.json`, `release/masks/scotland.json` | once: `python3 -m pipeline.s6_assemble --prepare`, then `qsub -t 1-<GBNAMES_CHUNKS> pipeline/hpc/stage6.sh`, then `python3 -m pipeline.merge_release` | done, has run on the real HPC output. `lookups.json` and *why* a period has no map (`mapNotes`) are deliberately not built yet (docs/pipeline.md) |
+| 6 | Assemble | Turn stage 4's maps and stage 5's facts into one JSON file per surname (`docs/data-contract.md`); the search index; `manifest.json`; the real Scotland mask; a standardised register bearer count (`counts_standardised`, 2026-09-29) | step 1 (counts.csv and register_population.csv), steps 4 and 5 | `release/names/<xx>/<name>.json` (counts and maps), `release/facts.csv` (all the facts, one row per name and fact), `release/index/<xx>.json`, `release/manifest.json`, `release/masks/scotland.json` | once: `python3 -m pipeline.s6_assemble --prepare`, then `qsub -t 1-<GBNAMES_CHUNKS> pipeline/hpc/stage6.sh`, then `python3 -m pipeline.merge_release` | done, has run on the real HPC output. `lookups.json` and *why* a period has no map (`mapNotes`) are deliberately not built yet (docs/pipeline.md) |
 
 "Register" and "census" are two different databases; a step only opens the ones `GBNAMES_SOURCES` (in `run.settings`) names -
 currently both.
 
-The order matters: 1, then 2 and 3, then 4; 5 needs only 1 (and the tables); 6 needs 1, 2, 4 and 5 (2 only for the
-standardised register count). A finished step can be re-run without redoing the ones before it.
+The order matters: 1, then 2 and 3, then 4; 5 needs only 1 (and the tables); 6 needs 1, 4 and 5. A finished step
+can be re-run without redoing the ones before it.
 
 ## 3. Where every setting lives
 
@@ -182,7 +182,7 @@ Everything here is written by the pipeline and ignored by git. Deleting a folder
 
 | Path | Made by | Contains |
 |---|---|---|
-| `counts.csv`, `names.csv` | step 1 | bearers per name and year; the names that get a page |
+| `counts.csv`, `names.csv`, `register_population.csv` | step 1 | bearers per name and year; the names that get a page; the register's own total tracked population per year (only when register is in `--sources`; stage 6's standardised bearer count) |
 | `surfaces/` | step 2 | the population surface of each period |
 | `chunks/` | step 3 | the points of each name, split into chunks (and `CHUNKS`, the number used) |
 | `maps/`, `stats/`, `stats.csv` | step 4, merge | one line per name and period (GeoJSON), and its statistics |
@@ -287,7 +287,7 @@ HPC folder; load them only if they are missing (section 2, step 0).
 - Stage 1 also stops, and writes nothing, if people carry a parish id that appears twice in a parish table (a repeated id nobody carries is only noted) or if there are more than 1% more attributes rows than people (a person would count twice).
 
 Stages 2 and 3 do not depend on each other, so they can be submitted together; stage 4 needs both, and stage 5 needs
-only stage 1 (so it can run beside stages 2 to 4); stage 6 needs 1, 2, 4 and 5 all finished. When a job fails, read the end of its log in `work/logs/`, fix the
+only stage 1 (so it can run beside stages 2 to 4); stage 6 needs 1, 4 and 5 all finished. When a job fails, read the end of its log in `work/logs/`, fix the
 cause and submit it again: stage 3 starts over, stages 4 and 6 skip finished chunks, stage 5 keeps its saved queries. Stage 5's
 repository time limit (section 3) is an estimate for the full name list, if one is not enough, override it for that
 run only (`qsub -l h_rt=04:00:00 pipeline/hpc/stage5.sh`) and, once `qacct` gives the real number, tighten it in the
@@ -303,8 +303,6 @@ of them, so it can be run, wiped (`bash pipeline/hpc/clean.sh --release`) and ru
 - Stage 4 has finished every chunk (`ls work/maps/*.done | wc -l` is 200) and you have run `python3 -m pipeline.merge_stats`;
   stage 5 has finished (`work/facts/facts.csv` exists). A chunk whose stage 4 is not finished is refused, so a job submitted
   too early stops with a message instead of reading a half-written file.
-- Stage 2 has finished (`work/surfaces/manifest.csv` exists): stage 6 reads it for the standardised register count
-  (`counts_standardised`); a chunk stops with a clear message if it is missing.
 - The stage 6 files are in the TRE (section 8: `pipeline/s6_assemble.py`, `merge_release.py`, `preview_web.py`,
   `hpc/stage6.sh`, `hpc/clean.sh`, `pipeline/reference/gb_outline_lonlat.geojson`, and `tools/validate_data.py`), and no job of yours is queued
   or running while you replace files.

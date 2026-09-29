@@ -38,9 +38,10 @@ own facts/counts slices (from --prepare), and for every name that chunk owns:
 
     counts_standardised   register bearers rescaled so a raw year-to-year change is not partly just the
             register's own tracked population growing or shrinking (config.py, section 3, STANDARD_BASE_YEAR;
-            register_scale_factors(), read once from work/surfaces/manifest.csv for the whole chunk). Register
-            only, and only for years with a known factor; no key at all for a name with no register counts.
-            Disclosure floors are always checked against the raw counts, never this one.
+            register_scale_factors(), read once from work/register_population.csv (stage 1) for the whole chunk -
+            it covers every register year, not only the ones with a map). Register only, and only for years with
+            a known factor; no key at all for a name with no register counts. Disclosure floors are always
+            checked against the raw counts, never this one.
 
 Also writes work/release/index_parts/chunk_N.txt (the names this chunk wrote, one per line - the input to
 merge_release.py's search index, and to a by-hand export/wipe later if HPC storage ever needs it: each
@@ -177,13 +178,15 @@ def build_maps(rows):
 
 
 def load_register_population(path=None):
-    """{year: people}: the register rows of work/surfaces/manifest.csv (stage 2) - the total tracked register
-    population of each year, on the same rule the maps themselves use. The input register_scale_factors() needs."""
-    path = Path(path) if path else config.WORK / "surfaces" / "manifest.csv"
+    """{year: people}: work/register_population.csv (stage 1) - the register's own total tracked population
+    (postcode-matched rows) in every register year, not only the ones with a map (a byproduct of stage 1's own
+    postcode match-rate check). The input register_scale_factors() needs."""
+    path = Path(path) if path else config.WORK / "register_population.csv"
     if not path.exists():
-        raise SystemExit(f"{path} does not exist yet - stage 2 makes it: run  qsub pipeline/hpc/stage2.sh  first.")
+        raise SystemExit(f"{path} does not exist yet - stage 1 makes it (with register in --sources): "
+                         "run  qsub pipeline/hpc/stage1.sh  first.")
     with open(path, newline="") as f:
-        return {row["period"]: int(row["people"]) for row in csv.DictReader(f) if row["source"] == "register"}
+        return {row["year"]: int(row["people"]) for row in csv.DictReader(f)}
 
 
 def register_scale_factors(population, base_year=None):
@@ -191,8 +194,8 @@ def register_scale_factors(population, base_year=None):
     a register year's raw bearers * its factor rescales that year to the base year's own tracked population size."""
     base_year = str(base_year if base_year is not None else config.STANDARD_BASE_YEAR)
     if base_year not in population:
-        raise SystemExit(f"{base_year} (config.STANDARD_BASE_YEAR) is not a register year in work/surfaces/manifest.csv - "
-                         "run stage 2 for it, or change STANDARD_BASE_YEAR.")
+        raise SystemExit(f"{base_year} (config.STANDARD_BASE_YEAR) is not a register year in work/register_population.csv - "
+                         "run stage 1 with register in --sources, or change STANDARD_BASE_YEAR.")
     base = population[base_year]
     return {year: base / people for year, people in population.items()}
 

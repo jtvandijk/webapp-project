@@ -6,11 +6,14 @@ The counting test builds a small fake database, runs the real SQL, and compares 
 second, independent calculation done in Python straight from the tables. The two share no code,
 so if the SQL joins the wrong table or misreads a year, they disagree.
 """
+import csv
 import sqlite3
+import sys
 import tempfile
 import unittest
 from collections import Counter
 from pathlib import Path
+from unittest import mock
 
 from pipeline import config, fake_data, s1_counts
 from pipeline.names import surname_key
@@ -124,6 +127,48 @@ class CountingMatchesAnIndependentCalculation(unittest.TestCase):
             for pid in ids:
                 p = periods[pid]
                 self.assertGreaterEqual(self.counts[(p["source"], p["year"], key)], config.THRESHOLD[p["source"]])
+
+
+class RegisterPopulationFile(unittest.TestCase):
+    """main() writes work/register_population.csv (the register's own total tracked population, every register
+    year, not only the ones with a map) - the input pipeline.s6_assemble.load_register_population() needs for the
+    standardised bearer count (config.py, section 3). A byproduct of the postcode match-rate check, so it should
+    need no query of its own and should agree with match_rate() exactly."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        cls.root = Path(cls.tmp.name)
+        db = cls.root / "t.db"
+        fake_data.generate(persons=6000, surnames=200, seed=8, path=db, quiet=True)
+        cls.patches = [mock.patch.object(config, "WORK", cls.root), mock.patch.dict(config.PROFILES["fake"], {"database": str(db)})]
+        for patch in cls.patches:
+            patch.start()
+        conn = sqlite3.connect(db)
+        cls.expected = s1_counts.match_rate(conn, dict(config.settings("fake"), database=str(db)))
+        conn.close()
+
+    @classmethod
+    def tearDownClass(cls):
+        for patch in cls.patches:
+            patch.stop()
+        cls.tmp.cleanup()
+
+    def run_stage(self, *args):
+        with mock.patch.object(sys, "argv", ["s1_counts", *args]):
+            s1_counts.main()
+
+    def test_every_register_year_agrees_with_match_rate(self):
+        self.run_stage()
+        with open(self.root / "register_population.csv", newline="") as f:
+            written = {row["year"]: int(row["people"]) for row in csv.DictReader(f)}
+        self.assertEqual(set(written), {str(y) for y in config.REGISTER_YEARS})
+        self.assertEqual(written, {str(y): matched for y, (matched, total) in self.expected.items()})
+
+    def test_a_census_only_run_does_not_write_it(self):
+        (self.root / "register_population.csv").unlink(missing_ok=True)
+        self.run_stage("--sources", "census")
+        self.assertFalse((self.root / "register_population.csv").exists())
 
 
 if __name__ == "__main__":

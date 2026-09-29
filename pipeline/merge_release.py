@@ -138,7 +138,7 @@ def build_manifest(version, synthetic=False):
         "basemap": BASEMAP,
         "examples": EXAMPLES,
         # so counts_standardised (a name's own file) can be checked or recomputed without the pipeline itself:
-        # base_year's own factor is 1.0; population is the same work/surfaces/manifest.csv figure the factor came from.
+        # base_year's own factor is 1.0; population is the same work/register_population.csv (stage 1) figure the factor came from.
         "standardisation": {"base_year": str(config.STANDARD_BASE_YEAR), "population": population,
                             "factor": register_scale_factors(population)},
     }

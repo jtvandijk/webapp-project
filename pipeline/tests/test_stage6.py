@@ -172,25 +172,23 @@ class StandardisedCounts(unittest.TestCase):
     (config.py, section 3) - the user's own rule, so a name's raw year-to-year change is not partly just the
     register's own size changing."""
 
-    def write_manifest(self, tmp, rows):
-        path = Path(tmp) / "surfaces" / "manifest.csv"
-        path.parent.mkdir(parents=True, exist_ok=True)
+    def write_population(self, tmp, rows):
+        path = Path(tmp) / "register_population.csv"
         with open(path, "w", newline="") as f:
             out = csv.writer(f)
-            out.writerow(["period", "source", "people", "seconds"])
+            out.writerow(["year", "people"])
             out.writerows(rows)
         return path
 
-    def test_only_register_rows_are_read(self):
+    def test_every_year_in_the_file_is_read(self):
         with tempfile.TemporaryDirectory() as tmp:
-            path = self.write_manifest(tmp, [("1901", "census", "200000", "0.1"), ("2020", "register", "1000", "0.1"),
-                                             ("2026", "register", "1200", "0.1")])
+            path = self.write_population(tmp, [("2020", "1000"), ("2026", "1200")])
             self.assertEqual(s6_assemble.load_register_population(path), {"2020": 1000, "2026": 1200})
 
-    def test_a_missing_manifest_stops_with_a_clear_message(self):
+    def test_a_missing_file_stops_with_a_clear_message(self):
         with self.assertRaises(SystemExit) as stopped:
-            s6_assemble.load_register_population(Path(tempfile.gettempdir()) / "no-such-surfaces-manifest.csv")
-        self.assertIn("stage2.sh", str(stopped.exception))
+            s6_assemble.load_register_population(Path(tempfile.gettempdir()) / "no-such-register-population.csv")
+        self.assertIn("stage1.sh", str(stopped.exception))
 
     def test_the_base_years_own_factor_is_one_and_others_scale_towards_it(self):
         factors = s6_assemble.register_scale_factors({"2020": 1000, "2025": 1500, "2026": 1200}, base_year=2026)
@@ -340,11 +338,10 @@ class AssembleChunkOperations(unittest.TestCase):
             out.writeheader()
             for name in ("alpha", "beta", "gamma"):
                 out.writerow({"source": "register", "year": "2026", "surname": name, "n": "500"})
-        (self.root / "surfaces").mkdir()
-        with open(self.root / "surfaces" / "manifest.csv", "w", newline="") as f:
+        with open(self.root / "register_population.csv", "w", newline="") as f:
             out = csv.writer(f)
-            out.writerow(["period", "source", "people", "seconds"])
-            out.writerow([str(config.STANDARD_BASE_YEAR), "register", "1000", "0.1"])       # the base year itself: factor 1.0
+            out.writerow(["year", "people"])
+            out.writerow([str(config.STANDARD_BASE_YEAR), "1000"])       # the base year itself: factor 1.0
 
     def run_stage(self, *args):
         with mock.patch.object(sys, "argv", ["s6_assemble", *args]):
@@ -438,12 +435,12 @@ class AssembleChunkOperations(unittest.TestCase):
         self.assertEqual(alpha["counts_standardised"], {"register": {"2026": 500}})          # base year: factor 1.0, so equal to the raw count
         self.assertEqual(alpha["counts"], {"register": {"2026": 500}})                       # the raw count is untouched
 
-    def test_a_missing_surfaces_manifest_stops_the_chunk_clearly(self):
-        (self.root / "surfaces" / "manifest.csv").unlink()
+    def test_a_missing_register_population_file_stops_the_chunk_clearly(self):
+        (self.root / "register_population.csv").unlink()
         self.prepared()
         with self.assertRaises(SystemExit) as stopped:
             self.assemble()
-        self.assertIn("stage2.sh", str(stopped.exception))
+        self.assertIn("stage1.sh", str(stopped.exception))
 
     def test_a_done_marker_from_a_different_chunks_value_is_not_trusted(self):
         self.prepared()
@@ -727,8 +724,8 @@ class Stage6EndToEnd(unittest.TestCase):
             self.assertEqual(got, by_name[bundle["name"]], bundle["name"])
 
     def test_a_bundle_gets_a_standardised_register_count_matching_an_independent_recomputation(self):
-        with open(self.root / "surfaces" / "manifest.csv", newline="") as f:
-            population = {row["period"]: int(row["people"]) for row in csv.DictReader(f) if row["source"] == "register"}
+        with open(self.root / "register_population.csv", newline="") as f:
+            population = {row["year"]: int(row["people"]) for row in csv.DictReader(f)}
         base = population[str(config.STANDARD_BASE_YEAR)]
         checked_at_least_one = False
         for path in self.all_files():
@@ -736,6 +733,9 @@ class Stage6EndToEnd(unittest.TestCase):
             register = bundle["counts"].get("register", {})
             expected = {year: round(n * base / population[year]) for year, n in register.items() if year in population}
             if expected:
+                # register_population.csv covers every one of config.REGISTER_YEARS, the same years counts.csv
+                # itself uses, so a name with any register counts should get a standardised figure for every one of them
+                self.assertEqual(set(expected), set(register), bundle["name"])
                 self.assertEqual(bundle.get("counts_standardised", {}).get("register"), expected, bundle["name"])
                 checked_at_least_one = True
             else:
@@ -747,8 +747,8 @@ class Stage6EndToEnd(unittest.TestCase):
         std = manifest["standardisation"]
         self.assertEqual(std["base_year"], str(config.STANDARD_BASE_YEAR))
         self.assertEqual(std["factor"][std["base_year"]], 1.0)
-        with open(self.root / "surfaces" / "manifest.csv", newline="") as f:
-            population = {row["period"]: int(row["people"]) for row in csv.DictReader(f) if row["source"] == "register"}
+        with open(self.root / "register_population.csv", newline="") as f:
+            population = {row["year"]: int(row["people"]) for row in csv.DictReader(f)}
         self.assertEqual(std["population"], population)
         base = population[std["base_year"]]
         for year, people in population.items():
@@ -1045,7 +1045,12 @@ class ValidatorWithoutLookups(unittest.TestCase):
         (root / "index").mkdir()
         (root / "masks").mkdir()
         (root / "masks" / "scotland.json").write_text(json.dumps({"type": "FeatureCollection", "features": []}))
-        (root / "manifest.json").write_text(json.dumps(merge_release.build_manifest("t")))
+        with open(root / "register_population.csv", "w", newline="") as f:      # build_manifest() reads this for "standardisation"
+            out = csv.writer(f)
+            out.writerow(["year", "people"])
+            out.writerow([str(config.STANDARD_BASE_YEAR), "1000"])
+        with mock.patch.object(config, "WORK", root):
+            (root / "manifest.json").write_text(json.dumps(merge_release.build_manifest("t")))
         bundle = {"schema": 1, "name": "smith", "counts": counts or {"census": {"1901": 500}}, "maps": maps or {"1901": self.SHAPE}}
         (root / "names" / "sm" / "smith.json").write_text(json.dumps(bundle))
         (root / "index" / "sm.json").write_text(json.dumps(["smith"]))
@@ -1161,7 +1166,13 @@ class MergeReleaseTests(unittest.TestCase):
         self.assertTrue(-9 <= lon <= 2.5 and 49.5 <= lat <= 61.5, (lon, lat))     # the GB box, not BNG metres
 
     def test_manifest_marks_1911_and_1921_with_the_scotland_mask(self):
-        manifest = merge_release.build_manifest("1.2.3")
+        with tempfile.TemporaryDirectory() as tmp:
+            with open(Path(tmp) / "register_population.csv", "w", newline="") as f:
+                out = csv.writer(f)
+                out.writerow(["year", "people"])
+                out.writerow([str(config.STANDARD_BASE_YEAR), "1000"])
+            with mock.patch.object(config, "WORK", Path(tmp)):
+                manifest = merge_release.build_manifest("1.2.3")
         by_id = {p["id"]: p for p in manifest["periods"]}
         for pid in ("1911", "1921"):
             self.assertEqual(by_id[pid]["mask"], "scotland", pid)

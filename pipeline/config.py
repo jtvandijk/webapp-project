@@ -245,16 +245,17 @@ COUNT_FLOOR = 10       # counts below this are not kept at all, in either source
 SQL_PREFILTER = 1
 
 # A second, "standardised" bearer count for the register years (2026-09-29, the user's own rule): the register
-# spans 30 years (1997-2026), and the total tracked population changes across them (work/surfaces/manifest.csv,
-# stage 2's "people" column), so a raw year-to-year change in a name's count is partly the register itself
-# growing or shrinking, not only where that name's bearers moved. standardised = raw * population[BASE] /
-# population[year], rounded - what that year's raw count would be if that year's own tracked population had
-# been the same size as the base year's. Register only: the census years are once-a-decade snapshots with much
-# larger population swings, a different kind of comparison, not attempted here. Disclosure floors (THRESHOLD,
-# COUNT_FLOOR) are always checked against the RAW count, never this one, so a name's publication never turns
-# on a rescaled estimate. 2026 is the newest register year and, at the time of writing, still a part year
-# (REGISTER_YEARS's own comment) - if a later data load finalises it, standardisation.population.2026 in
-# manifest.json changes and every standardised count moves with it; that is expected, not a bug.
+# spans 30 years (1997-2026), and the total tracked population changes across them (work/register_population.csv,
+# stage 1 - a byproduct of its own postcode match-rate check, covering EVERY register year, not only the ones
+# with a map), so a raw year-to-year change in a name's count is partly the register itself growing or shrinking,
+# not only where that name's bearers moved. standardised = raw * population[BASE] / population[year], rounded -
+# what that year's raw count would be if that year's own tracked population had been the same size as the base
+# year's. Register only: the census years are once-a-decade snapshots with much larger population swings, a
+# different kind of comparison, not attempted here. Disclosure floors (THRESHOLD, COUNT_FLOOR) are always checked
+# against the RAW count, never this one, so a name's publication never turns on a rescaled estimate. 2026 is the
+# newest register year and, at the time of writing, still a part year (REGISTER_YEARS's own comment) - if a later
+# data load finalises it, standardisation.population.2026 in manifest.json changes and every standardised count
+# moves with it; that is expected, not a bug.
 STANDARD_BASE_YEAR = 2026
 
 

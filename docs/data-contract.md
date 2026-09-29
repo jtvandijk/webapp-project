@@ -108,7 +108,8 @@ Everything that used to be typed into the code as a list of years now lives here
   (`coverage`), which page text uses ("over the period 1997-2016").
 - `standardisation`: `base_year` (text, the register year every `counts_standardised` figure is scaled to),
   `population` (that year's, and every other register year's, total tracked register population -
-  `work/surfaces/manifest.csv`'s own "people" column, stage 2), and `factor` (`population.base_year / population.<year>`,
+  `work/register_population.csv`'s own figures, stage 1 - every register year, not only the ones with a map), and
+  `factor` (`population.base_year / population.<year>`,
   the base year's own factor is `1.0`) - published so `counts_standardised` can be checked or recomputed
   without the pipeline itself.
 - `periods`: **the list of map/slider positions**, in order. Each has an `id` (the year as text),
