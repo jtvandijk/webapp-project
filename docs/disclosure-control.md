@@ -24,6 +24,33 @@ to healthy assets (both as deciles), and a name-based ethnicity estimate. For ex
 type X, 22% in type Y"* (made-up numbers). It also lists the ten most common neighbourhoods today, the ten most common historic
 parishes, and the ten most common forenames for women and for men.
 
+## How the release is organised
+
+Every surname gets its own small file, named after the surname, inside a folder named after the surname's own first
+two letters - one level, not nested. So "smith" is `names/sm/smith.json`, "patel" is `names/pa/patel.json`; there is
+no separate `s/` folder holding `sm/`, `sn/` and so on, just one `sm/` folder directly under `names/`. This keeps
+every folder to at most a few hundred files.
+
+```
+manifest.json            what the release contains as a whole: years, source labels, map colours, the threshold,
+                          which years carry the Scotland outline, names suggested on the welcome screen
+masks/scotland.json      the Scotland outline, drawn on top of a 1911 or 1921 map that is a copy of 1901's (the
+                          1911/1921 census does not cover Scotland)
+index/<xx>.json          per first-two-letters, the surnames that have a page, sorted - what the search box
+                          suggests as someone types
+names/<xx>/<name>.json   one file per surname: its bearer counts and its maps
+facts.csv                one table: every published surname's facts, one row per surname and per fact
+```
+
+**Not part of this release yet:** `lookups.json` (the wording and colours for the group codes) is written at the
+website design stage, not here.
+
+**Not part of the release at all - working files, safe to leave out of the export:** building the release in
+parallel batches (chunks) leaves behind `index_parts/`, `facts_parts/`, and a `chunk_N.done`/`chunk_N.errors.log`
+per batch, sitting next to the files above. These are bookkeeping for the build itself (which batch wrote what,
+and whether it finished cleanly) and are folded into `facts.csv` and `index/` before anything is checked; they can
+be deleted, or simply not copied, when the release is exported.
+
 ## The disclosure principles
 
 | # | Principle | Rule | Effect |
