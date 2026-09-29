@@ -23,7 +23,7 @@ LAT_RANGE = (49.5, 61.5)
 
 NAME_RE = re.compile(r"^[a-z]+$")
 YEAR_RE = re.compile(r"^\d{4}$")
-TOP_LEVEL_KEYS = {"schema", "name", "synthetic", "counts", "maps", "facts"}
+TOP_LEVEL_KEYS = {"schema", "name", "synthetic", "counts", "counts_standardised", "maps", "facts"}
 FACT_KEYS = {"forenames", "places", "oac", "loac", "fpc", "imd", "ahah", "eth"}
 GROUP_SCHEMES = ("oac", "loac", "fpc")          # a most-common group code, plus a distribution over every group seen
 DECILE_SCHEMES = ("imd", "ahah")                # a most-common decile (1-10), plus a 10-number distribution
@@ -90,6 +90,25 @@ def check_manifest(manifest, root, report):
     for key, mask in masks.items():
         if not (root / mask.get("url", "?")).exists():
             report.error(where, f"masks.{key}.url points to a file that does not exist")
+
+    std = manifest.get("standardisation")
+    if std is not None:
+        base_year = std.get("base_year")
+        population, factor = std.get("population", {}), std.get("factor", {})
+        if not (isinstance(base_year, str) and YEAR_RE.match(base_year)):
+            report.error(where, "standardisation.base_year must be a 4-digit year (as text)")
+        elif base_year not in population or base_year not in factor:
+            report.error(where, f"standardisation.base_year {base_year!r} is not in its own population/factor")
+        elif factor.get(base_year) != 1.0:
+            report.error(where, f"standardisation.factor.{base_year} (the base year) must be 1.0")
+        if set(population) != set(factor):
+            report.error(where, "standardisation.population and .factor must cover exactly the same years")
+        for year, people in population.items():
+            if not (YEAR_RE.match(year) and is_int(people) and people > 0):
+                report.error(where, f"standardisation.population.{year} must be a positive whole number")
+        for year, f in factor.items():
+            if not (is_number(f) and f > 0):
+                report.error(where, f"standardisation.factor.{year} must be a positive number")
 
     seen = set()
     for period in manifest.get("periods", []):
@@ -265,6 +284,21 @@ def check_bundle(path, manifest, lookups, threshold, report):
         for year, value in years.items():
             if not YEAR_RE.match(year) or not is_int(value) or value < 0:
                 report.error(where, f"counts.{source}.{year} must map a 4-digit year to a whole number")
+
+    if "counts_standardised" in bundle:
+        standardised = bundle["counts_standardised"]
+        if set(standardised) - {"register"}:
+            report.error(where, "counts_standardised may only have a register key (the census years are not standardised)")
+        factor = manifest.get("standardisation", {}).get("factor", {})
+        for year, value in standardised.get("register", {}).items():
+            if not YEAR_RE.match(year) or not is_int(value) or value < 0:
+                report.error(where, f"counts_standardised.register.{year} must map a 4-digit year to a whole number")
+            elif year not in counts.get("register", {}):
+                report.error(where, f"counts_standardised.register.{year} has no matching counts.register.{year}")
+            elif year not in factor:
+                report.error(where, f"counts_standardised.register.{year}: manifest.standardisation has no factor for {year}")
+            elif value != round(counts["register"][year] * factor[year]):
+                report.error(where, f"counts_standardised.register.{year} does not match counts.register.{year} * manifest.standardisation.factor.{year}")
 
     periods = {p["id"]: p for p in manifest["periods"]}
     levels = {lv["level"] for lv in manifest["levels"]}

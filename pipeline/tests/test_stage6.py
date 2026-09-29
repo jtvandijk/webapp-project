@@ -166,6 +166,70 @@ class BuildBundle(unittest.TestCase):
                          {"oac": {"group": "3b", "distribution": {"3b": 1.0}}})
 
 
+class StandardisedCounts(unittest.TestCase):
+    """load_register_population, register_scale_factors and build_counts_standardised: a second, "standardised"
+    register bearer count that rescales a year to config.STANDARD_BASE_YEAR's own tracked register population
+    (config.py, section 3) - the user's own rule, so a name's raw year-to-year change is not partly just the
+    register's own size changing."""
+
+    def write_manifest(self, tmp, rows):
+        path = Path(tmp) / "surfaces" / "manifest.csv"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", newline="") as f:
+            out = csv.writer(f)
+            out.writerow(["period", "source", "people", "seconds"])
+            out.writerows(rows)
+        return path
+
+    def test_only_register_rows_are_read(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self.write_manifest(tmp, [("1901", "census", "200000", "0.1"), ("2020", "register", "1000", "0.1"),
+                                             ("2026", "register", "1200", "0.1")])
+            self.assertEqual(s6_assemble.load_register_population(path), {"2020": 1000, "2026": 1200})
+
+    def test_a_missing_manifest_stops_with_a_clear_message(self):
+        with self.assertRaises(SystemExit) as stopped:
+            s6_assemble.load_register_population(Path(tempfile.gettempdir()) / "no-such-surfaces-manifest.csv")
+        self.assertIn("stage2.sh", str(stopped.exception))
+
+    def test_the_base_years_own_factor_is_one_and_others_scale_towards_it(self):
+        factors = s6_assemble.register_scale_factors({"2020": 1000, "2025": 1500, "2026": 1200}, base_year=2026)
+        self.assertEqual(factors["2026"], 1.0)
+        self.assertAlmostEqual(factors["2020"], 1200 / 1000)     # 2020 had fewer people tracked: its raw counts scale UP
+        self.assertAlmostEqual(factors["2025"], 1200 / 1500)     # 2025 had more: its raw counts scale DOWN
+
+    def test_a_missing_base_year_stops_with_a_clear_message(self):
+        with self.assertRaises(SystemExit) as stopped:
+            s6_assemble.register_scale_factors({"2020": 1000}, base_year=2026)
+        self.assertIn("2026", str(stopped.exception))
+        self.assertIn("STANDARD_BASE_YEAR", str(stopped.exception))
+
+    def test_default_base_year_is_configs_own(self):
+        factors = s6_assemble.register_scale_factors({str(config.STANDARD_BASE_YEAR): 500})
+        self.assertEqual(factors[str(config.STANDARD_BASE_YEAR)], 1.0)
+
+    def test_only_register_years_with_a_known_factor_are_scaled_and_rounded(self):
+        counts = {"register": {"2020": 100, "2026": 100, "2030": 100}, "census": {"1901": 5000}}
+        scaled = s6_assemble.build_counts_standardised(counts, {"2020": 1.005, "2026": 1.0})       # 2030 has no factor
+        self.assertEqual(scaled, {"register": {"2020": round(100 * 1.005), "2026": 100}})
+        self.assertNotIn("2030", scaled["register"])
+        self.assertNotIn("census", scaled)
+
+    def test_no_register_counts_or_no_matching_factor_gives_nothing_to_publish(self):
+        self.assertEqual(s6_assemble.build_counts_standardised({"census": {"1901": 5000}}, {"2026": 1.0}), {})
+        self.assertEqual(s6_assemble.build_counts_standardised({"register": {"2030": 100}}, {"2026": 1.0}), {})
+
+    def test_build_bundle_only_adds_the_key_when_there_is_something_to_publish(self):
+        map_rows = [{"period": "2026", "action": "build", "geojson": {"type": "FeatureCollection", "features": []}}]
+        count_rows = [{"source": "register", "year": "2026", "n": "200"}]
+        self.assertNotIn("counts_standardised", s6_assemble.build_bundle("smith", map_rows, [], count_rows))
+        self.assertNotIn("counts_standardised", s6_assemble.build_bundle("smith", map_rows, [], count_rows, register_scale={}))
+        self.assertNotIn("counts_standardised", s6_assemble.build_bundle("smith", map_rows, [], count_rows, register_scale={"1997": 1.2}))
+        with_it = s6_assemble.build_bundle("smith", map_rows, [], count_rows, register_scale={"2026": 1.1})
+        self.assertEqual(with_it["counts_standardised"], {"register": {"2026": round(200 * 1.1)}})
+        self.assertEqual(with_it["counts"], {"register": {"2026": 200}})                     # the raw count is never changed
+
+
 class FactsTableRows(unittest.TestCase):
     def test_one_row_per_public_fact_sorted_with_the_same_json_as_in_a_name_file(self):
         rows = [fact_row("imd", "4", {"distribution": [0.1] * 10}), fact_row("imd_score", "4.2", {"sd": 2.4}),
@@ -276,6 +340,11 @@ class AssembleChunkOperations(unittest.TestCase):
             out.writeheader()
             for name in ("alpha", "beta", "gamma"):
                 out.writerow({"source": "register", "year": "2026", "surname": name, "n": "500"})
+        (self.root / "surfaces").mkdir()
+        with open(self.root / "surfaces" / "manifest.csv", "w", newline="") as f:
+            out = csv.writer(f)
+            out.writerow(["period", "source", "people", "seconds"])
+            out.writerow([str(config.STANDARD_BASE_YEAR), "register", "1000", "0.1"])       # the base year itself: factor 1.0
 
     def run_stage(self, *args):
         with mock.patch.object(sys, "argv", ["s6_assemble", *args]):
@@ -361,6 +430,20 @@ class AssembleChunkOperations(unittest.TestCase):
                 os.utime(self.root / stale, (later, later))
                 self.assemble()
                 self.assertIn("alpha", self.written(), f"{stale} is newer than the finished chunk: it has to be redone")
+
+    def test_the_assembled_file_gets_a_standardised_register_count_too(self):
+        self.prepared()
+        self.assemble()
+        alpha = json.loads((self.root / "release" / "names" / "al" / "alpha.json").read_text())
+        self.assertEqual(alpha["counts_standardised"], {"register": {"2026": 500}})          # base year: factor 1.0, so equal to the raw count
+        self.assertEqual(alpha["counts"], {"register": {"2026": 500}})                       # the raw count is untouched
+
+    def test_a_missing_surfaces_manifest_stops_the_chunk_clearly(self):
+        (self.root / "surfaces" / "manifest.csv").unlink()
+        self.prepared()
+        with self.assertRaises(SystemExit) as stopped:
+            self.assemble()
+        self.assertIn("stage2.sh", str(stopped.exception))
 
     def test_a_done_marker_from_a_different_chunks_value_is_not_trusted(self):
         self.prepared()
@@ -643,6 +726,34 @@ class Stage6EndToEnd(unittest.TestCase):
             got = {(source, year) for source, years in bundle["counts"].items() for year in years}
             self.assertEqual(got, by_name[bundle["name"]], bundle["name"])
 
+    def test_a_bundle_gets_a_standardised_register_count_matching_an_independent_recomputation(self):
+        with open(self.root / "surfaces" / "manifest.csv", newline="") as f:
+            population = {row["period"]: int(row["people"]) for row in csv.DictReader(f) if row["source"] == "register"}
+        base = population[str(config.STANDARD_BASE_YEAR)]
+        checked_at_least_one = False
+        for path in self.all_files():
+            bundle = json.loads(path.read_text())
+            register = bundle["counts"].get("register", {})
+            expected = {year: round(n * base / population[year]) for year, n in register.items() if year in population}
+            if expected:
+                self.assertEqual(bundle.get("counts_standardised", {}).get("register"), expected, bundle["name"])
+                checked_at_least_one = True
+            else:
+                self.assertNotIn("counts_standardised", bundle, bundle["name"])
+        self.assertTrue(checked_at_least_one)
+
+    def test_the_manifest_carries_the_same_population_and_factors_used_to_standardise(self):
+        manifest = json.loads((self.root / "release" / "manifest.json").read_text())
+        std = manifest["standardisation"]
+        self.assertEqual(std["base_year"], str(config.STANDARD_BASE_YEAR))
+        self.assertEqual(std["factor"][std["base_year"]], 1.0)
+        with open(self.root / "surfaces" / "manifest.csv", newline="") as f:
+            population = {row["period"]: int(row["people"]) for row in csv.DictReader(f) if row["source"] == "register"}
+        self.assertEqual(std["population"], population)
+        base = population[std["base_year"]]
+        for year, people in population.items():
+            self.assertAlmostEqual(std["factor"][year], base / people, msg=year)
+
     def test_scotland_periods_that_are_copies_name_a_period_with_its_own_geometry(self):
         # not asserting a copy must exist at all - depends on the fake data's random Scottish shares, the
         # same call test_stage234.py's own substitute test makes - just that when one does, it is genuine:
@@ -784,6 +895,66 @@ class ValidatorCopyOfChecks(unittest.TestCase):
         maps = {"1901": self.SHAPE, "1911": self.copy("1901"), "1921": self.copy("1911")}
         errors = self.errors_for({"1901": 500, "1911": 500, "1921": 500}, maps)
         self.assertTrue([e for e in errors if "maps.1921" in e and "itself a copy" in e], errors)
+
+
+class ValidatorStandardisedCountChecks(unittest.TestCase):
+    """tools/validate_data.py's rules for counts_standardised and manifest.standardisation - hand-built,
+    the same style as ValidatorCopyOfChecks (which only checks maps, not this)."""
+
+    MANIFEST = {"schema": 1, "release": {"version": "t", "synthetic": False}, "threshold": 100,
+               "sources": {"register": {"label": "r", "short": "r", "counts": "r", "coverage": [1997, 2026]}},
+               "periods": [{"id": "2020", "year": 2020, "source": "register"}, {"id": "2026", "year": 2026, "source": "register"}],
+               "levels": [{"level": 1}, {"level": 2}, {"level": 3}],
+               "standardisation": {"base_year": "2026", "population": {"2020": 1000, "2026": 1200},
+                                   "factor": {"2020": 1.2, "2026": 1.0}}}
+    SHAPE = {"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {"level": 1},
+             "geometry": {"type": "Polygon", "coordinates": [[[-3, 55], [-2, 55], [-2, 56], [-3, 55]]]}}]}
+
+    def errors_for(self, counts, standardised, manifest=None):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "names" / "sm" / "smith.json"
+            path.parent.mkdir(parents=True)
+            bundle = {"schema": 1, "name": "smith", "counts": {"register": counts}, "maps": {"2026": self.SHAPE}}
+            if standardised is not None:
+                bundle["counts_standardised"] = standardised
+            path.write_text(json.dumps(bundle))
+            report = validate_data.Report()
+            validate_data.check_bundle(path, manifest or self.MANIFEST, {}, 100, report)
+            return report.errors
+
+    def test_a_correct_standardised_count_is_accepted(self):
+        self.assertEqual(self.errors_for({"2020": 100, "2026": 200}, {"register": {"2020": 120, "2026": 200}}), [])
+
+    def test_wrong_arithmetic_is_caught(self):
+        errors = self.errors_for({"2020": 100, "2026": 200}, {"register": {"2020": 999, "2026": 200}})
+        self.assertTrue(errors and "2020" in errors[0])
+
+    def test_no_key_at_all_is_fine(self):
+        self.assertEqual(self.errors_for({"2020": 100, "2026": 200}, None), [])
+
+    def test_a_year_with_no_matching_raw_count_is_caught(self):
+        errors = self.errors_for({"2026": 200}, {"register": {"2020": 120, "2026": 200}})
+        self.assertTrue(any("2020" in e and "no matching" in e for e in errors))
+
+    def test_a_year_with_no_known_factor_is_caught(self):
+        errors = self.errors_for({"2020": 100, "2030": 50}, {"register": {"2020": 120, "2030": 50}})
+        self.assertTrue(any("2030" in e and "no factor" in e for e in errors))
+
+    def test_a_census_key_is_refused(self):
+        errors = self.errors_for({"2020": 100}, {"register": {"2020": 120}, "census": {"1901": 5}})
+        self.assertTrue(any("may only have a register key" in e for e in errors))
+
+    def test_manifest_standardisation_shape_is_checked(self):
+        def manifest_errors(std):
+            manifest = {**self.MANIFEST, "standardisation": std}
+            report = validate_data.Report()
+            validate_data.check_manifest(manifest, Path(tempfile.gettempdir()), report)
+            return [e for e in report.errors if "standardisation" in e]
+        self.assertEqual(manifest_errors(self.MANIFEST["standardisation"]), [])
+        self.assertTrue(manifest_errors({"base_year": "2026", "population": {"2020": 1000}, "factor": {"2020": 1.2, "2026": 1.0}}))          # base year missing from its own population
+        self.assertTrue(manifest_errors({"base_year": "2026", "population": {"2020": 1000, "2026": 1200}, "factor": {"2020": 1.2, "2026": 0.9}}))  # base year's own factor must be 1.0
+        self.assertTrue(manifest_errors({"base_year": "2026", "population": {"2020": 1000, "2026": 1200}, "factor": {"2026": 1.0}}))          # population/factor years disagree
+        self.assertTrue(manifest_errors({"base_year": "2026", "population": {"2020": -5, "2026": 1200}, "factor": {"2020": 1.2, "2026": 1.0}}))  # a negative population
 
 
 class ValidatorFactsTable(unittest.TestCase):
@@ -1037,6 +1208,18 @@ class PreviewWebTests(unittest.TestCase):
         self.assertEqual(block.count("<th>19") + block.count("<th>20"), 30)      # every year is there ...
         self.assertEqual(block.count("<tr>"), 2 * 2)                              # ... in two rows of years (each with its bearers row)
         self.assertEqual(block.count("Register"), 1)                              # the source is named once, not on every row
+
+    def test_a_standardised_register_row_sits_under_the_raw_one_and_census_never_gets_one(self):
+        bundle = {"counts": {"census": {"1901": 500}, "register": {"2020": 100, "2026": 120}},
+                 "counts_standardised": {"register": {"2020": 105}}}                    # 2026 has no known factor
+        block = preview_web.counts_block(bundle)
+        self.assertIn('<tr><td>standardised</td><td class="num">105</td><td/></tr>', block)
+        self.assertLess(block.index('<td>bearers</td>', block.index("Register")), block.index("standardised"))
+        self.assertEqual(block.count("standardised"), 1)                               # not shown at all for census
+
+    def test_no_standardised_counts_means_no_extra_row(self):
+        block = preview_web.counts_block({"counts": {"register": {"2026": 100}}})
+        self.assertNotIn("standardised", block)
 
     def cards(self, facts, names=None):
         return preview_web.facts_block({"facts": facts}, names)

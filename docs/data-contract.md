@@ -55,6 +55,9 @@ An example (numbers made up, shape exactly as the validator expects; `maps` shor
     "census":   { "1851": 412876, "1861": 430120 },
     "register": { "1997": 1201455, "2016": 1190433 }
   },
+  "counts_standardised": {
+    "register": { "1997": 1190455, "2016": 1190433 }
+  },
   "maps": {
     "1851": { "type": "FeatureCollection", "features": [
       { "type": "Feature", "properties": { "level": 2 },
@@ -83,6 +86,7 @@ Rules:
 |---|---|
 | `name` | Lowercase letters a to z only. It must equal the file name. This is the search key. |
 | `counts` | Number of bearers per year, for **every** year we have, not only the mapped ones. Grouped by source (`census`, `register`). Years are text keys. |
+| `counts_standardised` | Optional, `register` only (decided 2026-09-29, the user's own rule). Every register year in `counts.register` rescaled to `manifest.standardisation.base_year`'s own tracked register population: `raw * manifest.standardisation.factor.<year>`, rounded. So a name's year-to-year change is not partly just the register itself growing or shrinking. Missing means it was not computed for that year (no known factor); the key is absent entirely for a name with no register counts. **Disclosure never uses this number** - the threshold and the floor are always checked against the raw `counts`. |
 | `maps` | One entry per map period, keyed by the period `id` from the manifest. A period is only present if the name has **at least the threshold** (100) bearers that year. A file with no map at all is not published. **Open (agreed 2026-09-23): a missing period should say why** ("no map because too few bearers that year" vs "no map because the concentration wasn't strong enough to show" vs other reasons) rather than the visitor just seeing that slider position is absent - `rules.Resolution.reason` already has this text internally in the pipeline for every omitted period, it just doesn't reach the published files yet. Needs a field (e.g. a `mapNotes` object alongside `maps`, keyed the same way) and website text for it - not yet designed or built. |
 | `copyOf` | Optional, on a map entry (a GeoJSON "foreign member" next to `type` and `features`): the period id whose map this one is. Present exactly when the pipeline copied another year's map instead of building one: a heavily Scottish name shows its 1901 map for 1911 and 1921 (`"1911": { "type": "FeatureCollection", "copyOf": "1901", ... }`), because Scotland is missing from those censuses. **Decided 2026-09-26: the website draws a period's mask (Scotland, blanked out) only on a map WITHOUT `copyOf`.** A built 1911 or 1921 map has no Scottish people in it, and without the mask a name like Smith looks as if it had vanished from Scotland; a copied map is 1901's, which has Scotland, so it gets no mask, and the page says it shows 1901. Written by `pipeline/s6_assemble.py`; `tools/validate_data.py` checks that the period named exists in the same file, has a map of its own and is not itself a copy. |
 | map shape | Standard GeoJSON, longitude/latitude (EPSG:4326), 3 decimal places (about 110 m north-south; `config.GEOJSON_DECIMALS`, chosen 2026-09-26: the outlines are simplified to 400 m anyway, and 3 instead of 4 is about 19% smaller gzipped), `Polygon` or `MultiPolygon`. Each feature has `properties.level` 1, 2 or 3 (1 = concentrated, 3 = most concentrated). The three levels are bands that do not overlap. |
@@ -102,6 +106,11 @@ Everything that used to be typed into the code as a list of years now lives here
 - `threshold`: the minimum number of bearers for a map (100).
 - `sources`: `census` and `register`, with the label, what is being counted, and the years covered
   (`coverage`), which page text uses ("over the period 1997-2016").
+- `standardisation`: `base_year` (text, the register year every `counts_standardised` figure is scaled to),
+  `population` (that year's, and every other register year's, total tracked register population -
+  `work/surfaces/manifest.csv`'s own "people" column, stage 2), and `factor` (`population.base_year / population.<year>`,
+  the base year's own factor is `1.0`) - published so `counts_standardised` can be checked or recomputed
+  without the pipeline itself.
 - `periods`: **the list of map/slider positions**, in order. Each has an `id` (the year as text),
   its `source`, and optionally a `mask` (draw an extra outline) and a `note` shown to the visitor. A `mask` on a period is
   drawn on a name's map **only if that name's map for the period was built from that year's own data** (see `copyOf`).

@@ -125,10 +125,13 @@ YEARS_PER_ROW = 15                   # the register has about 30 years: wrapped,
 
 
 def counts_block(bundle):
-    """Every year's bearers: one small table per source, the years across the top (wrapped after YEARS_PER_ROW)."""
+    """Every year's bearers: one small table per source, the years across the top (wrapped after YEARS_PER_ROW).
+    Register also gets a "standardised" row underneath (counts_standardised, config.STANDARD_BASE_YEAR) for any
+    year that has one - blank where it does not (no known scale factor for that year)."""
     counts = bundle.get("counts", {})
     if not counts:
         return "<p><i>no counts</i></p>"
+    standardised = bundle.get("counts_standardised", {}).get("register", {})
     tables = []
     for source, years in sorted(counts.items()):
         years = sorted(years.items())
@@ -139,6 +142,9 @@ def counts_block(bundle):
             head = "".join(f"<th>{html.escape(year)}</th>" for year, _ in part)
             cells = "".join(f'<td class="num">{n:,}</td>' for _, n in part)
             rows.append(f"<tr><th>{label}</th>{head}</tr><tr><td>bearers</td>{cells}</tr>")
+            if source == "register" and standardised:
+                scaled = "".join(f'<td class="num">{standardised[year]:,}</td>' if year in standardised else "<td/>" for year, _ in part)
+                rows.append(f"<tr><td>standardised</td>{scaled}</tr>")
         tables.append(f'<table class="counts">{"".join(rows)}</table>')
     return "".join(tables)
 

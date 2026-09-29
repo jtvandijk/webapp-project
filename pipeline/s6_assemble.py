@@ -36,6 +36,12 @@ own facts/counts slices (from --prepare), and for every name that chunk owns:
             file get facts rows.
     counts  every (source, year) this name has, straight from counts.csv - not only the mapped years.
 
+    counts_standardised   register bearers rescaled so a raw year-to-year change is not partly just the
+            register's own tracked population growing or shrinking (config.py, section 3, STANDARD_BASE_YEAR;
+            register_scale_factors(), read once from work/surfaces/manifest.csv for the whole chunk). Register
+            only, and only for years with a known factor; no key at all for a name with no register counts.
+            Disclosure floors are always checked against the raw counts, never this one.
+
 Also writes work/release/index_parts/chunk_N.txt (the names this chunk wrote, one per line - the input to
 merge_release.py's search index, and to a by-hand export/wipe later if HPC storage ever needs it: each
 chunk's own file names exactly what is safe to move and delete together, which matters because the 200
@@ -170,7 +176,36 @@ def build_maps(rows):
     return maps
 
 
-def build_bundle(name, map_rows, fact_rows, count_rows, include_facts=False):
+def load_register_population(path=None):
+    """{year: people}: the register rows of work/surfaces/manifest.csv (stage 2) - the total tracked register
+    population of each year, on the same rule the maps themselves use. The input register_scale_factors() needs."""
+    path = Path(path) if path else config.WORK / "surfaces" / "manifest.csv"
+    if not path.exists():
+        raise SystemExit(f"{path} does not exist yet - stage 2 makes it: run  qsub pipeline/hpc/stage2.sh  first.")
+    with open(path, newline="") as f:
+        return {row["period"]: int(row["people"]) for row in csv.DictReader(f) if row["source"] == "register"}
+
+
+def register_scale_factors(population, base_year=None):
+    """{year: factor} for every register year in `population` (config.STANDARD_BASE_YEAR's own factor is 1.0):
+    a register year's raw bearers * its factor rescales that year to the base year's own tracked population size."""
+    base_year = str(base_year if base_year is not None else config.STANDARD_BASE_YEAR)
+    if base_year not in population:
+        raise SystemExit(f"{base_year} (config.STANDARD_BASE_YEAR) is not a register year in work/surfaces/manifest.csv - "
+                         "run stage 2 for it, or change STANDARD_BASE_YEAR.")
+    base = population[base_year]
+    return {year: base / people for year, people in population.items()}
+
+
+def build_counts_standardised(counts, register_scale):
+    """The public "counts_standardised" object: this name's register bearers rescaled by register_scale_factors()
+    (config.py, section 3) - register only, and only for years with a known factor. {} (so no key is written) if
+    the name has no register counts, or none of its years have one."""
+    scaled = {year: round(n * register_scale[year]) for year, n in counts.get("register", {}).items() if year in register_scale}
+    return {"register": scaled} if scaled else {}
+
+
+def build_bundle(name, map_rows, fact_rows, count_rows, include_facts=False, register_scale=None):
     """The per-name JSON (counts and maps; the facts too if include_facts), or None if it would have no map
     at all (data-contract.md: a file with no map is not published - every name on the list should clear this,
     since that is what put it on the list, but a name is skipped rather than published broken if it somehow
@@ -178,7 +213,12 @@ def build_bundle(name, map_rows, fact_rows, count_rows, include_facts=False):
     maps = build_maps(map_rows)
     if not maps:
         return None
-    bundle = {"schema": 1, "name": name, "counts": build_counts(count_rows), "maps": maps}
+    counts = build_counts(count_rows)
+    bundle = {"schema": 1, "name": name, "counts": counts, "maps": maps}
+    if register_scale:
+        standardised = build_counts_standardised(counts, register_scale)
+        if standardised:
+            bundle["counts_standardised"] = standardised
     if include_facts:
         facts = build_facts(fact_rows)
         if facts:
@@ -363,6 +403,7 @@ def main():
     started = time.perf_counter()
     facts_by_name = load_chunk_csv("facts", args.chunk)            # these two are small: the chunk's own slice of each
     counts_by_name = load_chunk_csv("counts", args.chunk)
+    register_scale = register_scale_factors(load_register_population())     # one small dict, computed once for the whole chunk
     maps = iter_maps_by_name(args.maps_dir, args.chunk)            # this is not: one name at a time
     print(f"chunk {args.chunk}: facts and counts loaded in {time.perf_counter() - started:.1f}s", flush=True)
 
@@ -372,7 +413,7 @@ def main():
         for name, map_rows in maps:
             try:
                 bundle = build_bundle(name, map_rows, facts_by_name.get(name, []), counts_by_name.get(name, []),
-                                      include_facts=args.facts_in_names)
+                                      include_facts=args.facts_in_names, register_scale=register_scale)
                 rows = facts_table_rows(name, facts_by_name.get(name, [])) if bundle is not None else []
             except Exception:
                 failed.append(name)

@@ -36,7 +36,7 @@ import shapely
 from shapely.geometry import mapping, shape
 
 from . import config, kde
-from .s6_assemble import FACTS_TABLE_HEADER
+from .s6_assemble import FACTS_TABLE_HEADER, load_register_population, register_scale_factors
 
 # The same fixed text tools/build_sample_data.py already uses (a real, working choice for this project,
 # not made up) - see the module docstring above.
@@ -123,6 +123,7 @@ def build_manifest(version, synthetic=False):
     if len(thresholds) != 1:
         raise SystemExit(f"config.THRESHOLD has more than one value ({config.THRESHOLD}) - manifest.json needs one number; "
                          "decide which, or how to show two, before building it.")
+    population = load_register_population()
     return {
         "schema": 1,
         "release": {"version": version, "date": datetime.date.today().isoformat(), "synthetic": synthetic},
@@ -136,6 +137,10 @@ def build_manifest(version, synthetic=False):
         "masks": MASKS,
         "basemap": BASEMAP,
         "examples": EXAMPLES,
+        # so counts_standardised (a name's own file) can be checked or recomputed without the pipeline itself:
+        # base_year's own factor is 1.0; population is the same work/surfaces/manifest.csv figure the factor came from.
+        "standardisation": {"base_year": str(config.STANDARD_BASE_YEAR), "population": population,
+                            "factor": register_scale_factors(population)},
     }
 
 
