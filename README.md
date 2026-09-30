@@ -63,8 +63,8 @@ This is individual-level data. It is never published as such: a surname's map is
 year in which it has at least 100 bearers, and nothing at all is shown below that. This repository holds
 code, not data - the two folders that could hold real or realistic-looking extracts (`data-prep/`,
 `work/`) are both git-ignored, and so is `raw-indicators/` (downloads of neighbourhood classifications, see
-below: mostly public, but not ours to redistribute, and one of them, the financial precarity lookup from area to
-group, is **safeguarded data that must never be published**).
+below: mostly public, but not ours to redistribute, and two of them - the financial precarity lookup and the GB2C
+gambling classification's lookup, both from area to group - are **safeguarded data that must never be published**).
 
 ### Neighbourhood classifications
 

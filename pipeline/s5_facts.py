@@ -57,7 +57,7 @@ from .names import forename_clean, name_key, place_label, surname_key
 from .s3_extracts import load_names
 
 FIELDS = ["surname", "fact", "version", "ref_year", "n_bearers", "value", "detail"]
-QUERIED = ["oac", "loac", "ahah", "imd", "fpc", "places", "eth"]   # one query per reference year
+QUERIED = ["oac", "loac", "ahah", "imd", "fpc", "gb2c", "places", "eth"]   # one query per reference year
 REGISTER_FACTS = QUERIED + ["forenames"]                           # forenames: one query in all
 CENSUS_FACTS = ["forenames_census", "parishes"]                    # one query per census year
 ALL = REGISTER_FACTS + CENSUS_FACTS
@@ -322,7 +322,7 @@ def _tally_value(tally, fact, total, tied=False):
 
 
 def compute_groups(fact, extracted, ref_years, tally):
-    """OAC, LOAC and FPC: the most common group, and the share of bearers in every group."""
+    """OAC, LOAC, FPC and GB2C: the most common group, and the share of bearers in every group."""
     out = []
     for key, rows in sorted(extracted.items()):
         by_value = Counter()
@@ -522,7 +522,7 @@ def build_report(names, ref_years, counts, tally, outputs, pooled_scopes=None):
     lines += textwrap.wrap(
         "'bearers covered' is about the data, not about the names: of ALL the bearers of these names, in their reference "
         "years, the share who live where the classification has a value (whether or not the fact is then reported for "
-        "their name). About 99.9% is expected for OAC, AHAH, IMD, FPC and places; a lower share for one of them means a "
+        "their name). About 99.9% is expected for OAC, AHAH, IMD, FPC, GB2C and places; a lower share for one of them means a "
         "join problem. LOAC covers London only, so its share is about London's share of the bearers (roughly one in "
         "seven), by design, and it barely moves when a small name is added, since big names dominate the total. "
         "Ethnicity depends on how many bearers have a code.", width=100)
@@ -628,6 +628,8 @@ def main():
         results["loac"] = compute_groups("loac", load("loac"), ref_years, tally)
     if "fpc" in facts:
         results["fpc"] = compute_groups("fpc", load("fpc"), ref_years, tally)      # safeguarded: see nbhd_tables.py
+    if "gb2c" in facts:
+        results["gb2c"] = compute_groups("gb2c", load("gb2c"), ref_years, tally)   # safeguarded: see nbhd_tables.py
     if "ahah" in facts:
         results["ahah"] = compute_deciles("ahah", load("ahah"), ref_years, tally)
     if "imd" in facts:

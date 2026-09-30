@@ -9,7 +9,8 @@ import build_lookups                       # noqa: E402
 import validate_data                       # noqa: E402
 
 
-@unittest.skipUnless(build_lookups.FPC_RAW.exists(), "the FPC colours file (raw-indicators/fpc/, git-ignored) is not on this machine")
+@unittest.skipUnless(build_lookups.FPC_RAW.exists() and build_lookups.GB2C_RAW.exists(),
+                     "the FPC/GB2C safeguarded downloads (raw-indicators/, git-ignored) are not both on this machine")
 class BuildLookups(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -24,6 +25,7 @@ class BuildLookups(unittest.TestCase):
         self.assertEqual((len(self.lookups["oac"]["supergroups"]), len(self.lookups["oac"]["groups"])), (8, 21))
         self.assertEqual((len(self.lookups["loac"]["supergroups"]), len(self.lookups["loac"]["groups"])), (7, 16))
         self.assertEqual(len(self.lookups["fpc"]["groups"]), 13)
+        self.assertEqual(len(self.lookups["gb2c"]["groups"]), 11)
 
     def test_ethnicity_has_every_configured_group_and_unknown(self):
         self.assertEqual(set(self.lookups["eth"]), set(config.ETH_GROUPS) | {config.ETH_UNKNOWN})
@@ -33,6 +35,12 @@ class BuildLookups(unittest.TestCase):
         self.assertIn("Underprivileged dependent", names)
         self.assertIn("Ageing Blue-collar households", names)
         self.assertFalse([n for n in names if "  " in n or ":" in n], "a name still carries its code prefix or a double space")
+
+    def test_gb2c_groups_have_a_name_and_a_provisional_colour_each(self):
+        for code, group in self.lookups["gb2c"]["groups"].items():
+            self.assertTrue(group["name"], code)
+            self.assertRegex(group["colour"], r"^#[0-9a-fA-F]{6}$", code)
+        self.assertEqual(len({g["colour"] for g in self.lookups["gb2c"]["groups"].values()}), 11)   # all distinct
 
     def test_the_ahah_text_matches_the_direction_of_the_data(self):
         self.assertIn("first decile is the healthiest", self.lookups["scales"]["ahah"]["text"])

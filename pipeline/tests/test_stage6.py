@@ -827,10 +827,10 @@ class Stage6EndToEnd(unittest.TestCase):
         """Just enough lookups.json for every code actually produced in this run to be found - lookups.json
         itself is out of scope for stage 6 (its wording needs a person, not the database), but validating
         assemble's own output still needs some lookup table to check group codes against."""
-        codes = {"oac": set(), "loac": set(), "fpc": set(), "eth": set()}
+        codes = {"oac": set(), "loac": set(), "fpc": set(), "gb2c": set(), "eth": set()}
         for row in self.facts_table():
             fact, data = row["fact"], json.loads(row["data"])
-            if fact in ("oac", "loac", "fpc"):
+            if fact in ("oac", "loac", "fpc", "gb2c"):
                 codes[fact].add(data["group"])
             if fact == "eth":
                 codes["eth"].add(str(data["group"]))
@@ -838,7 +838,8 @@ class Stage6EndToEnd(unittest.TestCase):
         for scheme in ("oac", "loac"):
             lookups[scheme] = {"supergroups": {"x": {"name": "x", "colour": "#000"}},
                                "groups": {c: {"name": c, "colour": "#000", "supergroup": "x"} for c in codes[scheme]}}
-        lookups["fpc"] = {"groups": {c: {"name": c, "colour": "#000"} for c in codes["fpc"]}}
+        for scheme in ("fpc", "gb2c"):
+            lookups[scheme] = {"groups": {c: {"name": c, "colour": "#000"} for c in codes[scheme]}}
         for scale in ("imd", "ahah"):
             lookups["scales"][scale] = {"colours": ["#000"] * 10}
         return lookups
@@ -1250,6 +1251,12 @@ class PreviewWebTests(unittest.TestCase):
         html_ = self.cards({"oac": {"group": "6c", "distribution": {"2a": 0.5, "6c": 0.5}}})
         self.assertLess(html_.index("6c"), html_.index("2a"))
 
+    def test_gb2c_has_its_own_card_with_the_right_title(self):
+        names = {"gb2c": {"groups": {"BG4": {"name": "Mindful Entertainment Seekers"}}}}
+        html_ = self.cards({"gb2c": {"group": "BG4", "distribution": {"BG4": 1.0}}}, names)
+        self.assertIn("GB2C Gambling Classification (GB2C)", html_)
+        self.assertIn("Mindful Entertainment Seekers", html_)
+
     def test_only_the_biggest_groups_are_listed_and_the_rest_are_one_line_with_their_total(self):
         distribution = {f"g{i}": 0.1 for i in range(10)}                    # ten groups of 10%
         html_ = self.cards({"fpc": {"group": "g0", "distribution": distribution}})
@@ -1333,9 +1340,10 @@ class PreviewWebTests(unittest.TestCase):
 
     def test_the_group_names_file_has_every_group_of_each_classification_and_clean_names(self):
         names = json.loads((config.REFERENCE / "group_names.json").read_text())
-        self.assertEqual({k: len(v["groups"]) for k, v in names.items() if k != "_about"}, {"oac": 21, "loac": 16, "fpc": 13})
+        self.assertEqual({k: len(v["groups"]) for k, v in names.items() if k != "_about"}, {"oac": 21, "loac": 16, "fpc": 13, "gb2c": 11})
         self.assertEqual(sorted(names["fpc"]["groups"]), [f"{c}{n:02d}" for c, ns in zip("ABCDE", ([1, 2], [3, 4, 5], [6, 7, 8], [9, 10], [11, 12, 13])) for n in ns])
-        for scheme in ("oac", "loac", "fpc"):
+        self.assertEqual(sorted(names["gb2c"]["groups"]), sorted("BG1 BG2 BG3 BG4 BG5 BG6 B1 B2 G1 G2 G3".split()))
+        for scheme in ("oac", "loac", "fpc", "gb2c"):
             for code, entry in names[scheme]["groups"].items():
                 name = entry["name"]
                 self.assertTrue(name and name == name.strip() and "  " not in name and not name.startswith(code), (scheme, code, name))
@@ -1345,6 +1353,7 @@ class PreviewWebTests(unittest.TestCase):
     def test_the_group_codes_the_fake_database_uses_are_all_named(self):
         names = json.loads((config.REFERENCE / "group_names.json").read_text())
         self.assertEqual(set(fake_data.FPC_GROUPS), set(names["fpc"]["groups"]))            # the real codes' shape, so the real ones will match
+        self.assertEqual(set(fake_data.GB2C_GROUPS), set(names["gb2c"]["groups"]))
 
     def test_lookups_option_swaps_the_names_and_a_missing_file_shows_codes(self):
         with tempfile.TemporaryDirectory() as tmp:

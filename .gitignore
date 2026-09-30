@@ -38,3 +38,9 @@ _meta.txt
 **/nbhd_fpc.csv
 **/fpc_final*.csv
 **/fpc_label*.csv
+
+#SAFEGUARDED: the GB2C gambling classification's lookup from area to group must never be committed, pushed or published.
+#Same second-lock reasoning as FPC above (its published group names and descriptions are not safeguarded).
+/raw-indicators/gb2c/
+**/nbhd_gb2c.csv
+**/lsoa21dz22-gb2c*.csv

@@ -72,6 +72,7 @@ An example (numbers made up, shape exactly as the validator expects; `maps` shor
     "oac":  { "group": "3b", "distribution": { "3b": 0.62, "2a": 0.11, "6c": 0.07 } },
     "loac": { "group": "A1", "distribution": { "A1": 0.55, "B2": 0.2 } },
     "fpc":  { "group": "4", "distribution": { "4": 0.4, "9": 0.15 } },
+    "gb2c": { "group": "BG4", "distribution": { "BG4": 0.21, "G2": 0.14 } },
     "imd":  { "mode": 4, "mean": 4.2, "sd": 2.4, "distribution": [0.02, 0.08, 0.11, 0.2, 0.18, 0.14, 0.11, 0.08, 0.05, 0.03] },
     "ahah": { "mode": 6, "distribution": [ ... 10 numbers ... ] },
     "eth":  { "group": "WBR", "distribution": { "WBR": 0.71, "WIR": 0.06 },
@@ -93,7 +94,7 @@ Rules:
 | `facts` | Inside a name file (if folded in) or as rows of `facts.csv` (`name,fact,data`; `data` is the object below, one row per key: `forenames`, `places`, `oac`, ...). Every entry is optional. **Missing means no data**; the page then says so. Lists are ordered most common first. `facts.csv` is sorted by name then fact, and only has facts for names that have a file: a name below the threshold has no facts either (`tools/validate_data.py` checks both). |
 | `forenames` | Lowercase, at most 10 per sex (`f`, `m`) per source. |
 | `places` | At most 10 rows per source, most frequent first. The page shows the first 5. `census` are parishes (`area` = registration county or district), `register` are neighbourhoods (`area` = local authority). |
-| `oac`, `loac`, `fpc` | The most common **group** code (`"3b"`, `"A1"`, `"4"`). `distribution` = share of bearers in every group seen, keyed by group code (adding up to 1). The supergroup follows from the group, via `lookups.json`. |
+| `oac`, `loac`, `fpc`, `gb2c` | The most common **group** code (`"3b"`, `"A1"`, `"4"`, `"BG4"`). `distribution` = share of bearers in every group seen, keyed by group code (adding up to 1). The supergroup follows from the group, via `lookups.json` (`fpc` and `gb2c` have no supergroup concept). |
 | `imd`, `ahah` | `mode` = most common decile (1 to 10; for `ahah`, 1 is healthiest). `distribution` = share of bearers in each decile, ten numbers adding up to 1. `imd` also has `mean` and `sd`: average and spread of the deprivation percentile (the "GBNames deprivation score") - `ahah` does not. |
 | `eth` | The most common Ethnicity Estimator census group (`"WBR"` = White British; see `config.ETH_GROUPS`), or `"unknown"` if no group had enough bearers - a real, published value, not a missing field. `distribution` = share per group. `countries`: the three most common underlying codes (group and country, e.g. `"WBR-EN"`), most common first. |
 | `synthetic` | Only in sample data: `true`. Real releases must not have it (see checks below). |
@@ -124,8 +125,8 @@ Everything that used to be typed into the code as a list of years now lives here
 
 - `cards`: titles and explanatory text for every box on the page (so text can be edited without touching code).
 - `oac`, `loac`: `supergroups` and `groups`, each with name, colour, description.
-- `fpc`: name and colour per group, and per cluster (`config.py`'s `ETH_GROUPS`-style fixed list; the
-  group-to-area lookup itself stays safeguarded, only the group names are ever public).
+- `fpc`, `gb2c`: name and colour per group (`fpc` also per cluster); the group-to-area lookup itself
+  stays safeguarded for both, only the group names are ever public.
 - `eth`: name per Ethnicity Estimator group (`config.ETH_GROUPS`) and for `"unknown"`.
 - `scales`: colours (and text) for the 10-step decile bars (`imd`, `ahah`).
 
@@ -152,7 +153,7 @@ One request per search. Today a search is about 22 database queries plus up to 9
 
 - any **map exists for a year with fewer bearers than the threshold** (the disclosure guard);
 - a map is not longitude/latitude inside Great Britain (catches un-projected or swapped coordinates);
-- a code (OAC group, FPC group, ...) is not in `lookups.json`;
+- a code (OAC group, FPC group, GB2C group, ...) is not in `lookups.json`;
 - a file is in the wrong folder, or the name does not match the file name;
 - the `synthetic` flag disagrees with the manifest (sample data can never pass as real, or the reverse);
 - the `index` does not list exactly the files that exist.
@@ -216,5 +217,6 @@ before the long run starts.
 | `imd` | Most common decile, plus mean and sd (England/Wales 2019, Scotland 2020). | **England 2025, Wales 2025, Scotland 2020v2.** Each country is ranked on its own, then treated as comparable (a known simplification). Decile 1 = most deprived. The "GBNames deprivation score" is the mean and sd of the percentile. |
 | `ahah` | Most common decile (version 3). | **Version 5.1.** Decile 1 = **healthiest**, 10 = least healthy: the opposite way round from `imd`, and the legend must say so. |
 | `fpc` (new; was called precarity) | Did not exist. | **Financial Precarity Classification**: most common group (13, inside 5 clusters), joined on `lsoa21cd`. Its lookup from area to group is **safeguarded**, so the download and the lookup table are never in the repository; the classification's names, and a per-surname most common group, may be published (confirmed 2026-09-24). Now in the file format above as `fpc`. |
+| `gb2c` (new) | Did not exist. | **GB2C Gambling Classification**: most common group (11 Active Subgroups, inside 3 groups BG/B/G), joined on `lsoa21cd`, same rule as `fpc`. Its lookup from area to group is **safeguarded** (confirmed 2026-09-30, same terms as `fpc`); the classification's published names, and a per-surname most common group, may be published. Added 2026-09-30. |
 | `bbs` | Most common broadband class (from a lookup file that appears to be 2017). | **Dropped.** |
 | `eee` | Looked up from the surname itself (ONOMAP), no address data. | **Replaced by the Ethnicity Estimator** (modal census group, top three countries). Source: `registers_derived.lcr_consol_ethest`, the register with a person-level `eth` (worked out from forename and surname). The most common `eth` per surname in the reference year; a surname with no usable class is shown as `Unknown` (the page says there are too few data points). The old surname-only ONOMAP lookup is no longer used. Now in the file format above as `eth`: a census group, plus the three most common underlying codes. |

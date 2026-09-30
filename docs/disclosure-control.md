@@ -1,6 +1,6 @@
 # Disclosure control in the GBNames release
 
-*As configured on 2026-09-29. The numbers are set in one file, `pipeline/config.py`.*
+*As configured on 2026-09-30. The numbers are set in one file, `pipeline/config.py`.*
 
 GBNames turns individual-level records (the register, and the historic censuses 1851-1921) into a set of precomputed
 surname pages. All of that happens inside the Trusted Research Environment (the DSH); the only thing meant to leave it is the
@@ -23,8 +23,9 @@ concentrated, not simply where most people live.
 
 **Facts.** Where the surname's bearers live, described through their neighbourhoods. Each bearer is linked to the small
 area they live in, and the page then says which types of neighbourhood the surname is most concentrated in: the general
-neighbourhood classification (OAC, and LOAC for London), the financial precarity classification, deprivation and access
-to healthy assets (both as deciles), and a name-based ethnicity estimate. For example, *"31% of bearers live in neighbourhoods of
+neighbourhood classification (OAC, and LOAC for London), the financial precarity classification, the GB2C gambling
+classification, deprivation and access to healthy assets (both as deciles), and a name-based ethnicity estimate. For
+example, *"31% of bearers live in neighbourhoods of
 type X, 22% in type Y"* (made-up numbers). It also lists the ten most common neighbourhoods today, the ten most common historic
 parishes, and the ten most common forenames for women and for men.
 
@@ -58,7 +59,7 @@ not cover Scotland) does not need to come out of the DSH: it is built from the s
 | 4 | **Maps are blurred and never show points** | Bearers are counted in 1 km squares, smoothed over 8 to 18 km (wider for bigger surnames); outlines are simplified to 400 m | Only the outlines of the three shades are released. Nothing points to a street or household. Census bearers are placed at their parish centre. |
 | 5 | **Facts need a minimum of 5** | The most common group, and every neighbourhood, parish or forename listed, must reach **5**. Register neighbourhood facts come from the surname's most recent year with enough bearers. Forenames and the historic parishes are pooled over all years, and need at least 5 counts | Otherwise it is left out. A source only gives facts to a surname with 100 or more bearers in that source in some year: register facts need 100 register bearers in a year, the historic parishes and forenames need 100 census bearers in a census year. |
 | 6 | **Lists are short and carry no counts** | At most 10 entries per list | Ranked lists only: the number of people behind each entry is not released. |
-| 7 | **Safeguarded data stays safeguarded** | The financial precarity classification's area-to-group lookup is never released | Only a surname's most common group and its shares over the 13 groups are released, never which areas belong to which group. |
+| 7 | **Safeguarded data stays safeguarded** | The financial precarity classification's and the GB2C gambling classification's area-to-group lookups are never released | Only a surname's most common group and its shares over the groups (13 for financial precarity, 11 for GB2C) are released, never which areas belong to which group. |
 
 The historic census (1851-1921) is over 100 years old and carries no disclosure risk; the same rules are applied to it
 anyway, so the two sources behave alike.

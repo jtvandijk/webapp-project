@@ -11,6 +11,9 @@ Sources (all names and colours; nothing about areas or people):
   OAC and LOAC   tools/sample_inputs/oac21_descriptions.csv, loac21_descriptions.csv (+ LOAC colours from tools/build_sample_data.py)
   FPC            names from pipeline/reference/group_names.json, colours from raw-indicators/fpc/fpc_label_colors.csv
                  (git-ignored; only the classification's lookup from area to group is safeguarded, not its names or colours)
+  GB2C           names from pipeline/reference/group_names.json; the raw download has no colour column, so GB2C_COLOURS
+                 below is a placeholder palette (11 distinct colours, no meaning chosen for any of them) - a website
+                 design decision, not yet made; confirm/replace before this goes live
   Ethnicity      pipeline/config.py ETH_GROUPS (+ "unknown")
 The page text below is the wording to edit. Standard library only, so it runs anywhere.
 """
@@ -30,10 +33,16 @@ import validate_data                        # the release checker, so the file i
 from pipeline import config
 
 FPC_RAW = ROOT / "raw-indicators" / "fpc" / "fpc_label_colors.csv"
+GB2C_RAW = ROOT / "raw-indicators" / "gb2c" / "classification_codes_and_names.csv"
 GROUP_NAMES = ROOT / "pipeline" / "reference" / "group_names.json"
 
 # Corrections to the published FPC labels, confirmed by the user (E12 on 2026-09-24, E13 on 2026-09-27).
 FPC_TYPOS = {"Underprivilege dependent": "Underprivileged dependent", "Aging Blue-collar households": "Ageing Blue-collar households"}
+
+# GB2C has no published colours (unlike FPC): a placeholder qualitative palette (ColorBrewer Paired + Set3, 11
+# colours), no meaning attached to any of them - a website design decision still to be made, not a final answer.
+GB2C_COLOURS = {"BG1": "#a6cee3", "BG2": "#1f78b4", "BG3": "#b2df8a", "BG4": "#33a02c", "BG5": "#fb9a99", "BG6": "#e31a1c",
+                "B1": "#fdbf6f", "B2": "#ff7f00", "G1": "#cab2d6", "G2": "#6a3d9a", "G3": "#ffff99"}
 
 # Ethnicity Estimator colours: the old site had nine (css btn-eee1 to btn-eee9, ColorBrewer Set3) and none of its own for Black - Caribbean,
 # Asian - Pakistani or Asian - Bangladeshi, so those three take the three Set3 colours the old site did not use. Change them here.
@@ -62,6 +71,8 @@ CARDS = {
              "about": "A classification of London's neighbourhoods, arranged into Supergroups and Groups based upon 2021 Census of Population data. We show the Supergroup and Group in which your selected surname occurs most frequently."},
     "fpc": {"title": "Financial Precarity Classification",
             "about": "A classification of Great Britain's neighbourhoods by financial precarity, arranged into groups. We show the group in which your selected surname occurs most frequently."},
+    "gb2c": {"title": "GB2C Gambling Classification",
+             "about": "A classification of Great Britain's neighbourhoods by online gambling behaviour, arranged into groups. We show the group in which your selected surname occurs most frequently."},
     "eth": {"title": "Ethnicity Estimator", "subtitle": "Surname roots",
             "about": "Given and family names provide clues as to ethnicity. We show the census ethnic group that is most common among the people with your selected surname, estimated from their forenames and surnames."},
     "imd": {"title": "Index of Multiple Deprivation",
@@ -119,10 +130,29 @@ def read_fpc():
     return {"groups": groups}
 
 
+def read_gb2c():
+    """GB2C group names (from group_names.json) with the placeholder colours above; stops if the raw download's
+    own codes disagree with group_names.json (the raw file has no colour of its own to cross-check names against,
+    unlike FPC, so this only checks the codes match, not a name)."""
+    if not GB2C_RAW.exists():
+        raise SystemExit(f"{GB2C_RAW} is missing: GB2C's own codes come from it (it is git-ignored; it lives in raw-indicators/gb2c/).")
+    names = json.loads(GROUP_NAMES.read_text(encoding="utf-8"))["gb2c"]["groups"]
+    with open(GB2C_RAW, encoding="utf-8-sig", newline="") as f:
+        raw_codes = {row["Classification Code"] for row in csv.DictReader(f)
+                    if row["Level"] == "Subgroup" and row["Classification Code"] != "-"}
+    if raw_codes != set(names):
+        raise SystemExit(f"GB2C groups differ between {GB2C_RAW.name} ({sorted(raw_codes)}) and group_names.json ({sorted(names)})")
+    if set(names) != set(GB2C_COLOURS):
+        raise SystemExit(f"GB2C_COLOURS does not have exactly the groups in group_names.json ({sorted(names)})")
+    groups = {code: {"name": entry["name"], "colour": GB2C_COLOURS[code]} for code, entry in names.items()}
+    return {"groups": groups}
+
+
 def build():
     oac = read_classification("oac21_descriptions.csv")
     loac = read_classification("loac21_descriptions.csv", colours=sample.LOAC_COLOURS)
     fpc = read_fpc()
+    gb2c = read_gb2c()
     names = json.loads(GROUP_NAMES.read_text(encoding="utf-8"))
     for scheme, block in (("oac", oac), ("loac", loac)):        # the preview's names and this file must say the same
         theirs = {code: g["name"] for code, g in names[scheme]["groups"].items()}
@@ -132,7 +162,7 @@ def build():
 
     eth = {code: {"name": name, "colour": ETH_COLOURS[code]} for code, name in config.ETH_GROUPS.items()}
     eth[config.ETH_UNKNOWN] = {"name": "Unknown", "colour": ETH_COLOURS[config.ETH_UNKNOWN]}
-    return {"schema": 1, "cards": CARDS, "oac": oac, "loac": loac, "fpc": fpc, "eth": eth, "scales": SCALES}
+    return {"schema": 1, "cards": CARDS, "oac": oac, "loac": loac, "fpc": fpc, "gb2c": gb2c, "eth": eth, "scales": SCALES}
 
 
 def main():
@@ -150,7 +180,7 @@ def main():
     args.out.write_text(json.dumps(lookups, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"wrote {args.out}: oac {len(lookups['oac']['supergroups'])} supergroups / {len(lookups['oac']['groups'])} groups, "
           f"loac {len(lookups['loac']['supergroups'])} / {len(lookups['loac']['groups'])}, fpc {len(lookups['fpc']['groups'])} groups, "
-          f"eth {len(lookups['eth'])} entries, cards {len(lookups['cards'])}")
+          f"gb2c {len(lookups['gb2c']['groups'])} groups, eth {len(lookups['eth'])} entries, cards {len(lookups['cards'])}")
     return 0
 
 

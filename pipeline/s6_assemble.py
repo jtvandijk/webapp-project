@@ -88,7 +88,7 @@ FACTS_TABLE_HEADER = ["name", "fact", "data"]         # the public facts table (
 # fact -> (public key, how to build its public object from {"value": str, "detail": dict}). A scheme not
 # listed here (imd_score, forenames_register, forenames_census, places, parishes) is folded into another
 # key's object instead - see build_facts().
-GROUP_SCHEMES = ("oac", "loac", "fpc")             # {"group": code, "distribution": {code: share}}
+GROUP_SCHEMES = ("oac", "loac", "fpc", "gb2c")     # {"group": code, "distribution": {code: share}}
 DECILE_SCHEMES = ("ahah",)                          # {"mode": decile, "distribution": [10 numbers]}; imd is its own case (+ imd_score)
 
 

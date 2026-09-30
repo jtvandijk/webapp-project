@@ -24,8 +24,9 @@ LAT_RANGE = (49.5, 61.5)
 NAME_RE = re.compile(r"^[a-z]+$")
 YEAR_RE = re.compile(r"^\d{4}$")
 TOP_LEVEL_KEYS = {"schema", "name", "synthetic", "counts", "counts_standardised", "maps", "facts"}
-FACT_KEYS = {"forenames", "places", "oac", "loac", "fpc", "imd", "ahah", "eth"}
-GROUP_SCHEMES = ("oac", "loac", "fpc")          # a most-common group code, plus a distribution over every group seen
+FACT_KEYS = {"forenames", "places", "oac", "loac", "fpc", "gb2c", "imd", "ahah", "eth"}
+GROUP_SCHEMES = ("oac", "loac", "fpc", "gb2c")  # a most-common group code, plus a distribution over every group seen
+FLAT_GROUP_SCHEMES = ("fpc", "gb2c")             # of the above: no supergroup concept (yet), just a name and colour per group
 DECILE_SCHEMES = ("imd", "ahah")                # a most-common decile (1-10), plus a 10-number distribution
 
 
@@ -146,11 +147,11 @@ def check_lookups(lookups, report):
             for field in ("name", "colour"):
                 if not group.get(field):
                     report.error(where, f"{scheme} group {code} has no {field}")
-    # fpc has no supergroup concept (yet): just a name and colour per group
-    for code, group in lookups.get("fpc", {}).get("groups", {}).items():
-        for field in ("name", "colour"):
-            if not group.get(field):
-                report.error(where, f"fpc group {code} has no {field}")
+    for scheme in FLAT_GROUP_SCHEMES:
+        for code, group in lookups.get(scheme, {}).get("groups", {}).items():
+            for field in ("name", "colour"):
+                if not group.get(field):
+                    report.error(where, f"{scheme} group {code} has no {field}")
     if not lookups.get("eth"):
         report.error(where, "eth is empty")
     for scale in ("imd", "ahah"):
@@ -204,7 +205,7 @@ def check_decile(fact, where, report):
 
 
 def check_group(fact, where, report):
-    """oac, loac, fpc: a most-common group code, plus (optional) the share of bearers in every group seen."""
+    """oac, loac, fpc, gb2c: a most-common group code, plus (optional) the share of bearers in every group seen."""
     if not (isinstance(fact.get("group"), str) and fact["group"]):
         report.error(where, "group must be a non-empty string")
     dist = fact.get("distribution")

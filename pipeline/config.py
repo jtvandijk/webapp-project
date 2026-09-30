@@ -121,7 +121,7 @@ PROFILES = {
         # stage 5 (facts): the neighbourhood tables, the forename -> gender table, and the register
         # with the ethnicity estimate attached (in the fake data that is just the register itself)
         "facts": {
-            "tables": {"oac": "nbhd_oac", "loac": "nbhd_loac", "ahah": "nbhd_ahah", "imd": "nbhd_imd", "fpc": "nbhd_fpc"},
+            "tables": {"oac": "nbhd_oac", "loac": "nbhd_loac", "ahah": "nbhd_ahah", "imd": "nbhd_imd", "fpc": "nbhd_fpc", "gb2c": "nbhd_gb2c"},
             "gender": {"table": "forename_gender", "name": "forename", "gender": "gender"},
             "ethest": {"table": "register", "surname": "surname", "key": "postcode", "first": "first",
                        "last": "last", "eth": "eth"},
@@ -164,7 +164,7 @@ PROFILES = {
         "facts": {
             "tables": {"oac": "registers_lookup.nbhd_oac", "loac": "registers_lookup.nbhd_loac",
                        "ahah": "registers_lookup.nbhd_ahah", "imd": "registers_lookup.nbhd_imd",
-                       "fpc": "registers_lookup.nbhd_fpc"},
+                       "fpc": "registers_lookup.nbhd_fpc", "gb2c": "registers_lookup.nbhd_gb2c"},
             "gender": {"table": "registers_lookup.lookup_monica", "name": "name", "gender": "gender"},
             "ethest": {"table": "registers_derived.lcr_consol_ethest", "surname": "surname", "key": "postcode",
                        "first": "first", "last": "last", "eth": "eth"},
@@ -388,6 +388,7 @@ FACT_VERSIONS = {
     "oac": "UK OAC 2021/22", "loac": "London OAC 2021", "ahah": "AHAH v5.1",
     "imd": "IoD2025 / WIMD2025 / SIMD2020v2", "imd_score": "IoD2025 / WIMD2025 / SIMD2020v2",
     "fpc": "Financial Precarity Classification",
+    "gb2c": "GB2C Gambling Classification v1.2",
     "places": "MSOA 2021 / Scottish IZ 2022", "ethnicity": "Ethnicity Estimator",
     "forenames_register": "register 1997-2026",
     "forenames_census": "census {first}-{last}", "parishes": "consistent parishes, census {first}-{last}",   # the years actually pooled
@@ -406,6 +407,10 @@ NBHD_TABLE_COLUMNS = {
     # the TRE, but its area-level values may not appear anywhere in this repository (code, tests, docs). The
     # classification's published names are not safeguarded.
     "fpc": [("area_code", "text"), ("fpc_cluster", "text"), ("fpc_group", "text")],
+    # SAFEGUARDED data: the GB2C gambling classification's lookup from area to group (same rule as fpc above).
+    # gb2c_group is the area's modal Active Subgroup (one of 11 codes); the coarser "group" (BG/B/G) is the
+    # code's own prefix, not stored separately - the raw download has no such column of its own to carry across.
+    "gb2c": [("area_code", "text"), ("gb2c_group", "text")],
 }
 
 # Which facts are counted from the register, and how. "key" is the postcode-directory column (a
@@ -420,6 +425,7 @@ FACT_QUERIES = {
     "imd": {"table": "imd", "key": "lsoa", "scotland_key": "lsoa_2011", "values": ["imd_decile"],
             "sums": ["imd_pctile"]},
     "fpc": {"table": "fpc", "key": "lsoa", "values": ["fpc_group"]},
+    "gb2c": {"table": "gb2c", "key": "lsoa", "values": ["gb2c_group"]},
     "places": {"areas": ["msoa", "district"]},
     "eth": {},                                    # from the register with the ethnicity estimate, see sql.py
 }

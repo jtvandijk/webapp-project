@@ -44,8 +44,9 @@ SELECT 'oac', count(*) FROM registers_lookup.nbhd_oac UNION ALL
 SELECT 'loac', count(*) FROM registers_lookup.nbhd_loac UNION ALL
 SELECT 'ahah', count(*) FROM registers_lookup.nbhd_ahah UNION ALL
 SELECT 'imd', count(*) FROM registers_lookup.nbhd_imd UNION ALL
-SELECT 'fpc', count(*) FROM registers_lookup.nbhd_fpc;
--- expect 235,243 / 26,369 / 43,064 / 42,648 / 43,064
+SELECT 'fpc', count(*) FROM registers_lookup.nbhd_fpc UNION ALL
+SELECT 'gb2c', count(*) FROM registers_lookup.nbhd_gb2c;
+-- expect 235,243 / 26,369 / 43,064 / 42,648 / 43,064 / 43,064
 
 SELECT imd_country, count(*) FROM registers_lookup.nbhd_imd GROUP BY 1;
 -- expect England 33,755, Wales 1,917, Scotland 6,976
@@ -77,9 +78,10 @@ public February 2026 postcode directory and the tables; they hold for that direc
 | EH1 1AD | Scotland | S00143153 | S01014710 | S01008674 | 3a | none | 10 | SIMD2020v2: 6, 59 |
 | G1 1AB | Scotland | S00159099 | S01017410 | S01010260 | 3a | none | 10 | SIMD2020v2: 6, 51 |
 
-The financial precarity classification is left out of this table on purpose: its lookup from area to group is
-safeguarded data, so no area-level value from it is written anywhere in this repository. `lookup` prints its cluster and group for each postcode; check
-those against `python3 tools/audit_neighbourhood.py --show <area code>` on your own computer.
+The financial precarity classification and the GB2C gambling classification are left out of this table on purpose:
+their lookups from area to group are safeguarded data, so no area-level value from either is written anywhere in
+this repository. `lookup` prints their group (and, for FPC, cluster) for each postcode; check those against
+`python3 tools/audit_neighbourhood.py --show <area code>` on your own computer.
 
 What to look for: the Scottish rows join deprivation on `lsoa11cd` (the 2011 zone) and everything else on the
 2021 or 2022 codes, and the Welsh row's 2011 and 2021 LSOA codes differ. If the codes match but a value does

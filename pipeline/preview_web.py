@@ -12,7 +12,7 @@ A name's file holds its counts and maps; its facts are in the one facts table, w
 merge_release.py), read here as a stream for just the names asked for. Facts inside the name file itself
 (s6_assemble.py --facts-in-names) are shown too.
 
-Facts are shown as small cards (a heading and a table each). The OAC, LOAC and FPC groups carry their names, from
+Facts are shown as small cards (a heading and a table each). The OAC, LOAC, FPC and GB2C groups carry their names, from
 pipeline/reference/group_names.json (--lookups points at another file of the same shape, such as a lookups.json); a
 group that is not in it is shown as its code.
 
@@ -183,12 +183,13 @@ FACT_TITLES = {
     "oac": "UK Output Area Classification (OAC)",
     "loac": "London Output Area Classification (LOAC)",
     "fpc": "Financial Precarity Classification (FPC)",
+    "gb2c": "GB2C Gambling Classification (GB2C)",
     "eth": "Ethnicity estimate",
     "imd": "Index of Multiple Deprivation (IMD)",
     "ahah": "Access to Healthy Assets and Hazards (AHAH)",
 }
 SHOW_GROUPS = 6                       # rows of a group distribution before the rest are lumped into one line
-CARD_ORDER = ("oac", "loac", "fpc", "eth", "imd", "ahah", "forenames", "places")
+CARD_ORDER = ("oac", "loac", "fpc", "gb2c", "eth", "imd", "ahah", "forenames", "places")
 
 
 def load_names(path):
@@ -264,7 +265,7 @@ def _list_table(head, rows):
 def fact_cards(facts, names):
     """Every fact of a name as a card, in a fixed order; a fact this does not know is shown as text, not dropped."""
     cards = {}
-    for scheme in ("oac", "loac", "fpc"):
+    for scheme in ("oac", "loac", "fpc", "gb2c"):
         fact = facts.get(scheme)
         if isinstance(fact, dict):
             cards[scheme] = card(FACT_TITLES[scheme], share_table(distribution_rows(
@@ -352,7 +353,7 @@ def main():
     parser.add_argument("--names-dir", default=str(config.WORK / "release" / "names"))
     parser.add_argument("--facts-file", default=str(config.WORK / "release" / "facts.csv"), help="the facts table (default work/release/facts.csv)")
     parser.add_argument("--lookups", default=str(config.REFERENCE / "group_names.json"),
-                        help="the names of the OAC, LOAC and FPC groups (default pipeline/reference/group_names.json; a lookups.json works too)")
+                        help="the names of the OAC, LOAC, FPC and GB2C groups (default pipeline/reference/group_names.json; a lookups.json works too)")
     parser.add_argument("--out", help="write here instead of the next numbered file in work/preview_web/")
     args = parser.parse_args()
 

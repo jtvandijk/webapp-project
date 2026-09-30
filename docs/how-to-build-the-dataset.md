@@ -112,7 +112,7 @@ report says how many names got each fact and how much of the data was covered.
 | `--limit N` | the first N names of `names.csv` (a sample run; not with `--names`) |
 | `--sources register census` | which databases and facts (default both) |
 | `--census-years 1851 ...` | which census years to pool (default all; leave 1921 out until it is loaded) |
-| `--facts oac imd ...` | only some facts: `oac loac ahah imd fpc places eth forenames forenames_census parishes` |
+| `--facts oac imd ...` | only some facts: `oac loac ahah imd fpc gb2c places eth forenames forenames_census parishes` |
 | `--refresh` | query again even where a saved extract exists (after new data or a new table) |
 | `--compute-only` | no database: redo the calculation from the saved extracts, with the same names |
 | `--out-dir dir` | write elsewhere (default `work/facts`, or `work/preview_facts` for `--names`) |
@@ -132,8 +132,8 @@ python3 -m pipeline.preview_web --sample 20              # a random sample of wh
 
 Writes `work/preview_web/preview<N>.html`: a small picture of each of a name's maps (which periods it has,
 and whether one is a copy of another year's), its bearers per year, and its facts, each fact a small card with a heading and a
-table (share of bearers per group, with a bar; the most common group in bold; forenames and places as plain tables). The OAC, LOAC
-and FPC groups are shown with their names (`pipeline/reference/group_names.json`; `--lookups` points at a different file of
+table (share of bearers per group, with a bar; the most common group in bold; forenames and places as plain tables). The OAC, LOAC,
+FPC and GB2C groups are shown with their names (`pipeline/reference/group_names.json`; `--lookups` points at a different file of
 the same shape, such as `lookups.json` once it exists); a code that is not in it is shown as the code. The facts come from
 `release/facts.csv`, so run `merge_release` first. `--names` on a name with no assembled file yet is just noted, not an error.
 `--sample 20 --seed 3` gives the same twenty names every time (without `--seed` they differ each run).
@@ -337,7 +337,7 @@ python3 -m pipeline.preview_web --sample 10 # then take work/preview_web/preview
 ```
 
 In the preview check: the maps look like the ones in the map previews; a Scottish name in 1911 and 1921 says `shows 1901's map`;
-the bearers under each map match the counts line; the facts table has a row for each fact (oac, loac, fpc, ahah, imd, places,
+the bearers under each map match the counts line; the facts table has a row for each fact (oac, loac, fpc, gb2c, ahah, imd, places,
 eth, forenames). If the trial needed much less than the limits (`h_vmem=1G`, `h_rt=00:10:00`), set both in `stage6.sh` to about twice what
 `qacct` showed, and upload it (or use `qsub -l h_rt=... -t 1-200 ...` for this run only).
 
@@ -363,7 +363,8 @@ python3 tools/validate_data.py work/release --skip-lookups
 - The validator checks every name file, the search index, the facts table and the manifest against [data-contract.md](data-contract.md),
   and ends `OK: N names, ... 0 errors`. `--skip-lookups` is for a release that has no `lookups.json` (the wording and colours of the group codes) yet;
   it is then reported as not checked. To check the codes as well, make the file outside the TRE with `python3 tools/build_lookups.py` (it writes
-  `work/lookups.json`; the FPC colours come from `raw-indicators/fpc/`), upload it as `work/release/lookups.json`, and run the validator again without the flag. Any error is a name and a reason: fix the cause, `clean.sh --release`, run stage 6 again.
+  `work/lookups.json`; the FPC colours come from `raw-indicators/fpc/`, the GB2C colours are a placeholder palette pending a website design decision - see
+  `tools/build_lookups.py`'s own comment), upload it as `work/release/lookups.json`, and run the validator again without the flag. Any error is a name and a reason: fix the cause, `clean.sh --release`, run stage 6 again.
 - `du -sh work/release` decides whether everything fits on the HPC disk together with `work/maps/` (which holds the same maps in raw form). If
   it does not: `--free-maps` (add it after `--chunk "$CHUNK"` in `stage6.sh`) deletes each chunk's raw maps once it
   has assembled without error (this cannot be undone; re-making them means re-running stage 4 for that chunk), and a release that will not fit at all can be

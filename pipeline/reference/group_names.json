@@ -1,5 +1,5 @@
 {
- "_about": "Group names only (no colours or descriptions), for pipeline/preview_web.py. OAC and LOAC: the 2021 classifications, taken from the website's lookups.json; FPC: the classification's published group names, spelling corrected. Same shape as the name parts of lookups.json, which replaces this file (preview_web.py --lookups) once it exists.",
+ "_about": "Group names only (no colours or descriptions), for pipeline/preview_web.py. OAC and LOAC: the 2021 classifications, taken from the website's lookups.json; FPC: the classification's published group names, spelling corrected; GB2C: the classification's published group (Subgroup) names, from raw-indicators/gb2c/classification_codes_and_names.csv (public: names only, not the area-to-group lookup, which is safeguarded). Same shape as the name parts of lookups.json, which replaces this file (preview_web.py --lookups) once it exists.",
  "oac": {
   "groups": {
    "1a": {
@@ -159,6 +159,43 @@
    },
    "E13": {
     "name": "Ageing Blue-collar households"
+   }
+  }
+ },
+ "gb2c": {
+  "groups": {
+   "B1": {
+    "name": "Longstanding Habitual Veterans"
+   },
+   "B2": {
+    "name": "Well-Resourced Hobbyists"
+   },
+   "BG1": {
+    "name": "Engaged New-Age Gamblers"
+   },
+   "BG2": {
+    "name": "Newcomers with Sporadic and Moderate Patterns of Play"
+   },
+   "BG3": {
+    "name": "Event-Driven Speculative Players"
+   },
+   "BG4": {
+    "name": "Mindful Entertainment Seekers"
+   },
+   "BG5": {
+    "name": "High-Frequency High-Stake Losers"
+   },
+   "BG6": {
+    "name": "Young Occasional Binge Players"
+   },
+   "G1": {
+    "name": "Episodic High Risk Takers"
+   },
+   "G2": {
+    "name": "Mindful Low-Rollers from Deprived Communities"
+   },
+   "G3": {
+    "name": "High-Stakes Gamers from Deprived Communities"
    }
   }
  }

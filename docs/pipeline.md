@@ -28,9 +28,11 @@ below). How to run it, step by step: the end of how-to-build-the-dataset.md.
   each ranked within its own country and then treated as comparable (a known simplification: percentile 1 in
   Scotland counts as percentile 1 in England). Dropped: the Internet User Classification and broadband speed.
   Added 2026-09-24: the Financial Precarity Classification (13 groups in 5 clusters, on the same zones as AHAH:
-  `lsoa21cd`). Its lookup from area to group is **safeguarded data** (the published names are not): the download and
-  its table are never in the repository (`.gitignore` twice, and a test fails if that stops being true), and no
-  area-level value from it may appear in code, tests or docs. The raw downloads are turned
+  `lsoa21cd`). Added 2026-09-30: the GB2C Gambling Classification (11 groups - the area's modal Active Subgroup -
+  inside 3 groups BG/B/G, on the same zones as AHAH/FPC). Both classifications' lookups from area to group are
+  **safeguarded data** (the published names are not): the downloads and their tables are never in the repository
+  (`.gitignore` twice, and a test fails if that stops being true), and no area-level value from either may appear
+  in code, tests or docs. The raw downloads are turned
   into small lookup tables by `tools/prep_neighbourhood.py`, one per product and keyed on `area_code`, so a new
   version of one product replaces one table. Each table is joined on the postcode-directory column that matches
   its geography (`oa21cd`, `lsoa21cd`; Scottish deprivation on `lsoa11cd`), which is why no conversion between
@@ -206,6 +208,7 @@ one), `detail` is JSON, and a name simply has no row for a fact it has no value 
 | `imd` | most common decile (1 = most deprived) | `distribution`: ten shares | `lsoa21cd` (England, Wales), `lsoa11cd` (Scotland) |
 | `imd_score` | mean deprivation percentile (the "GBNames deprivation score") | `sd` | as `imd` |
 | `fpc` | most common group, one of 13 (inside 5 clusters); safeguarded data | `distribution`: share per group | `lsoa21cd` |
+| `gb2c` | most common group, one of 11 Active Subgroups (inside 3 groups BG/B/G); safeguarded data | `distribution`: share per group | `lsoa21cd` |
 | `places` | empty | `places`: up to 10 of `{msoa, district}`, most common first, each with at least 5 people | `msoa21cd`, `lad25cd` |
 | `ethnicity` | most common census group code (`WBR`, `WAO`, ...) or `unknown` | `distribution` over groups, `codes`: the three most common codes | `eth` in the estimate table |
 | `forenames_register` | empty | `f` and `m`: up to 10 forenames each, most common first, each with at least 5 people | pooled over all register years |
@@ -292,6 +295,7 @@ I cannot see the data or run anything in the TRE, so:
    `monica_gender` and is used for now (its columns are assumed to be `name` and `gender`; it may change).
 5. **Surname keys: settled.** The rule is: remove accents, keep the letters a to z (`O'Brien` becomes `obrien`). For the census it is applied to `sname_clean_stand`, the old project's cleaned surname, in every year (the TRE's backup of the census does not have the column, so `tools/sql/make_sname_clean_stand.sh` makes it there, for every year).
 6. **Counts that are not published.** Counts below 10 (`COUNT_FLOOR`) are dropped. That number was my choice; is it the right floor?
-7. **Classification versions: settled** (see "Decided so far"), including the financial precarity classification.
-   Confirmed 2026-09-24: a per-surname most common group may be published, and so may the classification's names;
-   only the lookup from area to group is safeguarded.
+7. **Classification versions: settled** (see "Decided so far"), including the financial precarity classification
+   and (added 2026-09-30) the GB2C gambling classification. Confirmed 2026-09-24 (FPC) and 2026-09-30 (GB2C): a
+   per-surname most common group may be published, and so may the classification's names; only the lookup from
+   area to group is safeguarded.

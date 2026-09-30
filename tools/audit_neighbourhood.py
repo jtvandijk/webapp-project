@@ -12,8 +12,8 @@ It is a second, independent look, not a re-run of the first: it reads the downlo
 code (plain csv and openpyxl, no pandas) and shares none of prep_neighbourhood.py's logic, so a mistake
 in one is unlikely to be repeated in the other. It checks that
 
-  * every area is present, and every value that the download publishes (OAC, LOAC and financial precarity
-    groups, AHAH and deprivation ranks, the AHAH score, the AHAH percentile) is exactly what the table holds;
+  * every area is present, and every value that the download publishes (OAC, LOAC, financial precarity and
+    GB2C groups, AHAH and deprivation ranks, the AHAH score, the AHAH percentile) is exactly what the table holds;
   * the values prep_neighbourhood.py works out itself (deciles, and the deprivation percentile) follow
     the rule ceil(10 or 100 * rank / areas in the country), and where the download publishes a decile
     (England, Wales), how far they agree with it;
@@ -22,8 +22,8 @@ in one is unlikely to be repeated in the other. It checks that
   * the files hold plain numbers, no empty cells and no repeated area codes, and are still the files
     that manifest.json recorded.
 
-The financial precarity classification is SAFEGUARDED data: this tool only prints counts about it, never its
-values, except in --show, which prints to your own terminal.
+The financial precarity classification and the GB2C gambling classification are SAFEGUARDED data: this
+tool only prints counts about them, never their values, except in --show, which prints to your own terminal.
 
 What is NOT checked here: anything in the TRE. That is what `python3 -m pipeline.nbhd_tables check` and
 `lookup` are for; --show is the other half of a spot check: take the area codes that `lookup` printed for a
@@ -109,6 +109,21 @@ class Audit:
               f"{len(groups)} groups in {len({c for c, _ in raw.values()})} clusters, every group has a label. "
               f"Same areas as AHAH: {set(raw) == set(self._ahah_raw())}")
 
+    def gb2c(self):
+        print("\n=== GB2C gambling classification (safeguarded: only counts are printed)")
+        raw = self._gb2c_raw()
+        ours = {r["area_code"]: r["gb2c_group"] for r in self.prepared("gb2c")}
+        common = self.same_areas("GB2C", ours, raw)
+        different = sum(ours[k] != raw[k] for k in common)
+        self.check(not different, f"GB2C: {different} areas have a value that differs from the download")
+        groups = set(raw.values())
+        with open(self.raw / "gb2c/classification_codes_and_names.csv", newline="", encoding="utf-8-sig") as f:
+            labelled = {row["Classification Code"] for row in csv.DictReader(f)
+                       if row["Level"] == "Subgroup" and row["Classification Code"] != "-"}
+        self.check(groups == labelled, "GB2C: the groups in the download and in the label file differ")
+        print(f"download {len(raw):,} areas, table {len(ours):,}; areas that differ: {different}; "
+              f"{len(groups)} groups, every group has a label. Same areas as AHAH: {set(raw) == set(self._ahah_raw())}")
+
     def ahah(self):
         print("\n=== AHAH v5.1")
         raw = self._ahah_raw()
@@ -169,7 +184,7 @@ class Audit:
 
     def files(self):
         print("\n=== The files as the TRE will read them")
-        numbers = {"oac": {}, "loac": {}, "fpc": {}, "ahah": {"ahah_score": NUMBER, "ahah_rank": INT, "ahah_pctile": INT, "ahah_decile": INT},
+        numbers = {"oac": {}, "loac": {}, "fpc": {}, "gb2c": {}, "ahah": {"ahah_score": NUMBER, "ahah_rank": INT, "ahah_pctile": INT, "ahah_decile": INT},
                    "imd": {"imd_rank": INT, "imd_areas": INT, "imd_pctile": INT, "imd_decile": INT}}
         for name, spec in numbers.items():
             rows = self.prepared(name)
@@ -188,7 +203,7 @@ class Audit:
     def show(self, codes):
         """What the downloads say for some area codes (copied from `python3 -m pipeline.nbhd_tables lookup`
         in the TRE), to compare with what the tables there gave for the same postcode."""
-        oac, loac, ahah, fpc = self._oac_raw(), self._loac_raw(), self._ahah_raw(), self._fpc_raw()
+        oac, loac, ahah, fpc, gb2c = self._oac_raw(), self._loac_raw(), self._ahah_raw(), self._fpc_raw(), self._gb2c_raw()
         deprivation = {"England IoD2025": self._england(), "Wales WIMD2025": self._wales(), "Scotland SIMD2020v2": self._scotland()}
         print("What the downloads say (not the prepared tables), for each area code:")
         for code in (c.strip().upper() for c in codes):
@@ -208,6 +223,9 @@ class Audit:
                 found = True
             if code in fpc:
                 print("  financial precarity  cluster %s, group %s   (safeguarded: keep this to yourself)" % fpc[code])
+                found = True
+            if code in gb2c:
+                print(f"  GB2C gambling        group {gb2c[code]}   (safeguarded: keep this to yourself)")
                 found = True
             for label, data in deprivation.items():
                 if code in data:
@@ -232,6 +250,10 @@ class Audit:
     def _fpc_raw(self):
         return {r["lsoa21cd"]: (r["cluster"], r["label"])
                 for r in csv.DictReader(open(self.raw / "fpc/fpc_finalv2.csv", encoding="utf-8-sig"))}
+
+    def _gb2c_raw(self):
+        return {r["lsoa21cd"]: r["modal_name"]
+                for r in csv.DictReader(open(self.raw / "gb2c/lsoa21dz22-gb2c-v1.2.csv", encoding="utf-8-sig"))}
 
     def _ahah_raw(self):
         return {r["lsoa21cd"]: (float(r["ahah"]), int(r["ahah_rnk"]), int(r["ahah_pct"]))
@@ -274,6 +296,7 @@ def main():
     audit.ahah()
     audit.deprivation()
     audit.fpc()
+    audit.gb2c()
     audit.direction_of_ahah()
     audit.files()
     if audit.problems:
