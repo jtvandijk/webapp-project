@@ -1,6 +1,6 @@
 # Disclosure control in the GBNames release
 
-*As configured on 2026-09-26. The numbers are set in one file, `pipeline/config.py`.*
+*As configured on 2026-09-29. The numbers are set in one file, `pipeline/config.py`.*
 
 GBNames turns individual-level records (the register, and the historic censuses 1851-1921) into a set of precomputed
 surname pages. All of that happens inside the Trusted Research Environment (the DSH); the only thing meant to leave it is the
@@ -8,7 +8,11 @@ finished release: one small file per surname. It contains no individual record, 
 
 ## What a surname page contains
 
-**Counts.** How many bearers the surname has in each year.
+**Counts.** How many bearers the surname has in each year. For the modern register (1997-2026), a second,
+"standardised" count is also shown alongside the raw one: the same figure rescaled so that a genuine change in a
+surname's popularity is not confused with the register itself holding more or fewer records in different years.
+It is calculated from the raw count using only the register's own total size each year (the same for every
+surname), so it carries no information the raw count does not already.
 
 **Maps.** One map per year, showing where the surname is concentrated. Each map has three nested shades. Every shade is
 the smallest area that holds a set percentage of the surname's smoothed density (roughly 40%, 65% and 85%), so the darkest
@@ -24,32 +28,25 @@ to healthy assets (both as deciles), and a name-based ethnicity estimate. For ex
 type X, 22% in type Y"* (made-up numbers). It also lists the ten most common neighbourhoods today, the ten most common historic
 parishes, and the ten most common forenames for women and for men.
 
-## How the release is organised
+## What needs to come out of the DSH
+
+Everything the website build needs, and only that:
+
+```
+names/<xx>/<name>.json   one file per surname: its bearer counts and its maps
+index/<xx>.json          per first-two-letters, the surnames that have a page, sorted - what the search box
+                          suggests as someone types
+facts.csv                one table: every published surname's facts, one row per surname and per fact
+manifest.json            what the release contains as a whole: years, source labels, map colours, the threshold
+```
 
 Every surname gets its own small file, named after the surname, inside a folder named after the surname's own first
 two letters - one level, not nested. So "smith" is `names/sm/smith.json`, "patel" is `names/pa/patel.json`; there is
 no separate `s/` folder holding `sm/`, `sn/` and so on, just one `sm/` folder directly under `names/`. This keeps
 every folder to at most a few hundred files.
 
-```
-manifest.json            what the release contains as a whole: years, source labels, map colours, the threshold,
-                          which years carry the Scotland outline, names suggested on the welcome screen
-masks/scotland.json      the Scotland outline, drawn on top of a 1911 or 1921 map that is a copy of 1901's (the
-                          1911/1921 census does not cover Scotland)
-index/<xx>.json          per first-two-letters, the surnames that have a page, sorted - what the search box
-                          suggests as someone types
-names/<xx>/<name>.json   one file per surname: its bearer counts and its maps
-facts.csv                one table: every published surname's facts, one row per surname and per fact
-```
-
-**Not part of this release yet:** `lookups.json` (the wording and colours for the group codes) is written at the
-website design stage, not here.
-
-**Not part of the release at all - working files, safe to leave out of the export:** building the release in
-parallel batches (chunks) leaves behind `index_parts/`, `facts_parts/`, and a `chunk_N.done`/`chunk_N.errors.log`
-per batch, sitting next to the files above. These are bookkeeping for the build itself (which batch wrote what,
-and whether it finished cleanly) and are folded into `facts.csv` and `index/` before anything is checked; they can
-be deleted, or simply not copied, when the release is exported.
+The Scotland outline (drawn on top of a 1911 or 1921 map that is a copy of 1901's, since the 1911/1921 census does
+not cover Scotland) does not need to come out of the DSH: it is built from the same file already outside it.
 
 ## The disclosure principles
 
