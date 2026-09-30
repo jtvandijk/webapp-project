@@ -122,7 +122,9 @@ The neighbourhood facts join the register to neighbourhood tables, which have to
    `python3 -m pipeline.nbhd_tables ddl --csv-dir <folder the CSVs are in> > make_tables.sql`, and run it with
    psql. The tables go in the schema named in `config.py` (`"tre"` profile, `"facts"`, `"tables"`:
    `registers_lookup` is a guess; change it if you cannot create tables there). To load a new version of
-   one product later, `--replace` drops the old tables first.
+   one product later, `--replace` drops the old tables first; add `--only <product>` (e.g. `--only gb2c`) to
+   touch just that one table - to add a brand new product without re-creating the others, or to replace one
+   product's table with a new version without dropping the rest.
 3. **Check them:** `python3 -m pipeline.nbhd_tables check` says, per country, how many register rows find a
    row in each table. Expect about 99.9% everywhere; it stops and names the country and table if not, or
    if a table has an area code twice. `python3 -m pipeline.nbhd_tables lookup "SW1A 1AA" ...` prints what stage 5

@@ -641,6 +641,20 @@ class NeighbourhoodTables(unittest.TestCase):
         script = nbhd_tables.ddl(config.settings("tre"))
         self.assertIn("CREATE TABLE registers_lookup.nbhd_imd", script)
 
+    def test_only_restricts_the_ddl_to_the_named_products(self):
+        script = nbhd_tables.ddl(self.cfg, csv_dir="somewhere", replace=True, only=["gb2c"])
+        self.assertIn("nbhd_gb2c", script)
+        for key in set(config.NBHD_TABLE_COLUMNS) - {"gb2c"}:
+            self.assertNotIn(f"nbhd_{key}", script, key)
+        self.assertEqual(script.count("DROP TABLE"), 1)
+        self.assertEqual(script.count("CREATE TABLE"), 1)
+        self.assertEqual(script.count("\\copy"), 1)
+
+    def test_only_with_an_unknown_product_stops_clearly(self):
+        with self.assertRaises(SystemExit) as stopped:
+            nbhd_tables.ddl(self.cfg, only=["not-a-real-product"])
+        self.assertIn("not-a-real-product", str(stopped.exception))
+
     @unittest.skipUnless((config.ROOT / "work" / "neighbourhood" / "manifest.json").exists(),
                          "the prepared tables (tools/prep_neighbourhood.py) are not on this machine")
     def test_the_prepared_files_have_exactly_the_columns_the_tables_expect(self):

@@ -7,6 +7,7 @@ never appear in this repository, in a test or in the documentation.
     python3 -m pipeline.nbhd_tables ddl                                  # print the SQL that creates the tables
     python3 -m pipeline.nbhd_tables ddl --csv-dir work/neighbourhood     # ... and the lines that load the CSVs
     python3 -m pipeline.nbhd_tables ddl --replace                        # ... dropping any old ones first
+    python3 -m pipeline.nbhd_tables ddl --only gb2c --csv-dir work/neighbourhood   # just one product (a new one, or a new version of it)
     python3 -m pipeline.nbhd_tables check                                # in the TRE, once they are loaded
     python3 -m pipeline.nbhd_tables check --year 2024
     python3 -m pipeline.nbhd_tables lookup "SW1A 1AA" "G1 1AA"           # what stage 5 uses for a postcode
@@ -46,10 +47,17 @@ LOOKUP_FIELDS = ["postcode", "counts", "country", "oa", "lsoa", "lsoa_2011", "ms
 LOW = 0.98                # a share below this in any country is reported as a problem
 
 
-def ddl(cfg, csv_dir=None, replace=False):
-    """The SQL text for the neighbourhood tables, optionally with the lines that load their CSVs."""
+def ddl(cfg, csv_dir=None, replace=False, only=None):
+    """The SQL text for the neighbourhood tables, optionally with the lines that load their CSVs. `only`
+    restricts it to these products (e.g. ["gb2c"]) - for adding one new table, or replacing one product's
+    table with a new version, without touching the others; default (None) is every product."""
+    unknown = set(only or []) - set(config.NBHD_TABLE_COLUMNS)
+    if unknown:
+        raise SystemExit(f"--only names a product that does not exist: {sorted(unknown)} (know: {sorted(config.NBHD_TABLE_COLUMNS)})")
     lines = ["-- The neighbourhood tables. Made by pipeline/nbhd_tables.py from config.py."]
     for key, columns in config.NBHD_TABLE_COLUMNS.items():
+        if only and key not in only:
+            continue
         name = cfg["facts"]["tables"][key]
         if replace:
             lines.append(f"DROP TABLE IF EXISTS {name};")
@@ -157,6 +165,8 @@ def main():
     make = sub.add_parser("ddl", help="print the SQL that creates (and loads) the tables")
     make.add_argument("--csv-dir", help="the folder with nbhd_*.csv, as psql will see it: adds the lines that load them")
     make.add_argument("--replace", action="store_true", help="drop each table first, to replace an old one")
+    make.add_argument("--only", nargs="*", help="only these products (e.g. --only gb2c): add one new table, or replace "
+                      "one product's table with a new version, without touching the others. Default: every product")
     show = sub.add_parser("lookup", help="what stage 5 uses for some postcodes")
     show.add_argument("postcodes", nargs="+", help='postcodes, with or without spaces, e.g. "SW1A 1AA"')
     test = sub.add_parser("check", help="check the loaded tables against the real register")
@@ -164,7 +174,7 @@ def main():
     args = parser.parse_args()
 
     if args.command == "ddl":
-        print(ddl(config.settings(os.environ.get("GBNAMES_PROFILE", "tre")), args.csv_dir, args.replace))
+        print(ddl(config.settings(os.environ.get("GBNAMES_PROFILE", "tre")), args.csv_dir, args.replace, args.only))
         return
     cfg = config.settings()
     conn = db.connect("register")
