@@ -1,10 +1,11 @@
 # GBNames
 
-GBNames shows the geography of British surnames: where a name was concentrated in the census years
-1851-1921 and in more recent years, plus who tends to bear it (top forenames, top neighbourhoods,
-and how it relates to neighbourhood classifications, deprivation, broadband speed and more). The
-live site is at [apps.geods.ac.uk/gbnames](https://apps.geods.ac.uk/gbnames/), part of UCL's
-Consumer Data Research Centre (CDRC).
+GBNames lets you explore where a British surname is - and has been - concentrated across Great Britain,
+from the census years 1851-1921 through to the present day. For any surname it shows who tends to
+bear it: the most common forenames, the neighbourhoods its bearers live in, and how those
+neighbourhoods compare on deprivation, access to healthy services, financial circumstances and more.
+The live site is at [apps.geods.ac.uk/gbnames](https://apps.geods.ac.uk/gbnames/), part of UCL's
+Geographic Data Service (GeoDS).
 
 ## Status: rebuild in progress, on this branch (`dev`)
 
