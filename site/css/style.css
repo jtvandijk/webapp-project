@@ -21,8 +21,16 @@ body {
 .bg-notes { background-color: var(--pale-blue); }
 .bg-orange { background-color: var(--accent-orange); }
 
-.navbar-brand img {
-    display: block;
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.navbar-brand-text {
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: #fff;
 }
 
 .nav-link.active {
@@ -254,6 +262,23 @@ details.bar-row-expandable .bar-name {
 
 .forename-pill-female { background: rgba(27, 158, 119, 0.8); }
 .forename-pill-male { background: rgba(117, 112, 179, 0.8); }
+
+.about-item {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #eee;
+}
+
+.about-item summary {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.about-item p {
+    margin-top: 0.6rem;
+    margin-bottom: 0;
+}
 
 .eth-pill {
     display: inline-block;
