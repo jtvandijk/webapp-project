@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GBNames</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="index.html">GBNames</a>
+    <nav>
+      <a href="about.html">About</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="search-section">
+    <form id="searchForm">
+      <label for="searchInput" class="visually-hidden">Search a surname</label>
+      <input type="text" id="searchInput" name="surname" placeholder="Search a surname, e.g. Smith" autocomplete="off">
+      <button type="submit">Search</button>
+    </form>
+  </section>
+
+  <section id="welcomePanel" class="panel welcome-panel">
+    <h1>Welcome to GBNames and the SmartCensus</h1>
+    <p>The SmartCensus is a programme of research by the ESRC Geographic Data Service (GeoDS) to
+      explore the places where we live, work and play. It uses geography to link new &lsquo;smart&rsquo;
+      data from our digital devices to conventional statistics, so that we can trace population
+      movements across the generations. The SmartCensus can chart inter-generational movements of
+      your family group across Great Britain over the last 175 years, while also documenting
+      changes in its estimated size. Where our ancestors lived can also shape where we live today,
+      so do also compare the neighbourhoods where your family group is concentrated with the
+      population at large. While geography is not always destiny, panning and zooming across the
+      map helps you to trace your family's geographic origins, as well as helping to explain its
+      SmartCensus profile.</p>
+    <div id="exampleNames" class="example-names"></div>
+  </section>
+
+  <section id="notFoundPanel" class="panel not-found-panel" hidden>
+    <p id="notFoundMessage"></p>
+  </section>
+
+  <section id="resultSection" class="result-section" hidden>
+    <h2 id="resultName"></h2>
+    <div class="map-card">
+      <div id="map"></div>
+      <div class="slider-row">
+        <button type="button" id="prevPeriod" aria-label="Previous period">&#8249;</button>
+        <input type="range" id="periodSlider" min="0" max="0" step="1" value="0">
+        <button type="button" id="nextPeriod" aria-label="Next period">&#8250;</button>
+      </div>
+      <p id="periodLabel" class="period-label"></p>
+    </div>
+
+    <section class="lorem-section">
+      <h3>Lorem ipsum</h3>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt
+        ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+        ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+    </section>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>Lorem ipsum placeholder footer text.</p>
+</footer>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
