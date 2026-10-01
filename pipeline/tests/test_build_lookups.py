@@ -36,11 +36,26 @@ class BuildLookups(unittest.TestCase):
         self.assertIn("Ageing Blue-collar households", names)
         self.assertFalse([n for n in names if "  " in n or ":" in n], "a name still carries its code prefix or a double space")
 
-    def test_gb2c_groups_have_a_name_and_a_provisional_colour_each(self):
+    def test_gb2c_groups_have_a_name_and_our_own_colour_each(self):
         for code, group in self.lookups["gb2c"]["groups"].items():
             self.assertTrue(group["name"], code)
             self.assertRegex(group["colour"], r"^#[0-9a-fA-F]{6}$", code)
         self.assertEqual(len({g["colour"] for g in self.lookups["gb2c"]["groups"].values()}), 11)   # all distinct
+
+    def test_gb2c_colours_are_spread_across_lightness_not_bunched_together(self):
+        # a rough colour-blind-safety check: if two groups sit at nearly the same relative luminance, hue is all
+        # that tells them apart, which is exactly what fails for red-green deficiency - so no two should be close.
+        def luminance(hexcode):
+            r, g, b = (int(hexcode[i:i + 2], 16) / 255 for i in (1, 3, 5))
+
+            def lin(c):
+                return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+            r, g, b = lin(r), lin(g), lin(b)
+            return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+        values = sorted(luminance(g["colour"]) for g in self.lookups["gb2c"]["groups"].values())
+        gaps = [b - a for a, b in zip(values, values[1:])]
+        self.assertGreater(min(gaps), 0.005, gaps)
 
     def test_the_ahah_text_matches_the_direction_of_the_data(self):
         self.assertIn("first decile is the healthiest", self.lookups["scales"]["ahah"]["text"])

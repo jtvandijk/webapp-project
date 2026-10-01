@@ -363,8 +363,8 @@ python3 tools/validate_data.py work/release --skip-lookups
 - The validator checks every name file, the search index, the facts table and the manifest against [data-contract.md](data-contract.md),
   and ends `OK: N names, ... 0 errors`. `--skip-lookups` is for a release that has no `lookups.json` (the wording and colours of the group codes) yet;
   it is then reported as not checked. To check the codes as well, make the file outside the TRE with `python3 tools/build_lookups.py` (it writes
-  `work/lookups.json`; the FPC colours come from `raw-indicators/fpc/`, the GB2C colours are a placeholder palette pending a website design decision - see
-  `tools/build_lookups.py`'s own comment), upload it as `work/release/lookups.json`, and run the validator again without the flag. Any error is a name and a reason: fix the cause, `clean.sh --release`, run stage 6 again.
+  `work/lookups.json`; the FPC colours come from `raw-indicators/fpc/`, the GB2C colours are our own choice since none is
+  published - see `tools/build_lookups.py`'s own comment), upload it as `work/release/lookups.json`, and run the validator again without the flag. Any error is a name and a reason: fix the cause, `clean.sh --release`, run stage 6 again.
 - `du -sh work/release` decides whether everything fits on the HPC disk together with `work/maps/` (which holds the same maps in raw form). If
   it does not: `--free-maps` (add it after `--chunk "$CHUNK"` in `stage6.sh`) deletes each chunk's raw maps once it
   has assembled without error (this cannot be undone; re-making them means re-running stage 4 for that chunk), and a release that will not fit at all can be

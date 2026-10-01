@@ -12,8 +12,8 @@ Sources (all names and colours; nothing about areas or people):
   FPC            names from pipeline/reference/group_names.json, colours from raw-indicators/fpc/fpc_label_colors.csv
                  (git-ignored; only the classification's lookup from area to group is safeguarded, not its names or colours)
   GB2C           names from pipeline/reference/group_names.json; the raw download has no colour column, so GB2C_COLOURS
-                 below is a placeholder palette (11 distinct colours, no meaning chosen for any of them) - a website
-                 design decision, not yet made; confirm/replace before this goes live
+                 below is our own palette (confirmed with the user 2026-10-01): a muted jewel-tone family, deliberately
+                 unlike OAC/LOAC/eth, with each hue chosen for that group's own name/character, not assigned arbitrarily
   Ethnicity      pipeline/config.py ETH_GROUPS (+ "unknown")
 The page text below is the wording to edit. Standard library only, so it runs anywhere.
 """
@@ -39,10 +39,24 @@ GROUP_NAMES = ROOT / "pipeline" / "reference" / "group_names.json"
 # Corrections to the published FPC labels, confirmed by the user (E12 on 2026-09-24, E13 on 2026-09-27).
 FPC_TYPOS = {"Underprivilege dependent": "Underprivileged dependent", "Aging Blue-collar households": "Ageing Blue-collar households"}
 
-# GB2C has no published colours (unlike FPC): a placeholder qualitative palette (ColorBrewer Paired + Set3, 11
-# colours), no meaning attached to any of them - a website design decision still to be made, not a final answer.
-GB2C_COLOURS = {"BG1": "#a6cee3", "BG2": "#1f78b4", "BG3": "#b2df8a", "BG4": "#33a02c", "BG5": "#fb9a99", "BG6": "#e31a1c",
-                "B1": "#fdbf6f", "B2": "#ff7f00", "G1": "#cab2d6", "G2": "#6a3d9a", "G3": "#ffff99"}
+# GB2C has no published colours (unlike FPC), so this is our own choice (confirmed with the user 2026-10-01): a
+# muted jewel-tone family, visually distinct from OAC's primary mix, LOAC/eth's ColorBrewer pastels and the IMD/AHAH
+# diverging ramps. Each hue is chosen for the group's own name/character (not an ordered/sequential scale - the data
+# itself claims no order), and the 11 are spread across relative luminance (WCAG-style, computed, not eyeballed) so
+# no two collapse together for colour-vision-deficient viewers - the tightest gap is BG5/B2 and G2/G3 alike.
+GB2C_COLOURS = {
+    "BG1": "#15767A",   # Engaged New-Age Gamblers: modern, tech-forward, actively engaged - teal
+    "BG2": "#8FB3D9",   # Newcomers, sporadic/moderate play: tentative, just starting out - pale sky blue
+    "BG3": "#E08A2E",   # Event-Driven Speculative Players: energetic, spikes around events - amber
+    "BG4": "#5F9E78",   # Mindful Entertainment Seekers: calm, recreational - sage green
+    "BG5": "#9C2B3C",   # High-Frequency High-Stake Losers: the clearest harm signal in the set - deep crimson
+    "BG6": "#C94F8E",   # Young Occasional Binge Players: youthful, bursty - magenta-pink
+    "B1":  "#8C6A42",   # Longstanding Habitual Veterans: steady, entrenched - umber/brown
+    "B2":  "#41507A",   # Well-Resourced Hobbyists: affluent, relaxed - navy-indigo
+    "G1":  "#C1562B",   # Episodic High Risk Takers: elevated risk, bursty - burnt orange
+    "G2":  "#486675",   # Mindful Low-Rollers from Deprived Communities: calm, low stakes - slate blue-grey
+    "G3":  "#7A4C8E",   # High-Stakes Gamers from Deprived Communities: high stakes, gaming not betting - plum/violet
+}
 
 # Ethnicity Estimator colours: the old site had nine (css btn-eee1 to btn-eee9, ColorBrewer Set3) and none of its own for Black - Caribbean,
 # Asian - Pakistani or Asian - Bangladeshi, so those three take the three Set3 colours the old site did not use. Change them here.
