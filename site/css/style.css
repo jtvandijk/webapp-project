@@ -1,141 +1,51 @@
+/* Overrides layered on top of vendor/bootstrap/bootstrap.min.css (4.3.1, same version the legacy
+   site pins) - not a replacement for it. Colour names and values match gbnames/static/css/custom.css
+   exactly, so this is "the existing colour scheme", not a new one. */
+
 :root {
     --navy: #08306b;
     --pale-blue: #c6dbef;
     --accent-orange: #fdae6b;
-    --text: #1a1a1a;
-    --font: "Open Sans", sans-serif;
-}
-
-* {
-    box-sizing: border-box;
 }
 
 body {
-    margin: 0;
-    font-family: var(--font);
-    font-weight: 400;
-    color: var(--text);
-    background: #fff;
+    font-family: "Open Sans", sans-serif;
+    overflow-x: hidden;
 }
 
-h1, h2, h3 {
-    font-weight: 700;
+/* same three names and values as gbnames/static/css/custom.css */
+.bg-custom { background-color: var(--navy); }
+.bg-notes { background-color: var(--pale-blue); }
+.bg-orange { background-color: var(--accent-orange); }
+
+.navbar-brand img {
+    margin-right: 0.5rem;
 }
 
-.visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
+.content-wrapper {
+    padding-top: 1rem;
+    padding-bottom: 2rem;
 }
 
-/* header */
+/* search */
 
-.site-header {
-    background: var(--navy);
-    color: #fff;
-}
-
-.header-inner {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0.75rem 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.brand {
-    color: #fff;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 1.25rem;
-}
-
-.site-header nav a {
-    color: #fff;
-    text-decoration: none;
-    margin-left: 1rem;
-}
-
-.site-header nav a:hover {
-    text-decoration: underline;
-}
-
-/* main / sections */
-
-main {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 1rem;
-}
-
-.search-section form {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.search-section input[type="text"] {
-    flex: 1;
-    padding: 0.6rem 0.8rem;
-    font-family: var(--font);
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.search-section button {
-    padding: 0.6rem 1.2rem;
-    font-family: var(--font);
-    font-size: 1rem;
-    font-weight: 700;
-    color: #fff;
-    background: var(--navy);
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.search-section button:hover {
-    background: #0a3d87;
-}
-
-.panel {
-    margin-top: 1rem;
-    padding: 1.25rem;
-    border-radius: 6px;
-}
-
-.welcome-panel {
-    background: var(--pale-blue);
-}
-
-.welcome-panel h1 {
-    margin-top: 0;
-    font-size: 1.4rem;
-}
-
-.not-found-panel {
-    background: #fff4e9;
-    border: 1px solid var(--accent-orange);
+#searchForm .form-control {
+    min-width: 16rem;
 }
 
 .example-names {
-    margin-top: 0.75rem;
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
 }
 
 .example-chip {
-    padding: 0.35rem 0.8rem;
-    font-family: var(--font);
+    padding: 0.3rem 0.8rem;
     background: #fff;
     border: 1px solid var(--navy);
     color: var(--navy);
     border-radius: 999px;
-    cursor: pointer;
+    font-size: 0.9rem;
 }
 
 .example-chip:hover {
@@ -143,17 +53,7 @@ main {
     color: #fff;
 }
 
-/* result / map */
-
-.result-section {
-    margin-top: 1rem;
-}
-
-.map-card {
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    overflow: hidden;
-}
+/* map + slider - not a Bootstrap component */
 
 #map {
     height: 60vh;
@@ -175,38 +75,12 @@ main {
 .slider-row button {
     width: 2.2rem;
     height: 2.2rem;
-    font-size: 1.1rem;
+    padding: 0;
     line-height: 1;
-    border: 1px solid var(--navy);
-    background: #fff;
-    color: var(--navy);
-    border-radius: 999px;
-    cursor: pointer;
 }
 
 .period-label {
     margin: 0;
     padding: 0 1rem 1rem;
-    font-size: 0.95rem;
     color: #333;
-}
-
-.lorem-section {
-    margin-top: 1.5rem;
-}
-
-/* footer */
-
-.site-footer {
-    max-width: 960px;
-    margin: 2rem auto 0;
-    padding: 1rem;
-    color: #666;
-    font-size: 0.85rem;
-}
-
-@media (max-width: 600px) {
-    .search-section form {
-        flex-direction: column;
-    }
 }

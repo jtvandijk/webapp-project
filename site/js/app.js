@@ -16,6 +16,7 @@ const periodSlider = document.getElementById("periodSlider");
 const periodLabel = document.getElementById("periodLabel");
 const prevPeriodBtn = document.getElementById("prevPeriod");
 const nextPeriodBtn = document.getElementById("nextPeriod");
+const closeWelcomeBtn = document.getElementById("closeWelcome");
 
 document.getElementById("notFoundMessage").textContent = NOT_FOUND_MESSAGE;
 
@@ -45,6 +46,7 @@ async function init() {
     periodSlider.addEventListener("input", () => showPeriod(Number(periodSlider.value)));
     prevPeriodBtn.addEventListener("click", () => stepPeriod(-1));
     nextPeriodBtn.addEventListener("click", () => stepPeriod(1));
+    closeWelcomeBtn.addEventListener("click", () => { welcomePanel.hidden = true; });
     window.addEventListener("popstate", loadFromUrl);
 
     loadFromUrl();

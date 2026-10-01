@@ -7,71 +7,114 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor/bootstrap/bootstrap.min.css">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<header class="site-header">
-  <div class="header-inner">
-    <a class="brand" href="index.html">GBNames</a>
-    <nav>
-      <a href="about.html">About</a>
-    </nav>
-  </div>
-</header>
 
-<main>
-  <section class="search-section">
-    <form id="searchForm">
-      <label for="searchInput" class="visually-hidden">Search a surname</label>
-      <input type="text" id="searchInput" name="surname" placeholder="Search a surname, e.g. Smith" autocomplete="off">
-      <button type="submit">Search</button>
-    </form>
-  </section>
-
-  <section id="welcomePanel" class="panel welcome-panel">
-    <h1>Welcome to GBNames and the SmartCensus</h1>
-    <p>The SmartCensus is a programme of research by the ESRC Geographic Data Service (GeoDS) to
-      explore the places where we live, work and play. It uses geography to link new &lsquo;smart&rsquo;
-      data from our digital devices to conventional statistics, so that we can trace population
-      movements across the generations. The SmartCensus can chart inter-generational movements of
-      your family group across Great Britain over the last 175 years, while also documenting
-      changes in its estimated size. Where our ancestors lived can also shape where we live today,
-      so do also compare the neighbourhoods where your family group is concentrated with the
-      population at large. While geography is not always destiny, panning and zooming across the
-      map helps you to trace your family's geographic origins, as well as helping to explain its
-      SmartCensus profile.</p>
-    <div id="exampleNames" class="example-names"></div>
-  </section>
-
-  <section id="notFoundPanel" class="panel not-found-panel" hidden>
-    <p id="notFoundMessage"></p>
-  </section>
-
-  <section id="resultSection" class="result-section" hidden>
-    <h2 id="resultName"></h2>
-    <div class="map-card">
-      <div id="map"></div>
-      <div class="slider-row">
-        <button type="button" id="prevPeriod" aria-label="Previous period">&#8249;</button>
-        <input type="range" id="periodSlider" min="0" max="0" step="1" value="0">
-        <button type="button" id="nextPeriod" aria-label="Next period">&#8250;</button>
+<div class="row justify-content-center bg-custom mx-0">
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-md-10 col-sm-10">
+        <nav class="navbar navbar-expand navbar-dark bg-custom">
+          <a class="navbar-brand" href="index.html">GBNames</a>
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+          </ul>
+        </nav>
       </div>
-      <p id="periodLabel" class="period-label"></p>
+    </div>
+  </div>
+</div>
+
+<div class="content-wrapper">
+  <div class="container-fluid">
+
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-md-10 col-sm-10">
+        <form id="searchForm" class="form-inline justify-content-center mt-3">
+          <label for="searchInput" class="sr-only">Search a surname</label>
+          <input type="text" id="searchInput" name="surname" class="form-control mr-sm-2 mb-2" placeholder="Search a surname, e.g. Smith" autocomplete="off">
+          <button type="submit" class="btn btn-outline-primary mb-2">Search</button>
+        </form>
+      </div>
     </div>
 
-    <section class="lorem-section">
-      <h3>Lorem ipsum</h3>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt
-        ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-        ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-    </section>
-  </section>
-</main>
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-md-10 col-sm-10">
+        <div id="welcomePanel" class="jumbotron bg-notes p-3 mb-4">
+          <h1>Welcome to GBNames and the SmartCensus
+            <button type="button" id="closeWelcome" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </h1>
+          <p class="lead text-justify">The SmartCensus is a programme of research by the ESRC Geographic
+            Data Service (GeoDS) to explore the places where we live, work and play. It uses geography to
+            link new &lsquo;smart&rsquo; data from our digital devices to conventional statistics, so that
+            we can trace population movements across the generations. The SmartCensus can chart
+            inter-generational movements of your family group across Great Britain over the last 175 years,
+            while also documenting changes in its estimated size. Where our ancestors lived can also shape
+            where we live today, so do also compare the neighbourhoods where your family group is
+            concentrated with the population at large. While geography is not always destiny, panning and
+            zooming across the map helps you to trace your family's geographic origins, as well as helping
+            to explain its SmartCensus profile.</p>
+          <div id="exampleNames" class="example-names mt-3"></div>
+        </div>
+      </div>
+    </div>
 
-<footer class="site-footer">
-  <p>Lorem ipsum placeholder footer text.</p>
-</footer>
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-md-10 col-sm-10">
+        <div id="notFoundPanel" class="alert bg-orange text-justify" hidden>
+          <p id="notFoundMessage" class="mb-0"></p>
+        </div>
+      </div>
+    </div>
+
+    <div id="resultSection" class="result-section" hidden>
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-10 col-sm-10">
+          <h2 id="resultName"></h2>
+        </div>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-10 col-sm-10">
+          <div class="card mb-3">
+            <div class="card-body p-0">
+              <div id="map"></div>
+              <div class="slider-row">
+                <button type="button" id="prevPeriod" class="btn btn-outline-primary rounded-circle" aria-label="Previous period">&#8249;</button>
+                <input type="range" id="periodSlider" min="0" max="0" step="1" value="0">
+                <button type="button" id="nextPeriod" class="btn btn-outline-primary rounded-circle" aria-label="Next period">&#8250;</button>
+              </div>
+              <p id="periodLabel" class="period-label text-muted"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-10 col-sm-10">
+          <div class="card mb-3">
+            <div class="card-header"><h4 class="m-0">Lorem ipsum</h4></div>
+            <div class="card-body text-justify">
+              <p class="mb-0">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
+                tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row justify-content-center mt-4">
+      <div class="col-lg-10 col-md-10 col-sm-10">
+        <small class="text-muted">Lorem ipsum placeholder footer text.</small>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <script src="vendor/leaflet/leaflet.js"></script>
 <script type="module" src="js/app.js"></script>
