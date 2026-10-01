@@ -31,13 +31,18 @@
     <h1 class="mb-3">About GBNames</h1>
 
     <div class="card mb-3">
+      <div class="card-header"><h4 class="m-0">About GBNames</h4></div>
       <div class="card-body text-justify">
-        <p class="lead mb-0">GBNames and the SmartCensus are a programme of research by the ESRC
-          Geographic Data Service (GeoDS) into the places where British family groups have lived,
-          moved and changed over the last 175 years. This page explains, in plain terms, where the
-          data comes from, how the map is built, and what each of the statistics on a name's page
-          actually shows - with links to the underlying research for anyone who wants the full
-          detail.</p>
+        <p>GBNames allows users to explore the British geography of their family, using the search
+          box above to enter a family name. Many family groups first settled in different parts of
+          Great Britain and typically spread out over time. Uneven geographies mean that family
+          groups may be concentrated in different types of neighbourhoods. This site uses surnames
+          to introduce users to the SmartCensus, developed by the Economic and Social Research
+          Council's <a href="https://geods.ac.uk/" target="_blank" rel="noopener">Geographic Data
+          Service (GeoDS)</a>.</p>
+        <p class="mb-0">This page explains, in plain terms, where the data comes from, how the map
+          is built, and what each of the statistics on a name's page actually shows - with links to
+          the underlying research for anyone who wants the full detail.</p>
       </div>
     </div>
 
@@ -54,13 +59,26 @@
           once it is 100 years old, which is why 1921 is currently the most recent census year we
           can use, and why Scotland is missing from the 1911 census (not released on the same
           schedule as England and Wales).</p>
-        <p class="mb-0">For the <strong>SmartData</strong> and <strong>SmartCensus</strong> periods
-          (1997 onwards), we use consumer registers: large, anonymised commercial datasets that
-          record adults at their postal address. Details of these data are in
+        <p class="mb-0">The <strong>SmartCensus</strong> is an ongoing project of the
+          <a href="https://geods.ac.uk/" target="_blank" rel="noopener">Geographic Data Service (GeoDS)</a>
+          to link conventional censuses and surveys with new and exciting 'smart' data sources -
+          providing neighbourhood estimates of circumstances including health, resilience to cost of
+          living pressures and gambling behaviour - in greater geographic detail and with greater
+          update frequency than more conventional statistical sources. Smart data are typically
+          created when we use smartphones and other digital devices to carry out everyday tasks.
+          These data are inherently less reliable than surveys and statistics, so our data scientists
+          must document their quality and provenance; these updates are typically developed for the
+          same neighbourhood areas that are used for the UK Census. We document the quality of our
+          smart and other data on our website
+          (<a href="https://data.geods.ac.uk/" target="_blank" rel="noopener">data.geods.ac.uk</a>)
+          and in research publications, including
           <a href="https://doi.org/10.1111/rssa.12476" target="_blank" rel="noopener">Lansley <em>et al.</em> (2019)</a>
-          and <a href="https://doi.org/10.1111/rssa.12713" target="_blank" rel="noopener">Van Dijk <em>et al.</em> (2021)</a>.
-          The most recent year, labelled SmartCensus, is the newest wave of this data and the
-          namesake of the whole programme.</p>
+          and <a href="https://doi.org/10.1111/rssa.12713" target="_blank" rel="noopener">Van Dijk <em>et al.</em> (2021)</a>
+          for the technical detail behind the <strong>SmartData</strong> periods shown here. We have
+          been updating many of our SmartCensus datasets every year since 1997, allowing researchers
+          to monitor the intricacies of local changes throughout the 21st century. The most recent
+          year, labelled SmartCensus, is the newest wave of this data and the namesake of the whole
+          programme.</p>
       </div>
     </div>
 
@@ -70,15 +88,15 @@
         <p>Rather than plotting every single address (which would risk identifying individuals), we
           use a technique called <strong>kernel density estimation (KDE)</strong>: it smooths out the
           locations of everyone who shares a name into a continuous surface, showing where the name is
-          more or less concentrated, the same way a heatmap works. See
+          more or less concentrated, the same way a heatmap works. The coloured contours enclose areas
+          where bearers of the name were most concentrated, measured as where this population-weighted
+          density is highest. See
           <a href="https://www.spatialanalysisonline.com/HTML/index.html?density__kernels_and_occupancy.htm" target="_blank" rel="noopener">de Smith, Goodchild and Longley (2018)</a>
           and <a href="https://doi.org/10.1080/13658816.2011.591291" target="_blank" rel="noopener">Cheshire and Longley (2011)</a>
           for the technique itself, and
           <a href="https://doi.org/10.1080/17445647.2020.1746418" target="_blank" rel="noopener">Van Dijk and Longley (2020)</a>
           for how we apply it here. Further analysis of what these surname regions show is published in
-          <a href="https://doi.org/10.1080/24694452.2020.1717328" target="_blank" rel="noopener">Kandt <em>et al.</em> (2020)</a>,
-          <a href="https://doi.org/10.1038/s41467-021-26185-z" target="_blank" rel="noopener">Longley <em>et al.</em> (2021)</a>
-          and <a href="https://doi.org/10.1111/tran.12622" target="_blank" rel="noopener">Longley <em>et al.</em> (2023)</a>.</p>
+          <a href="https://doi.org/10.1080/24694452.2020.1717328" target="_blank" rel="noopener">Kandt <em>et al.</em> (2020)</a>.</p>
         <p class="mb-0">We only build a map, or show any statistic, for a name with at least 100
           people recorded in a given year - never fewer. This is to make sure nobody's individual
           circumstances can be inferred from the page, and it's also why a search for a very rare
@@ -98,61 +116,84 @@
 
         <details class="about-item">
           <summary>Index of Multiple Deprivation (IMD)</summary>
-          <p>Neighbourhoods across Great Britain can be ranked from most to least deprived, taking
-            into account income, employment, health, education, housing and more. We show the decile
-            (1 = most deprived, 10 = least deprived) that bearers of your name most often live in,
-            and a composite GBNames deprivation score (the average percentile and its spread).
-            England, Wales and Scotland are each ranked separately and then compared directly - a
-            known simplification. See the
-            <a href="https://www.gov.uk/government/statistics/english-indices-of-deprivation-2019" target="_blank" rel="noopener">English</a>,
-            <a href="https://gov.wales/welsh-index-multiple-deprivation" target="_blank" rel="noopener">Welsh</a> and
-            <a href="https://www.gov.scot/collections/scottish-index-of-multiple-deprivation-2020/" target="_blank" rel="noopener">Scottish</a>
-            indices for full detail.</p>
+          <p>Neighbourhood deprivation is often used to understand behaviours and other outcomes.
+            GeoDS has standardised IMD indices for England, Scotland and Wales for every SmartCensus
+            year and standardised them to the 1-100 range. This makes it possible to see how many
+            bearers of your name live in neighbourhoods placed in each deprivation decile.</p>
+          <p>There is no obvious reason why people with common surnames such as 'Smith' should live
+            in more or less deprived neighbourhoods than those with surnames such as 'Baker' - and the
+            SmartCensus confirms this. However, rarer surnames with distinctive geographies often tell
+            a different story - compare 'McFee' with 'Offer' for example. Differences can reflect
+            historical differences in the local economic opportunities where different family names
+            originated. It is astonishing that such inequalities between family groups are apparent in
+            the SmartCensus, collected more than 800 years after surnames came into common parlance.
+            Read more in
+            <a href="https://www.nature.com/articles/s41467-021-26185-z" target="_blank" rel="noopener">Longley <em>et al.</em> (2021)</a>.
+            In this context, we can also observe that the neighbourhood circumstances of many more
+            recently arrived ethnic minority populations have not yet converged with the longer
+            established population - read more in
+            <a href="https://rgs-ibg.onlinelibrary.wiley.com/doi/10.1111/tran.12622" target="_blank" rel="noopener">Longley <em>et al.</em> (2023)</a>.</p>
+          <p class="mb-0">We show the decile (1 = most deprived, 10 = least deprived) that bearers of
+            your name most often live in, and a composite GBNames deprivation score (the average
+            percentile and its spread). England, Wales and Scotland are each ranked on their own and
+            then compared directly - a known simplification.</p>
         </details>
 
         <details class="about-item">
-          <summary>UK Output Area Classification (OAC)</summary>
-          <p>A classification of every neighbourhood in the UK into a Supergroup and a more detailed
-            Group, based on 2021/22 census data - things like age, housing, occupation and ethnicity.
-            We show the Supergroup and Group bearers of your name most often live in, and the
-            short "pen portrait" description behind each one. See
-            <a href="https://doi.org/10.1111/geoj.12550" target="_blank" rel="noopener">Wyszomierski <em>et al.</em> (2023)</a>
-            and the <a href="https://data.cdrc.ac.uk/dataset/output-area-classification-2021" target="_blank" rel="noopener">dataset page</a>.</p>
+          <summary>The UK's Geodemographic Structure (OAC)</summary>
+          <p>The UK Output Area Classification (OAC) is a classification of neighbourhoods, arranged
+            into Supergroups and Groups based upon 2021/22 Census of Population data. We created this
+            through a collaboration with the Office for National Statistics (ONS) - you can find out
+            how in
+            <a href="https://doi.org/10.1111/geoj.12550" target="_blank" rel="noopener">Wyszomierski <em>et al.</em> (2023)</a>.
+            We show the distribution of your selected family group across 2021/22 OAC Supergroups and
+            Groups, with links to the attributes (pen portraits) of these neighbourhoods. See the
+            <a href="https://data.cdrc.ac.uk/dataset/output-area-classification-2021" target="_blank" rel="noopener">dataset page</a>.</p>
         </details>
 
         <details class="about-item">
-          <summary>London Output Area Classification (LOAC)</summary>
-          <p>The same idea as OAC, but built specifically for Greater London, whose population is not
-            always well described by a nationwide classification. See
-            <a href="https://rgs-ibg.onlinelibrary.wiley.com/doi/full/10.1002/geo2.7" target="_blank" rel="noopener">Singleton and Longley (2015)</a>.</p>
+          <summary>London's Geodemographic Structure (LOAC)</summary>
+          <p>As the UK capital, some attributes of Greater London's distinctive neighbourhoods are
+            not described fully by nationwide geodemographic classifications. The London Output Area
+            Classification (LOAC) therefore uses the same methods used to create the UK Output Area
+            Classification (described in
+            <a href="https://journals.sagepub.com/doi/10.1177/23998083241242913" target="_blank" rel="noopener">Longley <em>et al.</em> (2024)</a>)
+            but applies them only to Greater London. We show the distribution of your selected family
+            group across 2021 LOAC Supergroups and Groups, with links to the attributes of these
+            neighbourhoods. See the
+            <a href="https://data.geods.ac.uk/dataset/london-oac" target="_blank" rel="noopener">dataset page</a>.</p>
         </details>
 
         <details class="about-item">
-          <summary>GB2C Gambling Classification</summary>
-          <p>A classification of neighbourhoods by online gambling behaviour, built by GeoDS from
-            around 1.2 million anonymised online gambling accounts. We show the group bearers of your
-            name most often live in. See the
-            <a href="https://data.geods.ac.uk/dataset/great-britain-gambling-behaviours-classification-gb2c-lsoa-geography" target="_blank" rel="noopener">dataset page</a>
-            for more detail; the accompanying paper is currently under review.</p>
+          <summary>The Geography of Gambling (GB2C)</summary>
+          <p>The Great Britain Gambling Behaviours Classification (GB2C) provides the first national
+            neighbourhood classification of gambling behaviours in Great Britain, based on observed
+            online transactional behaviours drawn from industry data. We show the distribution of
+            your selected family group across gambling subgroups, with links to the characteristics of
+            these behaviours. See the
+            <a href="https://data.geods.ac.uk/dataset/great-britain-gambling-behaviours-classification-gb2c-lsoa-geography" target="_blank" rel="noopener">dataset page</a>;
+            the accompanying paper is currently under review.</p>
         </details>
 
         <details class="about-item">
-          <summary>Access to Healthy Assets and Hazards (AHAH)</summary>
-          <p>A multi-dimensional index describing how healthy a neighbourhood is to live in, based on
-            access to things like green space, healthy food, GPs and leisure services, as well as
-            exposure to hazards like air pollution, fast-food outlets and tobacco retailers. We show
-            the decile bearers of your name most often live in (1 = healthiest, 10 = least healthy -
-            the opposite direction to IMD). See
+          <summary>How Healthy are our Neighbourhoods? (AHAH)</summary>
+          <p>Access to Healthy Assets and Hazards (AHAH) is a classification of the health attributes
+            associated with neighbourhoods. Data used include access to different retail facilities,
+            health services and physical features. The graphic shows the neighbourhood health profile
+            for bearers of your selected surname (1 = healthiest, 10 = least healthy - the opposite
+            direction to IMD). See
             <a href="https://doi.org/10.1016/j.healthplace.2018.08.019" target="_blank" rel="noopener">Green <em>et al.</em> (2018)</a>
             and the <a href="https://data.cdrc.ac.uk/dataset/access-healthy-assets-hazards-ahah" target="_blank" rel="noopener">dataset page</a>.</p>
         </details>
 
         <details class="about-item">
-          <summary>Financial Precarity Classification (FPC)</summary>
-          <p>A classification of neighbourhoods by financial precarity - how exposed households are
-            to problem debt, insecure work and financial shocks. We show the group bearers of your
-            name most often live in. See
-            <a href="https://doi.org/10.1016/j.compenvurbsys.2026.102399" target="_blank" rel="noopener">Zi and Singleton (2026)</a>.</p>
+          <summary>Thriving in or Surviving in Britain's Cost of Living Crisis? (FPC)</summary>
+          <p class="mb-0">Financial 'precarity' describes a state of economic insecurity arising from
+            unpredictable employment and low levels of social protection. Neighbourhood measures of
+            this underpin the GeoDS Financial Precarity Classification, described in
+            <a href="https://doi.org/10.1016/j.compenvurbsys.2026.102399" target="_blank" rel="noopener">Zi and Singleton (2026)</a>.
+            The distribution of bearers of your chosen name across this classification is shown
+            below.</p>
         </details>
 
         <p class="mb-0 mt-3">Every indicator above shows the most common (modal) group, plus the full
@@ -164,28 +205,42 @@
     <div class="card mb-3">
       <div class="card-header"><h4 class="m-0">More about your name</h4></div>
       <div class="card-body text-justify">
-        <p><strong>Places:</strong> the parishes (Historic Census) and areas (SmartData) your name's
-          bearers are most concentrated in, most common first.</p>
-        <p><strong>Forenames:</strong> the most common given names recorded alongside your surname, by
-          sex, for the Historic Census and SmartData periods.</p>
-        <p><strong>Ethnicity Estimator:</strong> given and family names can provide clues as to
-          ethnicity. We show the single most common census ethnic group estimated from the forenames
-          and surnames of your name's bearers - a rough estimate, not a record of any individual's own
-          identity. Better estimates are possible with full names; see
-          <a href="https://doi.org/10.1371/journal.pone.0201774" target="_blank" rel="noopener">Kandt and Longley (2018)</a>.</p>
-        <p class="mb-0"><strong>Number of Bearers:</strong> how many people have shared your name in
-          each year we have data for. SmartData and SmartCensus figures are adjusted so that the
-          register itself growing or shrinking over time doesn't look like your name becoming more or
-          less common - see the map's own period slider for the same figures year by year.</p>
+        <details class="about-item">
+          <summary>How many?</summary>
+          <p>1851-1921: the number of (adult and child) bearers of your name in our database (1911
+            counts exclude Scotland).</p>
+          <p class="mb-0">1997-2026: the estimated number of adult bearers of your name based in the
+            SmartCensus.</p>
+        </details>
+        <details class="about-item">
+          <summary>Where did they come from and where do they live today?</summary>
+          <p class="mb-0">The Historic Census parishes, and the present-day SmartData areas, your
+            name's bearers are most concentrated in, most common first.</p>
+        </details>
+        <details class="about-item">
+          <summary>What are the favourite given names?</summary>
+          <p class="mb-0">The most common forenames recorded alongside your surname, by sex, for the
+            Historic Census (1851-1921) and SmartData (1997-2026) periods.</p>
+        </details>
+        <details class="about-item">
+          <summary>Ethnicity Estimator</summary>
+          <p class="mb-0">Given and family names provide clues as to probable ethnicity. We show a
+            rough estimate of the most common census ethnic group among bearers of the surname you
+            entered - not a record of any individual's own identity. Better estimates can be obtained
+            using the full names classification software available through GeoDS; see
+            <a href="https://doi.org/10.1371/journal.pone.0201774" target="_blank" rel="noopener">Kandt and Longley (2018)</a>.</p>
+        </details>
       </div>
     </div>
 
     <div class="card mb-3">
       <div class="card-header"><h4 class="m-0">Privacy</h4></div>
       <div class="card-body text-justify">
-        <p>GBNames is intended to show interesting geographical patterns in names, not to map
-          individuals or families. We never map or show statistics for a name with fewer than 100
-          people recorded in a given year.</p>
+        <p>GBNames is intended to show interesting geographical patterns in names, rather than
+          mapping individuals or families. We do not map or show statistics for names with fewer than
+          100 occurrences per year. In total we have statistics for over 40,000 unique surnames;
+          these names account for approximately 85 per cent of the 2026 adult population in
+          England, Wales and Scotland. See the sections above for more on the methodology we use.</p>
         <p class="mb-0">GBNames follows the
           <a href="https://www.ucl.ac.uk/legal-services/privacy/general-privacy-policy" target="_blank" rel="noopener">UCL Privacy Policy</a>
           and the <a href="https://www.ucl.ac.uk/legal-services/privacy/cookie-policy" target="_blank" rel="noopener">UCL Cookie Policy</a>.
@@ -196,8 +251,8 @@
     <div class="card mb-3">
       <div class="card-header"><h4 class="m-0">Funding</h4></div>
       <div class="card-body text-justify">
-        <p class="mb-0">An output of the Geographic Data Service (GeoDS), a Smart Data Research UK
-          Investment: ES/Z504464/1.</p>
+        <p class="mb-0">Funded through the <a href="https://geods.ac.uk/" target="_blank" rel="noopener">Geographic Data Service (GeoDS)</a>,
+          a <a href="https://www.sdruk.ukri.org/" target="_blank" rel="noopener">Smart Data Research UK</a> Investment: ES/Z504464/1.</p>
       </div>
     </div>
 
