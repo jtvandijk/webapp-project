@@ -47,12 +47,12 @@ replaces it; nothing in the rebuild depends on it.
 | `gbnames/` | The currently live Django app (source of apps.geods.ac.uk/gbnames). Being replaced. |
 | `data-prep/` | The old, one-off pipeline code this rebuild replaced. No longer needed, and nothing reads it: keep it outside the project. If a copy is put back here it is **not tracked in git** (see `.gitignore`); it is several GB and includes working data extracts. |
 | `run.settings` | The choices that change from run to run (which database(s), how many names and chunks, which facts). Read by every stage; in git. |
-| `raw-indicators/` | The downloaded neighbourhood classifications (OAC, LOAC, AHAH, IMD), the input to `tools/prep_neighbourhood.py`. **Not tracked in git.** |
+| `raw-indicators/` | The downloaded neighbourhood classifications (OAC, LOAC, AHAH, IMD, financial precarity, GB2C gambling), the input to `tools/prep_neighbourhood.py`. **Not tracked in git.** |
 | `work/` | Everything `pipeline/` writes when run locally: fake databases, counts, preview pages. **Not tracked in git.** |
 
 ## The data
 
-Historic census microdata (England, Scotland, Wales; 1851-1911 so far, 1921 being added) comes from
+Historic census microdata (England, Scotland, Wales; 1851-1921) comes from
 the ESRC [I-CeM project](https://www1.essex.ac.uk/history/research/icem/) - population-wide names
 and addresses, under a secure data use agreement, geo-referenced to historical parishes (see
 [Higgs and Schürer 2014](https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=7481) for
@@ -71,7 +71,7 @@ gambling classification's lookup, both from area to group - are **safeguarded da
 
 What the site says about the neighbourhoods a surname's bearers live in comes from published classifications,
 each looked up through a bearer's postcode using the ONS Postcode Directory (ONSPD). The downloads are kept
-in `raw-indicators/`; [`tools/prep_neighbourhood.py`](tools/prep_neighbourhood.py) turns them into five small
+in `raw-indicators/`; [`tools/prep_neighbourhood.py`](tools/prep_neighbourhood.py) turns them into six small
 lookup tables in `work/neighbourhood/`, and the `manifest.json` next to them records each table's geography,
 the direction of its scale and a checksum. The table below is the same information.
 
@@ -82,6 +82,7 @@ the direction of its scale and a checksum. The table below is the same informati
 | AHAH (healthy neighbourhoods) | v5.1 | LSOAs 2021 (England, Wales), **data zones 2022 (Scotland)** | `lsoa21cd` | rank and decile **1 = healthiest, 10 = least healthy** |
 | Deprivation | England IoD 2025, Wales WIMD 2025, Scotland SIMD 2020v2 | LSOAs **2021** (England, Wales), data zones **2011 (Scotland)** | `lsoa21cd` (England, Wales), **`lsoa11cd` (Scotland)** | rank, decile and percentile **1 = most deprived** |
 | Financial precarity, Zi and Singleton (**the lookup from area to group is safeguarded: never in this repository**) | published paper | LSOAs 2021 (England, Wales), **data zones 2022 (Scotland)**, the same zones as AHAH | `lsoa21cd` | 13 groups inside 5 clusters, no order claimed |
+| GB2C gambling classification, GeoDS (**the lookup from area to group is safeguarded: never in this repository**) | v1.2 | LSOAs 2021 (England, Wales), **data zones 2022 (Scotland)**, the same zones as AHAH/financial precarity | `lsoa21cd` | 11 groups (Active Subgroups) inside 3 broader groups (BG/B/G), no order claimed |
 
 **Which zones, 2011 or 2021?** There is no conversion between them. ONSPD carries both the 2011 and the 2021
 (Scotland: 2022) code for every postcode, and each classification is joined on the column that matches the
