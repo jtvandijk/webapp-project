@@ -31,6 +31,12 @@ body {
     font-weight: 700;
     font-size: 1.15rem;
     color: #fff;
+    text-decoration: none;
+}
+
+.navbar-brand-text:hover {
+    color: #fff;
+    text-decoration: underline;
 }
 
 .nav-link.active {
@@ -149,8 +155,21 @@ body {
 
 /* indicator cards (IMD/OAC/LOAC/GB2C/AHAH/FPC) and the more-about-your-name cards */
 
-.indicator-about {
-    font-size: 0.95rem;
+.indicator-text {
+    font-size: 1rem;
+    color: #1a1a1a;
+}
+
+.indicator-text strong {
+    font-weight: 700;
+}
+
+.group-drilldown {
+    margin-top: 1.5rem;
+    padding: 1rem 1rem 0.4rem;
+    border: 1px solid #e2e2e2;
+    border-radius: 6px;
+    background: #fafafa;
 }
 
 .bar-list {
@@ -198,10 +217,17 @@ details.bar-row > summary::marker {
     font-size: 0.95rem;
 }
 
-details.bar-row-expandable .bar-name {
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    text-decoration-color: #999;
+.bar-chevron {
+    display: inline-block;
+    width: 0.7rem;
+    flex: none;
+    font-size: 0.75rem;
+    color: #666;
+    transition: transform 0.15s ease;
+}
+
+details[open] > summary .bar-chevron {
+    transform: rotate(90deg);
 }
 
 .bar-pct {
@@ -234,10 +260,6 @@ details.bar-row-expandable .bar-name {
     border-left: 3px solid #ccc;
     font-size: 0.9rem;
     color: #333;
-}
-
-.indicator-score {
-    font-size: 0.9rem;
 }
 
 .places-list {

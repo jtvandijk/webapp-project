@@ -2,7 +2,7 @@
 // indicator cards.
 import { surnameKey, fetchManifest, fetchLookups, fetchName, fetchFacts, formatPeriod, bearersFor } from "./data.js";
 import { createMap } from "./map.js";
-import { renderDecileCard, renderGroupCard, renderFlatGroupCard } from "./indicators.js";
+import { renderDecileCard, renderGroupCard } from "./indicators.js";
 import { renderPlacesCard, renderForenamesCard, renderEthnicityCard, renderCountsCard } from "./profile.js";
 
 const NOT_FOUND_MESSAGE = "We couldn't find a page for this surname. This means either we hold no "
@@ -165,7 +165,7 @@ function renderIndicators(facts) {
             colours: lookups.scales.imd.colours,
             distribution: facts.imd.distribution,
             mode: facts.imd.mode,
-            scaleText: lookups.scales.imd.text.replace("{mode}", facts.imd.mode),
+            scaleText: lookups.scales.imd.text.replace("{decile}", `<strong>Decile ${facts.imd.mode}</strong>`),
             scoreText: lookups.cards.imd.score
                 && `${lookups.cards.imd.score} Mean: ${facts.imd.mean}, spread: ${facts.imd.sd}.`,
         }));
@@ -191,10 +191,11 @@ function renderIndicators(facts) {
         }));
     }
     if (facts.gb2c) {
-        indicatorContainer.appendChild(renderFlatGroupCard({
+        indicatorContainer.appendChild(renderGroupCard({
             title: lookups.cards.gb2c.title,
             about: lookups.cards.gb2c.about,
             groups: lookups.gb2c.groups,
+            supergroups: lookups.gb2c.supergroups,
             distribution: facts.gb2c.distribution,
             modeCode: facts.gb2c.group,
         }));
@@ -206,14 +207,15 @@ function renderIndicators(facts) {
             colours: lookups.scales.ahah.colours,
             distribution: facts.ahah.distribution,
             mode: facts.ahah.mode,
-            scaleText: lookups.scales.ahah.text.replace("{mode}", facts.ahah.mode),
+            scaleText: lookups.scales.ahah.text.replace("{decile}", `<strong>Decile ${facts.ahah.mode}</strong>`),
         }));
     }
     if (facts.fpc) {
-        indicatorContainer.appendChild(renderFlatGroupCard({
+        indicatorContainer.appendChild(renderGroupCard({
             title: lookups.cards.fpc.title,
             about: lookups.cards.fpc.about,
             groups: lookups.fpc.groups,
+            supergroups: lookups.fpc.supergroups,
             distribution: facts.fpc.distribution,
             modeCode: facts.fpc.group,
         }));

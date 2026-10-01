@@ -35,6 +35,26 @@ from pipeline import config
 FPC_RAW = ROOT / "raw-indicators" / "fpc" / "fpc_label_colors.csv"
 GB2C_RAW = ROOT / "raw-indicators" / "gb2c" / "classification_codes_and_names.csv"
 GROUP_NAMES = ROOT / "pipeline" / "reference" / "group_names.json"
+FPC_DESCRIPTIONS = ROOT / "pipeline" / "reference" / "fpc_descriptions.json"
+GB2C_DESCRIPTIONS = ROOT / "pipeline" / "reference" / "gb2c_descriptions.json"
+
+# Both FPC and GB2C turn out to have a genuine two-level structure (confirmed by the user 2026-10-01,
+# from each classification's own pen-portrait document) - a small number of supergroups, each
+# containing a handful of the 11/13 groups above. Neither source publishes a supergroup colour, so
+# these are our own choice, same reasoning as GB2C_COLOURS below: a muted family, distinct per
+# supergroup's own character, not an ordered/sequential scale.
+FPC_SUPERGROUP_COLOURS = {
+    "A": "#2A9D8F",   # Emerging Financial Climbers: young, upwardly mobile - teal
+    "B": "#6A9F58",   # Suburban Financial Balancers: settled, stable - sage green
+    "C": "#3D5A80",   # Mature and Financially Secure: steady, secure - slate blue
+    "D": "#E09F3E",   # Financially Precarious Families: caution - amber
+    "E": "#9E2A2B",   # Highly Vulnerable Families: the most severe - deep red
+}
+GB2C_SUPERGROUP_COLOURS = {
+    "BG": "#C9A227",  # Betting-and-Gaming Participants: the largest, most varied group - muted gold
+    "B":  "#4A4E69",  # Betting-Exclusive Participants: older, most established - muted indigo-grey
+    "G":  "#2F6B5E",  # Gaming-Exclusive Participants: younger, more deprived-associated - muted teal-green
+}
 
 # Corrections to the published FPC labels, confirmed by the user (E12 on 2026-09-24, E13 on 2026-09-27).
 FPC_TYPOS = {"Underprivilege dependent": "Underprivileged dependent", "Aging Blue-collar households": "Ageing Blue-collar households"}
@@ -84,9 +104,9 @@ CARDS = {
     "loac": {"title": "London Output Area Classification",
              "about": "A classification of London's neighbourhoods, arranged into Supergroups and Groups based upon 2021 Census of Population data. We show the Supergroup and Group in which your selected surname occurs most frequently."},
     "fpc": {"title": "Financial Precarity Classification",
-            "about": "A classification of Great Britain's neighbourhoods by financial precarity, arranged into groups. We show the group in which your selected surname occurs most frequently."},
+            "about": "A classification of Great Britain's neighbourhoods by financial precarity, arranged into Supergroups and Groups. We show the Supergroup and Group in which your selected surname occurs most frequently."},
     "gb2c": {"title": "GB2C Gambling Classification",
-             "about": "A classification of Great Britain's neighbourhoods by online gambling behaviour, arranged into groups. We show the group in which your selected surname occurs most frequently."},
+             "about": "A classification of Great Britain's neighbourhoods by online gambling behaviour, arranged into Supergroups and Groups. We show the Supergroup and Group in which your selected surname occurs most frequently."},
     "eth": {"title": "Ethnicity Estimator", "subtitle": "Surname roots",
             "about": "Given and family names provide clues as to ethnicity. We show the census ethnic group that is most common among the people with your selected surname, estimated from their forenames and surnames."},
     "imd": {"title": "Index of Multiple Deprivation",
@@ -97,10 +117,12 @@ CARDS = {
 }
 
 SCALES = {
+    # {decile} is replaced with a bolded "Decile N" (not plain text) when rendered - the one place in
+    # each sentence that names this name's own result, as opposed to the scale in general.
     "imd": {"colours": IMD_COLOURS,
-            "text": "Your selected surname occurs most frequently in decile {mode} of the Index of Multiple Deprivation. The first decile is the most deprived and the tenth decile the least deprived."},
+            "text": "Your selected surname occurs most frequently in {decile} of the Index of Multiple Deprivation. The first decile is the most deprived and the tenth decile the least deprived."},
     "ahah": {"colours": AHAH_COLOURS,
-             "text": "Your selected surname occurs most frequently in decile {mode} of the Access to Healthy Assets and Hazards index. The first decile is the healthiest and the tenth decile the least healthy."},
+             "text": "Your selected surname occurs most frequently in {decile} of the Access to Healthy Assets and Hazards index. The first decile is the healthiest and the tenth decile the least healthy."},
 }
 
 
@@ -123,10 +145,14 @@ def read_classification(filename, colours=None):
 
 
 def read_fpc():
-    """FPC group names (corrected) and colours; stops if the two sources disagree about a name."""
+    """FPC supergroups and groups: names from group_names.json (corrected), group colours from the
+    published source, supergroup colours our own, pen-portrait descriptions for both levels from
+    fpc_descriptions.json; stops if the sources disagree about a name."""
     if not FPC_RAW.exists():
         raise SystemExit(f"{FPC_RAW} is missing: the FPC group colours come from it (it is git-ignored; it lives in raw-indicators/fpc/).")
-    names = json.loads(GROUP_NAMES.read_text(encoding="utf-8"))["fpc"]["groups"]
+    all_names = json.loads(GROUP_NAMES.read_text(encoding="utf-8"))["fpc"]
+    names, supergroup_names = all_names["groups"], all_names["supergroups"]
+    descriptions = json.loads(FPC_DESCRIPTIONS.read_text(encoding="utf-8"))
     groups = {}
     with open(FPC_RAW, encoding="utf-8-sig", newline="") as f:
         for row in csv.DictReader(f):
@@ -136,21 +162,30 @@ def read_fpc():
             if not match:
                 raise SystemExit(f"FPC label {label!r} does not start with {code!r}: ")
             name = FPC_TYPOS.get(match.group(1), match.group(1))
-            if names.get(code, {}).get("name") != name:
-                raise SystemExit(f"FPC group {code}: {name!r} in {FPC_RAW.name} but {names.get(code, {}).get('name')!r} in group_names.json")
-            groups[code] = {"name": name, "colour": row["color"].strip()}
+            entry = names.get(code, {})
+            if entry.get("name") != name:
+                raise SystemExit(f"FPC group {code}: {name!r} in {FPC_RAW.name} but {entry.get('name')!r} in group_names.json")
+            groups[code] = {"name": name, "colour": row["color"].strip(), "supergroup": entry.get("supergroup"),
+                            "desc": descriptions.get(code, "")}
     if set(groups) != set(names):
         raise SystemExit(f"FPC groups differ between {FPC_RAW.name} ({sorted(groups)}) and group_names.json ({sorted(names)})")
-    return {"groups": groups}
+    if set(supergroup_names) != set(FPC_SUPERGROUP_COLOURS):
+        raise SystemExit(f"FPC_SUPERGROUP_COLOURS does not have exactly the supergroups in group_names.json ({sorted(supergroup_names)})")
+    supergroups = {code: {"name": sg["name"], "colour": FPC_SUPERGROUP_COLOURS[code], "desc": descriptions.get(code, "")}
+                  for code, sg in supergroup_names.items()}
+    return {"supergroups": supergroups, "groups": groups}
 
 
 def read_gb2c():
-    """GB2C group names (from group_names.json) with the placeholder colours above; stops if the raw download's
-    own codes disagree with group_names.json (the raw file has no colour of its own to cross-check names against,
-    unlike FPC, so this only checks the codes match, not a name)."""
+    """GB2C supergroups and groups: names from group_names.json, colours our own (no published colour
+    exists at either level), pen-portrait descriptions for both levels from gb2c_descriptions.json;
+    stops if the raw download's own codes disagree with group_names.json (the raw file has no colour
+    of its own to cross-check names against, unlike FPC, so this only checks the codes match)."""
     if not GB2C_RAW.exists():
         raise SystemExit(f"{GB2C_RAW} is missing: GB2C's own codes come from it (it is git-ignored; it lives in raw-indicators/gb2c/).")
-    names = json.loads(GROUP_NAMES.read_text(encoding="utf-8"))["gb2c"]["groups"]
+    all_names = json.loads(GROUP_NAMES.read_text(encoding="utf-8"))["gb2c"]
+    names, supergroup_names = all_names["groups"], all_names["supergroups"]
+    descriptions = json.loads(GB2C_DESCRIPTIONS.read_text(encoding="utf-8"))
     with open(GB2C_RAW, encoding="utf-8-sig", newline="") as f:
         raw_codes = {row["Classification Code"] for row in csv.DictReader(f)
                     if row["Level"] == "Subgroup" and row["Classification Code"] != "-"}
@@ -158,8 +193,14 @@ def read_gb2c():
         raise SystemExit(f"GB2C groups differ between {GB2C_RAW.name} ({sorted(raw_codes)}) and group_names.json ({sorted(names)})")
     if set(names) != set(GB2C_COLOURS):
         raise SystemExit(f"GB2C_COLOURS does not have exactly the groups in group_names.json ({sorted(names)})")
-    groups = {code: {"name": entry["name"], "colour": GB2C_COLOURS[code]} for code, entry in names.items()}
-    return {"groups": groups}
+    if set(supergroup_names) != set(GB2C_SUPERGROUP_COLOURS):
+        raise SystemExit(f"GB2C_SUPERGROUP_COLOURS does not have exactly the supergroups in group_names.json ({sorted(supergroup_names)})")
+    groups = {code: {"name": entry["name"], "colour": GB2C_COLOURS[code], "supergroup": entry["supergroup"],
+                     "desc": descriptions.get(code, "")}
+             for code, entry in names.items()}
+    supergroups = {code: {"name": sg["name"], "colour": GB2C_SUPERGROUP_COLOURS[code], "desc": descriptions.get(code, "")}
+                  for code, sg in supergroup_names.items()}
+    return {"supergroups": supergroups, "groups": groups}
 
 
 def build():

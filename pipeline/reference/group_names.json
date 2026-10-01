@@ -120,82 +120,118 @@
   }
  },
  "fpc": {
+  "supergroups": {
+   "A": { "name": "Emerging Financial Climbers" },
+   "B": { "name": "Suburban Financial Balancers" },
+   "C": { "name": "Mature and Financially Secure" },
+   "D": { "name": "Financially Precarious Families" },
+   "E": { "name": "Highly Vulnerable Families" }
+  },
   "groups": {
    "A01": {
-    "name": "Student and Young City Strivers"
+    "name": "Student and Young City Strivers",
+    "supergroup": "A"
    },
    "A02": {
-    "name": "Wealthy Independent Workers and Professionals"
+    "name": "Wealthy Independent Workers and Professionals",
+    "supergroup": "A"
    },
    "B03": {
-    "name": "Balanced Homeowning Families"
+    "name": "Balanced Homeowning Families",
+    "supergroup": "B"
    },
    "B04": {
-    "name": "Young Striving Families"
+    "name": "Young Striving Families",
+    "supergroup": "B"
    },
    "B05": {
-    "name": "Senior Asset Owners"
+    "name": "Senior Asset Owners",
+    "supergroup": "B"
    },
    "C06": {
-    "name": "Secure Lone Pensioners"
+    "name": "Secure Lone Pensioners",
+    "supergroup": "C"
    },
    "C07": {
-    "name": "Financially Leveraged Seniors"
+    "name": "Financially Leveraged Seniors",
+    "supergroup": "C"
    },
    "C08": {
-    "name": "Stable Intermediate Families"
+    "name": "Stable Intermediate Families",
+    "supergroup": "C"
    },
    "D09": {
-    "name": "Ageing Renters"
+    "name": "Ageing Renters",
+    "supergroup": "D"
    },
    "D10": {
-    "name": "Vulnerable Lone-Parent Households"
+    "name": "Vulnerable Lone-Parent Households",
+    "supergroup": "D"
    },
    "E11": {
-    "name": "Overcrowded and Overburdened"
+    "name": "Overcrowded and Overburdened",
+    "supergroup": "E"
    },
    "E12": {
-    "name": "Underprivileged dependent"
+    "name": "Underprivileged dependent",
+    "supergroup": "E"
    },
    "E13": {
-    "name": "Ageing Blue-collar households"
+    "name": "Ageing Blue-collar households",
+    "supergroup": "E"
    }
   }
  },
  "gb2c": {
+  "supergroups": {
+   "BG": { "name": "Betting-and-Gaming Participants" },
+   "B": { "name": "Betting-Exclusive Participants" },
+   "G": { "name": "Gaming-Exclusive Participants" }
+  },
   "groups": {
    "B1": {
-    "name": "Longstanding Habitual Veterans"
+    "name": "Longstanding Habitual Veterans",
+    "supergroup": "B"
    },
    "B2": {
-    "name": "Well-Resourced Hobbyists"
+    "name": "Well-Resourced Hobbyists",
+    "supergroup": "B"
    },
    "BG1": {
-    "name": "Engaged New-Age Gamblers"
+    "name": "Engaged New-Age Gamblers",
+    "supergroup": "BG"
    },
    "BG2": {
-    "name": "Newcomers with Sporadic and Moderate Patterns of Play"
+    "name": "Newcomers with Sporadic and Moderate Patterns of Play",
+    "supergroup": "BG"
    },
    "BG3": {
-    "name": "Event-Driven Speculative Players"
+    "name": "Event-Driven Speculative Players",
+    "supergroup": "BG"
    },
    "BG4": {
-    "name": "Mindful Entertainment Seekers"
+    "name": "Mindful Entertainment Seekers",
+    "supergroup": "BG"
    },
    "BG5": {
-    "name": "High-Frequency High-Stake Losers"
+    "name": "High-Frequency High-Stake Losers",
+    "supergroup": "BG"
    },
    "BG6": {
-    "name": "Young Occasional Binge Players"
+    "name": "Young Occasional Binge Players",
+    "supergroup": "BG"
    },
    "G1": {
-    "name": "Episodic High Risk Takers"
+    "name": "Episodic High Risk Takers",
+    "supergroup": "G"
    },
    "G2": {
-    "name": "Mindful Low-Rollers from Deprived Communities"
+    "name": "Mindful Low-Rollers from Deprived Communities",
+    "supergroup": "G"
    },
    "G3": {
-    "name": "High-Stakes Gamers from Deprived Communities"
+    "name": "High-Stakes Gamers from Deprived Communities",
+    "supergroup": "G"
    }
   }
  }

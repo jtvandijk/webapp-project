@@ -1,10 +1,9 @@
 // Rendering for the neighbourhood-classification indicator cards.
 // - IMD / AHAH: a fixed 10-decile bar chart (renderDecileCard).
-// - OAC / LOAC: two levels - all supergroups (fixed canonical order, official pen-portrait text
-//   behind a click on the name), then just the groups inside this name's own modal supergroup,
-//   shown as a share WITHIN that supergroup (renderGroupCard).
-// - GB2C / FPC: a flat set of groups, same bar style, but no expand - neither classification has
-//   official descriptive text per group the way OAC/LOAC do (renderFlatGroupCard).
+// - OAC / LOAC / GB2C / FPC: all four turn out to have a genuine two-level structure - every
+//   supergroup (fixed canonical order, official pen-portrait text behind a click on the name), then
+//   just the groups inside this name's own modal supergroup, shown as a share WITHIN that
+//   supergroup (renderGroupCard).
 
 function pct(share) {
     return `${(share * 100).toFixed(1)}%`;
@@ -15,8 +14,10 @@ function pct(share) {
 export function barRow({ name, colour, share, valueText, detailsText }) {
     const widthPct = pct(share);
     const text = valueText != null ? valueText : widthPct;
+    const chevron = detailsText ? `<span class="bar-chevron" aria-hidden="true">&#9656;</span>` : "";
     const label = `
         <span class="bar-label">
+            ${chevron}
             <span class="bar-swatch" style="background:${colour}"></span>
             <span class="bar-name">${name}</span>
             <span class="bar-pct">${text}</span>
@@ -48,7 +49,7 @@ export function cardShell({ title, about }) {
     body.className = "card-body";
     if (about) {
         const p = document.createElement("p");
-        p.className = "indicator-about text-muted";
+        p.className = "indicator-text";
         p.textContent = about;
         body.appendChild(p);
     }
@@ -60,7 +61,8 @@ export function renderDecileCard({ title, about, colours, distribution, mode, sc
     const { card, body } = cardShell({ title, about });
     if (scaleText) {
         const p = document.createElement("p");
-        p.textContent = scaleText;
+        p.className = "indicator-text";
+        p.innerHTML = scaleText;
         body.appendChild(p);
     }
     const list = document.createElement("div");
@@ -74,7 +76,7 @@ export function renderDecileCard({ title, about, colours, distribution, mode, sc
     body.appendChild(list);
     if (scoreText) {
         const p = document.createElement("p");
-        p.className = "indicator-score text-muted mt-3 mb-0";
+        p.className = "indicator-text mt-3 mb-0";
         p.textContent = scoreText;
         body.appendChild(p);
     }
@@ -105,10 +107,9 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
     if (modeSupergroup != null) {
         const supergroupShare = supergroupTotals[modeSupergroup] || 0;
         const sub = document.createElement("div");
-        sub.className = "mt-3";
+        sub.className = "group-drilldown";
         const heading = document.createElement("h6");
-        heading.className = "text-muted";
-        heading.textContent = `Groups within ${supergroups[modeSupergroup].name} (share within this supergroup)`;
+        heading.innerHTML = `Groups within <strong>${supergroups[modeSupergroup].name}</strong> (share within this supergroup)`;
         sub.appendChild(heading);
         const groupList = document.createElement("div");
         groupList.className = "bar-list";
@@ -123,19 +124,5 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
         sub.appendChild(groupList);
         body.appendChild(sub);
     }
-    return card;
-}
-
-export function renderFlatGroupCard({ title, about, groups, distribution, modeCode }) {
-    const { card, body } = cardShell({ title, about });
-    const list = document.createElement("div");
-    list.className = "bar-list";
-    for (const code of Object.keys(groups).sort()) {
-        const g = groups[code];
-        const row = barRow({ name: g.name, colour: g.colour, share: distribution[code] || 0 });
-        if (code === modeCode) row.classList.add("bar-row-mode");
-        list.appendChild(row);
-    }
-    body.appendChild(list);
     return card;
 }
