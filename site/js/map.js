@@ -4,6 +4,12 @@
 // spaced list of periods, so a plain slider plus "swap the layer's data" is all that's needed.
 import { DATA_ROOT } from "./data.js";
 
+// Same weight/contrast as manifest.levels' blues (ColorBrewer Blues[9], indices 4-6), but the
+// SmartCensus base year (the newest, genuinely new survey, not a legacy register year) is marked
+// out in red (ColorBrewer Reds[9], same indices) so it reads as visibly different data, not just
+// another register year.
+const SMARTCENSUS_LEVELS = { 1: "#fb6a4a", 2: "#ef3b2c", 3: "#cb181d" };
+
 let scotlandMaskCache = null;
 
 async function loadScotlandMask(url) {
@@ -33,12 +39,14 @@ export function createMap(container, manifest) {
     }
 
     const levelColour = Object.fromEntries(manifest.levels.map(l => [l.level, l.colour]));
+    const baseYear = manifest.standardisation.base_year;
+    let currentPeriodId = null;
+
     const kdeLayer = L.geoJSON(null, {
-        style: feature => ({
-            color: levelColour[feature.properties.level] || levelColour[1],
-            weight: 1,
-            fillOpacity: 0.6,
-        }),
+        style: feature => {
+            const colours = currentPeriodId === baseYear ? SMARTCENSUS_LEVELS : levelColour;
+            return { color: colours[feature.properties.level] || colours[1], weight: 1, fillOpacity: 0.6 };
+        },
     }).addTo(map);
 
     const maskStyle = manifest.masks.scotland;
@@ -51,6 +59,7 @@ export function createMap(container, manifest) {
     const maskedPeriods = new Map(manifest.periods.filter(p => p.mask).map(p => [p.id, p.mask]));
 
     async function renderPeriod(nameData, periodId, fitBounds = false) {
+        currentPeriodId = periodId;
         const geojson = nameData.maps[periodId];
         kdeLayer.clearLayers();
         if (geojson) kdeLayer.addData(geojson);

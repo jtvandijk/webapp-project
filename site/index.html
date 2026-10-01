@@ -13,104 +13,86 @@
 </head>
 <body>
 
-<div class="row justify-content-center bg-custom mx-0">
-  <div class="container-fluid">
-    <div class="row justify-content-center">
-      <div class="col-lg-10 col-md-10 col-sm-10">
-        <nav class="navbar navbar-expand navbar-dark bg-custom">
-          <a class="navbar-brand" href="index.html">GBNames</a>
-          <ul class="navbar-nav ml-auto">
-            <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
-          </ul>
-        </nav>
-      </div>
+<nav class="navbar navbar-expand-md navbar-dark bg-custom">
+  <div class="container">
+    <a class="navbar-brand" href="index.html"><img src="img/geodslogo25.svg" alt="GeoDS" height="28"></a>
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item"><a class="nav-link active" href="index.html">SmartCensus</a></li>
+      <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+    </ul>
+    <div id="navSearchWrapper" hidden>
+      <form id="searchFormNav" class="form-inline">
+        <label for="searchInputNav" class="sr-only">Search a surname</label>
+        <input type="text" id="searchInputNav" name="surname" class="form-control mr-sm-2" placeholder="Search a surname" autocomplete="off">
+        <button type="submit" class="btn btn-sm btn-outline-light">Search</button>
+      </form>
     </div>
   </div>
-</div>
+</nav>
 
 <div class="content-wrapper">
-  <div class="container-fluid">
+  <div class="container">
 
-    <div class="row justify-content-center">
-      <div class="col-lg-10 col-md-10 col-sm-10">
-        <form id="searchForm" class="form-inline justify-content-center mt-3">
-          <label for="searchInput" class="sr-only">Search a surname</label>
-          <input type="text" id="searchInput" name="surname" class="form-control mr-sm-2 mb-2" placeholder="Search a surname, e.g. Smith" autocomplete="off">
-          <button type="submit" class="btn btn-outline-primary mb-2">Search</button>
-        </form>
+    <div id="welcomePanel" class="jumbotron bg-jumbotron p-4 p-md-5 mb-4 position-relative">
+      <button type="button" id="closeWelcome" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <h1 class="text-center">Welcome to GBNames and the SmartCensus</h1>
+      <p class="lead text-justify">The SmartCensus is a programme of research by the ESRC Geographic
+        Data Service (GeoDS) to explore the places where we live, work and play. It uses geography to
+        link new &lsquo;smart&rsquo; data from our digital devices to conventional statistics, so that
+        we can trace population movements across the generations. The SmartCensus can chart
+        inter-generational movements of your family group across Great Britain over the last 175 years,
+        while also documenting changes in its estimated size. Where our ancestors lived can also shape
+        where we live today, so do also compare the neighbourhoods where your family group is
+        concentrated with the population at large. While geography is not always destiny, panning and
+        zooming across the map helps you to trace your family's geographic origins, as well as helping
+        to explain its SmartCensus profile.</p>
+
+      <form id="searchFormJumbo" class="form-inline justify-content-center mt-4">
+        <label for="searchInputJumbo" class="sr-only">Search a surname</label>
+        <input type="text" id="searchInputJumbo" name="surname" class="form-control search-input mr-sm-2 mb-2" placeholder="Search a surname, e.g. Smith" autocomplete="off">
+        <button type="submit" class="btn btn-outline-primary mb-2">Search</button>
+      </form>
+
+      <div class="mt-3 text-center">
+        <div class="mb-2"><small class="text-muted">Try one of these names:</small></div>
+        <div id="exampleNames" class="example-names justify-content-center"></div>
       </div>
     </div>
 
-    <div class="row justify-content-center">
-      <div class="col-lg-10 col-md-10 col-sm-10">
-        <div id="welcomePanel" class="jumbotron bg-notes p-3 mb-4">
-          <h1>Welcome to GBNames and the SmartCensus
-            <button type="button" id="closeWelcome" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          </h1>
-          <p class="lead text-justify">The SmartCensus is a programme of research by the ESRC Geographic
-            Data Service (GeoDS) to explore the places where we live, work and play. It uses geography to
-            link new &lsquo;smart&rsquo; data from our digital devices to conventional statistics, so that
-            we can trace population movements across the generations. The SmartCensus can chart
-            inter-generational movements of your family group across Great Britain over the last 175 years,
-            while also documenting changes in its estimated size. Where our ancestors lived can also shape
-            where we live today, so do also compare the neighbourhoods where your family group is
-            concentrated with the population at large. While geography is not always destiny, panning and
-            zooming across the map helps you to trace your family's geographic origins, as well as helping
-            to explain its SmartCensus profile.</p>
-          <div id="exampleNames" class="example-names mt-3"></div>
-        </div>
-      </div>
+    <div id="notFoundPanel" class="alert bg-orange text-justify" hidden>
+      <p id="notFoundMessage" class="mb-0"></p>
     </div>
 
-    <div class="row justify-content-center">
-      <div class="col-lg-10 col-md-10 col-sm-10">
-        <div id="notFoundPanel" class="alert bg-orange text-justify" hidden>
-          <p id="notFoundMessage" class="mb-0"></p>
-        </div>
-      </div>
-    </div>
+    <h2 id="resultName" class="mb-3" hidden></h2>
 
-    <div id="resultSection" class="result-section" hidden>
-      <div class="row justify-content-center">
-        <div class="col-lg-10 col-md-10 col-sm-10">
-          <h2 id="resultName"></h2>
-        </div>
-      </div>
-
-      <div class="row justify-content-center">
-        <div class="col-lg-10 col-md-10 col-sm-10">
-          <div class="card mb-3">
-            <div class="card-body p-0">
-              <div id="map"></div>
-              <div class="slider-row">
-                <button type="button" id="prevPeriod" class="btn btn-outline-primary rounded-circle" aria-label="Previous period">&#8249;</button>
-                <input type="range" id="periodSlider" min="0" max="0" step="1" value="0">
-                <button type="button" id="nextPeriod" class="btn btn-outline-primary rounded-circle" aria-label="Next period">&#8250;</button>
-              </div>
-              <p id="periodLabel" class="period-label text-muted"></p>
-            </div>
+    <div class="card mb-3">
+      <div class="card-body p-0">
+        <div id="map"></div>
+        <div id="sliderWrapper" hidden>
+          <div class="slider-row">
+            <button type="button" id="prevPeriod" class="btn btn-outline-primary rounded-circle" aria-label="Previous period">&#8249;</button>
+            <input type="range" id="periodSlider" min="0" max="0" step="1" value="0">
+            <button type="button" id="nextPeriod" class="btn btn-outline-primary rounded-circle" aria-label="Next period">&#8250;</button>
           </div>
-        </div>
-      </div>
-
-      <div class="row justify-content-center">
-        <div class="col-lg-10 col-md-10 col-sm-10">
-          <div class="card mb-3">
-            <div class="card-header"><h4 class="m-0">Lorem ipsum</h4></div>
-            <div class="card-body text-justify">
-              <p class="mb-0">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-                tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-            </div>
-          </div>
+          <p id="periodLabel" class="period-label text-muted"></p>
+          <p id="periodNote" class="period-note text-muted" hidden></p>
         </div>
       </div>
     </div>
 
-    <div class="row justify-content-center mt-4">
-      <div class="col-lg-10 col-md-10 col-sm-10">
-        <small class="text-muted">Lorem ipsum placeholder footer text.</small>
+    <div id="resultSection" hidden>
+      <div class="card mb-3">
+        <div class="card-header"><h4 class="m-0">Lorem ipsum</h4></div>
+        <div class="card-body text-justify">
+          <p class="mb-0">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
+            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        </div>
       </div>
+    </div>
+
+    <div class="mt-4 mb-3">
+      <small class="text-muted">Lorem ipsum placeholder footer text.</small>
     </div>
 
   </div>

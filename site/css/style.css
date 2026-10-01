@@ -1,9 +1,12 @@
 /* Overrides layered on top of vendor/bootstrap/bootstrap.min.css (4.3.1, same version the legacy
-   site pins) - not a replacement for it. Colour names and values match gbnames/static/css/custom.css
-   exactly, so this is "the existing colour scheme", not a new one. */
+   site pins) - not a replacement for it. */
 
 :root {
-    --navy: #08306b;
+    /* navbar blue - GeoDS brand blue, rgb(31,66,143), replaces the legacy CDRC navy */
+    --navy: #1f428f;
+    /* jumbotron background - rgb(184,188,208), a deliberately different tone from --navy,
+       not the legacy .bg-notes pale blue (#c6dbef), which stays available for other note boxes */
+    --jumbotron-bg: #b8bcd0;
     --pale-blue: #c6dbef;
     --accent-orange: #fdae6b;
 }
@@ -13,24 +16,45 @@ body {
     overflow-x: hidden;
 }
 
-/* same three names and values as gbnames/static/css/custom.css */
 .bg-custom { background-color: var(--navy); }
+.bg-jumbotron { background-color: var(--jumbotron-bg); }
 .bg-notes { background-color: var(--pale-blue); }
 .bg-orange { background-color: var(--accent-orange); }
 
 .navbar-brand img {
-    margin-right: 0.5rem;
+    display: block;
+}
+
+.nav-link.active {
+    font-weight: 700;
+    border-bottom: 2px solid #fff;
 }
 
 .content-wrapper {
-    padding-top: 1rem;
+    padding-top: 1.5rem;
     padding-bottom: 2rem;
+}
+
+/* jumbotron */
+
+#welcomePanel h1 {
+    font-size: 1.9rem;
+}
+
+#closeWelcome {
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
 }
 
 /* search */
 
-#searchForm .form-control {
+.form-control.search-input {
     min-width: 16rem;
+}
+
+#navSearchWrapper .form-control {
+    min-width: 12rem;
 }
 
 .example-names {
@@ -81,6 +105,13 @@ body {
 
 .period-label {
     margin: 0;
-    padding: 0 1rem 1rem;
+    padding: 0 1rem 0.25rem;
     color: #333;
+}
+
+.period-note {
+    margin: 0;
+    padding: 0 1rem 1rem;
+    font-size: 0.85rem;
+    font-style: italic;
 }
