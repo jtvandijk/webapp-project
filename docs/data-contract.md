@@ -142,8 +142,10 @@ names exist below the threshold.
 1. First visit: load `manifest.json` and `lookups.json` (small, identical for everybody, cached).
 2. Search: turn the typed name into the key (lowercase a to z), load `names/<xx>/<name>.json`.
 3. File found: draw the slider from the `periods` that the name has a map for, and the boxes from `facts`. For a period with a `mask` in the manifest, draw the mask on the map unless that map has `copyOf`.
-4. File not found (404): show one message: "no map or statistics for this name: either we found no
-   records, or it has fewer than 100 bearers (we do not show these, to protect privacy)".
+4. File not found (404): show one message: "We couldn't find a page for this surname. This means
+   either we hold no records for it, or fewer than 100 people in our data share it - too few to show
+   without risking anyone's privacy." (wording updated 2026-10-01; the rule it encodes - one message,
+   never distinguishing the two cases - is unchanged, see "Choices I made" below.)
 
 One request per search. Today a search is about 22 database queries plus up to 9 map files one after the other.
 

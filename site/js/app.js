@@ -1,9 +1,13 @@
-// Wiring: search boxes, URL state, welcome/not-found/result panels, the period slider.
-import { surnameKey, fetchManifest, fetchName } from "./data.js";
+// Wiring: search boxes, URL state, welcome/not-found/result panels, the period slider, the
+// indicator cards.
+import { surnameKey, fetchManifest, fetchLookups, fetchName, fetchFacts, formatPeriod, bearersFor } from "./data.js";
 import { createMap } from "./map.js";
+import { renderDecileCard, renderGroupCard, renderFlatGroupCard } from "./indicators.js";
+import { renderPlacesCard, renderForenamesCard, renderEthnicityCard, renderCountsCard } from "./profile.js";
 
-const NOT_FOUND_MESSAGE = "No map or statistics for this name: either we found no records, or it "
-    + "has fewer than 100 bearers (we do not show these, to protect privacy).";
+const NOT_FOUND_MESSAGE = "We couldn't find a page for this surname. This means either we hold no "
+    + "records for it, or fewer than 100 people in our data share it — too few to show without "
+    + "risking anyone's privacy.";
 
 const welcomePanel = document.getElementById("welcomePanel");
 const notFoundPanel = document.getElementById("notFoundPanel");
@@ -18,10 +22,13 @@ const prevPeriodBtn = document.getElementById("prevPeriod");
 const nextPeriodBtn = document.getElementById("nextPeriod");
 const closeWelcomeBtn = document.getElementById("closeWelcome");
 const navSearchWrapper = document.getElementById("navSearchWrapper");
+const indicatorContainer = document.getElementById("indicatorContainer");
+const moreAboutContainer = document.getElementById("moreAboutContainer");
 
 document.getElementById("notFoundMessage").textContent = NOT_FOUND_MESSAGE;
 
 let manifest = null;
+let lookups = null;
 let mapController = null;
 let currentName = null;    // the fetched name's own JSON
 let currentPeriods = [];   // manifest period entries this name has a map for, in slider order
@@ -44,7 +51,7 @@ function wireSearchForm(form, input) {
 }
 
 async function init() {
-    manifest = await fetchManifest();
+    [manifest, lookups] = await Promise.all([fetchManifest(), fetchLookups()]);
     mapController = createMap(document.getElementById("map"), manifest);
 
     for (const name of manifest.examples) {
@@ -98,10 +105,11 @@ async function runSearch(raw, { updateUrl = true } = {}) {
         setMode("notfound");
         return;
     }
-    showResult(nameData);
+    const facts = await fetchFacts(key);
+    showResult(nameData, facts);
 }
 
-function showResult(nameData) {
+function showResult(nameData, facts) {
     setMode("result");
     mapController.map.invalidateSize();
 
@@ -114,6 +122,8 @@ function showResult(nameData) {
     periodSlider.max = lastIndex;
     periodSlider.value = lastIndex;    // most recent period first
     showPeriod(lastIndex, true);
+
+    renderIndicators(facts);
 }
 
 function stepPeriod(delta) {
@@ -122,27 +132,15 @@ function stepPeriod(delta) {
     showPeriod(next);
 }
 
-// "Census 1851", "SmartCensus 2026" (the newest register year, the actual new survey), or
-// "Smart Data: 1997" (every other, pre-existing register year).
-function formatPeriod(period) {
-    if (period.source === "census") return `Census ${period.id}`;
-    if (period.id === manifest.standardisation.base_year) return `SmartCensus ${period.id}`;
-    return `Smart Data: ${period.id}`;
-}
-
 function showPeriod(index, fitBounds = false) {
     const period = currentPeriods[index];
     if (!period) return;
     mapController.renderPeriod(currentName, period.id, fitBounds);
 
-    // the adjusted (standardised) count where we have one, otherwise the raw count - adjustment
-    // only exists for register years (counts_standardised is register-only, per the data contract).
-    const standardised = currentName.counts_standardised && currentName.counts_standardised[period.source];
-    const adjusted = standardised ? standardised[period.id] : undefined;
-    const raw = (currentName.counts[period.source] || {})[period.id];
-    const bearers = typeof adjusted === "number" ? adjusted : raw;
-    const bearersText = typeof bearers === "number" ? bearers.toLocaleString("en-GB") : "unknown";
-    periodLabel.textContent = `${formatPeriod(period)} — ${bearersText} bearers`;
+    const { value, adjusted } = bearersFor(currentName, period);
+    const bearersText = typeof value === "number" ? value.toLocaleString("en-GB") : "unknown";
+    const bearersWord = adjusted ? "adjusted bearers" : "bearers";
+    periodLabel.textContent = `${formatPeriod(period, manifest)} — ${bearersText} ${bearersWord}`;
 
     const geojson = currentName.maps[period.id];
     if (geojson && geojson.copyOf) {
@@ -152,6 +150,83 @@ function showPeriod(index, fitBounds = false) {
     } else {
         periodNote.hidden = true;
     }
+}
+
+// Indicator order, per the agreed page layout: KDE map (above) > IMD > OAC > LOAC > GB2C > AHAH >
+// FPC > "more about your name" (places, forenames, ethnicity, counts).
+function renderIndicators(facts) {
+    indicatorContainer.replaceChildren();
+    moreAboutContainer.replaceChildren();
+
+    if (facts.imd) {
+        indicatorContainer.appendChild(renderDecileCard({
+            title: lookups.cards.imd.title,
+            about: lookups.cards.imd.about,
+            colours: lookups.scales.imd.colours,
+            distribution: facts.imd.distribution,
+            mode: facts.imd.mode,
+            scaleText: lookups.scales.imd.text.replace("{mode}", facts.imd.mode),
+            scoreText: lookups.cards.imd.score
+                && `${lookups.cards.imd.score} Mean: ${facts.imd.mean}, spread: ${facts.imd.sd}.`,
+        }));
+    }
+    if (facts.oac) {
+        indicatorContainer.appendChild(renderGroupCard({
+            title: lookups.cards.oac.title,
+            about: lookups.cards.oac.about,
+            groups: lookups.oac.groups,
+            supergroups: lookups.oac.supergroups,
+            distribution: facts.oac.distribution,
+            modeCode: facts.oac.group,
+        }));
+    }
+    if (facts.loac) {
+        indicatorContainer.appendChild(renderGroupCard({
+            title: lookups.cards.loac.title,
+            about: lookups.cards.loac.about,
+            groups: lookups.loac.groups,
+            supergroups: lookups.loac.supergroups,
+            distribution: facts.loac.distribution,
+            modeCode: facts.loac.group,
+        }));
+    }
+    if (facts.gb2c) {
+        indicatorContainer.appendChild(renderFlatGroupCard({
+            title: lookups.cards.gb2c.title,
+            about: lookups.cards.gb2c.about,
+            groups: lookups.gb2c.groups,
+            distribution: facts.gb2c.distribution,
+            modeCode: facts.gb2c.group,
+        }));
+    }
+    if (facts.ahah) {
+        indicatorContainer.appendChild(renderDecileCard({
+            title: lookups.cards.ahah.title,
+            about: lookups.cards.ahah.about,
+            colours: lookups.scales.ahah.colours,
+            distribution: facts.ahah.distribution,
+            mode: facts.ahah.mode,
+            scaleText: lookups.scales.ahah.text.replace("{mode}", facts.ahah.mode),
+        }));
+    }
+    if (facts.fpc) {
+        indicatorContainer.appendChild(renderFlatGroupCard({
+            title: lookups.cards.fpc.title,
+            about: lookups.cards.fpc.about,
+            groups: lookups.fpc.groups,
+            distribution: facts.fpc.distribution,
+            modeCode: facts.fpc.group,
+        }));
+    }
+
+    moreAboutContainer.appendChild(renderPlacesCard({ places: facts.places }));
+    moreAboutContainer.appendChild(renderForenamesCard({ forenames: facts.forenames }));
+    if (facts.eth) {
+        moreAboutContainer.appendChild(renderEthnicityCard({
+            eth: facts.eth, ethLookup: lookups.eth, about: lookups.cards.eth.about,
+        }));
+    }
+    moreAboutContainer.appendChild(renderCountsCard({ nameData: currentName, manifest }));
 }
 
 init();
