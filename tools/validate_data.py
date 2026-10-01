@@ -26,7 +26,8 @@ YEAR_RE = re.compile(r"^\d{4}$")
 TOP_LEVEL_KEYS = {"schema", "name", "synthetic", "counts", "counts_standardised", "maps", "facts"}
 FACT_KEYS = {"forenames", "places", "oac", "loac", "fpc", "gb2c", "imd", "ahah", "eth"}
 GROUP_SCHEMES = ("oac", "loac", "fpc", "gb2c")  # a most-common group code, plus a distribution over every group seen
-TWO_LEVEL_GROUP_SCHEMES = ("oac", "loac", "fpc", "gb2c")  # all four turn out to have a supergroup/group structure
+TWO_LEVEL_GROUP_SCHEMES = ("oac", "loac", "fpc")  # a genuine supergroup/group structure
+FLAT_GROUP_SCHEMES = ("gb2c",)  # just a name, colour and (optional) pen-portrait description per group
 DECILE_SCHEMES = ("imd", "ahah")                # a most-common decile (1-10), plus a 10-number distribution
 
 
@@ -144,6 +145,11 @@ def check_lookups(lookups, report):
         for code, group in groups.items():
             if group.get("supergroup") not in supers:
                 report.error(where, f"{scheme} group {code} has an unknown supergroup")
+            for field in ("name", "colour"):
+                if not group.get(field):
+                    report.error(where, f"{scheme} group {code} has no {field}")
+    for scheme in FLAT_GROUP_SCHEMES:
+        for code, group in lookups.get(scheme, {}).get("groups", {}).items():
             for field in ("name", "colour"):
                 if not group.get(field):
                     report.error(where, f"{scheme} group {code} has no {field}")

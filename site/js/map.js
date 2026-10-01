@@ -58,6 +58,19 @@ export function createMap(container, manifest) {
     // Which periods carry a mask, per the manifest - keyed by period id for a quick lookup per render.
     const maskedPeriods = new Map(manifest.periods.filter(p => p.mask).map(p => [p.id, p.mask]));
 
+    // The initial zoom should comfortably fit every period's own extent, not just whichever one is
+    // shown first - a name concentrated in a small area in one year but spread much further in
+    // another would otherwise need re-zooming the moment the slider moves.
+    function boundsAcrossAllPeriods(nameData) {
+        let bounds = null;
+        for (const geojson of Object.values(nameData.maps)) {
+            if (!geojson || !geojson.features || !geojson.features.length) continue;
+            const periodBounds = L.geoJSON(geojson).getBounds();
+            bounds = bounds ? bounds.extend(periodBounds) : periodBounds;
+        }
+        return bounds;
+    }
+
     async function renderPeriod(nameData, periodId, fitBounds = false) {
         currentPeriodId = periodId;
         const geojson = nameData.maps[periodId];
@@ -73,8 +86,11 @@ export function createMap(container, manifest) {
             maskLayer.addData(mask);
         }
 
-        if (fitBounds && geojson && geojson.features.length) {
-            map.fitBounds(kdeLayer.getBounds(), { maxZoom: manifest.basemap.maxZoom });
+        if (fitBounds) {
+            const bounds = boundsAcrossAllPeriods(nameData);
+            if (bounds && bounds.isValid()) {
+                map.fitBounds(bounds, { maxZoom: manifest.basemap.maxZoom });
+            }
         }
     }
 

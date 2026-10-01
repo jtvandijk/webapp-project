@@ -2,7 +2,7 @@
 // indicator cards.
 import { surnameKey, fetchManifest, fetchLookups, fetchName, fetchFacts, formatPeriod, bearersFor } from "./data.js";
 import { createMap } from "./map.js";
-import { renderDecileCard, renderGroupCard } from "./indicators.js";
+import { renderDecileCard, renderGroupCard, renderFlatGroupCard } from "./indicators.js";
 import { renderPlacesCard, renderForenamesCard, renderEthnicityCard, renderCountsCard } from "./profile.js";
 
 const NOT_FOUND_MESSAGE = "We couldn't find a page for this surname. This means either we hold no "
@@ -117,11 +117,10 @@ function showResult(nameData, facts) {
     currentPeriods = manifest.periods.filter(p => nameData.maps[p.id]);
     resultName.textContent = nameData.name;
 
-    const lastIndex = Math.max(currentPeriods.length - 1, 0);
     periodSlider.min = 0;
-    periodSlider.max = lastIndex;
-    periodSlider.value = lastIndex;    // most recent period first
-    showPeriod(lastIndex, true);
+    periodSlider.max = Math.max(currentPeriods.length - 1, 0);
+    periodSlider.value = 0;    // earliest period first
+    showPeriod(0, true);
 
     renderIndicators(facts);
 }
@@ -191,11 +190,10 @@ function renderIndicators(facts) {
         }));
     }
     if (facts.gb2c) {
-        indicatorContainer.appendChild(renderGroupCard({
+        indicatorContainer.appendChild(renderFlatGroupCard({
             title: lookups.cards.gb2c.title,
             about: lookups.cards.gb2c.about,
             groups: lookups.gb2c.groups,
-            supergroups: lookups.gb2c.supergroups,
             distribution: facts.gb2c.distribution,
             modeCode: facts.gb2c.group,
         }));

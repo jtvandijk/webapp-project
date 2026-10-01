@@ -1,9 +1,11 @@
 // Rendering for the neighbourhood-classification indicator cards.
 // - IMD / AHAH: a fixed 10-decile bar chart (renderDecileCard).
-// - OAC / LOAC / GB2C / FPC: all four turn out to have a genuine two-level structure - every
-//   supergroup (fixed canonical order, official pen-portrait text behind a click on the name), then
-//   just the groups inside this name's own modal supergroup, shown as a share WITHIN that
-//   supergroup (renderGroupCard).
+// - OAC / LOAC / FPC: a genuine two-level structure - every supergroup (fixed canonical order,
+//   official pen-portrait text behind a click on the name), then just the groups inside this name's
+//   own modal supergroup, shown as a share WITHIN that supergroup (renderGroupCard).
+// - GB2C: a flat list of its 11 groups, same bar style and pen portraits, but no supergroup level -
+//   BG/B/G aren't a meaningful higher-level category the way OAC/LOAC/FPC's supergroups are, just a
+//   naming prefix, so the classification is shown as given, group by group (renderFlatGroupCard).
 
 function pct(share) {
     return `${(share * 100).toFixed(1)}%`;
@@ -92,6 +94,13 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
         if (sg == null) continue;
         supergroupTotals[sg] = (supergroupTotals[sg] || 0) + share;
     }
+    // Two different "winners", which can legitimately disagree: the supergroup with the highest
+    // combined share across all its own groups (bolded in the list below, so bold always tracks the
+    // longest bar), versus the supergroup that happens to contain the single most common group
+    // (modeCode) - a name can be fairly spread across several groups in its leading supergroup while
+    // being heavily concentrated in just one group that sits elsewhere.
+    const topSupergroup = Object.keys(supergroupTotals)
+        .reduce((best, code) => (supergroupTotals[code] > (supergroupTotals[best] || -1) ? code : best), null);
     const modeSupergroup = groups[modeCode] && groups[modeCode].supergroup;
 
     const sgList = document.createElement("div");
@@ -99,10 +108,21 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
     for (const code of Object.keys(supergroups).sort()) {
         const sg = supergroups[code];
         const row = barRow({ name: sg.name, colour: sg.colour, share: supergroupTotals[code] || 0, detailsText: sg.desc });
-        if (code === modeSupergroup) row.classList.add("bar-row-mode");
+        if (code === topSupergroup) row.classList.add("bar-row-mode");
         sgList.appendChild(row);
     }
     body.appendChild(sgList);
+
+    if (modeSupergroup != null && topSupergroup != null && modeSupergroup !== topSupergroup) {
+        const note = document.createElement("p");
+        note.className = "indicator-text mt-3 mb-0";
+        note.innerHTML = `<strong>${supergroups[topSupergroup].name}</strong> has the highest combined `
+            + `share overall, but your name's single most common group sits in a different supergroup, `
+            + `<strong>${supergroups[modeSupergroup].name}</strong>, shown below - a name can be spread `
+            + `fairly evenly across several groups in its leading supergroup while being heavily `
+            + `concentrated in just one group elsewhere.`;
+        body.appendChild(note);
+    }
 
     if (modeSupergroup != null) {
         const supergroupShare = supergroupTotals[modeSupergroup] || 0;
@@ -124,5 +144,19 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
         sub.appendChild(groupList);
         body.appendChild(sub);
     }
+    return card;
+}
+
+export function renderFlatGroupCard({ title, about, groups, distribution, modeCode }) {
+    const { card, body } = cardShell({ title, about });
+    const list = document.createElement("div");
+    list.className = "bar-list";
+    for (const code of Object.keys(groups).sort()) {
+        const g = groups[code];
+        const row = barRow({ name: g.name, colour: g.colour, share: distribution[code] || 0, detailsText: g.desc });
+        if (code === modeCode) row.classList.add("bar-row-mode");
+        list.appendChild(row);
+    }
+    body.appendChild(list);
     return card;
 }
