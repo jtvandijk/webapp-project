@@ -232,7 +232,11 @@ body {
 
 @media (max-width: 420px) {
     .indicator-about-box-with-flier {
-        flex-wrap: wrap;
+        flex-direction: column;
+    }
+
+    .flier-thumb {
+        width: 110px;
     }
 }
 
