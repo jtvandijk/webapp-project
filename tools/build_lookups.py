@@ -96,21 +96,68 @@ CARDS = {
                       "columns": ["County name", "Parish name"]},
     "places_register": {"title": "Top areas today", "subtitle": "Middle layer Super Output Areas",
                         "columns": ["District name", "Area name"]},
-    "oac": {"title": "UK Output Area Classification",
-            "about": "A classification of UK neighbourhoods, arranged into Supergroups and Groups based upon 2021/22 Census of Population data. We show the Supergroup and Group in which your selected surname occurs most frequently."},
-    "loac": {"title": "London Output Area Classification",
-             "about": "A classification of London's neighbourhoods, arranged into Supergroups and Groups based upon 2021 Census of Population data. We show the Supergroup and Group in which your selected surname occurs most frequently."},
-    "fpc": {"title": "Financial Precarity Classification",
-            "about": "A classification of Great Britain's neighbourhoods by financial precarity, arranged into Supergroups and Groups. We show the Supergroup and Group in which your selected surname occurs most frequently."},
-    "gb2c": {"title": "GB2C Gambling Classification",
-             "about": "A classification of Great Britain's neighbourhoods by online gambling behaviour, arranged into groups. We show the group in which your selected surname occurs most frequently."},
+    # Full explanations live here now, not in a separate About-page accordion (decided 2026-10-05,
+    # per the manager's feedback: each indicator should carry its own explanation and citation
+    # directly on the card, matching the pre-rebuild site's own pattern). Rendered as HTML, so real
+    # <a> citation links work - see indicators.js's cardShell().
+    "oac": {"title": "Britain's Geodemographic Structure: the UK Output Area Classification",
+            "about": "The UK Output Area Classification (OAC) is a classification of neighbourhoods, "
+                "arranged into Supergroups and Groups based upon 2021/22 Census of Population data. We "
+                "created this through a collaboration with the Office for National Statistics (ONS) - "
+                "you can find out how in "
+                "<a href=\"https://doi.org/10.1111/geoj.12550\" target=\"_blank\" rel=\"noopener\">Wyszomierski <em>et al.</em> (2023)</a>. "
+                "We show the distribution of your selected family group across 2021/22 OAC Supergroups "
+                "and Groups, with links to the attributes of these neighbourhoods."},
+    "loac": {"title": "London's Geodemographic Structure: the London Output Area Classification",
+             "about": "As the UK capital, some attributes of Greater London's distinctive neighbourhoods "
+                 "are not described fully by nationwide geodemographic classifications. The London "
+                 "Output Area Classification (LOAC) therefore uses the same methods used to create the "
+                 "UK Output Area Classification (described in "
+                 "<a href=\"https://journals.sagepub.com/doi/10.1177/23998083241242913\" target=\"_blank\" rel=\"noopener\">Longley <em>et al.</em> (2024)</a>) "
+                 "but applies them only to Greater London. We show the distribution of your selected "
+                 "family group across 2021 LOAC Supergroups and Groups, with links to the attributes of "
+                 "these neighbourhoods."},
+    "fpc": {"title": "Britain's Cost of Living Crisis: the Financial Precarity Classification",
+            "about": "Whether neighbourhoods are thriving or just surviving is measured by the "
+                "Financial Precarity Classification, described in "
+                "<a href=\"https://doi.org/10.1016/j.compenvurbsys.2026.102399\" target=\"_blank\" rel=\"noopener\">Zi and Singleton (2026)</a>. "
+                "We show the Supergroup and Group in which your selected surname occurs most frequently."},
+    "gb2c": {"title": "Gambling Behaviours in Britain",
+             "about": "The Great Britain Gambling Behaviours Classification provides the first national "
+                 "neighbourhood classification of gambling behaviours in Great Britain, based on "
+                 "observed online transactional behaviours drawn from industry data. We highlight the "
+                 "Type of gambling behaviour most closely associated with your selected surname. See the "
+                 "<a href=\"https://data.geods.ac.uk/dataset/great-britain-gambling-behaviours-classification-gb2c-lsoa-geography\" target=\"_blank\" rel=\"noopener\">dataset page</a>; "
+                 "the accompanying paper is currently under review."},
     "eth": {"title": "Ethnicity Estimator", "subtitle": "Surname roots",
-            "about": "Given and family names provide clues as to ethnicity. We show the census ethnic group that is most common among the people with your selected surname, estimated from their forenames and surnames."},
-    "imd": {"title": "Index of Multiple Deprivation",
-            "about": "Neighbourhoods can be ranked from most to least deprived and we show the decile in which your selected surname occurs most frequently. England, Wales and Scotland are each ranked on their own and the ranks are then compared directly.",
-            "score": "The GBNames deprivation score is the average neighbourhood percentile of the people with your selected surname, from 1 (most deprived) to 100 (least deprived), with its spread."},
-    "ahah": {"title": "Access to Healthy Assets and Hazards",
-             "about": "Neighbourhoods can be ranked from the healthiest to the least healthy and we show the decile in which your selected surname occurs most frequently."},
+            "about": "Given and family names provide clues as to ethnicity. We show the census ethnic group that is most common among the people with your selected surname."},
+    "imd": {"title": "Neighbourhood Deprivation in Britain",
+            "about": "Neighbourhoods can be ranked from most to least deprived and we show the decile "
+                "in which your selected surname occurs most frequently. England, Wales and Scotland are "
+                "each ranked separately, converted to percentiles, and then combined into one GB-wide "
+                "dataset. There is no obvious reason why people with common surnames such as 'Smith' "
+                "should live in more or less deprived neighbourhoods than those with surnames such as "
+                "'Baker' - and the SmartCensus confirms this. However, rarer surnames with distinctive "
+                "geographies often tell a different story - compare 'McFee' with 'Offer' for example. "
+                "Differences can reflect historical differences in the local economic opportunities "
+                "where different family names originated. Read more in "
+                "<a href=\"https://www.nature.com/articles/s41467-021-26185-z\" target=\"_blank\" rel=\"noopener\">Longley <em>et al.</em> (2021)</a>. "
+                "In this context, we can also observe that the neighbourhood circumstances of many more "
+                "recently arrived ethnic minority populations have yet to converge with the longer "
+                "established population - read more in "
+                "<a href=\"https://rgs-ibg.onlinelibrary.wiley.com/doi/10.1111/tran.12622\" target=\"_blank\" rel=\"noopener\">Longley <em>et al.</em> (2023)</a>.",
+            "score": "The SmartCensus deprivation score is the average neighbourhood percentile score "
+                "of the people with your selected surname, ranging from 1 (most deprived) to 100 (least "
+                "deprived), and the standard deviation measures the spread around this figure. The mean "
+                "for your name is {mean} and the spread is {sd}."},
+    "ahah": {"title": "Healthy Neighbourhoods: Access to Healthy Assets and Hazards (AHAH)",
+             "about": "Access to Healthy Assets and Hazards (AHAH) is a classification of the health "
+                 "attributes associated with neighbourhoods. Data used include access to different "
+                 "retail facilities, health services and physical features. The graphic shows the "
+                 "neighbourhood health profile for bearers of your selected surname (1 = healthiest, 10 "
+                 "= least healthy - the opposite direction to IMD). See "
+                 "<a href=\"https://doi.org/10.1016/j.healthplace.2018.08.019\" target=\"_blank\" rel=\"noopener\">Green <em>et al.</em> (2018)</a> "
+                 "and the <a href=\"https://data.cdrc.ac.uk/dataset/access-healthy-assets-hazards-ahah\" target=\"_blank\" rel=\"noopener\">dataset page</a>."},
 }
 
 SCALES = {

@@ -3,7 +3,7 @@
 import { formatPeriod, bearersFor } from "./data.js";
 import { cardShell, barRow } from "./indicators.js";
 
-export function renderPlacesCard({ places }) {
+export function renderPlacesCard({ places, placesLookup }) {
     const { card, body } = cardShell({
         title: "Where your name is found",
         about: "The counties and parishes your name was most often recorded in historically, and the "
@@ -11,13 +11,16 @@ export function renderPlacesCard({ places }) {
     });
     const row = document.createElement("div");
     row.className = "row";
-    row.appendChild(placesColumn("Historic Census", places && places.census, false));
-    row.appendChild(placesColumn("SmartData", places && places.register, true));
+    row.appendChild(placesColumn("Historic Census", places && places.census, null));
+    row.appendChild(placesColumn("SmartData", places && places.register, placesLookup));
     body.appendChild(row);
     return card;
 }
 
-function placesColumn(heading, items, isCode) {
+// Historic Census places already come as real names (e.g. "London" / "London parishes"). SmartData
+// places come as district/MSOA GSS codes (tools/split_facts.py), resolved here via
+// tools/build_places_lookup.py's lookup - falling back to the raw code on the rare miss.
+function placesColumn(heading, items, placesLookup) {
     const col = document.createElement("div");
     col.className = "col-md-6";
     col.innerHTML = `<h6 class="text-muted">${heading}</h6>`;
@@ -28,15 +31,13 @@ function placesColumn(heading, items, isCode) {
     const list = document.createElement("ol");
     list.className = "places-list";
     for (const item of items.slice(0, 5)) {
+        const area = (placesLookup && placesLookup[item.area]) || item.area;
+        const name = (placesLookup && placesLookup[item.name]) || item.name;
         const li = document.createElement("li");
-        li.textContent = `${item.area} — ${item.name}`;
+        li.textContent = `${area} — ${name}`;
         list.appendChild(li);
     }
     col.appendChild(list);
-    if (isCode) {
-        col.innerHTML += `<p class="text-muted small mb-0">Shown as area codes for now - friendly `
-            + `place names are coming in a future update.</p>`;
-    }
     return col;
 }
 
@@ -93,10 +94,16 @@ export function renderEthnicityCard({ eth, ethLookup, about }) {
     return card;
 }
 
+// Census = light blue, SmartData/SmartCensus = navy, so the source is obvious at a glance - the
+// same light blue as manifest.levels' own level-1 KDE colour, reused rather than inventing a new one.
+const CENSUS_COLOUR = "#6baed6";
+const SMARTDATA_COLOUR = "#1f428f";
+
 export function renderCountsCard({ nameData, manifest }) {
     const { card, body } = cardShell({ title: "Number of Bearers",
-        about: "How many people have shared your name, in each year we have data for. Modern "
-            + "(SmartData/SmartCensus) counts are adjusted so that the register's own growth over "
+        about: "How many people have shared your name, in each year we have data for. Census counts "
+            + "(light blue) are everyone recorded that year. Modern SmartData/SmartCensus counts (navy) "
+            + "are estimated against the dataset's own adult population each year, so its growth over "
             + "time doesn't look like your name becoming more common." });
     const list = document.createElement("div");
     list.className = "bar-list";
@@ -104,10 +111,10 @@ export function renderCountsCard({ nameData, manifest }) {
         .map(period => ({ period, ...bearersFor(nameData, period) }))
         .filter(e => typeof e.value === "number");
     const maxValue = Math.max(1, ...entries.map(e => e.value));
-    for (const { period, value, adjusted } of entries) {
+    for (const { period, value, estimated } of entries) {
         const row = barRow({
-            name: formatPeriod(period, manifest) + (adjusted ? " (adjusted)" : ""),
-            colour: "#1f428f",
+            name: formatPeriod(period, manifest) + (estimated ? " (estimated)" : ""),
+            colour: period.source === "census" ? CENSUS_COLOUR : SMARTDATA_COLOUR,
             share: value / maxValue,
             valueText: value.toLocaleString("en-GB"),
         });

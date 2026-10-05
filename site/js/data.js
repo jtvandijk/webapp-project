@@ -23,6 +23,15 @@ export async function fetchLookups() {
     return res.json();
 }
 
+// {area code: human-readable name} for district and MSOA/Intermediate Zone codes (tools/
+// build_places_lookup.py) - public ONS/NRS reference data, not part of the TRE export, so it's
+// tracked in the repo and served alongside the site's own code, not from DATA_ROOT.
+export async function fetchPlacesLookup() {
+    const res = await fetch("lookups/places.json");
+    if (!res.ok) throw new Error(`lookups/places.json: HTTP ${res.status}`);
+    return res.json();
+}
+
 // null means "no file for this name" (not found, or below the publish threshold) - not an error.
 export async function fetchName(key) {
     const res = await fetch(`${DATA_ROOT}/names/${key.slice(0, 2)}/${key}.json`);
@@ -50,12 +59,13 @@ export function formatPeriod(period, manifest) {
     return `Smart Data: ${period.id}`;
 }
 
-// The adjusted (standardised) count where one exists, otherwise the raw count - adjustment only
-// exists for register years (counts_standardised is register-only, per the data contract).
+// The estimated (standardised) adult count where one exists, otherwise the raw count - estimation
+// only exists for register years (counts_standardised is register-only, per the data contract).
+// Register counts are adults only, throughout - unlike census counts, which are everyone.
 export function bearersFor(nameData, period) {
     const standardised = nameData.counts_standardised && nameData.counts_standardised[period.source];
-    const adjusted = standardised ? standardised[period.id] : undefined;
+    const estimated = standardised ? standardised[period.id] : undefined;
     const raw = (nameData.counts[period.source] || {})[period.id];
-    const value = typeof adjusted === "number" ? adjusted : raw;
-    return { value, adjusted: typeof adjusted === "number" };
+    const value = typeof estimated === "number" ? estimated : raw;
+    return { value, estimated: typeof estimated === "number" };
 }

@@ -1,6 +1,6 @@
 // Wiring: search boxes, URL state, welcome/not-found/result panels, the period slider, the
 // indicator cards.
-import { surnameKey, fetchManifest, fetchLookups, fetchName, fetchFacts, formatPeriod, bearersFor } from "./data.js";
+import { surnameKey, fetchManifest, fetchLookups, fetchPlacesLookup, fetchName, fetchFacts, formatPeriod, bearersFor } from "./data.js";
 import { createMap } from "./map.js";
 import { renderDecileCard, renderGroupCard, renderFlatGroupCard } from "./indicators.js";
 import { renderPlacesCard, renderForenamesCard, renderEthnicityCard, renderCountsCard } from "./profile.js";
@@ -29,6 +29,7 @@ document.getElementById("notFoundMessage").textContent = NOT_FOUND_MESSAGE;
 
 let manifest = null;
 let lookups = null;
+let placesLookup = null;
 let mapController = null;
 let currentName = null;    // the fetched name's own JSON
 let currentPeriods = [];   // manifest period entries this name has a map for, in slider order
@@ -51,7 +52,7 @@ function wireSearchForm(form, input) {
 }
 
 async function init() {
-    [manifest, lookups] = await Promise.all([fetchManifest(), fetchLookups()]);
+    [manifest, lookups, placesLookup] = await Promise.all([fetchManifest(), fetchLookups(), fetchPlacesLookup()]);
     mapController = createMap(document.getElementById("map"), manifest);
 
     for (const name of manifest.examples) {
@@ -136,9 +137,9 @@ function showPeriod(index, fitBounds = false) {
     if (!period) return;
     mapController.renderPeriod(currentName, period.id, fitBounds);
 
-    const { value, adjusted } = bearersFor(currentName, period);
+    const { value, estimated } = bearersFor(currentName, period);
     const bearersText = typeof value === "number" ? value.toLocaleString("en-GB") : "unknown";
-    const bearersWord = adjusted ? "adjusted bearers" : "bearers";
+    const bearersWord = estimated ? "estimated adult bearers" : "bearers";
     periodLabel.textContent = `${formatPeriod(period, manifest)} — ${bearersText} ${bearersWord}`;
 
     const geojson = currentName.maps[period.id];
@@ -166,7 +167,7 @@ function renderIndicators(facts) {
             mode: facts.imd.mode,
             scaleText: lookups.scales.imd.text.replace("{decile}", `<strong>Decile ${facts.imd.mode}</strong>`),
             scoreText: lookups.cards.imd.score
-                && `${lookups.cards.imd.score} Mean: ${facts.imd.mean}, spread: ${facts.imd.sd}.`,
+                && lookups.cards.imd.score.replace("{mean}", facts.imd.mean).replace("{sd}", facts.imd.sd),
         }));
     }
     if (facts.oac) {
@@ -177,6 +178,7 @@ function renderIndicators(facts) {
             supergroups: lookups.oac.supergroups,
             distribution: facts.oac.distribution,
             modeCode: facts.oac.group,
+            clickHint: "neighbourhood characteristics",
         }));
     }
     if (facts.loac) {
@@ -187,6 +189,7 @@ function renderIndicators(facts) {
             supergroups: lookups.loac.supergroups,
             distribution: facts.loac.distribution,
             modeCode: facts.loac.group,
+            clickHint: "neighbourhood characteristics",
         }));
     }
     if (facts.gb2c) {
@@ -196,6 +199,7 @@ function renderIndicators(facts) {
             groups: lookups.gb2c.groups,
             distribution: facts.gb2c.distribution,
             modeCode: facts.gb2c.group,
+            clickHint: "gambling behaviour characteristics",
         }));
     }
     if (facts.ahah) {
@@ -216,10 +220,11 @@ function renderIndicators(facts) {
             supergroups: lookups.fpc.supergroups,
             distribution: facts.fpc.distribution,
             modeCode: facts.fpc.group,
+            clickHint: "neighbourhood characteristics",
         }));
     }
 
-    moreAboutContainer.appendChild(renderPlacesCard({ places: facts.places }));
+    moreAboutContainer.appendChild(renderPlacesCard({ places: facts.places, placesLookup }));
     moreAboutContainer.appendChild(renderForenamesCard({ forenames: facts.forenames }));
     if (facts.eth) {
         moreAboutContainer.appendChild(renderEthnicityCard({

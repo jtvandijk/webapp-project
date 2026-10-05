@@ -71,7 +71,13 @@ export function createMap(container, manifest) {
         return bounds;
     }
 
+    // Guards the one await below: rapidly toggling the slider can start a second renderPeriod()
+    // before the first's mask fetch resolves, and without this, the first call's mask data can land
+    // after the second's and overwrite it with a stale period's mask (or lack of one).
+    let renderToken = 0;
+
     async function renderPeriod(nameData, periodId, fitBounds = false) {
+        const myToken = ++renderToken;
         currentPeriodId = periodId;
         const geojson = nameData.maps[periodId];
         kdeLayer.clearLayers();
@@ -83,6 +89,7 @@ export function createMap(container, manifest) {
         // data (no copyOf) - a copied map (e.g. 1911 showing 1901) already has Scotland in it.
         if (maskName && geojson && !geojson.copyOf) {
             const mask = await loadScotlandMask(manifest.masks[maskName].url);
+            if (myToken !== renderToken) return;   // a newer render has since started - drop this one
             maskLayer.addData(mask);
         }
 

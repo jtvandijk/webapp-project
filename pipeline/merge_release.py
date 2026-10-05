@@ -62,7 +62,7 @@ BASEMAP = {
          "labels": True, "bounds": [[50, -12], [62, 4]]},
     ],
 }
-EXAMPLES = ["burnham", "farah", "beckham", "sheeran", "attenborough"]      # an editorial pick (the user, 2026-10-01): recognisable British names
+EXAMPLES = ["burnham", "murray", "beckham", "hopkins", "attenborough"]      # an editorial pick (the user, 2026-10-01/05): recognisable British names with full 1851-2026 coverage
 
 
 def build_index(index_parts_dir, out_dir):

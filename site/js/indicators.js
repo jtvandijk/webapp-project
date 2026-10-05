@@ -43,6 +43,8 @@ export function barRow({ name, colour, share, valueText, detailsText }) {
     return row;
 }
 
+// `about` is HTML, not plain text - lookups.json's own card text (build_lookups.py), never user
+// input, so this is safe - it's how each card's real citation links render.
 export function cardShell({ title, about }) {
     const card = document.createElement("div");
     card.className = "card mb-3 indicator-card";
@@ -52,11 +54,19 @@ export function cardShell({ title, about }) {
     if (about) {
         const p = document.createElement("p");
         p.className = "indicator-text";
-        p.textContent = about;
+        p.innerHTML = about;
         body.appendChild(p);
     }
     card.appendChild(body);
     return { card, body };
+}
+
+function clickHintRow(clickHint) {
+    if (!clickHint) return null;
+    const p = document.createElement("p");
+    p.className = "indicator-text mb-0";
+    p.innerHTML = `Click on any label to find out its ${clickHint}.`;
+    return p;
 }
 
 export function renderDecileCard({ title, about, colours, distribution, mode, scaleText, scoreText }) {
@@ -85,8 +95,10 @@ export function renderDecileCard({ title, about, colours, distribution, mode, sc
     return card;
 }
 
-export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode }) {
+export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics" }) {
     const { card, body } = cardShell({ title, about });
+    const hintRow = clickHintRow(clickHint);
+    if (hintRow) body.appendChild(hintRow);
 
     const supergroupTotals = {};
     for (const [code, share] of Object.entries(distribution)) {
@@ -117,10 +129,10 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
         const note = document.createElement("p");
         note.className = "indicator-text mt-3 mb-0";
         note.innerHTML = `<strong>${supergroups[topSupergroup].name}</strong> has the highest combined `
-            + `share overall, but your name's single most common group sits in a different supergroup, `
+            + `share overall, but your name's single most common Group sits in a different Supergroup, `
             + `<strong>${supergroups[modeSupergroup].name}</strong>, shown below - a name can be spread `
-            + `fairly evenly across several groups in its leading supergroup while being heavily `
-            + `concentrated in just one group elsewhere.`;
+            + `fairly evenly across several Groups in its leading Supergroup while being heavily `
+            + `concentrated in just one Group elsewhere.`;
         body.appendChild(note);
     }
 
@@ -129,7 +141,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
         const sub = document.createElement("div");
         sub.className = "group-drilldown";
         const heading = document.createElement("h6");
-        heading.innerHTML = `Groups within <strong>${supergroups[modeSupergroup].name}</strong> (share within this supergroup)`;
+        heading.innerHTML = `Groups within <strong>${supergroups[modeSupergroup].name}</strong> (share within this Supergroup)`;
         sub.appendChild(heading);
         const groupList = document.createElement("div");
         groupList.className = "bar-list";
@@ -147,8 +159,10 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
     return card;
 }
 
-export function renderFlatGroupCard({ title, about, groups, distribution, modeCode }) {
+export function renderFlatGroupCard({ title, about, groups, distribution, modeCode, clickHint }) {
     const { card, body } = cardShell({ title, about });
+    const hintRow = clickHintRow(clickHint);
+    if (hintRow) body.appendChild(hintRow);
     const list = document.createElement("div");
     list.className = "bar-list";
     for (const code of Object.keys(groups).sort()) {
