@@ -130,21 +130,21 @@ CARDS = {
                  "<a href=\"https://data.geods.ac.uk/dataset/great-britain-gambling-behaviours-classification-gb2c-lsoa-geography\" target=\"_blank\" rel=\"noopener\">dataset page</a>; "
                  "the accompanying paper is currently under review."},
     "eth": {"title": "Ethnicity Estimator", "subtitle": "Surname roots",
-            "about": "Given and family names provide clues as to ethnicity. We show the census ethnic group that is most common among the people with your selected surname."},
+            "about": "Given and family names provide clues as to probable ethnicity. We show a rough "
+                "estimate of the most common census ethnic group among bearers of the surname you "
+                "entered - not a record of any individual's own identity. Better estimates can be "
+                "obtained using the full names classification software available through GeoDS; see "
+                "<a href=\"https://doi.org/10.1371/journal.pone.0201774\" target=\"_blank\" rel=\"noopener\">Kandt and Longley (2018)</a>."},
     "imd": {"title": "Neighbourhood Deprivation in Britain",
-            "about": "Neighbourhoods can be ranked from most to least deprived and we show the decile "
-                "in which your selected surname occurs most frequently. England, Wales and Scotland are "
-                "each ranked separately, converted to percentiles, and then combined into one GB-wide "
-                "dataset. There is no obvious reason why people with common surnames such as 'Smith' "
-                "should live in more or less deprived neighbourhoods than those with surnames such as "
-                "'Baker' - and the SmartCensus confirms this. However, rarer surnames with distinctive "
-                "geographies often tell a different story - compare 'McFee' with 'Offer' for example. "
-                "Differences can reflect historical differences in the local economic opportunities "
-                "where different family names originated. Read more in "
-                "<a href=\"https://www.nature.com/articles/s41467-021-26185-z\" target=\"_blank\" rel=\"noopener\">Longley <em>et al.</em> (2021)</a>. "
-                "In this context, we can also observe that the neighbourhood circumstances of many more "
-                "recently arrived ethnic minority populations have yet to converge with the longer "
-                "established population - read more in "
+            "about": "Neighbourhoods can be ranked from most to least deprived; England, Wales and "
+                "Scotland are each ranked separately, converted to percentiles, and combined into one "
+                "GB-wide dataset. We show the decile your selected surname occurs most frequently in. "
+                "There's no obvious reason why common surnames like 'Smith' should live in more or less "
+                "deprived neighbourhoods than 'Baker' - and the SmartCensus confirms this. Rarer, more "
+                "distinctive surnames often tell a different story: compare 'McFee' with 'Offer'. Read "
+                "more in "
+                "<a href=\"https://www.nature.com/articles/s41467-021-26185-z\" target=\"_blank\" rel=\"noopener\">Longley <em>et al.</em> (2021)</a> "
+                "and "
                 "<a href=\"https://rgs-ibg.onlinelibrary.wiley.com/doi/10.1111/tran.12622\" target=\"_blank\" rel=\"noopener\">Longley <em>et al.</em> (2023)</a>.",
             "score": "The SmartCensus deprivation score is the average neighbourhood percentile score "
                 "of the people with your selected surname, ranging from 1 (most deprived) to 100 (least "

@@ -44,29 +44,34 @@ export function barRow({ name, colour, share, valueText, detailsText }) {
 }
 
 // `about` is HTML, not plain text - lookups.json's own card text (build_lookups.py), never user
-// input, so this is safe - it's how each card's real citation links render.
-export function cardShell({ title, about }) {
+// input, so this is safe - it's how each card's real citation links render. about (+ clickHint, if
+// given) sit in their own tinted box, set apart from the bars below - stands in for the old site's
+// flier-thumbnail-alongside-text treatment until real fliers exist.
+export function cardShell({ title, about, clickHint }) {
     const card = document.createElement("div");
     card.className = "card mb-3 indicator-card";
     card.innerHTML = `<div class="card-header"><h4 class="m-0">${title}</h4></div>`;
     const body = document.createElement("div");
     body.className = "card-body";
-    if (about) {
-        const p = document.createElement("p");
-        p.className = "indicator-text";
-        p.innerHTML = about;
-        body.appendChild(p);
+    if (about || clickHint) {
+        const box = document.createElement("div");
+        box.className = "indicator-about-box";
+        if (about) {
+            const p = document.createElement("p");
+            p.className = "indicator-text";
+            p.innerHTML = about;
+            box.appendChild(p);
+        }
+        if (clickHint) {
+            const p = document.createElement("p");
+            p.className = "indicator-text";
+            p.innerHTML = `Click on any label to find out its ${clickHint}.`;
+            box.appendChild(p);
+        }
+        body.appendChild(box);
     }
     card.appendChild(body);
     return { card, body };
-}
-
-function clickHintRow(clickHint) {
-    if (!clickHint) return null;
-    const p = document.createElement("p");
-    p.className = "indicator-text mb-0";
-    p.innerHTML = `Click on any label to find out its ${clickHint}.`;
-    return p;
 }
 
 export function renderDecileCard({ title, about, colours, distribution, mode, scaleText, scoreText }) {
@@ -96,9 +101,7 @@ export function renderDecileCard({ title, about, colours, distribution, mode, sc
 }
 
 export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics" }) {
-    const { card, body } = cardShell({ title, about });
-    const hintRow = clickHintRow(clickHint);
-    if (hintRow) body.appendChild(hintRow);
+    const { card, body } = cardShell({ title, about, clickHint });
 
     const supergroupTotals = {};
     for (const [code, share] of Object.entries(distribution)) {
@@ -160,9 +163,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
 }
 
 export function renderFlatGroupCard({ title, about, groups, distribution, modeCode, clickHint }) {
-    const { card, body } = cardShell({ title, about });
-    const hintRow = clickHintRow(clickHint);
-    if (hintRow) body.appendChild(hintRow);
+    const { card, body } = cardShell({ title, about, clickHint });
     const list = document.createElement("div");
     list.className = "bar-list";
     for (const code of Object.keys(groups).sort()) {

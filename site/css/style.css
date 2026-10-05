@@ -163,6 +163,13 @@ body {
 
 /* indicator cards (IMD/OAC/LOAC/GB2C/AHAH/FPC) and the more-about-your-name cards */
 
+.indicator-text,
+.card-body p,
+.pen-portrait,
+.about-item p {
+    text-align: justify;
+}
+
 .indicator-text {
     font-size: 1rem;
     color: #1a1a1a;
@@ -170,6 +177,24 @@ body {
 
 .indicator-text strong {
     font-weight: 700;
+}
+
+/* The explanation + "click any label" line, set apart from the bars below - stands in for the old
+   site's flier-thumbnail-alongside-text treatment until real fliers exist. */
+.indicator-about-box {
+    margin-bottom: 1rem;
+    padding: 0.85rem 1rem;
+    background: #f4f6fa;
+    border-left: 3px solid var(--navy);
+    border-radius: 4px;
+}
+
+.indicator-about-box .indicator-text {
+    margin-bottom: 0;
+}
+
+.indicator-about-box .indicator-text + .indicator-text {
+    margin-top: 0.6rem;
 }
 
 .group-drilldown {
@@ -270,9 +295,24 @@ details[open] > summary .bar-chevron {
     color: #333;
 }
 
+/* Not true pills - MSOA/district names are often two long clauses ("District — Area"), which wrap
+   badly in a circular pill. A softly-rounded, left-aligned row reads better at that length. */
 .places-list {
-    padding-left: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.place-chip {
+    padding: 0.4rem 0.75rem;
+    background: #f4f6fa;
+    border-radius: 6px;
     font-size: 0.9rem;
+    text-align: left;
+}
+
+.place-chip .place-area {
+    color: #555;
 }
 
 .forename-pills {

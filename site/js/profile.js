@@ -28,14 +28,15 @@ function placesColumn(heading, items, placesLookup) {
         col.innerHTML += `<p class="text-muted small mb-0">No data available.</p>`;
         return col;
     }
-    const list = document.createElement("ol");
+    const list = document.createElement("div");
     list.className = "places-list";
     for (const item of items.slice(0, 5)) {
         const area = (placesLookup && placesLookup[item.area]) || item.area;
         const name = (placesLookup && placesLookup[item.name]) || item.name;
-        const li = document.createElement("li");
-        li.textContent = `${area} — ${name}`;
-        list.appendChild(li);
+        const chip = document.createElement("div");
+        chip.className = "place-chip";
+        chip.innerHTML = `<span class="place-area">${area} —</span> ${name}`;
+        list.appendChild(chip);
     }
     col.appendChild(list);
     return col;

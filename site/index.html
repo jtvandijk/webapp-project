@@ -82,10 +82,10 @@
           <p class="map-caption text-muted">The coloured contours enclose areas where bearers of the
             name were most concentrated, measured as where the population-weighted density of the
             surname is highest. Use the slider bar to see where the name was found over historic
-            (1851-1921) and more recent SmartCensus (1997-2026) time periods. You can find the most
-            popular given names associated with any surname further down the page. You can find out
-            more about the SmartCensus and other data sources used to create this page in the "Going
-            Further" notes at the end of your name profile.</p>
+            (1851-1921, excluding 1871 - a Scotland-only census year) and more recent SmartCensus
+            (1997-2026) time periods. You can find the most popular given names associated with any
+            surname further down the page, and more about the SmartCensus and other data sources used
+            to create this page in the "Going Further" notes below.</p>
         </div>
       </div>
     </div>
@@ -93,44 +93,44 @@
     <div id="resultSection" hidden>
       <div id="indicatorContainer"></div>
 
-      <div class="jumbotron bg-jumbotron p-4 p-md-5 mb-3">
-        <h3>Going Further</h3>
-        <p>GBNames allows users to explore the British geography of their family, using the search
-          box above to enter a family name. Many family groups first settled in different parts of
-          Great Britain and typically spread out over time. Uneven geographies mean that family
-          groups may be concentrated in different types of neighbourhoods. This site uses surnames
-          to introduce users to the SmartCensus, developed by the Economic and Social Research
+      <h3 class="mt-4 mb-3">Going Further</h3>
+
+      <div class="jumbotron bg-jumbotron p-4 mb-3">
+        <h5>About GBNames and the SmartCensus</h5>
+        <p class="mb-0">GBNames explores the British geography of family names, using the search box
+          above. Family groups often settled in different parts of Great Britain and spread out over
+          time, so they can end up concentrated in different kinds of neighbourhoods. This site uses
+          surnames to introduce the SmartCensus, developed by the Economic and Social Research
           Council's <a href="https://geods.ac.uk/" target="_blank" rel="noopener">Geographic Data
           Service (GeoDS)</a>.</p>
-        <p>For the <strong>Historic Census</strong> period (1851-1921), we use digitised historical
-          census records for England, Wales and Scotland from the
-          <a href="https://www1.essex.ac.uk/history/research/icem/" target="_blank" rel="noopener">Integrated Census Microdata (I-CeM)</a>
-          project, who integrate the decennial censuses under secure data-user agreements with
-          researchers. Census data for a given year only becomes available for research once it is
-          100 years old, which is why 1921 is currently the most recent census year we can use, and
-          why Scotland is missing from the 1911 census (not released on the same schedule as England
-          and Wales).</p>
-        <p class="mb-0">The <strong>SmartCensus</strong> is an ongoing project of the
-          <a href="https://geods.ac.uk/" target="_blank" rel="noopener">Geographic Data Service (GeoDS)</a>
-          to link conventional censuses and surveys with new and exciting 'smart' data sources -
-          providing neighbourhood estimates of circumstances including health, resilience to cost of
-          living pressures and gambling behaviour - in greater geographic detail and with greater
-          update frequency than more conventional statistical sources. Smart data are typically
-          created when we use smartphones and other digital devices to carry out everyday tasks.
-          These data are inherently less reliable than surveys and statistics, so our data scientists
-          must document their quality and provenance. We document the quality of our smart and other
-          data on our website
-          (<a href="https://data.geods.ac.uk/" target="_blank" rel="noopener">data.geods.ac.uk</a>)
-          and in research publications, including
-          <a href="https://doi.org/10.1111/rssa.12476" target="_blank" rel="noopener">Lansley <em>et al.</em> (2019)</a>
-          and <a href="https://doi.org/10.1111/rssa.12713" target="_blank" rel="noopener">Van Dijk <em>et al.</em> (2021)</a>.
-          We have been updating many of our SmartCensus datasets every year since 1997, allowing
-          researchers to monitor the intricacies of local changes throughout the 21st century. See
-          our <a href="about.html">About</a> page for how the map itself is built.</p>
       </div>
 
-      <h3 class="mt-4 mb-3">More about your family name</h3>
-      <div id="moreAboutContainer"></div>
+      <div class="jumbotron bg-jumbotron p-4 mb-3">
+        <h5>Where the data comes from</h5>
+        <p class="mb-0">For the <strong>Historic Census</strong> period (1851-1921), we use digitised
+          census records from the
+          <a href="https://www1.essex.ac.uk/history/research/icem/" target="_blank" rel="noopener">I-CeM</a>
+          project. Census data only becomes available for research once it is 100 years old, which is
+          why 1921 is currently the most recent year we can use. The <strong>SmartCensus</strong>
+          links conventional censuses with new 'smart' data sources - updated every year since 1997 -
+          to give more detailed, more frequently updated neighbourhood estimates than conventional
+          statistics allow. See
+          <a href="https://data.geods.ac.uk/" target="_blank" rel="noopener">data.geods.ac.uk</a>,
+          <a href="https://doi.org/10.1111/rssa.12476" target="_blank" rel="noopener">Lansley <em>et al.</em> (2019)</a>
+          and <a href="https://doi.org/10.1111/rssa.12713" target="_blank" rel="noopener">Van Dijk <em>et al.</em> (2021)</a>
+          for the detail.</p>
+      </div>
+
+      <div class="jumbotron bg-jumbotron p-4 mb-3">
+        <h5>How we map the distributions from these data sources</h5>
+        <p class="mb-0">We use a technique called kernel density estimation to show where a name's
+          bearers are most concentrated, without plotting individual addresses. We only build a map,
+          or show a statistic, for a name with at least 100 people in a given year, to protect
+          individual privacy. See our <a href="about.html">About</a> page for the full technique and
+          citations.</p>
+      </div>
+
+      <div id="moreAboutContainer" class="mt-4"></div>
     </div>
 
   </div>
