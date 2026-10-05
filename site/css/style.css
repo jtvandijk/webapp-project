@@ -83,9 +83,8 @@ body {
 }
 
 .example-names-label {
-    margin-bottom: 0.6rem;
+    margin-bottom: 1rem;
     font-size: 1.05rem;
-    color: #2c2f45;
 }
 
 .example-names {
@@ -199,6 +198,31 @@ body {
 
 .indicator-about-box .indicator-text + .indicator-text {
     margin-top: 0.6rem;
+}
+
+/* An aside for the rarer case where a name's leading Supergroup and its single most common Group
+   disagree - a genuine "heads up, read this carefully" moment, so it gets its own admonition style
+   (Quarto-note-like) rather than blending into the normal flow like indicator-about-box does. */
+.callout-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    margin-bottom: 0;
+    padding: 0.75rem 1rem;
+    background: #eaf3fb;
+    border-left: 3px solid var(--census-colour);
+    border-radius: 4px;
+}
+
+.callout-note .callout-icon {
+    flex: none;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: var(--census-colour);
+}
+
+.callout-note p {
+    margin: 0;
 }
 
 .group-drilldown {
