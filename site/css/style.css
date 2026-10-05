@@ -9,6 +9,10 @@
     --jumbotron-bg: #b8bcd0;
     --pale-blue: #c6dbef;
     --accent-orange: #fdae6b;
+    /* Historic Census vs SmartData, reused everywhere the two sources sit side by side (bearers
+       chart, place chips) so the same colour always means the same source. */
+    --census-colour: #6baed6;
+    --smart-colour: #1f428f;
 }
 
 body {
@@ -304,11 +308,21 @@ details[open] > summary .bar-chevron {
 }
 
 .place-chip {
-    padding: 0.4rem 0.75rem;
-    background: #f4f6fa;
+    padding: 0.4rem 0.75rem 0.4rem 0.6rem;
     border-radius: 6px;
+    border-left: 3px solid transparent;
     font-size: 0.9rem;
     text-align: left;
+}
+
+.place-chip--census {
+    background: #eaf3fb;
+    border-left-color: var(--census-colour);
+}
+
+.place-chip--smart {
+    background: #eceef5;
+    border-left-color: var(--smart-colour);
 }
 
 .place-chip .place-area {

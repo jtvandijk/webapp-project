@@ -92,10 +92,13 @@ export function renderDecileCard({ title, about, colours, distribution, mode, sc
     });
     body.appendChild(list);
     if (scoreText) {
+        const box = document.createElement("div");
+        box.className = "indicator-about-box mt-3 mb-0";
         const p = document.createElement("p");
-        p.className = "indicator-text mt-3 mb-0";
+        p.className = "indicator-text";
         p.textContent = scoreText;
-        body.appendChild(p);
+        box.appendChild(p);
+        body.appendChild(box);
     }
     return card;
 }

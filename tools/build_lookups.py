@@ -127,7 +127,7 @@ CARDS = {
                  "neighbourhood classification of gambling behaviours in Great Britain, based on "
                  "observed online transactional behaviours drawn from industry data. We highlight the "
                  "Type of gambling behaviour most closely associated with your selected surname. See the "
-                 "<a href=\"https://data.geods.ac.uk/dataset/great-britain-gambling-behaviours-classification-gb2c-lsoa-geography\" target=\"_blank\" rel=\"noopener\">dataset page</a>; "
+                 "<a href=\"https://data.geods.ac.uk/dataset/great-britain-gambling-behaviours-classification-gb2c-lsoa-geography\" target=\"_blank\" rel=\"noopener\">GeoDS dataset page</a>; "
                  "the accompanying paper is currently under review."},
     "eth": {"title": "Ethnicity Estimator", "subtitle": "Surname roots",
             "about": "Given and family names provide clues as to probable ethnicity. We show a rough "

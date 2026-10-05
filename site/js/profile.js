@@ -11,16 +11,17 @@ export function renderPlacesCard({ places, placesLookup }) {
     });
     const row = document.createElement("div");
     row.className = "row";
-    row.appendChild(placesColumn("Historic Census", places && places.census, null));
-    row.appendChild(placesColumn("SmartData", places && places.register, placesLookup));
+    row.appendChild(placesColumn("Historic Census", places && places.census, null, "census"));
+    row.appendChild(placesColumn("SmartData", places && places.register, placesLookup, "smart"));
     body.appendChild(row);
     return card;
 }
 
 // Historic Census places already come as real names (e.g. "London" / "London parishes"). SmartData
 // places come as district/MSOA GSS codes (tools/split_facts.py), resolved here via
-// tools/build_places_lookup.py's lookup - falling back to the raw code on the rare miss.
-function placesColumn(heading, items, placesLookup) {
+// tools/build_places_lookup.py's lookup - falling back to the raw code on the rare miss. Chips are
+// tinted by source (census/smart), the same colour pairing as the bearers chart below.
+function placesColumn(heading, items, placesLookup, source) {
     const col = document.createElement("div");
     col.className = "col-md-6";
     col.innerHTML = `<h6 class="text-muted">${heading}</h6>`;
@@ -34,7 +35,7 @@ function placesColumn(heading, items, placesLookup) {
         const area = (placesLookup && placesLookup[item.area]) || item.area;
         const name = (placesLookup && placesLookup[item.name]) || item.name;
         const chip = document.createElement("div");
-        chip.className = "place-chip";
+        chip.className = `place-chip place-chip--${source}`;
         chip.innerHTML = `<span class="place-area">${area} —</span> ${name}`;
         list.appendChild(chip);
     }
