@@ -96,7 +96,7 @@ export function renderDecileCard({ title, about, colours, distribution, mode, sc
         box.className = "indicator-about-box mt-3 mb-0";
         const p = document.createElement("p");
         p.className = "indicator-text";
-        p.textContent = scoreText;
+        p.innerHTML = scoreText;
         box.appendChild(p);
         body.appendChild(box);
     }

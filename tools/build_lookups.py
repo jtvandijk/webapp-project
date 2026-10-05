@@ -148,8 +148,8 @@ CARDS = {
                 "<a href=\"https://rgs-ibg.onlinelibrary.wiley.com/doi/10.1111/tran.12622\" target=\"_blank\" rel=\"noopener\">Longley <em>et al.</em> (2023)</a>.",
             "score": "The SmartCensus deprivation score is the average neighbourhood percentile score "
                 "of the people with your selected surname, ranging from 1 (most deprived) to 100 (least "
-                "deprived), and the standard deviation measures the spread around this figure. The mean "
-                "for your name is {mean} and the spread is {sd}."},
+                "deprived), and the standard deviation measures the spread around this figure. The Mean "
+                "for your name is <strong>{mean}</strong> and the Spread is <strong>{sd}</strong>."},
     "ahah": {"title": "Healthy Neighbourhoods: Access to Healthy Assets and Hazards (AHAH)",
              "about": "Access to Healthy Assets and Hazards (AHAH) is a classification of the health "
                  "attributes associated with neighbourhoods. Data used include access to different "
