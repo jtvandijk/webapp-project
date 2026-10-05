@@ -181,8 +181,7 @@ body {
     font-weight: 700;
 }
 
-/* The explanation + "click any label" line, set apart from the bars below - stands in for the old
-   site's flier-thumbnail-alongside-text treatment until real fliers exist. */
+/* The explanation + "click any label" line, set apart from the bars below. */
 .indicator-about-box {
     margin-bottom: 1rem;
     padding: 0.85rem 1rem;
@@ -197,6 +196,44 @@ body {
 
 .indicator-about-box .indicator-text + .indicator-text {
     margin-top: 0.6rem;
+}
+
+/* Real GeoDS flier, when one exists for this indicator - its cover thumbnail sits left of the
+   about text, same idea as the old site's flier-alongside-text layout. */
+.indicator-about-box-with-flier {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.flier-thumb-link {
+    flex: none;
+}
+
+.flier-thumb {
+    display: block;
+    width: 84px;
+    height: auto;
+    border-radius: 4px;
+    border: 1px solid #d7dbe6;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.flier-thumb:hover {
+    transform: scale(1.04);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+
+.indicator-about-box-with-flier .indicator-about-text {
+    flex: 1;
+    min-width: 0;
+}
+
+@media (max-width: 420px) {
+    .indicator-about-box-with-flier {
+        flex-wrap: wrap;
+    }
 }
 
 /* An aside for the rarer case where a name's leading Supergroup and its single most common Group

@@ -46,9 +46,11 @@ export function barRow({ name, colour, share, valueText, detailsText }) {
 
 // `about` is HTML, not plain text - lookups.json's own card text (build_lookups.py), never user
 // input, so this is safe - it's how each card's real citation links render. about + clickHint (if
-// given) sit in the same paragraph, in their own tinted box set apart from the bars below - stands
-// in for the old site's flier-thumbnail-alongside-text treatment until real fliers exist.
-export function cardShell({ title, about, clickHint }) {
+// given) sit in the same paragraph, in their own tinted box set apart from the bars below. `flier`,
+// when given ({pdf, thumb}), adds the real GeoDS flier's cover thumbnail to the left of that text,
+// linking out to the PDF - the old site's flier-thumbnail-alongside-text treatment, for the
+// classifications that actually have one (not every indicator does).
+export function cardShell({ title, about, clickHint, flier }) {
     const card = document.createElement("div");
     card.className = "card mb-3 indicator-card";
     card.innerHTML = `<div class="card-header"><h4 class="m-0">${title}</h4></div>`;
@@ -56,7 +58,23 @@ export function cardShell({ title, about, clickHint }) {
     body.className = "card-body";
     if (about || clickHint) {
         const box = document.createElement("div");
-        box.className = "indicator-about-box";
+        box.className = "indicator-about-box" + (flier ? " indicator-about-box-with-flier" : "");
+        if (flier) {
+            const a = document.createElement("a");
+            a.href = flier.pdf;
+            a.target = "_blank";
+            a.rel = "noopener";
+            a.className = "flier-thumb-link";
+            a.title = `Open the ${title} flier (PDF)`;
+            const img = document.createElement("img");
+            img.src = flier.thumb;
+            img.alt = `${title} flier cover`;
+            img.className = "flier-thumb";
+            a.appendChild(img);
+            box.appendChild(a);
+        }
+        const textWrap = document.createElement("div");
+        textWrap.className = "indicator-about-text";
         const p = document.createElement("p");
         p.className = "indicator-text";
         let html = about || "";
@@ -64,15 +82,16 @@ export function cardShell({ title, about, clickHint }) {
             html += (html ? " " : "") + `Click on any label to find out its ${clickHint}.`;
         }
         p.innerHTML = html;
-        box.appendChild(p);
+        textWrap.appendChild(p);
+        box.appendChild(textWrap);
         body.appendChild(box);
     }
     card.appendChild(body);
     return { card, body };
 }
 
-export function renderDecileCard({ title, about, colours, distribution, mode, scaleText, scoreText }) {
-    const { card, body } = cardShell({ title, about });
+export function renderDecileCard({ title, about, colours, distribution, mode, scaleText, scoreText, flier }) {
+    const { card, body } = cardShell({ title, about, flier });
     if (scaleText) {
         const p = document.createElement("p");
         p.className = "indicator-text";
@@ -100,8 +119,8 @@ export function renderDecileCard({ title, about, colours, distribution, mode, sc
     return card;
 }
 
-export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics" }) {
-    const { card, body } = cardShell({ title, about, clickHint });
+export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics", flier }) {
+    const { card, body } = cardShell({ title, about, clickHint, flier });
 
     const supergroupTotals = {};
     for (const [code, share] of Object.entries(distribution)) {
@@ -169,8 +188,8 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
     return card;
 }
 
-export function renderFlatGroupCard({ title, about, groups, distribution, modeCode, clickHint }) {
-    const { card, body } = cardShell({ title, about, clickHint });
+export function renderFlatGroupCard({ title, about, groups, distribution, modeCode, clickHint, flier }) {
+    const { card, body } = cardShell({ title, about, clickHint, flier });
     const list = document.createElement("div");
     list.className = "bar-list";
     for (const code of Object.keys(groups).sort()) {

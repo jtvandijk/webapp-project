@@ -9,6 +9,15 @@ const NOT_FOUND_MESSAGE = "We couldn't find a page for this surname. This means 
     + "records for it, or fewer than 100 people in our data share it — too few to show without "
     + "risking anyone's privacy.";
 
+// Real GeoDS fliers (two-page PDF leaflets) exist for some, not all, indicators - IMD and FPC don't
+// have one yet, so those cards just omit the `flier` key entirely.
+const FLIERS = {
+    oac: { pdf: "fliers/oac.pdf", thumb: "fliers/thumbs/oac.png" },
+    loac: { pdf: "fliers/loac.pdf", thumb: "fliers/thumbs/loac.png" },
+    gb2c: { pdf: "fliers/gb2c.pdf", thumb: "fliers/thumbs/gb2c.png" },
+    ahah: { pdf: "fliers/ahah.pdf", thumb: "fliers/thumbs/ahah.png" },
+};
+
 const welcomePanel = document.getElementById("welcomePanel");
 const notFoundPanel = document.getElementById("notFoundPanel");
 const resultSection = document.getElementById("resultSection");
@@ -179,6 +188,7 @@ function renderIndicators(facts) {
             distribution: facts.oac.distribution,
             modeCode: facts.oac.group,
             clickHint: "neighbourhood characteristics",
+            flier: FLIERS.oac,
         }));
     }
     if (facts.loac) {
@@ -190,6 +200,7 @@ function renderIndicators(facts) {
             distribution: facts.loac.distribution,
             modeCode: facts.loac.group,
             clickHint: "neighbourhood characteristics",
+            flier: FLIERS.loac,
         }));
     }
     if (facts.gb2c) {
@@ -200,6 +211,7 @@ function renderIndicators(facts) {
             distribution: facts.gb2c.distribution,
             modeCode: facts.gb2c.group,
             clickHint: "gambling behaviour characteristics",
+            flier: FLIERS.gb2c,
         }));
     }
     if (facts.ahah) {
@@ -210,6 +222,7 @@ function renderIndicators(facts) {
             distribution: facts.ahah.distribution,
             mode: facts.ahah.mode,
             scaleText: lookups.scales.ahah.text.replace("{decile}", `<strong>Decile ${facts.ahah.mode}</strong>`),
+            flier: FLIERS.ahah,
         }));
     }
     if (facts.fpc) {
