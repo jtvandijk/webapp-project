@@ -33,6 +33,7 @@ export function barRow({ name, colour, share, valueText, detailsText }) {
         summary.innerHTML = label;
         const body = document.createElement("div");
         body.className = "pen-portrait";
+        body.style.borderLeftColor = colour;
         body.textContent = detailsText;
         details.append(summary, body);
         return details;
