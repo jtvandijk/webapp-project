@@ -45,9 +45,9 @@ export function barRow({ name, colour, share, valueText, detailsText }) {
 }
 
 // `about` is HTML, not plain text - lookups.json's own card text (build_lookups.py), never user
-// input, so this is safe - it's how each card's real citation links render. about (+ clickHint, if
-// given) sit in their own tinted box, set apart from the bars below - stands in for the old site's
-// flier-thumbnail-alongside-text treatment until real fliers exist.
+// input, so this is safe - it's how each card's real citation links render. about + clickHint (if
+// given) sit in the same paragraph, in their own tinted box set apart from the bars below - stands
+// in for the old site's flier-thumbnail-alongside-text treatment until real fliers exist.
 export function cardShell({ title, about, clickHint }) {
     const card = document.createElement("div");
     card.className = "card mb-3 indicator-card";
@@ -57,18 +57,14 @@ export function cardShell({ title, about, clickHint }) {
     if (about || clickHint) {
         const box = document.createElement("div");
         box.className = "indicator-about-box";
-        if (about) {
-            const p = document.createElement("p");
-            p.className = "indicator-text";
-            p.innerHTML = about;
-            box.appendChild(p);
-        }
+        const p = document.createElement("p");
+        p.className = "indicator-text";
+        let html = about || "";
         if (clickHint) {
-            const p = document.createElement("p");
-            p.className = "indicator-text";
-            p.innerHTML = `Click on any label to find out its ${clickHint}.`;
-            box.appendChild(p);
+            html += (html ? " " : "") + `Click on any label to find out its ${clickHint}.`;
         }
+        p.innerHTML = html;
+        box.appendChild(p);
         body.appendChild(box);
     }
     card.appendChild(body);
