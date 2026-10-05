@@ -13,10 +13,16 @@ function pct(share) {
 
 // share (0-1) always drives the bar's width; valueText overrides what's printed (e.g. a raw count)
 // when the row isn't itself a percentage of 100%, like the bearers-over-time table in profile.js.
-export function barRow({ name, colour, share, valueText, detailsText }) {
+// populationShare (0-1), when given, draws a thin tick mark on the track at that position - what
+// share of the real population falls in this group, on the SAME share-space as `share` itself, so a
+// name's bar falling short of/past the tick means under-/over-represented there.
+export function barRow({ name, colour, share, valueText, detailsText, populationShare }) {
     const widthPct = pct(share);
     const text = valueText != null ? valueText : widthPct;
     const chevron = detailsText ? `<span class="bar-chevron" aria-hidden="true">&#9656;</span>` : "";
+    const baseline = populationShare != null
+        ? `<span class="bar-baseline" style="left:${pct(populationShare)}" title="${pct(populationShare)} of the population"></span>`
+        : "";
     const label = `
         <span class="bar-label">
             ${chevron}
@@ -24,7 +30,7 @@ export function barRow({ name, colour, share, valueText, detailsText }) {
             <span class="bar-name">${name}</span>
             <span class="bar-pct">${text}</span>
         </span>
-        <span class="bar-track"><span class="bar-fill" style="width:${widthPct};background:${colour}"></span></span>`;
+        <span class="bar-track"><span class="bar-fill" style="width:${widthPct};background:${colour}"></span>${baseline}</span>`;
 
     if (detailsText) {
         const details = document.createElement("details");
@@ -141,7 +147,8 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
     sgList.className = "bar-list";
     for (const code of Object.keys(supergroups).sort()) {
         const sg = supergroups[code];
-        const row = barRow({ name: sg.name, colour: sg.colour, share: supergroupTotals[code] || 0, detailsText: sg.desc });
+        const row = barRow({ name: sg.name, colour: sg.colour, share: supergroupTotals[code] || 0,
+            detailsText: sg.desc, populationShare: sg.populationShare });
         if (code === topSupergroup) row.classList.add("bar-row-mode");
         sgList.appendChild(row);
     }
@@ -167,6 +174,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
 
     if (modeSupergroup != null) {
         const supergroupShare = supergroupTotals[modeSupergroup] || 0;
+        const supergroupPopulationShare = supergroups[modeSupergroup].populationShare;
         const sub = document.createElement("div");
         sub.className = "group-drilldown";
         const heading = document.createElement("h6");
@@ -178,7 +186,13 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
         for (const code of codesInSupergroup) {
             const g = groups[code];
             const withinShare = supergroupShare > 0 ? (distribution[code] || 0) / supergroupShare : 0;
-            const row = barRow({ name: g.name, colour: g.colour, share: withinShare, detailsText: g.desc });
+            // Re-normalised the same way as withinShare above: what fraction of the SUPERGROUP's own
+            // population (not the whole population) lives in this one Group - same share-space as
+            // the bar it sits behind.
+            const withinPopulationShare = g.populationShare != null && supergroupPopulationShare
+                ? g.populationShare / supergroupPopulationShare : null;
+            const row = barRow({ name: g.name, colour: g.colour, share: withinShare, detailsText: g.desc,
+                populationShare: withinPopulationShare });
             if (code === modeCode) row.classList.add("bar-row-mode");
             groupList.appendChild(row);
         }
@@ -194,7 +208,8 @@ export function renderFlatGroupCard({ title, about, groups, distribution, modeCo
     list.className = "bar-list";
     for (const code of Object.keys(groups).sort()) {
         const g = groups[code];
-        const row = barRow({ name: g.name, colour: g.colour, share: distribution[code] || 0, detailsText: g.desc });
+        const row = barRow({ name: g.name, colour: g.colour, share: distribution[code] || 0, detailsText: g.desc,
+            populationShare: g.populationShare });
         if (code === modeCode) row.classList.add("bar-row-mode");
         list.appendChild(row);
     }

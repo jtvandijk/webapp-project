@@ -6,7 +6,7 @@ Usage:   python3 tools/prep_neighbourhood.py
 
 Needs pandas and openpyxl (pip install pandas openpyxl). Run it on a laptop, not in the TRE. All of the
 data is public except the financial precarity classification and the GB2C gambling classification (see
-below). Upload the six CSVs in the output folder; manifest.json records what went in (file checksums)
+below). Upload the eight CSVs in the output folder; manifest.json records what went in (file checksums)
 and what came out (rows per country).
 
 SAFEGUARDED DATA: the lookup from area to group of the financial precarity classification (fpc) and of
@@ -25,6 +25,10 @@ table and nothing else. Great Britain only (Northern Ireland is dropped).
   nbhd_fpc    financial precarity classification (SAFEGUARDED): LSOA 2021, data zone 2022 (Scotland); 5 clusters, 13 groups
   nbhd_gb2c   GB2C gambling classification (SAFEGUARDED): LSOA 2021, data zone 2022 (Scotland); 11 groups (the area's
               modal Active Subgroup) - inside 3 groups (BG, B, G), not stored, derivable from the group code's own prefix
+  nbhd_count  2021/22 Census population (GeoDS Unified UK Census Data), output area: 2021 (England, Wales), 2022
+              (Scotland). Not safeguarded. Population baseline for the OAC/LOAC bar charts.
+  nbhd_count_lsoa  the same population, summed to LSOA 2021 / data zone 2022. Not safeguarded. Population
+              baseline for the GB2C/FPC/AHAH/IMD bar charts.
 
 Deprivation: each country is ranked on its own (rank 1 = most deprived) and given deciles and
 percentiles from that rank, then the three countries are treated as comparable. They are not
@@ -59,6 +63,9 @@ INPUTS = {
     "fpc_labels": "fpc/fpc_label_colors.csv",
     "gb2c": "gb2c/lsoa21dz22-gb2c-v1.2.csv",
     "gb2c_labels": "gb2c/classification_codes_and_names.csv",
+    "census_population": "census/csv/uk001.csv",
+    "oa_lsoa_ew": "geography/oa21_lsoa21_ew.csv",
+    "oa_dz_scotland": "geography/oa22_dz22_scotland.csv",
 }
 
 # Written into manifest.json so the geography and the direction of each scale travel with the tables.
@@ -77,6 +84,12 @@ NOTES = {
                  "or 2022 data zone (Scotland) (ONSPD lsoa21cd), as for AHAH/FPC. gb2c_group is the area's modal (most common) "
                  "Active Subgroup, one of 11 codes (BG1-BG6, B1-B2, G1-G3) inside 3 groups (BG, B, G - the group is the code's "
                  "own prefix, not a separate column). Categories: no order is claimed.",
+    "nbhd_count": "2021/22 Census usual resident population, per output area (2021 England/Wales, 2022 Scotland, ONSPD oa21cd) - "
+                  "GeoDS's own Unified UK Census Data (data.geods.ac.uk), table uk001, variable uk001001. Not safeguarded - a "
+                  "public, openly-licensed count. Population baseline for OAC/LOAC bars (this geography already matches theirs).",
+    "nbhd_count_lsoa": "The same population, summed to its parent LSOA (England/Wales) or data zone (Scotland), via public ONS "
+                       "(OA21->LSOA21) and NRS (OA22->DZ22) hierarchy lookups - not safeguarded, no group/classification data "
+                       "involved, geography only. Population baseline for GB2C/FPC/AHAH/IMD bars.",
 }
 
 OA_RE = re.compile(r"^[EWS]00\d{6}$")
@@ -118,6 +131,57 @@ def prep_oac(raw, problems):
         problems.append("oac: a group does not start with its supergroup number")
     if not (out.oac_subgroup.str[:2] == out.oac_group).all():
         problems.append("oac: a subgroup does not start with its group")
+    return out.sort_values("area_code")
+
+
+def prep_count(raw, problems):
+    """Output-area population, for the OAC/LOAC bar baselines. uk001001/002/003 = total / in households /
+    in communal establishments (checked: 002 + 003 == 001 for every row); only the total is kept."""
+    df = pd.read_csv(raw / INPUTS["census_population"], dtype=str)
+    df = df[df["OA"].str[0].isin(GB)]  # drops Northern Ireland, same rule as every other product
+    out = pd.DataFrame({"area_code": df["OA"], "population": df["uk001001"].astype(int)})
+    if not out.area_code.str.match(OA_RE).all():
+        problems.append("count: some area codes are not output area codes")
+    if out.area_code.duplicated().any():
+        problems.append("count: duplicate area codes")
+    if out.isna().any().any():
+        problems.append("count: empty cells")
+    if (out.population < 0).any():
+        problems.append("count: negative population")
+    households = pd.to_numeric(df["uk001002"]) + pd.to_numeric(df["uk001003"])
+    if not (households.to_numpy() == out.population.to_numpy()).all():
+        problems.append("count: uk001002 + uk001003 does not equal uk001001 for every area (table structure changed?)")
+    return out.sort_values("area_code")
+
+
+def prep_count_lsoa(raw, count, problems):
+    """prep_count()'s output-area population, summed up to its parent LSOA (England, Wales) or data
+    zone (Scotland) - the geography GB2C/FPC/AHAH/IMD actually use. The census file itself has no
+    parent-area column, so this uses separate public ONS (OA21->LSOA21, England/Wales) and NRS
+    (OA22->DZ22, Scotland) lookups just for the hierarchy, not for any population figure."""
+    ew = pd.read_csv(raw / INPUTS["oa_lsoa_ew"], dtype=str)[["OA21CD", "LSOA21CD"]]
+    ew = ew.rename(columns={"OA21CD": "area_code", "LSOA21CD": "parent"})
+    sc = pd.read_csv(raw / INPUTS["oa_dz_scotland"], dtype=str)[["OA22", "DZ22"]]
+    sc = sc.rename(columns={"OA22": "area_code", "DZ22": "parent"})
+    crosswalk = pd.concat([ew, sc], ignore_index=True)
+
+    if crosswalk.area_code.duplicated().any():
+        problems.append("count_lsoa: duplicate output areas in the OA->LSOA/data zone crosswalk")
+    missing = ~count.area_code.isin(crosswalk.area_code)
+    if missing.any():
+        problems.append(f"count_lsoa: {missing.sum()} output areas in nbhd_count have no parent LSOA/data zone")
+    extra = ~crosswalk.area_code.isin(count.area_code)
+    if extra.any():
+        problems.append(f"count_lsoa: {extra.sum()} crosswalk rows are for output areas not in nbhd_count "
+                        "(Northern Ireland leaking in?)")
+
+    merged = count.merge(crosswalk, on="area_code", how="inner")
+    out = merged.groupby("parent", as_index=False).population.sum().rename(columns={"parent": "area_code"})
+    if not out.area_code.str.match(ZONE_RE).all():
+        problems.append("count_lsoa: some parent codes are not LSOA / data zone codes")
+    if out.population.sum() != count.population.sum():
+        problems.append("count_lsoa: total population changed during aggregation (an area was dropped or "
+                        "double-counted)")
     return out.sort_values("area_code")
 
 
@@ -276,6 +340,7 @@ def main():
     problems, notes = [], []
     oac = prep_oac(args.raw, problems)
     ahah = prep_ahah(args.raw, problems)
+    count = prep_count(args.raw, problems)
     tables = {
         "nbhd_oac": oac,
         "nbhd_loac": prep_loac(args.raw, oac, problems),
@@ -283,6 +348,8 @@ def main():
         "nbhd_imd": prep_imd(args.raw, problems, notes),
         "nbhd_fpc": prep_fpc(args.raw, ahah, problems, notes),
         "nbhd_gb2c": prep_gb2c(args.raw, ahah, problems, notes),
+        "nbhd_count": count,
+        "nbhd_count_lsoa": prep_count_lsoa(args.raw, count, problems),
     }
     for note in notes:
         print("note:", note)
@@ -293,7 +360,8 @@ def main():
     inputs_used = {
         "nbhd_oac": ["oac"], "nbhd_loac": ["loac", "oac"], "nbhd_ahah": ["ahah"],
         "nbhd_imd": ["imd_england", "imd_wales", "imd_scotland"], "nbhd_fpc": ["fpc", "fpc_labels"],
-        "nbhd_gb2c": ["gb2c", "gb2c_labels"],
+        "nbhd_gb2c": ["gb2c", "gb2c_labels"], "nbhd_count": ["census_population"],
+        "nbhd_count_lsoa": ["census_population", "oa_lsoa_ew", "oa_dz_scotland"],
     }
     args.out.mkdir(parents=True, exist_ok=True)
     manifest = {}

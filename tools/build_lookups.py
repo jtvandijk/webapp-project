@@ -37,6 +37,7 @@ GB2C_RAW = ROOT / "raw-indicators" / "gb2c" / "classification_codes_and_names.cs
 GROUP_NAMES = ROOT / "pipeline" / "reference" / "group_names.json"
 FPC_DESCRIPTIONS = ROOT / "pipeline" / "reference" / "fpc_descriptions.json"
 GB2C_DESCRIPTIONS = ROOT / "pipeline" / "reference" / "gb2c_descriptions.json"
+POPULATION_SHARES = ROOT / "work" / "population_shares.json"
 
 # FPC turns out to have a genuine two-level structure (confirmed by the user 2026-10-01, from the
 # classification's own pen-portrait document) - 5 supergroups, each containing a handful of the 13
@@ -107,7 +108,8 @@ CARDS = {
                 "you can find out how in "
                 "<a href=\"https://doi.org/10.1111/geoj.12550\" target=\"_blank\" rel=\"noopener\">Wyszomierski <em>et al.</em> (2023)</a>. "
                 "We show the distribution of your selected family group across 2021/22 OAC Supergroups "
-                "and Groups, with links to the attributes of these neighbourhoods."},
+                "and Groups, with links to the attributes of these neighbourhoods. The tick mark on "
+                "each bar shows that Group's actual share of Great Britain's population."},
     "loac": {"title": "London's Geodemographic Structure: the London Output Area Classification",
              "about": "As the UK capital, some attributes of Greater London's distinctive neighbourhoods "
                  "are not described fully by nationwide geodemographic classifications. The London "
@@ -116,19 +118,22 @@ CARDS = {
                  "<a href=\"https://journals.sagepub.com/doi/10.1177/23998083241242913\" target=\"_blank\" rel=\"noopener\">Longley <em>et al.</em> (2024)</a>) "
                  "but applies them only to Greater London. We show the distribution of your selected "
                  "family group across 2021 LOAC Supergroups and Groups, with links to the attributes of "
-                 "these neighbourhoods."},
+                 "these neighbourhoods. The tick mark on each bar shows that Group's actual share of "
+                 "London's population."},
     "fpc": {"title": "Britain's Cost of Living Crisis: the Financial Precarity Classification",
             "about": "Whether neighbourhoods are thriving or just surviving is measured by the "
                 "Financial Precarity Classification, described in "
                 "<a href=\"https://doi.org/10.1016/j.compenvurbsys.2026.102399\" target=\"_blank\" rel=\"noopener\">Zi and Singleton (2026)</a>. "
-                "We show the Supergroup and Group in which your selected surname occurs most frequently."},
+                "We show the Supergroup and Group in which your selected surname occurs most frequently. "
+                "The tick mark on each bar shows that Group's actual share of Great Britain's population."},
     "gb2c": {"title": "Gambling Behaviours in Britain",
              "about": "The Great Britain Gambling Behaviours Classification provides the first national "
                  "neighbourhood classification of gambling behaviours in Great Britain, based on "
                  "observed online transactional behaviours drawn from industry data. We highlight the "
                  "Type of gambling behaviour most closely associated with your selected surname. See the "
                  "<a href=\"https://data.geods.ac.uk/dataset/great-britain-gambling-behaviours-classification-gb2c-lsoa-geography\" target=\"_blank\" rel=\"noopener\">GeoDS dataset page</a>; "
-                 "the accompanying paper is currently under review."},
+                 "the accompanying paper is currently under review. The tick mark on each bar shows that "
+                 "Type's actual share of Great Britain's population."},
     "eth": {"title": "Ethnicity Estimator", "subtitle": "Surname roots",
             "about": "Given and family names provide clues as to probable ethnicity. We show a rough "
                 "estimate of the most common census ethnic group among bearers of the surname you "
@@ -242,6 +247,23 @@ def read_gb2c():
     return {"groups": groups}
 
 
+def apply_population_shares(schemes):
+    """Folds each group's (and supergroup's) real population share into the dict built above, from
+    tools/build_population_shares.py's output - optional, so lookups.json still builds without it
+    (e.g. before anyone has run that script). Each bar's position in a group is a name's own share;
+    this is what share of the real population lives there, the baseline the website draws a tick
+    mark against."""
+    if not POPULATION_SHARES.exists():
+        print(f"note: {POPULATION_SHARES} not found - lookups.json will have no populationShare "
+              "(run tools/build_population_shares.py first if you want it)")
+        return
+    shares = json.loads(POPULATION_SHARES.read_text(encoding="utf-8"))
+    for scheme, block in schemes.items():
+        for level in ("groups", "supergroups"):
+            for code, share in shares.get(scheme, {}).get(level, {}).items():
+                block[level][code]["populationShare"] = share
+
+
 def build():
     oac = read_classification("oac21_descriptions.csv")
     loac = read_classification("loac21_descriptions.csv", colours=sample.LOAC_COLOURS)
@@ -253,6 +275,7 @@ def build():
         ours = {code: g["name"] for code, g in block["groups"].items()}
         if theirs != ours:
             raise SystemExit(f"{scheme}: group names differ between group_names.json and tools/sample_inputs/")
+    apply_population_shares({"oac": oac, "loac": loac, "fpc": fpc, "gb2c": gb2c})
 
     eth = {code: {"name": name, "colour": ETH_COLOURS[code]} for code, name in config.ETH_GROUPS.items()}
     eth[config.ETH_UNKNOWN] = {"name": "Unknown", "colour": ETH_COLOURS[config.ETH_UNKNOWN]}

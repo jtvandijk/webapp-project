@@ -343,11 +343,24 @@ details[open] > summary .bar-chevron {
     background: #eee;
     border-radius: 999px;
     overflow: hidden;
+    position: relative;
 }
 
 .bar-fill {
     display: block;
     height: 100%;
+}
+
+/* A name's own share (the fill) against the real population's share of the same group/supergroup -
+   a thin tick so over/under-representation is visible without reading two numbers and subtracting. */
+.bar-baseline {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    transform: translateX(-50%);
+    background: #222;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
 }
 
 .bar-row-mode .bar-name {
