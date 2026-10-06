@@ -10,9 +10,9 @@
     --pale-blue: #c6dbef;
     --accent-orange: #fdae6b;
     /* Historic Census vs SmartCensus, reused everywhere the two sources sit side by side (bearers
-       chart, place chips, KDE map) so the same colour always means the same source. Teal for
-       SmartCensus is a clean break from the blue Historic Census years and matches the GeoDS logo's
-       own teal, #27cca4 (colour-picked by the user, 2026-10-06) - not a tone of --navy, so the
+       chart, place chips, KDE map) so the same colour always means the same source. Green for
+       SmartCensus is a clean break from the blue Historic Census years and is picked from the GeoDS
+       logo, #27cca4 (colour-picked by the user, 2026-10-06) - not a tone of --navy, so the
        1921/1997 boundary reads clearly rather than blending together. */
     --census-colour: #6baed6;
     --smart-colour: #27cca4;

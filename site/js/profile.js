@@ -97,8 +97,8 @@ export function renderEthnicityCard({ eth, ethLookup, about }) {
 }
 
 // Census = light blue (the same light blue as manifest.levels' own level-1 KDE colour, reused
-// rather than inventing a new one), SmartCensus = teal (GeoDS's own logo teal, #27cca4, colour-
-// picked by the user 2026-10-06) - a clean visual break at the 1921/1997 boundary, same colour as
+// rather than inventing a new one), SmartCensus = green (picked from GeoDS's own logo, #27cca4,
+// colour-picked by the user 2026-10-06) - a clean visual break at the 1921/1997 boundary, same colour as
 // the KDE map's SmartCensus shading (site/js/map.js's SMARTCENSUS_LEVELS).
 const CENSUS_COLOUR = "#6baed6";
 const SMARTDATA_COLOUR = "#27cca4";
@@ -106,7 +106,7 @@ const SMARTDATA_COLOUR = "#27cca4";
 export function renderCountsCard({ nameData, manifest }) {
     const { card, body } = cardShell({ title: "Number of Bearers",
         about: "How many people have shared your name, in each year we have data for. Census counts "
-            + "(light blue) are everyone recorded that year. Modern SmartCensus counts (teal) "
+            + "(light blue) are everyone recorded that year. Modern SmartCensus counts (green) "
             + "are estimated against the dataset's own adult population each year, so its growth over "
             + "time doesn't look like your name becoming more common." });
     const list = document.createElement("div");
