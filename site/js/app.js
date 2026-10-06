@@ -210,6 +210,7 @@ function renderIndicators(facts) {
             clickHint: "neighbourhood characteristics",
             flier: FLIERS.oac,
             name: nameEscaped,
+            abbr: "OAC",
         }));
     }
     if (facts.loac) {
@@ -223,6 +224,7 @@ function renderIndicators(facts) {
             clickHint: "neighbourhood characteristics",
             flier: FLIERS.loac,
             name: nameEscaped,
+            abbr: "LOAC",
         }));
     }
     if (facts.gb2c) {
@@ -258,6 +260,7 @@ function renderIndicators(facts) {
             modeCode: facts.fpc.group,
             clickHint: "neighbourhood characteristics",
             name: nameEscaped,
+            abbr: "FPC",
         }));
     }
 

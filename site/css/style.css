@@ -304,7 +304,7 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     gap: 0.6rem;
     margin-bottom: 0;
     padding: 0.75rem 1rem;
-    background: #f4f6fa;
+    background: #f4f4f4;
     border-left: 3px solid var(--accent-orange);
     border-radius: 4px;
 }

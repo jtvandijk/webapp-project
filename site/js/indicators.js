@@ -139,9 +139,10 @@ export function renderDecileCard({ title, about, colours, distribution, mode, sc
     return card;
 }
 
-// A light-grey "Supergroup"/"Group" label marking which level a bar list below it belongs to -
-// same shape as colourPill but not tied to any one Supergroup/Group's own colour, since the label
-// itself is a category heading, not a specific coloured item.
+// A light-grey "<abbr> Supergroup"/"<abbr> Group" label (e.g. "OAC Supergroup") marking which
+// level a bar list below it belongs to and which classification it's from - same shape as
+// colourPill but not tied to any one Supergroup/Group's own colour, since the label itself is a
+// category heading, not a specific coloured item.
 function levelPill(text) {
     const p = document.createElement("p");
     p.className = "level-pill-row";
@@ -149,7 +150,7 @@ function levelPill(text) {
     return p;
 }
 
-export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics", flier, name }) {
+export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics", flier, name, abbr }) {
     const { card, body } = cardShell({ title, about, clickHint, flier });
 
     const supergroupTotals = {};
@@ -167,7 +168,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
         .reduce((best, code) => (supergroupTotals[code] > (supergroupTotals[best] || -1) ? code : best), null);
     const modeSupergroup = groups[modeCode] && groups[modeCode].supergroup;
 
-    body.appendChild(levelPill("Supergroup"));
+    body.appendChild(levelPill(`${abbr} Supergroup`));
     const sgList = document.createElement("div");
     sgList.className = "bar-list";
     for (const code of Object.keys(supergroups).sort()) {
@@ -182,7 +183,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
     if (modeSupergroup != null) {
         const supergroupShare = supergroupTotals[modeSupergroup] || 0;
         const supergroupPopulationShare = supergroups[modeSupergroup].populationShare;
-        body.appendChild(levelPill("Group"));
+        body.appendChild(levelPill(`${abbr} Group`));
         const groupList = document.createElement("div");
         groupList.className = "bar-list";
         const codesInSupergroup = Object.keys(groups).filter(c => groups[c].supergroup === modeSupergroup).sort();
