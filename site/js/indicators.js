@@ -142,11 +142,14 @@ export function renderDecileCard({ title, about, colours, distribution, mode, sc
 // A light-grey "<abbr> Supergroup"/"<abbr> Group" label (e.g. "OAC Supergroup") marking which
 // level a bar list below it belongs to and which classification it's from - same shape as
 // colourPill but not tied to any one Supergroup/Group's own colour, since the label itself is a
-// category heading, not a specific coloured item.
-function levelPill(text) {
+// category heading, not a specific coloured item. `caption`, when given, trails it as a small
+// muted aside (e.g. "the broader category") - a one-line reminder of what Supergroup/Group
+// actually means, sitting right where the reader needs it instead of only in the about text above.
+function levelPill(text, caption) {
     const p = document.createElement("p");
     p.className = "level-pill-row";
-    p.innerHTML = `<span class="value-pill">${text}</span>`;
+    const captionHtml = caption ? `<span class="level-pill-caption">${caption}</span>` : "";
+    p.innerHTML = `<span class="value-pill">${text}</span>${captionHtml}`;
     return p;
 }
 
@@ -168,7 +171,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
         .reduce((best, code) => (supergroupTotals[code] > (supergroupTotals[best] || -1) ? code : best), null);
     const modeSupergroup = groups[modeCode] && groups[modeCode].supergroup;
 
-    body.appendChild(levelPill(`${abbr} Supergroup`));
+    body.appendChild(levelPill(`${abbr} Supergroup`, "the broader category"));
     const sgList = document.createElement("div");
     sgList.className = "bar-list";
     for (const code of Object.keys(supergroups).sort()) {
@@ -183,7 +186,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
     if (modeSupergroup != null) {
         const supergroupShare = supergroupTotals[modeSupergroup] || 0;
         const supergroupPopulationShare = supergroups[modeSupergroup].populationShare;
-        body.appendChild(levelPill(`${abbr} Group`));
+        body.appendChild(levelPill(`${abbr} Group`, "a narrower category within it"));
         const groupList = document.createElement("div");
         groupList.className = "bar-list";
         const codesInSupergroup = Object.keys(groups).filter(c => groups[c].supergroup === modeSupergroup).sort();

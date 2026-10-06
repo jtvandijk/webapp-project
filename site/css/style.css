@@ -358,6 +358,15 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     margin-top: 0;
 }
 
+/* The one-line reminder trailing a level pill (e.g. "the broader category") - small and muted so
+   it reads as an aside, not another heading competing with the pill itself. */
+.level-pill-caption {
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: #666;
+}
+
 .bar-list {
     display: flex;
     flex-direction: column;
