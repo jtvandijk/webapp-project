@@ -10,9 +10,11 @@
     --pale-blue: #c6dbef;
     --accent-orange: #fdae6b;
     /* Historic Census vs SmartCensus, reused everywhere the two sources sit side by side (bearers
-       chart, place chips) so the same colour always means the same source. */
+       chart, place chips) so the same colour always means the same source. Red for SmartCensus is a
+       deliberate clean break from the blue Historic Census years (confirmed with the user, 2026-10-06) -
+       not a tone of --navy, so the 1921/1997 boundary reads clearly rather than blending together. */
     --census-colour: #6baed6;
-    --smart-colour: #1f428f;
+    --smart-colour: #c0392b;
     /* Default Bootstrap link blue (#007bff) is too light against the jumbotron/card backgrounds -
        darker, still clearly a link against both white and --jumbotron-bg (confirmed with the user). */
     --link-colour: #001f8d;
@@ -414,7 +416,7 @@ details[open] > summary .bar-chevron {
 }
 
 .place-chip--smart {
-    background: #eceef5;
+    background: #fbeae8;
     border-left-color: var(--smart-colour);
 }
 

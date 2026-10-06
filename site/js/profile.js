@@ -96,15 +96,16 @@ export function renderEthnicityCard({ eth, ethLookup, about }) {
     return card;
 }
 
-// Census = light blue, SmartCensus = navy, so the source is obvious at a glance - the same light
-// blue as manifest.levels' own level-1 KDE colour, reused rather than inventing a new one.
+// Census = light blue (the same light blue as manifest.levels' own level-1 KDE colour, reused
+// rather than inventing a new one), SmartCensus = red - a clean visual break at the 1921/1997
+// boundary rather than two blues that read as similar (confirmed with the user, 2026-10-06).
 const CENSUS_COLOUR = "#6baed6";
-const SMARTDATA_COLOUR = "#1f428f";
+const SMARTDATA_COLOUR = "#c0392b";
 
 export function renderCountsCard({ nameData, manifest }) {
     const { card, body } = cardShell({ title: "Number of Bearers",
         about: "How many people have shared your name, in each year we have data for. Census counts "
-            + "(light blue) are everyone recorded that year. Modern SmartCensus counts (navy) "
+            + "(light blue) are everyone recorded that year. Modern SmartCensus counts (red) "
             + "are estimated against the dataset's own adult population each year, so its growth over "
             + "time doesn't look like your name becoming more common." });
     const list = document.createElement("div");
