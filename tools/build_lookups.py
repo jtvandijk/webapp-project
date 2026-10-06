@@ -161,8 +161,9 @@ CARDS = {
                 "<a href=\"https://rgs-ibg.onlinelibrary.wiley.com/doi/10.1111/tran.12622\" target=\"_blank\" rel=\"noopener\">Longley <em>et al.</em> (2023)</a>.",
             "score": "The SmartCensus deprivation score is the average neighbourhood percentile score "
                 "of the people with your selected surname, ranging from 1 (most deprived) to 100 (least "
-                "deprived), and the standard deviation measures the spread around this figure. The Mean "
-                "for your name is <strong>{mean}</strong> and the Spread is <strong>{sd}</strong>."},
+                "deprived), and the standard deviation measures the spread around this figure. The mean "
+                "IMD score for your name is <strong>{mean}</strong> and the spread of the score is "
+                "<strong>{sd}</strong>."},
     "ahah": {"title": "Healthy Neighbourhoods: Access to Healthy Assets and Hazards",
              "about": "Access to Healthy Assets and Hazards (AHAH) is a classification of the health "
                  "attributes associated with neighbourhoods. Data used include access to different "
@@ -177,7 +178,7 @@ SCALES = {
     # {decile} is replaced with a bolded "Decile N" (not plain text) when rendered - the one place in
     # each sentence that names this name's own result, as opposed to the scale in general.
     "imd": {"colours": IMD_COLOURS,
-            "text": "Your selected surname occurs most frequently in {decile} of the Index of Multiple Deprivation. The first decile is the most deprived and the tenth decile the least deprived."},
+            "text": "Your selected surname occurs most frequently in {decile} of the Index of Multiple Deprivation (IMD). The first decile is the most deprived and the tenth decile the least deprived."},
     "ahah": {"colours": AHAH_COLOURS,
              "text": "Your selected surname occurs most frequently in {decile} of the Access to Healthy Assets and Hazards index. The first decile is the healthiest and the tenth decile the least healthy."},
 }
