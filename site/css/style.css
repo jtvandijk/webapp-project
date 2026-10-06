@@ -34,6 +34,24 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
 .bg-notes { background-color: var(--pale-blue); }
 .bg-orange { background-color: var(--accent-orange); }
 
+/* The jumbotron's own Search button - filled from the start rather than Bootstrap's
+   btn-outline-primary default (transparent, only filling on hover), which read as "empty" sitting
+   on the jumbotron's own grey background. Same navy as the navbar/card headers (--navy), so it
+   reads as the site's one standard "primary action" colour rather than Bootstrap's stock blue. */
+.btn-navy {
+    background-color: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+}
+
+.btn-navy:hover,
+.btn-navy:focus {
+    background-color: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+    filter: brightness(0.85);
+}
+
 .navbar-brand {
     display: flex;
     align-items: center;
