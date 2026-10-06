@@ -61,7 +61,9 @@ export function createMap(container, manifest) {
 
     // The initial zoom should comfortably fit every period's own extent, not just whichever one is
     // shown first - a name concentrated in a small area in one year but spread much further in
-    // another would otherwise need re-zooming the moment the slider moves.
+    // another would otherwise need re-zooming the moment the slider moves. Also reused by the
+    // "reset view" control below, for exactly the same reason: undoing an accidental zoom/pan
+    // should land back on the name's own full extent, not an arbitrary fixed GB view.
     function boundsAcrossAllPeriods(nameData) {
         let bounds = null;
         for (const geojson of Object.values(nameData.maps)) {
@@ -72,6 +74,28 @@ export function createMap(container, manifest) {
         return bounds;
     }
 
+    // currentNameData, not just currentPeriodId, so the reset button below can re-fit bounds
+    // without needing a fresh renderPeriod() call (and the mask-loading/render-token dance that
+    // comes with one) just to recover the view.
+    let currentNameData = null;
+
+    const resetControl = L.control({ position: "topleft" });
+    resetControl.onAdd = function() {
+        const div = L.DomUtil.create("div", "leaflet-bar leaflet-control");
+        const link = L.DomUtil.create("a", "", div);
+        link.href = "#";
+        link.title = "Reset the map view";
+        link.setAttribute("aria-label", "Reset the map view");
+        link.innerHTML = "⌂";
+        L.DomEvent.on(link, "click", L.DomEvent.stop).on(link, "click", () => {
+            if (!currentNameData) return;
+            const bounds = boundsAcrossAllPeriods(currentNameData);
+            if (bounds && bounds.isValid()) map.fitBounds(bounds, { maxZoom: manifest.basemap.maxZoom });
+        });
+        return div;
+    };
+    resetControl.addTo(map);
+
     // Guards the one await below: rapidly toggling the slider can start a second renderPeriod()
     // before the first's mask fetch resolves, and without this, the first call's mask data can land
     // after the second's and overwrite it with a stale period's mask (or lack of one).
@@ -80,6 +104,7 @@ export function createMap(container, manifest) {
     async function renderPeriod(nameData, periodId, fitBounds = false) {
         const myToken = ++renderToken;
         currentPeriodId = periodId;
+        currentNameData = nameData;
         const geojson = nameData.maps[periodId];
         kdeLayer.clearLayers();
         if (geojson) kdeLayer.addData(geojson);
