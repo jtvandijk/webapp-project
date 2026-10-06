@@ -137,6 +137,18 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     font-weight: 700;
 }
 
+/* Same shape as .name-pill, for a computed value sitting next to it (e.g. the IMD score's mean/
+   spread) - light grey/black instead of navy/white, so the searched name and its numbers read as
+   two different kinds of thing at a glance. */
+.value-pill {
+    display: inline-block;
+    padding: 0.05rem 0.65rem;
+    background: #e2e2e2;
+    color: #1a1a1a;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
 /* map + slider - not a Bootstrap component */
 
 #map {

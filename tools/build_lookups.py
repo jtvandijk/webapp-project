@@ -162,7 +162,8 @@ CARDS = {
             "score": "The SmartCensus deprivation score is the average neighbourhood percentile score "
                 "of the people with your selected surname, ranging from 1 (most deprived) to 100 (least "
                 "deprived); the standard deviation measures the spread around this figure. For "
-                "{name}, it averages <strong>{mean}</strong>, with a spread of <strong>{sd}</strong>."},
+                "{name}, it averages <span class=\"value-pill\">{mean}</span>, with a spread of "
+                "<span class=\"value-pill\">{sd}</span>."},
     "ahah": {"title": "Healthy Neighbourhoods: Access to Healthy Assets and Hazards",
              "about": "Access to Healthy Assets and Hazards (AHAH) is a classification of the health "
                  "attributes associated with neighbourhoods. Data used include access to different "
