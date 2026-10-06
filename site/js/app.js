@@ -182,7 +182,7 @@ function renderIndicators(facts) {
             mode: facts.imd.mode,
             scaleText: lookups.scales.imd.text.replace("{decile}", `<strong>Decile ${facts.imd.mode}</strong>`),
             scoreText: lookups.cards.imd.score
-                && lookups.cards.imd.score.replace("{name}", `<strong>${escapeHtml(currentName.name)}</strong>`)
+                && lookups.cards.imd.score.replace("{name}", `<span class="name-pill">${escapeHtml(currentName.name)}</span>`)
                     .replace("{mean}", facts.imd.mean).replace("{sd}", facts.imd.sd),
         }));
     }

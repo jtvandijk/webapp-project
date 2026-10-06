@@ -125,6 +125,18 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     font-weight: 700;
 }
 
+/* A small inline version of the same pill, for a searched name mentioned mid-sentence (e.g. the
+   IMD score text) - same navy/white/fully-rounded language as .result-name-pill, sized to sit on
+   a text line without disrupting it. */
+.name-pill {
+    display: inline-block;
+    padding: 0.05rem 0.65rem;
+    background: var(--navy);
+    color: #fff;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
 /* map + slider - not a Bootstrap component */
 
 #map {
