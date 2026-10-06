@@ -185,6 +185,12 @@ function renderIndicators(facts) {
     indicatorContainer.replaceChildren();
     moreAboutContainer.replaceChildren();
 
+    // Built once and reused everywhere a generated sentence names the searched surname itself,
+    // rather than describing what a card shows in general (e.g. "your name's Group sits in a
+    // different Supergroup" - a specific finding - gets the pill; "we show the Supergroup your
+    // name occurs in" - a description of the card - stays plain text).
+    const namePill = `<span class="name-pill">${escapeHtml(currentName.name)}</span>`;
+
     if (facts.imd) {
         indicatorContainer.appendChild(renderDecileCard({
             title: lookups.cards.imd.title,
@@ -192,9 +198,10 @@ function renderIndicators(facts) {
             colours: lookups.scales.imd.colours,
             distribution: facts.imd.distribution,
             mode: facts.imd.mode,
-            scaleText: lookups.scales.imd.text.replace("{decile}", decilePill(facts.imd.mode, lookups.scales.imd.colours[facts.imd.mode - 1])),
+            scaleText: lookups.scales.imd.text.replace("{name}", namePill)
+                .replace("{decile}", decilePill(facts.imd.mode, lookups.scales.imd.colours[facts.imd.mode - 1])),
             scoreText: lookups.cards.imd.score
-                && lookups.cards.imd.score.replace("{name}", `<span class="name-pill">${escapeHtml(currentName.name)}</span>`)
+                && lookups.cards.imd.score.replace("{name}", namePill)
                     .replace("{mean}", facts.imd.mean).replace("{sd}", facts.imd.sd),
         }));
     }
@@ -208,6 +215,7 @@ function renderIndicators(facts) {
             modeCode: facts.oac.group,
             clickHint: "neighbourhood characteristics",
             flier: FLIERS.oac,
+            name: namePill,
         }));
     }
     if (facts.loac) {
@@ -220,6 +228,7 @@ function renderIndicators(facts) {
             modeCode: facts.loac.group,
             clickHint: "neighbourhood characteristics",
             flier: FLIERS.loac,
+            name: namePill,
         }));
     }
     if (facts.gb2c) {
@@ -240,7 +249,8 @@ function renderIndicators(facts) {
             colours: lookups.scales.ahah.colours,
             distribution: facts.ahah.distribution,
             mode: facts.ahah.mode,
-            scaleText: lookups.scales.ahah.text.replace("{decile}", decilePill(facts.ahah.mode, lookups.scales.ahah.colours[facts.ahah.mode - 1])),
+            scaleText: lookups.scales.ahah.text.replace("{name}", namePill)
+                .replace("{decile}", decilePill(facts.ahah.mode, lookups.scales.ahah.colours[facts.ahah.mode - 1])),
             flier: FLIERS.ahah,
         }));
     }
@@ -253,6 +263,7 @@ function renderIndicators(facts) {
             distribution: facts.fpc.distribution,
             modeCode: facts.fpc.group,
             clickHint: "neighbourhood characteristics",
+            name: namePill,
         }));
     }
 

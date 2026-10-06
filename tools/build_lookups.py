@@ -175,12 +175,12 @@ CARDS = {
 }
 
 SCALES = {
-    # {decile} is replaced with a bolded "Decile N" (not plain text) when rendered - the one place in
-    # each sentence that names this name's own result, as opposed to the scale in general.
+    # {name} and {decile} are replaced with pills (not plain text) when rendered - the one place in
+    # each sentence that names this search's own result, as opposed to the scale in general.
     "imd": {"colours": IMD_COLOURS,
-            "text": "Your selected surname occurs most frequently in {decile} of the Index of Multiple Deprivation (IMD). The first decile is the most deprived and the tenth decile the least deprived."},
+            "text": "{name} occurs most frequently in {decile} of the Index of Multiple Deprivation (IMD). The first decile is the most deprived and the tenth decile the least deprived."},
     "ahah": {"colours": AHAH_COLOURS,
-             "text": "Your selected surname occurs most frequently in {decile} of the Access to Healthy Assets and Hazards index. The first decile is the healthiest and the tenth decile the least healthy."},
+             "text": "{name} occurs most frequently in {decile} of the Access to Healthy Assets and Hazards index. The first decile is the healthiest and the tenth decile the least healthy."},
 }
 
 

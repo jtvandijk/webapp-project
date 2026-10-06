@@ -125,7 +125,7 @@ export function renderDecileCard({ title, about, colours, distribution, mode, sc
     return card;
 }
 
-export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics", flier }) {
+export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics", flier, name }) {
     const { card, body } = cardShell({ title, about, clickHint, flier });
 
     const supergroupTotals = {};
@@ -164,7 +164,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
         const p = document.createElement("p");
         p.className = "indicator-text";
         p.innerHTML = `<strong>${supergroups[topSupergroup].name}</strong> has the highest combined `
-            + `share overall, but your name's single most common Group sits in a different Supergroup, `
+            + `share overall, but ${name}'s single most common Group sits in a different Supergroup, `
             + `<strong>${supergroups[modeSupergroup].name}</strong>, shown below - a name can be spread `
             + `fairly evenly across several Groups in its leading Supergroup while being heavily `
             + `concentrated in just one Group elsewhere.`;
