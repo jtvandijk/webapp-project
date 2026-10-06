@@ -106,7 +106,8 @@ CARDS = {
                 "arranged into Supergroups and Groups based upon 2021/22 Census of Population data. We "
                 "created this through a collaboration with the Office for National Statistics (ONS) - "
                 "you can find out how in "
-                "<a href=\"https://doi.org/10.1111/geoj.12550\" target=\"_blank\" rel=\"noopener\">Wyszomierski <em>et al.</em> (2023)</a>. "
+                "<a href=\"https://doi.org/10.1111/geoj.12550\" target=\"_blank\" rel=\"noopener\">Wyszomierski <em>et al.</em> (2023)</a> "
+                "and the <a href=\"https://data.geods.ac.uk/dataset/output-area-classification-2021\" target=\"_blank\" rel=\"noopener\">dataset page</a>. "
                 "We show the distribution of your selected family group across 2021/22 OAC Supergroups "
                 "and Groups, with links to the attributes of these neighbourhoods. The tick mark on "
                 "each bar shows that Supergroup or Group's actual share of Great Britain's population."},
@@ -115,7 +116,8 @@ CARDS = {
                  "are not described fully by nationwide geodemographic classifications. The London "
                  "Output Area Classification (LOAC) therefore uses the same methods used to create the "
                  "UK Output Area Classification (described in "
-                 "<a href=\"https://journals.sagepub.com/doi/10.1177/23998083241242913\" target=\"_blank\" rel=\"noopener\">Longley <em>et al.</em> (2024)</a>) "
+                 "<a href=\"https://journals.sagepub.com/doi/10.1177/23998083241242913\" target=\"_blank\" rel=\"noopener\">Longley <em>et al.</em> (2024)</a> "
+                 "and the <a href=\"https://data.geods.ac.uk/dataset/london-oac\" target=\"_blank\" rel=\"noopener\">dataset page</a>) "
                  "but applies them only to Greater London. We show the distribution of your selected "
                  "family group across 2021 LOAC Supergroups and Groups, with links to the attributes of "
                  "these neighbourhoods. The tick mark on each bar shows that Supergroup or Group's "
@@ -123,7 +125,8 @@ CARDS = {
     "fpc": {"title": "Britain's Cost of Living Crisis: the Financial Precarity Classification",
             "about": "Whether neighbourhoods are thriving or just surviving is measured by the "
                 "Financial Precarity Classification, described in "
-                "<a href=\"https://doi.org/10.1016/j.compenvurbsys.2026.102399\" target=\"_blank\" rel=\"noopener\">Zi and Singleton (2026)</a>. "
+                "<a href=\"https://doi.org/10.1016/j.compenvurbsys.2026.102399\" target=\"_blank\" rel=\"noopener\">Zi and Singleton (2026)</a> "
+                "and the <a href=\"https://data.geods.ac.uk/dataset/financial-precarity-classification\" target=\"_blank\" rel=\"noopener\">dataset page</a>. "
                 "We show the Supergroup and Group in which your selected surname occurs most frequently. "
                 "The tick mark on each bar shows that Supergroup or Group's actual share of Great "
                 "Britain's population."},
