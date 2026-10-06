@@ -149,6 +149,17 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     font-weight: 700;
 }
 
+/* Same shape again, for an IMD/AHAH decile mentioned in the scale sentence - filled with that
+   decile's own colour (same colour as its bar/swatch), text colour computed per decile
+   (site/js/app.js's contrastText()) since the scale runs from dark reds/greens to very light
+   yellows and no single fixed text colour reads on all ten. */
+.decile-pill {
+    display: inline-block;
+    padding: 0.05rem 0.65rem;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
 /* map + slider - not a Bootstrap component */
 
 #map {

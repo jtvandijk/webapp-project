@@ -15,6 +15,18 @@ function escapeHtml(s) {
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+// IMD/AHAH's decile colours run from dark reds/greens to very light yellows (tools/build_lookups.py's
+// IMD_COLOURS/AHAH_COLOURS) - a solid-fill pill needs black text on the light end and white on the
+// dark end, not one fixed colour. Standard YIQ brightness formula.
+function contrastText(hex) {
+    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 >= 128 ? "#1a1a1a" : "#fff";
+}
+
+function decilePill(decile, colour) {
+    return `<span class="decile-pill" style="background:${colour};color:${contrastText(colour)}">Decile ${decile}</span>`;
+}
+
 // Real GeoDS fliers (two-page PDF leaflets) exist for some, not all, indicators - IMD and FPC don't
 // have one yet, so those cards just omit the `flier` key entirely.
 const FLIERS = {
@@ -180,7 +192,7 @@ function renderIndicators(facts) {
             colours: lookups.scales.imd.colours,
             distribution: facts.imd.distribution,
             mode: facts.imd.mode,
-            scaleText: lookups.scales.imd.text.replace("{decile}", `<strong>Decile ${facts.imd.mode}</strong>`),
+            scaleText: lookups.scales.imd.text.replace("{decile}", decilePill(facts.imd.mode, lookups.scales.imd.colours[facts.imd.mode - 1])),
             scoreText: lookups.cards.imd.score
                 && lookups.cards.imd.score.replace("{name}", `<span class="name-pill">${escapeHtml(currentName.name)}</span>`)
                     .replace("{mean}", facts.imd.mean).replace("{sd}", facts.imd.sd),
@@ -228,7 +240,7 @@ function renderIndicators(facts) {
             colours: lookups.scales.ahah.colours,
             distribution: facts.ahah.distribution,
             mode: facts.ahah.mode,
-            scaleText: lookups.scales.ahah.text.replace("{decile}", `<strong>Decile ${facts.ahah.mode}</strong>`),
+            scaleText: lookups.scales.ahah.text.replace("{decile}", decilePill(facts.ahah.mode, lookups.scales.ahah.colours[facts.ahah.mode - 1])),
             flier: FLIERS.ahah,
         }));
     }
