@@ -124,7 +124,7 @@ CARDS = {
                  "actual share of London's population."},
     "fpc": {"title": "Britain's Cost of Living Crisis: the Financial Precarity Classification",
             "about": "Whether neighbourhoods are thriving or just surviving is measured by the "
-                "Financial Precarity Classification, described in "
+                "Financial Precarity Classification (FPC), described in "
                 "<a href=\"https://doi.org/10.1016/j.compenvurbsys.2026.102399\" target=\"_blank\" rel=\"noopener\">Zi and Singleton (2026)</a> "
                 "and the <a href=\"https://data.geods.ac.uk/dataset/financial-precarity-classification\" target=\"_blank\" rel=\"noopener\">GeoDS dataset page</a>. "
                 "We show the Supergroup and Group in which your selected surname occurs most frequently. "
