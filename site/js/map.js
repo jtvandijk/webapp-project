@@ -82,11 +82,15 @@ export function createMap(container, manifest) {
     const resetControl = L.control({ position: "topleft" });
     resetControl.onAdd = function() {
         const div = L.DomUtil.create("div", "leaflet-bar leaflet-control");
-        const link = L.DomUtil.create("a", "", div);
+        const link = L.DomUtil.create("a", "reset-view-link", div);
         link.href = "#";
         link.title = "Reset the map view";
         link.setAttribute("aria-label", "Reset the map view");
-        link.innerHTML = "⌂";
+        // An inline SVG "fit to extent" icon (four corner brackets), not a Unicode glyph - the
+        // house glyph (⌂) this replaced rendered inconsistently (sometimes as a crude or missing
+        // shape) across platforms/fonts. stroke="currentColor" picks up leaflet.css's existing
+        // `.leaflet-bar a { color: black }`, same as the zoom buttons' +/- glyphs.
+        link.innerHTML = `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6V2h4"/><path d="M10 2h4v4"/><path d="M14 10v4h-4"/><path d="M6 14H2v-4"/></svg>`;
         L.DomEvent.on(link, "click", L.DomEvent.stop).on(link, "click", () => {
             if (!currentNameData) return;
             const bounds = boundsAcrossAllPeriods(currentNameData);

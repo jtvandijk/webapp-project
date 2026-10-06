@@ -169,6 +169,15 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     width: 100%;
 }
 
+/* The "reset view" control's SVG icon (site/js/map.js) - overrides Leaflet's own
+   .leaflet-bar a { display: block } so the icon centres exactly in the 26x26 button, same box
+   as the zoom controls above it. */
+.leaflet-bar a.reset-view-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .slider-row {
     display: flex;
     align-items: center;
