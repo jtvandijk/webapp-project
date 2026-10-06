@@ -216,7 +216,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
         const p = document.createElement("p");
         p.className = "indicator-text";
         p.innerHTML = `${colourPill(supergroups[topSupergroup].name, supergroups[topSupergroup].colour)} has the `
-            + `highest combined share overall, but <strong>${name}</strong>'s single most common Group sits `
+            + `highest combined share overall, but the single most common Group for <span class="name-pill">${name}</span> sits `
             + `in a different Supergroup, ${colourPill(supergroups[modeSupergroup].name, supergroups[modeSupergroup].colour)}, `
             + `shown above - a name can be spread fairly evenly across several Groups in its leading `
             + `Supergroup while being heavily concentrated in just one Group elsewhere.`;
