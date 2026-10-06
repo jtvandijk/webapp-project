@@ -50,13 +50,13 @@ export async function fetchFacts(key) {
     return res.json();
 }
 
-// "Census 1851", "SmartCensus 2026" (the newest register year, the actual new survey), or
-// "Smart Data: 1997" (every other, pre-existing register year) - the one place this naming rule
-// is written, shared by the map slider and the bearers table.
-export function formatPeriod(period, manifest) {
+// "Census 1851" or "SmartCensus 1997" - the one place this naming rule is written, shared by the
+// map slider and the bearers table. Every register year says SmartCensus, not just the newest one -
+// a separate "Smart Data" label for older register years was exactly the dual-branding confusion
+// flagged by the user (2026-10-06).
+export function formatPeriod(period) {
     if (period.source === "census") return `Census ${period.id}`;
-    if (period.id === manifest.standardisation.base_year) return `SmartCensus ${period.id}`;
-    return `Smart Data: ${period.id}`;
+    return `SmartCensus ${period.id}`;
 }
 
 // The estimated (standardised) adult count where one exists, otherwise the raw count - estimation

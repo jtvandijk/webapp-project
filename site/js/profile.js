@@ -115,7 +115,7 @@ export function renderCountsCard({ nameData, manifest }) {
     const maxValue = Math.max(1, ...entries.map(e => e.value));
     for (const { period, value, estimated } of entries) {
         const row = barRow({
-            name: formatPeriod(period, manifest) + (estimated ? " (estimated)" : ""),
+            name: formatPeriod(period) + (estimated ? " (estimated)" : ""),
             colour: period.source === "census" ? CENSUS_COLOUR : SMARTDATA_COLOUR,
             share: value / maxValue,
             valueText: value.toLocaleString("en-GB"),

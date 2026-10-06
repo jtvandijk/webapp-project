@@ -149,7 +149,7 @@ function showPeriod(index, fitBounds = false) {
     const { value, estimated } = bearersFor(currentName, period);
     const bearersText = typeof value === "number" ? value.toLocaleString("en-GB") : "unknown";
     const bearersWord = estimated ? "estimated adult bearers" : "bearers";
-    periodLabel.textContent = `${formatPeriod(period, manifest)} — ${bearersText} ${bearersWord}`;
+    periodLabel.textContent = `${formatPeriod(period)} — ${bearersText} ${bearersWord}`;
 
     const geojson = currentName.maps[period.id];
     if (geojson && geojson.copyOf) {
