@@ -171,15 +171,13 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
 
 /* indicator cards (IMD/OAC/LOAC/GB2C/AHAH/FPC) and the more-about-your-name cards */
 
-/* The six real GeoDS data products get a navy header (brand colour, same --navy as the nav bar) to
-   set them apart from the plainer "more about your name" cards (places/forenames/ethnicity/counts),
-   which share the same card markup but aren't their own published GeoDS classification. */
-.indicator-card-product .card-header {
+/* Navy header (brand colour, same --navy as the nav bar) on every card built via cardShell. */
+.indicator-card .card-header {
     background: var(--navy);
     border-color: var(--navy);
 }
 
-.indicator-card-product .card-header h4 {
+.indicator-card .card-header h4 {
     color: #fff;
 }
 

@@ -56,9 +56,9 @@ export function barRow({ name, colour, share, valueText, detailsText, population
 // when given ({pdf, thumb}), adds the real GeoDS flier's cover thumbnail to the left of that text,
 // linking out to the PDF - the old site's flier-thumbnail-alongside-text treatment, for the
 // classifications that actually have one (not every indicator does).
-export function cardShell({ title, about, clickHint, flier, dataProduct }) {
+export function cardShell({ title, about, clickHint, flier }) {
     const card = document.createElement("div");
-    card.className = "card mb-3 indicator-card" + (dataProduct ? " indicator-card-product" : "");
+    card.className = "card mb-3 indicator-card";
     card.innerHTML = `<div class="card-header"><h4 class="m-0">${title}</h4></div>`;
     const body = document.createElement("div");
     body.className = "card-body";
@@ -97,7 +97,7 @@ export function cardShell({ title, about, clickHint, flier, dataProduct }) {
 }
 
 export function renderDecileCard({ title, about, colours, distribution, mode, scaleText, scoreText, flier }) {
-    const { card, body } = cardShell({ title, about, flier, dataProduct: true });
+    const { card, body } = cardShell({ title, about, flier });
     if (scaleText) {
         const p = document.createElement("p");
         p.className = "indicator-text";
@@ -126,7 +126,7 @@ export function renderDecileCard({ title, about, colours, distribution, mode, sc
 }
 
 export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics", flier }) {
-    const { card, body } = cardShell({ title, about, clickHint, flier, dataProduct: true });
+    const { card, body } = cardShell({ title, about, clickHint, flier });
 
     const supergroupTotals = {};
     for (const [code, share] of Object.entries(distribution)) {
@@ -203,7 +203,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
 }
 
 export function renderFlatGroupCard({ title, about, groups, distribution, modeCode, clickHint, flier }) {
-    const { card, body } = cardShell({ title, about, clickHint, flier, dataProduct: true });
+    const { card, body } = cardShell({ title, about, clickHint, flier });
     const list = document.createElement("div");
     list.className = "bar-list";
     for (const code of Object.keys(groups).sort()) {
