@@ -12,12 +12,12 @@ export function renderPlacesCard({ places, placesLookup }) {
     const row = document.createElement("div");
     row.className = "row";
     row.appendChild(placesColumn("Historic Census", places && places.census, null, "census"));
-    row.appendChild(placesColumn("SmartData", places && places.register, placesLookup, "smart"));
+    row.appendChild(placesColumn("SmartCensus", places && places.register, placesLookup, "smart"));
     body.appendChild(row);
     return card;
 }
 
-// Historic Census places already come as real names (e.g. "London" / "London parishes"). SmartData
+// Historic Census places already come as real names (e.g. "London" / "London parishes"). SmartCensus
 // places come as district/MSOA GSS codes (tools/split_facts.py), resolved here via
 // tools/build_places_lookup.py's lookup - falling back to the raw code on the rare miss. Chips are
 // tinted by source (census/smart), the same colour pairing as the bearers chart below.
@@ -49,7 +49,7 @@ export function renderForenamesCard({ forenames }) {
     const row = document.createElement("div");
     row.className = "row";
     row.appendChild(forenameColumn("Historic Census", forenames && forenames.census));
-    row.appendChild(forenameColumn("SmartData", forenames && forenames.register));
+    row.appendChild(forenameColumn("SmartCensus", forenames && forenames.register));
     body.appendChild(row);
     return card;
 }
@@ -96,15 +96,15 @@ export function renderEthnicityCard({ eth, ethLookup, about }) {
     return card;
 }
 
-// Census = light blue, SmartData/SmartCensus = navy, so the source is obvious at a glance - the
-// same light blue as manifest.levels' own level-1 KDE colour, reused rather than inventing a new one.
+// Census = light blue, SmartCensus = navy, so the source is obvious at a glance - the same light
+// blue as manifest.levels' own level-1 KDE colour, reused rather than inventing a new one.
 const CENSUS_COLOUR = "#6baed6";
 const SMARTDATA_COLOUR = "#1f428f";
 
 export function renderCountsCard({ nameData, manifest }) {
     const { card, body } = cardShell({ title: "Number of Bearers",
         about: "How many people have shared your name, in each year we have data for. Census counts "
-            + "(light blue) are everyone recorded that year. Modern SmartData/SmartCensus counts (navy) "
+            + "(light blue) are everyone recorded that year. Modern SmartCensus counts (navy) "
             + "are estimated against the dataset's own adult population each year, so its growth over "
             + "time doesn't look like your name becoming more common." });
     const list = document.createElement("div");
