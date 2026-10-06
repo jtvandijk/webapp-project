@@ -11,6 +11,20 @@ function pct(share) {
     return `${(share * 100).toFixed(1)}%`;
 }
 
+// Deciles/Supergroups/Groups span dark reds/greens through very light yellows (see IMD_COLOURS/
+// AHAH_COLOURS/OAC and friends in tools/build_lookups.py) - a solid-fill pill needs black text on
+// the light end and white on the dark end, not one fixed colour. Standard YIQ brightness formula.
+export function contrastText(hex) {
+    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 >= 128 ? "#1a1a1a" : "#fff";
+}
+
+// A pill filled with its own colour (a decile, a Supergroup, a Group...), text colour computed to
+// stay readable against it.
+export function colourPill(text, colour) {
+    return `<span class="colour-pill" style="background:${colour};color:${contrastText(colour)}">${text}</span>`;
+}
+
 // share (0-1) always drives the bar's width; valueText overrides what's printed (e.g. a raw count)
 // when the row isn't itself a percentage of 100%, like the bearers-over-time table in profile.js.
 // populationShare (0-1), when given, draws a thin tick mark on the track at that position - what
@@ -163,11 +177,11 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
         icon.setAttribute("aria-hidden", "true");
         const p = document.createElement("p");
         p.className = "indicator-text";
-        p.innerHTML = `<strong>${supergroups[topSupergroup].name}</strong> has the highest combined `
-            + `share overall, but ${name}'s single most common Group sits in a different Supergroup, `
-            + `<strong>${supergroups[modeSupergroup].name}</strong>, shown below - a name can be spread `
-            + `fairly evenly across several Groups in its leading Supergroup while being heavily `
-            + `concentrated in just one Group elsewhere.`;
+        p.innerHTML = `${colourPill(supergroups[topSupergroup].name, supergroups[topSupergroup].colour)} has the `
+            + `highest combined share overall, but <strong>${name}</strong>'s single most common Group sits `
+            + `in a different Supergroup, ${colourPill(supergroups[modeSupergroup].name, supergroups[modeSupergroup].colour)}, `
+            + `shown below - a name can be spread fairly evenly across several Groups in its leading `
+            + `Supergroup while being heavily concentrated in just one Group elsewhere.`;
         note.append(icon, p);
         body.appendChild(note);
     }

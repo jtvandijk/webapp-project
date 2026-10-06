@@ -2,7 +2,7 @@
 // indicator cards.
 import { surnameKey, fetchManifest, fetchLookups, fetchPlacesLookup, fetchName, fetchFacts, formatPeriod, bearersFor } from "./data.js";
 import { createMap } from "./map.js";
-import { renderDecileCard, renderGroupCard, renderFlatGroupCard } from "./indicators.js";
+import { renderDecileCard, renderGroupCard, renderFlatGroupCard, colourPill } from "./indicators.js";
 import { renderPlacesCard, renderForenamesCard, renderEthnicityCard, renderCountsCard } from "./profile.js";
 
 const NOT_FOUND_MESSAGE = "We couldn't find a page for this surname. This means either we hold no "
@@ -15,16 +15,8 @@ function escapeHtml(s) {
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// IMD/AHAH's decile colours run from dark reds/greens to very light yellows (tools/build_lookups.py's
-// IMD_COLOURS/AHAH_COLOURS) - a solid-fill pill needs black text on the light end and white on the
-// dark end, not one fixed colour. Standard YIQ brightness formula.
-function contrastText(hex) {
-    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
-    return (r * 299 + g * 587 + b * 114) / 1000 >= 128 ? "#1a1a1a" : "#fff";
-}
-
 function decilePill(decile, colour) {
-    return `<span class="decile-pill" style="background:${colour};color:${contrastText(colour)}">Decile ${decile}</span>`;
+    return colourPill(`Decile ${decile}`, colour);
 }
 
 // Real GeoDS fliers (two-page PDF leaflets) exist for some, not all, indicators - IMD and FPC don't
@@ -185,11 +177,13 @@ function renderIndicators(facts) {
     indicatorContainer.replaceChildren();
     moreAboutContainer.replaceChildren();
 
-    // Built once and reused everywhere a generated sentence names the searched surname itself,
-    // rather than describing what a card shows in general (e.g. "your name's Group sits in a
-    // different Supergroup" - a specific finding - gets the pill; "we show the Supergroup your
-    // name occurs in" - a description of the card - stays plain text).
-    const namePill = `<span class="name-pill">${escapeHtml(currentName.name)}</span>`;
+    // nameEscaped: plain text, for sentences that just bold the searched name inline (e.g. the
+    // Supergroup-mismatch callout, which already has its own colour pills for the Supergroups).
+    // namePill: the full pill treatment, for the IMD score sentence specifically ("For {name}, it
+    // averages...") - everywhere else that mentions "your selected surname" stays plain text, per
+    // the user's call that pills on every mention felt like too much (2026-10-06).
+    const nameEscaped = escapeHtml(currentName.name);
+    const namePill = `<span class="name-pill">${nameEscaped}</span>`;
 
     if (facts.imd) {
         indicatorContainer.appendChild(renderDecileCard({
@@ -198,7 +192,7 @@ function renderIndicators(facts) {
             colours: lookups.scales.imd.colours,
             distribution: facts.imd.distribution,
             mode: facts.imd.mode,
-            scaleText: lookups.scales.imd.text.replace("{name}", namePill)
+            scaleText: lookups.scales.imd.text
                 .replace("{decile}", decilePill(facts.imd.mode, lookups.scales.imd.colours[facts.imd.mode - 1])),
             scoreText: lookups.cards.imd.score
                 && lookups.cards.imd.score.replace("{name}", namePill)
@@ -215,7 +209,7 @@ function renderIndicators(facts) {
             modeCode: facts.oac.group,
             clickHint: "neighbourhood characteristics",
             flier: FLIERS.oac,
-            name: namePill,
+            name: nameEscaped,
         }));
     }
     if (facts.loac) {
@@ -228,7 +222,7 @@ function renderIndicators(facts) {
             modeCode: facts.loac.group,
             clickHint: "neighbourhood characteristics",
             flier: FLIERS.loac,
-            name: namePill,
+            name: nameEscaped,
         }));
     }
     if (facts.gb2c) {
@@ -249,7 +243,7 @@ function renderIndicators(facts) {
             colours: lookups.scales.ahah.colours,
             distribution: facts.ahah.distribution,
             mode: facts.ahah.mode,
-            scaleText: lookups.scales.ahah.text.replace("{name}", namePill)
+            scaleText: lookups.scales.ahah.text
                 .replace("{decile}", decilePill(facts.ahah.mode, lookups.scales.ahah.colours[facts.ahah.mode - 1])),
             flier: FLIERS.ahah,
         }));
@@ -263,7 +257,7 @@ function renderIndicators(facts) {
             distribution: facts.fpc.distribution,
             modeCode: facts.fpc.group,
             clickHint: "neighbourhood characteristics",
-            name: namePill,
+            name: nameEscaped,
         }));
     }
 

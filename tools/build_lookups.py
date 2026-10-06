@@ -175,12 +175,14 @@ CARDS = {
 }
 
 SCALES = {
-    # {name} and {decile} are replaced with pills (not plain text) when rendered - the one place in
-    # each sentence that names this search's own result, as opposed to the scale in general.
+    # {decile} is replaced with a colour pill when rendered - the one place in each sentence that
+    # names this search's own result, as opposed to the scale in general. Tried a {name} pill here
+    # too, but two pills back to back at the very start of the sentence read as too much (2026-10-06)
+    # - "your selected surname" stays plain text; the IMD score sentence below still gets the pill.
     "imd": {"colours": IMD_COLOURS,
-            "text": "{name} occurs most frequently in {decile} of the Index of Multiple Deprivation (IMD). The first decile is the most deprived and the tenth decile the least deprived."},
+            "text": "Your selected surname occurs most frequently in {decile} of the Index of Multiple Deprivation (IMD). The first decile is the most deprived and the tenth decile the least deprived."},
     "ahah": {"colours": AHAH_COLOURS,
-             "text": "{name} occurs most frequently in {decile} of the Access to Healthy Assets and Hazards index. The first decile is the healthiest and the tenth decile the least healthy."},
+             "text": "Your selected surname occurs most frequently in {decile} of the Access to Healthy Assets and Hazards index. The first decile is the healthiest and the tenth decile the least healthy."},
 }
 
 

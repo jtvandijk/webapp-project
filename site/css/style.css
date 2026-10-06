@@ -149,11 +149,12 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     font-weight: 700;
 }
 
-/* Same shape again, for an IMD/AHAH decile mentioned in the scale sentence - filled with that
-   decile's own colour (same colour as its bar/swatch), text colour computed per decile
-   (site/js/app.js's contrastText()) since the scale runs from dark reds/greens to very light
-   yellows and no single fixed text colour reads on all ten. */
-.decile-pill {
+/* Same shape again, for anything mentioned by name that has its own established colour elsewhere
+   on the page - an IMD/AHAH decile, a Supergroup/Group in the mismatch callout. Filled with that
+   thing's own colour (same colour as its bar/swatch), text colour computed per use
+   (site/js/indicators.js's contrastText()) since these scales run from dark reds/greens to very
+   light yellows and no single fixed text colour reads on all of them. */
+.colour-pill {
     display: inline-block;
     padding: 0.05rem 0.65rem;
     border-radius: 999px;
