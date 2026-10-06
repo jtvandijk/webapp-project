@@ -6,7 +6,7 @@ import { renderDecileCard, renderGroupCard, renderFlatGroupCard, colourPill } fr
 import { renderPlacesCard, renderForenamesCard, renderEthnicityCard, renderCountsCard } from "./profile.js";
 
 const NOT_FOUND_MESSAGE = "We couldn't find a page for this surname. This means either we hold no "
-    + "records for it, or fewer than 100 people in our data share it — too few to show without "
+    + "records for it, or fewer than 100 people share it in our data, too few to show without "
     + "risking anyone's privacy.";
 
 // Every other place a found name's display form is shown uses .textContent (inherently safe); this
@@ -31,7 +31,9 @@ const FLIERS = {
 const welcomePanel = document.getElementById("welcomePanel");
 const notFoundPanel = document.getElementById("notFoundPanel");
 const resultSection = document.getElementById("resultSection");
+const resultHeader = document.getElementById("resultHeader");
 const resultName = document.getElementById("resultName");
+const yearPills = document.getElementById("yearPills");
 const exampleNames = document.getElementById("exampleNames");
 const sliderWrapper = document.getElementById("sliderWrapper");
 const periodSlider = document.getElementById("periodSlider");
@@ -52,6 +54,7 @@ let placesLookup = null;
 let mapController = null;
 let currentName = null;    // the fetched name's own JSON
 let currentPeriods = [];   // manifest period entries this name has a map for, in slider order
+let periodPills = [];      // one button per currentPeriods entry, same order, so showPeriod can mark the active one
 
 // "welcome" (first visit), "idle" (welcome dismissed, nothing searched), "notfound" or "result".
 function setMode(mode) {
@@ -59,7 +62,7 @@ function setMode(mode) {
     notFoundPanel.hidden = mode !== "notfound";
     resultSection.hidden = mode !== "result";
     sliderWrapper.hidden = mode !== "result";
-    resultName.hidden = mode !== "result";
+    resultHeader.hidden = mode !== "result";
     navSearchWrapper.hidden = mode === "welcome";
 }
 
@@ -102,13 +105,22 @@ function loadFromUrl() {
         document.getElementById("searchInputNav").value = name;
         runSearch(name, { updateUrl: false });
     } else {
+        searchToken++;   // drop any in-flight search (e.g. a back/forward navigation mid-fetch)
+        mapController.clear();
         setMode("welcome");
     }
 }
 
+// Guards the two awaits below: searching a name, then searching a different one before the first
+// has finished fetching, can otherwise let the first (slower) request resolve after the second and
+// overwrite its result/map - same pattern as map.js's own renderToken for the mask fetch.
+let searchToken = 0;
+
 async function runSearch(raw, { updateUrl = true } = {}) {
     const key = surnameKey(raw);
+    const myToken = ++searchToken;
     if (!key) {
+        mapController.clear();
         setMode("welcome");
         return;
     }
@@ -121,11 +133,16 @@ async function runSearch(raw, { updateUrl = true } = {}) {
     document.getElementById("searchInputNav").value = key;
 
     const nameData = await fetchName(key);
+    if (myToken !== searchToken) return;   // a newer search has since started - drop this one
     if (!nameData) {
+        mapController.clear();
+        currentName = null;
+        currentPeriods = [];
         setMode("notfound");
         return;
     }
     const facts = await fetchFacts(key);
+    if (myToken !== searchToken) return;
     showResult(nameData, facts);
 }
 
@@ -136,6 +153,7 @@ function showResult(nameData, facts) {
     currentName = nameData;
     currentPeriods = manifest.periods.filter(p => nameData.maps[p.id]);
     resultName.textContent = nameData.name;
+    buildYearPills();
 
     periodSlider.min = 0;
     periodSlider.max = Math.max(currentPeriods.length - 1, 0);
@@ -143,6 +161,27 @@ function showResult(nameData, facts) {
     showPeriod(0, true);
 
     renderIndicators(facts);
+}
+
+// One pill per period this name clears the privacy threshold for (not every name has all of them,
+// since a name's bearer count can dip below 100 in some years and not others) - clicking one jumps
+// the slider straight to that period, same as dragging it there by hand.
+function buildYearPills() {
+    yearPills.replaceChildren();
+    periodPills = currentPeriods.map((period, index) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "year-pill";
+        btn.textContent = period.id;
+        btn.title = formatPeriod(period);
+        btn.setAttribute("aria-pressed", "false");
+        btn.addEventListener("click", () => {
+            periodSlider.value = index;
+            showPeriod(index);
+        });
+        yearPills.appendChild(btn);
+        return btn;
+    });
 }
 
 function stepPeriod(delta) {
@@ -155,6 +194,10 @@ function showPeriod(index, fitBounds = false) {
     const period = currentPeriods[index];
     if (!period) return;
     mapController.renderPeriod(currentName, period.id, fitBounds);
+    periodPills.forEach((btn, i) => {
+        btn.classList.toggle("year-pill-active", i === index);
+        btn.setAttribute("aria-pressed", i === index ? "true" : "false");
+    });
 
     const { value, estimated } = bearersFor(currentName, period);
     const bearersText = typeof value === "number" ? value.toLocaleString("en-GB") : "unknown";

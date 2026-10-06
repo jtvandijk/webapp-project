@@ -63,11 +63,15 @@
       </div>
     </div>
 
-    <div id="notFoundPanel" class="alert bg-orange text-justify" hidden>
-      <p id="notFoundMessage" class="mb-0"></p>
+    <div id="notFoundPanel" class="callout-note mb-4" hidden>
+      <span class="callout-icon" aria-hidden="true">&#9432;</span>
+      <p id="notFoundMessage" class="indicator-text mb-0"></p>
     </div>
 
-    <h2 id="resultName" class="result-name-pill mb-3" hidden></h2>
+    <div id="resultHeader" class="result-header mb-3" hidden>
+      <h2 id="resultName" class="result-name-pill m-0"></h2>
+      <div id="yearPills" class="year-pills"></div>
+    </div>
 
     <div class="card mb-3">
       <div class="card-body p-0">
@@ -84,9 +88,11 @@
             name were most concentrated, measured as where the population-weighted density of the
             surname is highest. Use the slider bar to see where the name was found over historic
             (1851-1921, excluding 1871, which isn't available) and more recent
-            SmartCensus (1997-2026) time periods. You can find the most popular given names associated
-            with any surname further down the page, and more about the SmartCensus and other data
-            sources used to create this page further below.</p>
+            SmartCensus (1997-2026) time periods. Not every surname has a map for every period: a year
+            is only shown if at least 100 people carried the name that year, so some names have gaps
+            where bearer numbers dip below this threshold. You can find the most popular given names
+            associated with any surname further down the page, and more about the SmartCensus and
+            other data sources used to create this page further below.</p>
         </div>
       </div>
     </div>

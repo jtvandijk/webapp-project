@@ -131,5 +131,17 @@ export function createMap(container, manifest) {
         }
     }
 
-    return { map, renderPeriod };
+    // Called whenever the page is about to show something other than a result (welcome, idle, not
+    // found) - without this, a previous search's KDE polygons and Scotland mask are left sitting on
+    // the map, since it's a permanent fixture of the page rather than something hidden/shown with
+    // resultSection.
+    function clear() {
+        renderToken++;   // drop any in-flight mask fetch from the search that's being cleared
+        currentPeriodId = null;
+        currentNameData = null;
+        kdeLayer.clearLayers();
+        maskLayer.clearLayers();
+    }
+
+    return { map, renderPeriod, clear };
 }

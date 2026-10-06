@@ -133,7 +133,7 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     color: #fff;
 }
 
-.result-name-pill:not([hidden]) {
+.result-name-pill {
     display: inline-block;
     padding: 0.4rem 1.4rem;
     background: var(--navy);
@@ -141,6 +141,58 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     border-radius: 999px;
     font-size: 1.4rem;
     font-weight: 700;
+    line-height: normal;
+}
+
+/* Sits flush against the name pill: one pill per period this name has a map for
+   (site/js/app.js's buildYearPills()) - wraps onto its own line below the name pill on narrow
+   screens rather than overlapping it. */
+.result-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem 0.6rem;
+}
+
+/* display:contents removes this wrapper's own box - its pill buttons become direct flex items of
+   .result-header itself, wrapping one at a time next to the name as space runs out, instead of
+   the whole set of pills jumping to its own line as one block the moment it no longer fits. */
+.year-pills {
+    display: contents;
+}
+
+/* A touch smaller than .result-name-pill, so the name still reads as the headline and the years
+   as data sitting next to it, rather than fully equal-weight siblings - grey rather than navy so
+   the searched name itself still stands out as "the" pill among them. line-height/appearance/
+   font-family are pinned explicitly because a bare <button> doesn't automatically match an <h2>'s
+   box metrics even with identical padding/font-size: browsers keep native button chrome unless
+   it's switched off, which was making these render visibly taller than the name pill. */
+.year-pill {
+    display: inline-block;
+    padding: 0.25rem 0.85rem;
+    border: none;
+    appearance: none;
+    -webkit-appearance: none;
+    font-family: inherit;
+    line-height: normal;
+    border-radius: 999px;
+    background: #e2e2e2;
+    color: #1a1a1a;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.year-pill:hover {
+    background: #d0d0d0;
+}
+
+/* The period the slider is currently showing - same navy/white language as .result-name-pill and
+   .btn-navy, so "this is the selected one" reads consistently with the rest of the page. */
+.year-pill-active,
+.year-pill-active:hover {
+    background: var(--navy);
+    color: #fff;
 }
 
 /* A small inline version of the same pill, for a searched name mentioned mid-sentence (e.g. the
