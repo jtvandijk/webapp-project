@@ -143,7 +143,7 @@ export function renderDecileCard({ title, about, colours, distribution, mode, sc
 // level a bar list below it belongs to and which classification it's from - same shape as
 // colourPill but not tied to any one Supergroup/Group's own colour, since the label itself is a
 // category heading, not a specific coloured item. `caption`, when given, trails it as a small
-// muted aside (e.g. "the broader category") - a one-line reminder of what Supergroup/Group
+// muted aside (e.g. "top-level category") - a one-line reminder of what Supergroup/Group
 // actually means, sitting right where the reader needs it instead of only in the about text above.
 function levelPill(text, caption) {
     const p = document.createElement("p");
@@ -171,7 +171,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
         .reduce((best, code) => (supergroupTotals[code] > (supergroupTotals[best] || -1) ? code : best), null);
     const modeSupergroup = groups[modeCode] && groups[modeCode].supergroup;
 
-    body.appendChild(levelPill(`${abbr} Supergroup`, "the broader category"));
+    body.appendChild(levelPill(`${abbr} Supergroup`, "top-level category"));
     const sgList = document.createElement("div");
     sgList.className = "bar-list";
     for (const code of Object.keys(supergroups).sort()) {
@@ -186,7 +186,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
     if (modeSupergroup != null) {
         const supergroupShare = supergroupTotals[modeSupergroup] || 0;
         const supergroupPopulationShare = supergroups[modeSupergroup].populationShare;
-        body.appendChild(levelPill(`${abbr} Group`, "a narrower category within it"));
+        body.appendChild(levelPill(`${abbr} Group`, "sub-category"));
         const groupList = document.createElement("div");
         groupList.className = "bar-list";
         const codesInSupergroup = Object.keys(groups).filter(c => groups[c].supergroup === modeSupergroup).sort();

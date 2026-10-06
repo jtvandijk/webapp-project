@@ -358,13 +358,15 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     margin-top: 0;
 }
 
-/* The one-line reminder trailing a level pill (e.g. "the broader category") - small and muted so
-   it reads as an aside, not another heading competing with the pill itself. */
+/* The one-line reminder trailing a level pill (e.g. "top-level category") - small, semibold,
+   slightly letter-spaced like a tiny label, but sentence case rather than uppercase (full caps
+   next to an already-bold pill read as shouty). */
 .level-pill-caption {
-    margin-left: 0.5rem;
-    font-size: 0.8rem;
-    font-style: italic;
-    color: #666;
+    margin-left: 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #8a8a8a;
 }
 
 .bar-list {
