@@ -320,12 +320,15 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     margin: 0;
 }
 
-.group-drilldown {
-    margin-top: 1.5rem;
-    padding: 1rem 1rem 0.4rem;
-    border: 1px solid #e2e2e2;
-    border-radius: 6px;
-    background: #fafafa;
+/* "Supergroup"/"Group" label sitting above its own bar list - plain flow, no inset box, so the
+   two levels read as sections of one continuous card rather than the Group list being boxed off
+   inside the Supergroup one. */
+.level-pill-row {
+    margin: 1.25rem 0 0.6rem;
+}
+
+.level-pill-row:first-child {
+    margin-top: 0;
 }
 
 .bar-list {

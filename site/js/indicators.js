@@ -139,6 +139,16 @@ export function renderDecileCard({ title, about, colours, distribution, mode, sc
     return card;
 }
 
+// A light-grey "Supergroup"/"Group" label marking which level a bar list below it belongs to -
+// same shape as colourPill but not tied to any one Supergroup/Group's own colour, since the label
+// itself is a category heading, not a specific coloured item.
+function levelPill(text) {
+    const p = document.createElement("p");
+    p.className = "level-pill-row";
+    p.innerHTML = `<span class="value-pill">${text}</span>`;
+    return p;
+}
+
 export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics", flier, name }) {
     const { card, body } = cardShell({ title, about, clickHint, flier });
 
@@ -157,6 +167,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
         .reduce((best, code) => (supergroupTotals[code] > (supergroupTotals[best] || -1) ? code : best), null);
     const modeSupergroup = groups[modeCode] && groups[modeCode].supergroup;
 
+    body.appendChild(levelPill("Supergroup"));
     const sgList = document.createElement("div");
     sgList.className = "bar-list";
     for (const code of Object.keys(supergroups).sort()) {
@@ -168,32 +179,10 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
     }
     body.appendChild(sgList);
 
-    if (modeSupergroup != null && topSupergroup != null && modeSupergroup !== topSupergroup) {
-        const note = document.createElement("div");
-        note.className = "callout-note mt-3";
-        const icon = document.createElement("span");
-        icon.className = "callout-icon";
-        icon.textContent = "ⓘ";               // circled "i" - no emoji font dependency
-        icon.setAttribute("aria-hidden", "true");
-        const p = document.createElement("p");
-        p.className = "indicator-text";
-        p.innerHTML = `${colourPill(supergroups[topSupergroup].name, supergroups[topSupergroup].colour)} has the `
-            + `highest combined share overall, but <strong>${name}</strong>'s single most common Group sits `
-            + `in a different Supergroup, ${colourPill(supergroups[modeSupergroup].name, supergroups[modeSupergroup].colour)}, `
-            + `shown below - a name can be spread fairly evenly across several Groups in its leading `
-            + `Supergroup while being heavily concentrated in just one Group elsewhere.`;
-        note.append(icon, p);
-        body.appendChild(note);
-    }
-
     if (modeSupergroup != null) {
         const supergroupShare = supergroupTotals[modeSupergroup] || 0;
         const supergroupPopulationShare = supergroups[modeSupergroup].populationShare;
-        const sub = document.createElement("div");
-        sub.className = "group-drilldown";
-        const heading = document.createElement("h6");
-        heading.innerHTML = `Groups within <strong>${supergroups[modeSupergroup].name}</strong> (share within this Supergroup)`;
-        sub.appendChild(heading);
+        body.appendChild(levelPill("Group"));
         const groupList = document.createElement("div");
         groupList.className = "bar-list";
         const codesInSupergroup = Object.keys(groups).filter(c => groups[c].supergroup === modeSupergroup).sort();
@@ -210,8 +199,28 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
             if (code === modeCode) row.classList.add("bar-row-mode");
             groupList.appendChild(row);
         }
-        sub.appendChild(groupList);
-        body.appendChild(sub);
+        body.appendChild(groupList);
+    }
+
+    // Placed below both bar lists (rather than between them) so the reader sees the full picture
+    // first - which Supergroup leads overall, and which Groups it breaks into - before being told
+    // the two levels disagree.
+    if (modeSupergroup != null && topSupergroup != null && modeSupergroup !== topSupergroup) {
+        const note = document.createElement("div");
+        note.className = "callout-note mt-3";
+        const icon = document.createElement("span");
+        icon.className = "callout-icon";
+        icon.textContent = "ⓘ";               // circled "i" - no emoji font dependency
+        icon.setAttribute("aria-hidden", "true");
+        const p = document.createElement("p");
+        p.className = "indicator-text";
+        p.innerHTML = `${colourPill(supergroups[topSupergroup].name, supergroups[topSupergroup].colour)} has the `
+            + `highest combined share overall, but <strong>${name}</strong>'s single most common Group sits `
+            + `in a different Supergroup, ${colourPill(supergroups[modeSupergroup].name, supergroups[modeSupergroup].colour)}, `
+            + `shown above - a name can be spread fairly evenly across several Groups in its leading `
+            + `Supergroup while being heavily concentrated in just one Group elsewhere.`;
+        note.append(icon, p);
+        body.appendChild(note);
     }
     return card;
 }
