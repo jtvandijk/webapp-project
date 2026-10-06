@@ -9,6 +9,12 @@ const NOT_FOUND_MESSAGE = "We couldn't find a page for this surname. This means 
     + "records for it, or fewer than 100 people in our data share it — too few to show without "
     + "risking anyone's privacy.";
 
+// Every other place a found name's display form is shown uses .textContent (inherently safe); this
+// is the one spot it goes into innerHTML (the IMD score sentence), so it needs its own escaping.
+function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 // Real GeoDS fliers (two-page PDF leaflets) exist for some, not all, indicators - IMD and FPC don't
 // have one yet, so those cards just omit the `flier` key entirely.
 const FLIERS = {
@@ -176,7 +182,8 @@ function renderIndicators(facts) {
             mode: facts.imd.mode,
             scaleText: lookups.scales.imd.text.replace("{decile}", `<strong>Decile ${facts.imd.mode}</strong>`),
             scoreText: lookups.cards.imd.score
-                && lookups.cards.imd.score.replace("{mean}", facts.imd.mean).replace("{sd}", facts.imd.sd),
+                && lookups.cards.imd.score.replace("{name}", `<strong>${escapeHtml(currentName.name)}</strong>`)
+                    .replace("{mean}", facts.imd.mean).replace("{sd}", facts.imd.sd),
         }));
     }
     if (facts.oac) {
