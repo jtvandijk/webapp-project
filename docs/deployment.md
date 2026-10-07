@@ -39,7 +39,7 @@ Every path in the site is relative, so the folder works at a domain root or unde
 - **Caching `data/`.** The files never change within a release, so they can be cached. They are not versioned by
   file name, though: a later release (or a corrected `lookups.json`) replaces files at the same paths. A max-age of
   a day to a week, with the default `ETag`/`Last-Modified` revalidation, is a reasonable balance. Avoid `immutable`
-  or very long lifetimes unless returning visitors may keep seeing old data after an update. Keep the site's own
+  or very long lifetimes, unless it is fine for returning visitors to keep seeing old data for that long after an update. Keep the site's own
   `js/` and `css/` on a short cache for the same reason.
 - **robots.txt.** `robots.txt` asks crawlers to stay out of `data/` (tens of thousands of JSON files, no value in
   search results). Crawlers only read it at the root of the host, so under `/gbnames/` the file in the folder is
