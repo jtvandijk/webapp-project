@@ -64,6 +64,15 @@ function setMode(mode) {
     sliderWrapper.hidden = mode !== "result";
     resultHeader.hidden = mode !== "result";
     navSearchWrapper.hidden = mode === "welcome";
+    if (mode === "result" || mode === "notfound") {
+        // On mobile, hiding welcomePanel and revealing the map/result below it is a big layout
+        // shift right as the on-screen keyboard dismisses after search - browsers try to keep the
+        // previously-focused input in view across that shift and often land somewhere around the
+        // map instead of the top. Force it back; the rAF and short timeout both fire after the
+        // shift (and keyboard-dismiss animation) have settled, so neither gets overridden by it.
+        requestAnimationFrame(() => window.scrollTo(0, 0));
+        setTimeout(() => window.scrollTo(0, 0), 150);
+    }
 }
 
 function wireSearchForm(form, input) {

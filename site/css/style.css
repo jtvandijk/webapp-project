@@ -86,6 +86,24 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     border-top: 1px solid #e2e2e2;
 }
 
+.footer-social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.75rem;
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.footer-social-link:hover {
+    color: var(--navy);
+}
+
+.footer-social-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
 /* jumbotron */
 
 #welcomePanel h1 {
@@ -198,6 +216,10 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
 /* A small inline version of the same pill, for a searched name mentioned mid-sentence (e.g. the
    IMD score text) - same navy/white/fully-rounded language as .result-name-pill, sized to sit on
    a text line without disrupting it. */
+/* text-align: left overrides the justify these inherit from the prose paragraph they sit inline in
+   (.indicator-text/.card-body p) - without it, a pill landing alone on its own wrapped line on a
+   narrow screen gets stretched to fill the line width, since justify has nothing else on that line
+   to space out instead. */
 .name-pill {
     display: inline-block;
     padding: 0.05rem 0.65rem;
@@ -205,6 +227,7 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     color: #fff;
     border-radius: 999px;
     font-weight: 700;
+    text-align: left;
 }
 
 /* Same shape as .name-pill, for a computed value sitting next to it (e.g. the IMD score's mean/
@@ -217,6 +240,7 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     color: #1a1a1a;
     border-radius: 999px;
     font-weight: 700;
+    text-align: left;
 }
 
 /* Same shape again, for anything mentioned by name that has its own established colour elsewhere
@@ -229,6 +253,7 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     padding: 0.05rem 0.65rem;
     border-radius: 999px;
     font-weight: 700;
+    text-align: left;
 }
 
 /* map + slider - not a Bootstrap component */
