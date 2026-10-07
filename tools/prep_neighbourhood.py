@@ -16,9 +16,15 @@ tables (nbhd_fpc.csv, nbhd_gb2c.csv) must stay out of the repository: they are c
 twice, and nothing in the code, tests or docs may contain their area-level values.
 
 One table per product, each keyed on `area_code`, so a new version of one product replaces one
-table and nothing else. Great Britain only (Northern Ireland is dropped).
+table and nothing else. Great Britain only (Northern Ireland is dropped) - except nbhd_oac and
+nbhd_count, which keep Northern Ireland: the 2021/2 UK OAC genuinely classifies it (real 2021 NISRA
+census data, not a modelled stand-in), so dropping it would make the OAC population-share baseline a
+Great Britain number wearing a UK label. Every other product (LOAC, AHAH, IMD, FPC, GB2C, and the
+LSOA-level population count below) stays Great Britain/London only, as it always has (confirmed
+2026-10-07).
 
-  nbhd_oac    UK OAC 2021/22   output area: 2021 (England, Wales), 2022 (Scotland)
+  nbhd_oac    UK OAC 2021/22   output area: 2021 (England, Wales), 2022 (Scotland), 2021 (Northern
+              Ireland, NISRA Small Area, code prefix N20 - same shape as an output area, different name)
   nbhd_loac   London OAC 2021  output area 2021, London only
   nbhd_ahah   AHAH v5.1        LSOA 2021 (England, Wales), data zone 2022 (Scotland)
   nbhd_imd    deprivation      LSOA 2021 (England IoD 2025, Wales WIMD 2025), data zone 2011 (Scotland SIMD 2020v2)
@@ -26,9 +32,11 @@ table and nothing else. Great Britain only (Northern Ireland is dropped).
   nbhd_gb2c   GB2C gambling classification (SAFEGUARDED): LSOA 2021, data zone 2022 (Scotland); 11 groups (the area's
               modal Active Subgroup) - inside 3 groups (BG, B, G), not stored, derivable from the group code's own prefix
   nbhd_count  2021/22 Census population (GeoDS Unified UK Census Data), output area: 2021 (England, Wales), 2022
-              (Scotland). Not safeguarded. Population baseline for the OAC/LOAC bar charts.
-  nbhd_count_lsoa  the same population, summed to LSOA 2021 / data zone 2022. Not safeguarded. Population
-              baseline for the GB2C/FPC/AHAH/IMD bar charts.
+              (Scotland), 2021 (Northern Ireland). Not safeguarded. Population baseline for the OAC/LOAC bar
+              charts - OAC's own share is UK-wide; LOAC only ever looks up its own (always London) codes.
+  nbhd_count_lsoa  the same population, summed to LSOA 2021 / data zone 2022, Great Britain only (drops
+              Northern Ireland again - GB2C/FPC/AHAH/IMD are Great Britain products). Not safeguarded.
+              Population baseline for the GB2C/FPC/AHAH/IMD bar charts.
 
 Deprivation: each country is ranked on its own (rank 1 = most deprived) and given deciles and
 percentiles from that rank, then the three countries are treated as comparable. They are not
@@ -51,6 +59,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parent.parent
 
 GB = {"E": "England", "W": "Wales", "S": "Scotland"}  # Northern Ireland is left out
+UK = {**GB, "N": "Northern Ireland"}  # nbhd_oac/nbhd_count only - see the module docstring
 
 INPUTS = {
     "oac": "oac21/uk_oac_final.csv",
@@ -70,7 +79,9 @@ INPUTS = {
 
 # Written into manifest.json so the geography and the direction of each scale travel with the tables.
 NOTES = {
-    "nbhd_oac": "UK OAC 2021/22. area_code is an output area: 2021 for England and Wales, 2022 for Scotland (ONSPD oa21cd).",
+    "nbhd_oac": "UK OAC 2021/22. area_code is an output area: 2021 for England and Wales, 2022 for Scotland (ONSPD oa21cd), "
+                "2021 for Northern Ireland (NISRA Small Area, code prefix N20). The only table here that keeps Northern "
+                "Ireland, so the OAC population-share baseline is a genuine UK share.",
     "nbhd_loac": "London OAC 2021, London output areas only (ONSPD oa21cd).",
     "nbhd_ahah": "AHAH v5.1. area_code is a 2021 LSOA (England, Wales) or 2022 data zone (Scotland) (ONSPD lsoa21cd). "
                  "DIRECTION: rank 1 and decile 1 = healthiest, decile 10 = least healthy.",
@@ -84,15 +95,17 @@ NOTES = {
                  "or 2022 data zone (Scotland) (ONSPD lsoa21cd), as for AHAH/FPC. gb2c_group is the area's modal (most common) "
                  "Active Subgroup, one of 11 codes (BG1-BG6, B1-B2, G1-G3) inside 3 groups (BG, B, G - the group is the code's "
                  "own prefix, not a separate column). Categories: no order is claimed.",
-    "nbhd_count": "2021/22 Census usual resident population, per output area (2021 England/Wales, 2022 Scotland, ONSPD oa21cd) - "
-                  "GeoDS's own Unified UK Census Data (data.geods.ac.uk), table uk001, variable uk001001. Not safeguarded - a "
-                  "public, openly-licensed count. Population baseline for OAC/LOAC bars (this geography already matches theirs).",
+    "nbhd_count": "2021/22 Census usual resident population, per output area (2021 England/Wales, 2022 Scotland, 2021 Northern "
+                  "Ireland, ONSPD oa21cd / NISRA Small Area) - GeoDS's own Unified UK Census Data (data.geods.ac.uk), table "
+                  "uk001, variable uk001001. Not safeguarded - a public, openly-licensed count. Population baseline for "
+                  "OAC/LOAC bars (OAC's own share is UK-wide; LOAC only ever looks up its own, always-London codes).",
     "nbhd_count_lsoa": "The same population, summed to its parent LSOA (England/Wales) or data zone (Scotland), via public ONS "
-                       "(OA21->LSOA21) and NRS (OA22->DZ22) hierarchy lookups - not safeguarded, no group/classification data "
-                       "involved, geography only. Population baseline for GB2C/FPC/AHAH/IMD bars.",
+                       "(OA21->LSOA21) and NRS (OA22->DZ22) hierarchy lookups - Great Britain only (drops Northern Ireland "
+                       "again, unlike nbhd_count). Not safeguarded, no group/classification data involved, geography only. "
+                       "Population baseline for GB2C/FPC/AHAH/IMD bars.",
 }
 
-OA_RE = re.compile(r"^[EWS]00\d{6}$")
+OA_RE = re.compile(r"^([EWS]00|N20)\d{6}$")  # N20... is Northern Ireland's Small Area code (nbhd_oac/nbhd_count)
 ZONE_RE = re.compile(r"^[EWS]01\d{6}$")  # LSOAs and data zones
 
 
@@ -108,8 +121,8 @@ def find_column(df, start):
     return hits[0]
 
 
-def by_country(codes):
-    return codes.str[0].map(GB).value_counts().reindex(GB.values()).fillna(0).astype(int).to_dict()
+def by_country(codes, countries=GB):
+    return codes.str[0].map(countries).value_counts().reindex(countries.values()).fillna(0).astype(int).to_dict()
 
 
 # ---------------------------------------------------------------------------
@@ -118,7 +131,7 @@ def by_country(codes):
 
 def prep_oac(raw, problems):
     df = pd.read_csv(raw / INPUTS["oac"], dtype=str)
-    df = df[df["GeographyCode"].str[0].isin(GB)]  # drops Northern Ireland
+    df = df[df["GeographyCode"].str[0].isin(UK)]  # keeps Northern Ireland - see the module docstring
     out = pd.DataFrame({"area_code": df["GeographyCode"], "oac_supergroup": df["Supergroup"],
                         "oac_group": df["Group"], "oac_subgroup": df["Subgroup"]})
     if not out.area_code.str.match(OA_RE).all():
@@ -136,9 +149,11 @@ def prep_oac(raw, problems):
 
 def prep_count(raw, problems):
     """Output-area population, for the OAC/LOAC bar baselines. uk001001/002/003 = total / in households /
-    in communal establishments (checked: 002 + 003 == 001 for every row); only the total is kept."""
+    in communal establishments (checked: 002 + 003 == 001 for every row); only the total is kept. Keeps
+    Northern Ireland, unlike every other product here, so OAC's population-share baseline is a genuine
+    UK share; prep_count_lsoa() below drops Northern Ireland again for the Great Britain-only products."""
     df = pd.read_csv(raw / INPUTS["census_population"], dtype=str)
-    df = df[df["OA"].str[0].isin(GB)]  # drops Northern Ireland, same rule as every other product
+    df = df[df["OA"].str[0].isin(UK)]  # keeps Northern Ireland - see the module docstring
     out = pd.DataFrame({"area_code": df["OA"], "population": df["uk001001"].astype(int)})
     if not out.area_code.str.match(OA_RE).all():
         problems.append("count: some area codes are not output area codes")
@@ -158,7 +173,10 @@ def prep_count_lsoa(raw, count, problems):
     """prep_count()'s output-area population, summed up to its parent LSOA (England, Wales) or data
     zone (Scotland) - the geography GB2C/FPC/AHAH/IMD actually use. The census file itself has no
     parent-area column, so this uses separate public ONS (OA21->LSOA21, England/Wales) and NRS
-    (OA22->DZ22, Scotland) lookups just for the hierarchy, not for any population figure."""
+    (OA22->DZ22, Scotland) lookups just for the hierarchy, not for any population figure. Great
+    Britain only: drops Northern Ireland again, since prep_count() (unusually) kept it and GB2C/FPC/
+    AHAH/IMD are Great Britain products, not UK ones."""
+    count = count[count.area_code.str[0].isin(GB)]
     ew = pd.read_csv(raw / INPUTS["oa_lsoa_ew"], dtype=str)[["OA21CD", "LSOA21CD"]]
     ew = ew.rename(columns={"OA21CD": "area_code", "LSOA21CD": "parent"})
     sc = pd.read_csv(raw / INPUTS["oa_dz_scotland"], dtype=str)[["OA22", "DZ22"]]
@@ -368,8 +386,9 @@ def main():
     for name, df in tables.items():
         path = args.out / f"{name}.csv"
         df.to_csv(path, index=False, lineterminator="\n")
+        countries = UK if name in ("nbhd_oac", "nbhd_count") else GB  # only these two keep Northern Ireland
         manifest[name] = {"file": path.name, "notes": NOTES[name], "rows": len(df), "columns": list(df.columns),
-                          "by_country": by_country(df.area_code), "sha256": sha256(path),
+                          "by_country": by_country(df.area_code, countries), "sha256": sha256(path),
                           "inputs": {INPUTS[i]: sha256(args.raw / INPUTS[i]) for i in inputs_used[name]}}
         print(f"{name:10} {len(df):>8,} rows   {manifest[name]['by_country']}")
     (args.out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")

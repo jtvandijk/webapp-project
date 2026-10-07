@@ -76,12 +76,13 @@ class Audit:
     def oac(self):
         print("=== UK OAC: is every value identical to the download?")
         raw = self._oac_raw()
-        gb = {k: v for k, v in raw.items() if k[0] in "EWS"}
+        uk = {k: v for k, v in raw.items() if k[0] in "EWSN"}  # kept, including Northern Ireland - see
+                                                                # tools/prep_neighbourhood.py's docstring
         ours = {r["area_code"]: (r["oac_supergroup"], r["oac_group"], r["oac_subgroup"]) for r in self.prepared("oac")}
-        common = self.same_areas("OAC", ours, gb)
-        different = sum(ours[k] != gb[k] for k in common)
+        common = self.same_areas("OAC", ours, uk)
+        different = sum(ours[k] != uk[k] for k in common)
         self.check(not different, f"OAC: {different} areas have a value that differs from the download")
-        print(f"download {len(raw):,} areas (Northern Ireland {len(raw) - len(gb):,}, left out on purpose); table {len(ours):,}; "
+        print(f"download {len(raw):,} areas (all kept, Northern Ireland included); table {len(ours):,}; "
               f"areas whose supergroup, group or subgroup differs: {different}")
 
     def loac(self):

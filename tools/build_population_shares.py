@@ -17,6 +17,11 @@ rule tools/prep_neighbourhood.py already follows.
 LOAC's denominator is London's own population (the London output areas already in nbhd_loac.csv),
 not Great Britain's - its groups partition London only, so "expected share" has to mean "share of
 Londoners", not "share of Great Britain" (confirmed with the user, 2026-10-06).
+
+OAC's denominator is the UK's population, Northern Ireland included - unlike every other classification
+here, nbhd_oac.csv and nbhd_count.csv both carry Northern Ireland (see tools/prep_neighbourhood.py's
+docstring), because the 2021/2 UK OAC genuinely classifies it. Without that, this baseline would be a
+Great Britain number describing itself as a UK one (confirmed with the user, 2026-10-07).
 """
 import csv
 import json

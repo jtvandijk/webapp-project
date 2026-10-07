@@ -110,7 +110,7 @@ CARDS = {
                 "and the <a href=\"https://data.geods.ac.uk/dataset/output-area-classification-2021\" target=\"_blank\" rel=\"noopener\">GeoDS dataset page</a>. "
                 "We show the distribution of your selected family group across 2021/22 OAC Supergroups "
                 "and Groups, with links to the attributes of these neighbourhoods. The tick mark on "
-                "each bar shows that Supergroup or Group's actual share of Great Britain's population."},
+                "each bar shows that Supergroup or Group's actual share of the UK's population."},
     "loac": {"title": "London's Geodemographic Structure: the London Output Area Classification",
              "about": "As the UK capital, some attributes of Greater London's distinctive neighbourhoods "
                  "are not described fully by nationwide geodemographic classifications. The London "
