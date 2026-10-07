@@ -7,29 +7,20 @@ neighbourhoods compare on deprivation, access to healthy services, financial cir
 The live site is at [apps.geods.ac.uk/gbnames](https://apps.geods.ac.uk/gbnames/), part of Smart
 Data Research UK's Geographic Data Service (GeoDS).
 
-## Status: rebuild complete, prepared for deployment
+## How it works
 
-The site as currently live (source in [`gbnames/`](gbnames/), a Django app backed by Postgres) is
-being replaced from scratch, for two reasons:
-
-- **The data needed updating.** New consumer registers (to 2026), the 1921 census, and refreshed
-  neighbourhood classifications - all now done (see [docs/pipeline.md](docs/pipeline.md)'s Status
-  and [docs/census-data-checks.md](docs/census-data-checks.md)).
-- **The current site does not cope with a traffic spike.** It went down after going viral on social
-  media, most likely a Postgres bottleneck - a single name search runs roughly 22 database queries.
-
-The plan (see [docs/pipeline.md](docs/pipeline.md)) is to precompute everything a visitor could ask
-for into small static files, so the public site becomes a plain file server with no database and no
-per-request computation - unaffected by the kind of load that took the old site down.
-
-`gbnames/` (the currently live Django app) stays in the repository for reference until the rebuild
-replaces it; nothing in the rebuild depends on it.
+Everything a visitor could ask for is precomputed once from the underlying data - censuses,
+consumer registers, neighbourhood classifications - and published as small static files, so the
+public site is a plain file server: no database, no per-request computation. Data covers the 1921
+census, consumer registers through 2026, and refreshed neighbourhood classifications (UK and London
+OAC, AHAH, deprivation, financial precarity, gambling behaviours, ethnicity) - see
+[docs/pipeline.md](docs/pipeline.md) and [docs/census-data-checks.md](docs/census-data-checks.md)
+for exactly what is loaded and how.
 
 **Where things stand.** The data pipeline (stages 1-6) has run for real on the HPC, both sources,
 all seven census years - see [docs/pipeline.md](docs/pipeline.md)'s Status. The public website
-(`site/`) is built and has been tested against the real release on a personal server; this
-repository is now being prepared for handover and deployment, replacing the live site above
-directly.
+(`site/`) is built and has been tested against the real release; this repository is prepared for
+deployment.
 
 ## Where to start reading
 
