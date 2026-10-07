@@ -86,11 +86,20 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     border-top: 1px solid #e2e2e2;
 }
 
+.footer-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+}
+
 .footer-social-link {
     display: inline-flex;
+    flex: none;
     align-items: center;
     gap: 0.35rem;
-    margin-top: 0.75rem;
+    white-space: nowrap;
     color: #6c757d;
     font-size: 0.875rem;
 }
@@ -111,9 +120,13 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     margin-bottom: 1.5rem;
 }
 
+/* The heading stays close to full size - it's one short line. The .lead paragraph below it (and
+   the "...or try one of these names:" label, which also carries .lead) is a long block of prose
+   that reads as shouty at Bootstrap's 1.25rem on a phone - .example-names's name chips aren't
+   .lead, so they're untouched. */
 @media (max-width: 575.98px) {
-    #welcomePanel h1 {
-        font-size: 1.2rem;
+    #welcomePanel .lead {
+        font-size: 1rem;
     }
 }
 
@@ -138,6 +151,7 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
 
     #navSearchWrapper .form-inline {
         justify-content: center;
+        gap: 0.5rem;
     }
 }
 
