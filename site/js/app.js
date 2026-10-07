@@ -56,6 +56,10 @@ let currentName = null;    // the fetched name's own JSON
 let currentPeriods = [];   // manifest period entries this name has a map for, in slider order
 let periodPills = [];      // one button per currentPeriods entry, same order, so showPeriod can mark the active one
 
+function scrollToTop() {
+    window.scrollTo(0, 0);
+}
+
 // "welcome" (first visit), "idle" (welcome dismissed, nothing searched), "notfound" or "result".
 function setMode(mode) {
     welcomePanel.hidden = mode !== "welcome";
@@ -66,12 +70,16 @@ function setMode(mode) {
     navSearchWrapper.hidden = mode === "welcome";
     if (mode === "result" || mode === "notfound") {
         // On mobile, hiding welcomePanel and revealing the map/result below it is a big layout
-        // shift right as the on-screen keyboard dismisses after search - browsers try to keep the
-        // previously-focused input in view across that shift and often land somewhere around the
-        // map instead of the top. Force it back; the rAF and short timeout both fire after the
-        // shift (and keyboard-dismiss animation) have settled, so neither gets overridden by it.
-        requestAnimationFrame(() => window.scrollTo(0, 0));
-        setTimeout(() => window.scrollTo(0, 0), 150);
+        // shift right as the on-screen keyboard dismisses after search - the same scrollTop can
+        // land on completely different content once that shift has happened, and iOS Safari's own
+        // keyboard-dismiss/focus handling can re-scroll on its own some tens of ms later. One call
+        // isn't enough to reliably win that race, so this fires repeatedly across the next ~0.4s
+        // (next paint, the paint after that, then two later timeouts) - each call is a cheap no-op
+        // once the page is already at the top.
+        scrollToTop();
+        requestAnimationFrame(() => { scrollToTop(); requestAnimationFrame(scrollToTop); });
+        setTimeout(scrollToTop, 150);
+        setTimeout(scrollToTop, 400);
     }
 }
 
@@ -83,6 +91,7 @@ function wireSearchForm(form, input) {
 }
 
 async function init() {
+    if ("scrollRestoration" in window.history) window.history.scrollRestoration = "manual";
     [manifest, lookups, placesLookup] = await Promise.all([fetchManifest(), fetchLookups(), fetchPlacesLookup()]);
     mapController = createMap(document.getElementById("map"), manifest);
 
@@ -126,6 +135,10 @@ function loadFromUrl() {
 let searchToken = 0;
 
 async function runSearch(raw, { updateUrl = true } = {}) {
+    // Blur whatever's focused (the search input, most likely) so the on-screen keyboard starts
+    // dismissing immediately rather than whenever the browser otherwise gets round to it - less
+    // time for its dismiss animation to fight the scrollToTop calls in setMode() below.
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     const key = surnameKey(raw);
     const myToken = ++searchToken;
     if (!key) {

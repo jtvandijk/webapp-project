@@ -111,6 +111,12 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     margin-bottom: 1.5rem;
 }
 
+@media (max-width: 575.98px) {
+    #welcomePanel h1 {
+        font-size: 1.5rem;
+    }
+}
+
 #closeWelcome {
     position: absolute;
     top: 1rem;
@@ -215,32 +221,34 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
 
 /* A small inline version of the same pill, for a searched name mentioned mid-sentence (e.g. the
    IMD score text) - same navy/white/fully-rounded language as .result-name-pill, sized to sit on
-   a text line without disrupting it. */
-/* text-align: left overrides the justify these inherit from the prose paragraph they sit inline in
-   (.indicator-text/.card-body p) - without it, a pill landing alone on its own wrapped line on a
-   narrow screen gets stretched to fill the line width, since justify has nothing else on that line
-   to space out instead. */
+   a text line without disrupting it. display:inline rather than inline-block, with
+   box-decoration-break:clone, because a long value (e.g. a Supergroup/Group name) can outgrow a
+   narrow mobile line: an inline-block that has to wrap is sized to the line's full available
+   width by CSS's shrink-to-fit rule (not to its own wrapped content), which stretched the pill
+   into one oversized box - clone instead paints each wrapped line as its own snug pill. */
 .name-pill {
-    display: inline-block;
+    display: inline;
     padding: 0.05rem 0.65rem;
     background: var(--navy);
     color: #fff;
     border-radius: 999px;
     font-weight: 700;
-    text-align: left;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
 }
 
 /* Same shape as .name-pill, for a computed value sitting next to it (e.g. the IMD score's mean/
    spread) - light grey/black instead of navy/white, so the searched name and its numbers read as
    two different kinds of thing at a glance. */
 .value-pill {
-    display: inline-block;
+    display: inline;
     padding: 0.05rem 0.65rem;
     background: #e2e2e2;
     color: #1a1a1a;
     border-radius: 999px;
     font-weight: 700;
-    text-align: left;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
 }
 
 /* Same shape again, for anything mentioned by name that has its own established colour elsewhere
@@ -249,11 +257,12 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
    (site/js/indicators.js's contrastText()) since these scales run from dark reds/greens to very
    light yellows and no single fixed text colour reads on all of them. */
 .colour-pill {
-    display: inline-block;
+    display: inline;
     padding: 0.05rem 0.65rem;
     border-radius: 999px;
     font-weight: 700;
-    text-align: left;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
 }
 
 /* map + slider - not a Bootstrap component */
@@ -615,10 +624,12 @@ details[open] > summary .bar-chevron {
 }
 
 .eth-pill {
-    display: inline-block;
+    display: inline;
     padding: 0.4rem 1.1rem;
     border-radius: 999px;
     font-weight: 700;
     font-size: 1.05rem;
     color: #1a1a1a;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
 }
