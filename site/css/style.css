@@ -81,21 +81,26 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
 }
 
 .site-footer {
-    margin-top: 2rem;
+    margin-top: 2.5rem;
     padding: 1.5rem 0 2rem;
     border-top: 1px solid #e2e2e2;
 }
 
-/* margin: 2rem 0 0 (no bottom margin) matches .site-footer's own margin-top: 2rem immediately
-   below it, so the gap above this row (from the last bit of body content) and the gap below it
-   (down to the footer's divider) read as the same size. */
+/* padding-top, not margin-top: the element right before this row differs by page state (the
+   always-visible map card on first load vs. the bearer-counts card after a search), and a margin
+   here would collapse with whichever one of those happens to precede it instead of reliably
+   adding a fixed gap on top of it - which is exactly why the two states read as different amounts
+   of space. padding never collapses, so the gap above is now the same regardless of what's above
+   it. margin-bottom:0 leaves the gap below to collapse cleanly with .site-footer's own
+   margin-top, same as before. */
 .follow-us {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-wrap: wrap;
     gap: 0.75rem;
-    margin: 2rem 0 0;
+    margin: 0;
+    padding-top: 2.5rem;
     font-weight: 600;
 }
 
