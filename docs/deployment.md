@@ -69,10 +69,10 @@ location /gbnames/data/ {
 
 ## Google Analytics
 
-The pages say GBNames uses Google Analytics, but the tag is not in the files: add your GA tag to the `<head>` of
-**both** `index.html` and `about.html`. Note that the old site's tag is Universal Analytics (`UA-157283744-…`),
-which Google stopped processing in 2023; a GA4 tag (`G-…`) is needed. Searches change the address
-(`?name=smith`) without reloading the page; GA4's enhanced measurement counts these as page views by default.
+Already included: the GA4 tag (`G-PL2DNHVGGL`, property "gbnames - liverpool") is in the `<head>` of both
+`index.html` and `about.html`; nothing to add. (The old site's tags are Universal Analytics, `UA-157283744-…`,
+which Google stopped processing in 2023.) Searches change the address (`?name=smith`) without reloading the page;
+GA4's enhanced measurement counts these as page views by default.
 
 ## What the site loads from elsewhere
 
