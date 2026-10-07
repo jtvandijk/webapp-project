@@ -99,9 +99,25 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     font-weight: 600;
 }
 
+/* img/geodslogo-icon.svg is a cropped copy of the navbar's logo - that original file is the icon
+   plus the full "Geographic Data Service" wordmark with the wordmark filled solid white (meant to
+   read against the navy navbar), so reusing it here against a white page made the text invisible
+   and, since the wordmark is a thin band within a much taller viewBox, too small to read even once
+   recoloured - hence a separate icon-only crop plus this row's own real text instead.
+   margin-right pulls the link closer to the divider than the row's own gap (kept full-size for the
+   divider-to-LinkedIn side). filter:none on hover overrides the generic a:hover{filter:
+   brightness(0.8)} rule above - not wanted here, per feedback. */
 .follow-us-logo-link {
     display: inline-flex;
     align-items: center;
+    gap: 0.4rem;
+    margin-right: -0.4rem;
+    color: #6c757d;
+}
+
+.follow-us-logo-link:hover {
+    color: var(--navy);
+    filter: none;
 }
 
 .follow-us-divider {
