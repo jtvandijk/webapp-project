@@ -41,7 +41,6 @@ const periodLabel = document.getElementById("periodLabel");
 const periodNote = document.getElementById("periodNote");
 const prevPeriodBtn = document.getElementById("prevPeriod");
 const nextPeriodBtn = document.getElementById("nextPeriod");
-const closeWelcomeBtn = document.getElementById("closeWelcome");
 const navSearchWrapper = document.getElementById("navSearchWrapper");
 const indicatorContainer = document.getElementById("indicatorContainer");
 const moreAboutContainer = document.getElementById("moreAboutContainer");
@@ -60,7 +59,7 @@ function scrollToTop() {
     window.scrollTo(0, 0);
 }
 
-// "welcome" (first visit), "idle" (welcome dismissed, nothing searched), "notfound" or "result".
+// "welcome" (first visit), "notfound" or "result" after a search.
 function setMode(mode) {
     welcomePanel.hidden = mode !== "welcome";
     notFoundPanel.hidden = mode !== "notfound";
@@ -110,7 +109,6 @@ async function init() {
     periodSlider.addEventListener("input", () => showPeriod(Number(periodSlider.value)));
     prevPeriodBtn.addEventListener("click", () => stepPeriod(-1));
     nextPeriodBtn.addEventListener("click", () => stepPeriod(1));
-    closeWelcomeBtn.addEventListener("click", () => setMode("idle"));
     window.addEventListener("popstate", loadFromUrl);
 
     loadFromUrl();

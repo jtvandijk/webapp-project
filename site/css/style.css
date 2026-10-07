@@ -113,14 +113,8 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
 
 @media (max-width: 575.98px) {
     #welcomePanel h1 {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
     }
-}
-
-#closeWelcome {
-    position: absolute;
-    top: 1rem;
-    right: 1.25rem;
 }
 
 /* search */
@@ -131,6 +125,20 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
 
 #navSearchWrapper .form-control {
     min-width: 12rem;
+}
+
+/* Below the md breakpoint (where the navbar collapses behind the hamburger, site/js/nav.js), the
+   search form drops onto its own row under the brand - give it some breathing room there and
+   centre it, rather than sitting flush against the row above. */
+@media (max-width: 767.98px) {
+    #navSearchWrapper {
+        width: 100%;
+        padding: 0.75rem 0 0.5rem;
+    }
+
+    #navSearchWrapper .form-inline {
+        justify-content: center;
+    }
 }
 
 .example-names-label {

@@ -131,8 +131,8 @@ export function createMap(container, manifest) {
         }
     }
 
-    // Called whenever the page is about to show something other than a result (welcome, idle, not
-    // found) - without this, a previous search's KDE polygons and Scotland mask are left sitting on
+    // Called whenever the page is about to show something other than a result (welcome, not found)
+    // - without this, a previous search's KDE polygons and Scotland mask are left sitting on
     // the map, since it's a permanent fixture of the page rather than something hidden/shown with
     // resultSection.
     function clear() {
