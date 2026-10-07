@@ -147,7 +147,7 @@ CARDS = {
                 "entered - not a record of any individual's own identity. Better estimates can be "
                 "obtained using the full names classification software available through GeoDS; see "
                 "<a href=\"https://doi.org/10.1371/journal.pone.0201774\" target=\"_blank\" rel=\"noopener\">Kandt and Longley (2018)</a> "
-                "and the <a href=\"https://data.geods.ac.uk/dataset/ethnicity-estimator\" target=\"_blank\" rel=\"noopener\">GeoDS dataset page</a>."},
+                "and request access via the <a href=\"https://data.geods.ac.uk/dataset/ethnicity-estimator\" target=\"_blank\" rel=\"noopener\">GeoDS Ethnicity Estimator page</a>."},
     "imd": {"title": "Neighbourhood Deprivation in Britain",
             "about": "Neighbourhoods can be ranked from most to least deprived; England, Wales and "
                 "Scotland are each ranked separately, converted to percentiles, and combined into one "
