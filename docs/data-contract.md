@@ -106,7 +106,7 @@ Everything that used to be typed into the code as a list of years now lives here
 - `release`: version, date, and `synthetic` (true for sample data).
 - `threshold`: the minimum number of bearers for a map (100).
 - `sources`: `census` and `register`, with the label, what is being counted, and the years covered
-  (`coverage`), which page text uses ("over the period 1997-2016").
+  (`coverage`), which page text uses ("over the period 1997-2026").
 - `standardisation`: `base_year` (text, the register year every `counts_standardised` figure is scaled to),
   `population` (that year's, and every other register year's, total tracked register population -
   `work/register_population.csv`'s own figures, stage 1 - every register year, not only the ones with a map), and

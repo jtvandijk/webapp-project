@@ -1,7 +1,7 @@
 # First run in the TRE: checks before anything is exported
 
-**Status: draft, written before the first real run.** Stage 5 has only run on fake data, so improve this
-list as the first real run teaches us what actually goes wrong.
+**Status: stage 5 has since run for real in the TRE (2026-09-26, see how-to-build-the-dataset.md section
+3).** Keep this list updated as real runs keep teaching us what actually goes wrong.
 
 Why it exists: anything wrong in the neighbourhood tables or the facts only shows up after a long run and an
 export out of the TRE, and then the whole thing has to be run again. Every step below can be done *before*
@@ -25,7 +25,7 @@ shasum -a 256 work/neighbourhood/*.csv      # the checksums; the same ones are i
 
 ## 2. In the TRE: did the upload arrive intact?
 
-In the folder you uploaded the five CSVs to:
+In the folder you uploaded the six CSVs to:
 
 ```
 sha256sum nbhd_*.csv                        # each must equal the checksum in manifest.json
@@ -36,7 +36,7 @@ wc -l nbhd_*.csv                            # one more than the row counts below
 
 ```
 python3 -m pipeline.nbhd_tables ddl --csv-dir <that folder> > make_tables.sql
-psql ... -f make_tables.sql                 # creates the five tables and loads the CSVs
+psql ... -f make_tables.sql                 # creates the six tables and loads the CSVs
 ```
 
 ```sql

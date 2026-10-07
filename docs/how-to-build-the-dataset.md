@@ -25,12 +25,12 @@ typed `python3 -m pipeline.s5_facts --names smith` uses the same sources as the 
 
 | # | Step | What it does | Reads | Writes (in `work/`) | How it runs | Measured |
 |---|---|---|---|---|---|---|
-| 0 | Neighbourhood tables | Turn the downloads in `raw-indicators/` into five lookup tables and load them into the database | downloads (on your laptop) | `neighbourhood/*.csv` | laptop: `python3 tools/prep_neighbourhood.py`, then in the TRE `nbhd_tables ddl` + psql | done once, redo when a table changes |
+| 0 | Neighbourhood tables | Turn the downloads in `raw-indicators/` into six lookup tables and load them into the database | downloads (on your laptop) | `neighbourhood/*.csv` | laptop: `python3 tools/prep_neighbourhood.py`, then in the TRE `nbhd_tables ddl` + psql | done once, redo when a table changes |
 | 1 | Counts | Bearers of every surname in every year; the list of names that get a page; the register's own total population per year | register, census | `counts.csv`, `names.csv`, `register_population.csv` | `qsub pipeline/hpc/stage1.sh` | about 27 min, both sources, full run |
 | 2 | Surfaces | One smoothed density of *everybody* per map period, for weighting the maps | register, census | `surfaces/<period>.npy` | `qsub pipeline/hpc/stage2.sh` | about 12 min, both sources, full run (15 periods) |
 | 3 | Extracts | One query per period pulls where every listed name's bearers are; split into chunks by name | register, census | `chunks/<period>/<n>.csv`, `chunks/CHUNKS` | `qsub pipeline/hpc/stage3.sh` | about 46 min, both sources, the full name list (a quiet database) |
-| 4 | Maps | The map of every name and period, no database access; an array job, one task per chunk | steps 2 and 3 | `maps/chunk_<n>.jsonl`, `stats/chunk_<n>.csv` | `qsub -t 1-<GBNAMES_CHUNKS> pipeline/hpc/stage4.sh`, then `python3 -m pipeline.merge_stats` | about 2-3 min per chunk, 200 chunks, both sources, a 5,000-name sample |
-| 5 | Facts | Neighbourhood classifications, top neighbourhoods, ethnicity, forenames, and from the census historic forenames and parishes | step 1, register, census, the tables of step 0 | `facts/facts.csv`, `facts/report.txt` | `qsub pipeline/hpc/stage5.sh` | about 23 min, both sources, a 5,000-name sample; not yet measured on the full list |
+| 4 | Maps | The map of every name and period, no database access; an array job, one task per chunk | steps 2 and 3 | `maps/chunk_<n>.jsonl`, `stats/chunk_<n>.csv` | `qsub -t 1-<GBNAMES_CHUNKS> pipeline/hpc/stage4.sh`, then `python3 -m pipeline.merge_stats` | about 12 min per chunk at the slowest, 200 chunks, both sources, full run |
+| 5 | Facts | Neighbourhood classifications, top neighbourhoods, ethnicity, forenames, and from the census historic forenames and parishes | step 1, register, census, the tables of step 0 | `facts/facts.csv`, `facts/report.txt` | `qsub pipeline/hpc/stage5.sh` | about 1h20, both sources, full run |
 | 6 | Assemble | Turn stage 4's maps and stage 5's facts into one JSON file per surname (`docs/data-contract.md`); the search index; `manifest.json`; the real Scotland mask; a standardised register bearer count (`counts_standardised`, 2026-09-29) | step 1 (counts.csv and register_population.csv), steps 4 and 5 | `release/names/<xx>/<name>.json` (counts and maps), `release/facts.csv` (all the facts, one row per name and fact), `release/index/<xx>.json`, `release/manifest.json`, `release/masks/scotland.json` | once: `python3 -m pipeline.s6_assemble --prepare`, then `qsub -t 1-<GBNAMES_CHUNKS> pipeline/hpc/stage6.sh`, then `python3 -m pipeline.merge_release` | done, has run on the real HPC output. `lookups.json` and *why* a period has no map (`mapNotes`) are deliberately not built yet (docs/pipeline.md) |
 
 "Register" and "census" are two different databases; a step only opens the ones `GBNAMES_SOURCES` (in `run.settings`) names -
@@ -192,7 +192,7 @@ Everything here is written by the pipeline and ignored by git. Deleting a folder
 | `preview_maps/`, `cache/` | `preview.py` | numbered preview pages; the data they fetched |
 | `preview_facts/` | `s5_facts --names` | facts of a few names, each run kept |
 | `preview_web/` | `preview_web.py` | numbered preview pages of already-assembled release files |
-| `neighbourhood/` | `tools/prep_neighbourhood.py` | the five lookup tables (**one is safeguarded data: never leaves this machine or the TRE**) |
+| `neighbourhood/` | `tools/prep_neighbourhood.py` | the six lookup tables (**two are safeguarded data: never leave this machine or the TRE**) |
 | `logs/` | qsub | one log per job (create it once: `mkdir -p work/logs`, before the first qsub) |
 | `fake.db`, `fake_truth.json` | `fake_data.py` | the fake database, for development on a laptop |
 

@@ -4,18 +4,19 @@ GBNames lets you explore where a British surname is - and has been - concentrate
 from the census years 1851-1921 through to the present day. For any surname it shows who tends to
 bear it: the most common forenames, the neighbourhoods its bearers live in, and how those
 neighbourhoods compare on deprivation, access to healthy services, financial circumstances and more.
-The live site is at [apps.geods.ac.uk/gbnames](https://apps.geods.ac.uk/gbnames/), part of UCL's
-Geographic Data Service (GeoDS).
+The live site is at [apps.geods.ac.uk/gbnames](https://apps.geods.ac.uk/gbnames/), part of Smart
+Data Research UK's Geographic Data Service (GeoDS).
 
 ## Status: rebuild in progress, on this branch (`dev`)
 
 The site as currently live (source in [`gbnames/`](gbnames/), a Django app backed by Postgres) is
 being replaced from scratch, for two reasons:
 
-- **The data needs updating.** New consumer registers (to 2026), the 1921 census, and refreshed
-  neighbourhood classifications.
+- **The data needed updating.** New consumer registers (to 2026), the 1921 census, and refreshed
+  neighbourhood classifications - all now done (see [docs/pipeline.md](docs/pipeline.md)'s Status
+  and [docs/census-data-checks.md](docs/census-data-checks.md)).
 - **The current site does not cope with a traffic spike.** It went down after going viral on social
-  media, most likely a Postgres bottleneck - a single name search runs roughly 20 database queries.
+  media, most likely a Postgres bottleneck - a single name search runs roughly 22 database queries.
 
 The plan (see [docs/pipeline.md](docs/pipeline.md)) is to precompute everything a visitor could ask
 for into small static files, so the public site becomes a plain file server with no database and no
@@ -23,6 +24,10 @@ per-request computation - unaffected by the kind of load that took the old site 
 
 `gbnames/` (the currently live Django app) stays in the repository for reference until the rebuild
 replaces it; nothing in the rebuild depends on it.
+
+**Where things stand.** The data pipeline (stages 1-6) has run for real on the HPC, both sources,
+all seven census years - see [docs/pipeline.md](docs/pipeline.md)'s Status. What is left is the
+public website itself (`site/`), under active development.
 
 ## Where to start reading
 
@@ -43,7 +48,7 @@ replaces it; nothing in the rebuild depends on it.
 | `pipeline/` | The code that turns censuses and consumer registers into the public release: counting, the map calculation, disclosure rules. Runs partly inside a TRE (Trusted Research Environment), since the source data is individual-level. |
 | `docs/` | The data format and the pipeline plan (above). |
 | `tools/` | A sample-data generator and a validator for the future website's release format, and `prep_neighbourhood.py`, which turns the downloaded neighbourhood classifications into the lookup tables that go into the TRE. |
-| `site/` | An early prototype of the static website (paused; not the current focus). |
+| `site/` | The static website that reads the release format ([docs/data-contract.md](docs/data-contract.md)) - under active development. |
 | `gbnames/` | The currently live Django app (source of apps.geods.ac.uk/gbnames). Being replaced. |
 | `data-prep/` | The old, one-off pipeline code this rebuild replaced. No longer needed, and nothing reads it: keep it outside the project. If a copy is put back here it is **not tracked in git** (see `.gitignore`); it is several GB and includes working data extracts. |
 | `run.settings` | The choices that change from run to run (which database(s), how many names and chunks, which facts). Read by every stage; in git. |
