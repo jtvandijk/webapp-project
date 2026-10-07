@@ -658,6 +658,31 @@ details[open] > summary .bar-chevron {
     color: #555;
 }
 
+/* Historic Census / SmartCensus sub-headings on the About page - same tinted-badge treatment as
+   .place-chip (not coloured TEXT: #27cca4/#6baed6 text-on-white fails WCAG contrast, measured at
+   2.05:1 and 2.43:1, well under even the 3:1 large-text minimum - a badge keeps the brand colour
+   visible via background/border while the label itself stays fully legible dark text). Gives
+   SmartCensus a consistently-branded, clearly-labelled identity rather than just a clause in a
+   paragraph (Paul's request to flag it prominently, 2026-10-07). */
+.source-heading {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    border-left: 3px solid transparent;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.source-heading--census {
+    background: #eaf3fb;
+    border-left-color: var(--census-colour);
+}
+
+.source-heading--smart {
+    background: #e4f9f3;
+    border-left-color: var(--smart-colour);
+}
+
 .forename-pills {
     display: flex;
     flex-wrap: wrap;
