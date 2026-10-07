@@ -19,12 +19,12 @@ The code that turns the registers and censuses into the data behind the website 
 | `preview.py` | Draws a page of maps to look at. | done |
 | `sql.py`, `db.py`, `names.py` | The queries, the two database connections, the surname rule, `chunk_of()`. | done |
 | `s2_surfaces.py` | Stage 2: the population surface for one map period, once, shared by every name's map. | done, tested, run on the real HPC (about 12 minutes, both sources) |
-| `s3_extracts.py` | Stage 3: one query per period pulls every listed name's cells at once, split into chunk files. | done, tested, run on the real HPC (a 5,000-name sample so far) |
-| `s4_maps.py` | Stage 4 (the heavy step): every name and period in one chunk - no database access at all. | done, tested, run on the real HPC (a 5,000-name sample so far) |
+| `s3_extracts.py` | Stage 3: one query per period pulls every listed name's cells at once, split into chunk files. | done, tested, run on the real HPC (full name list, about 46 minutes) |
+| `s4_maps.py` | Stage 4 (the heavy step): every name and period in one chunk - no database access at all. | done, tested, run on the real HPC (full name list, about 12 minutes per chunk at the slowest) |
 | `merge_stats.py` | Combines stage 4's per-chunk stats CSVs into one file. | done |
-| `s5_facts.py` | Stage 5: the facts about each name (neighbourhood classifications, top neighbourhoods, ethnicity, forenames, and from the census historic forenames and parishes). One query per fact and reference year (per census year for the historic ones), saved, then computed. | done; both register and census have run in the TRE (a 5,000-name sample so far, about 23 minutes; the full name list is being run now) |
+| `s5_facts.py` | Stage 5: the facts about each name (neighbourhood classifications, top neighbourhoods, ethnicity, forenames, and from the census historic forenames and parishes). One query per fact and reference year (per census year for the historic ones), saved, then computed. | done; both register and census have run in the TRE (full name list, about 1h20) |
 | `nbhd_tables.py` | The SQL to create and load the neighbourhood tables in the TRE, and a check of them against the real register. | done, tested |
-| `s6_assemble.py` | Stage 6: stage 4's maps.jsonl + stage 5's facts.csv -> one JSON file per surname with its counts and maps, and the facts as one table (docs/data-contract.md). An array job like stage 4, no database access. `lookups.json` and `mapNotes` are deferred - see docs/pipeline.md's stage 6 row. | done, tested on fake data |
+| `s6_assemble.py` | Stage 6: stage 4's maps.jsonl + stage 5's facts.csv -> one JSON file per surname with its counts and maps, and the facts as one table (docs/data-contract.md). An array job like stage 4, no database access. `lookups.json` is made outside the TRE (`tools/build_lookups.py`); `mapNotes` is not built - see docs/pipeline.md's stage 6 row. | done, tested, run on the real HPC output |
 | `merge_release.py` | Combines stage 6's per-chunk output into `facts.csv` (one table, streamed), the search index, `manifest.json` and the real `masks/scotland.json`. | done, tested |
 | `preview_web.py` | A quick look at already-assembled release files: a name's maps, bearers per year and its facts as small tables (OAC/LOAC/FPC/GB2C groups by name, from `reference/group_names.json`), no database, no computation, stdlib only. | done, tested |
 | `hpc/stage1.sh` ... `stage6.sh` | The SGE jobs, one per stage (stages 4 and 6 an array). Which sources, how many chunks and names come from `run.settings`; memory and time are in each script. | stages 1-6 have all run on the real HPC (how to run stage 6: docs/how-to-build-the-dataset.md, end of section 10) |
@@ -90,8 +90,7 @@ later with more names added does not reshuffle any existing name into a differen
 **Stage 4 makes no database queries and needs no `PG*`/`GBNAMES_PROFILE` environment at all** -
 everything it needs was already written to disk by stages 2 and 3. On the HPC, `pipeline/hpc/stage4.sh`
 runs it as an SGE array job (`qsub -t 1-200 pipeline/hpc/stage4.sh`, one task per chunk); its
-`h_vmem`/`h_rt` are starting guesses, sized properly from the sample run's real timings, not
-measured yet. Each chunk writes `work/maps/chunk_<n>.jsonl` (one line per name-period: a "build"
+`h_vmem`/`h_rt` are sized from the real runs (docs/how-to-build-the-dataset.md, section 3). Each chunk writes `work/maps/chunk_<n>.jsonl` (one line per name-period: a "build"
 period carries its GeoJSON, a "substitute" period only names which period to copy - resolving that
 copy is stage 6's job, so identical geometry is never written twice) and `work/stats/chunk_<n>.csv`
 (bearers, bandwidth, the resolved `LEVEL_MASS`, `concentration`/`second_blob_share`, separate areas,
@@ -134,15 +133,13 @@ The neighbourhood facts join the register to neighbourhood tables, which have to
    names got each fact and why others did not, ties broken, ethnicity codes it did not recognise) and
    look at `work/facts/facts.csv`. Then the full run.
 
-Two `config.py` settings are not confirmed against the real tables yet (marked "check" in the `"tre"`
-profile): the columns of `registers_lookup.lookup_monica` (`name` and `gender` are assumed, as in the
-old `monica_gender`), and that `registers_derived.lcr_consol_ethest` has the same columns as
-`lcr_consol2026` plus `eth`. A wrong name gives a clear Postgres error naming it.
+The columns of `registers_lookup.lookup_monica` (`name`, `gender`) and of `registers_derived.lcr_consol_ethest`
+(those of `lcr_consol2026` plus `eth`) were confirmed by the full run. A wrong name gives a clear Postgres error naming it.
 
 **On the HPC, run it through qsub** (`qsub pipeline/hpc/stage5.sh`; the names, sources and facts come from
 `run.settings`), not on the login node: it is a few dozen queries that the database answers, plus light Python,
-so one job is enough and there is no array. Its memory (16G) and time (4h) are guesses; the run prints how
-many rows each query returned and how long it took, so a sample run tells you what the full one needs. The
+so one job is enough and there is no array. Its memory (16G) and time (4h) cover the full run (about 1h20); the run prints how
+many rows each query returned and how long it took. The
 biggest fetch is the top neighbourhoods for the newest year, one row per name and neighbourhood.
 
 The first run is the slow one: one query per fact and reference year, each scanning the register, saved
@@ -155,12 +152,12 @@ is always the latest).
 
 **The historic facts** (forenames with their sex, and parishes) come from the census database: one query per census
 year, pooled. `--sources register` or `--sources census` chooses which databases are used (only the ones needed are
-opened; `GBNAMES_SOURCES` in `run.settings` is the default, register-only until the census database is ready).
+opened; `GBNAMES_SOURCES` in `run.settings` is the default, now both).
 `--census-years 1851 1861 1881 1891 1901 1911` pools only those years, for testing before 1921 is loaded; the
 years actually pooled are written in each row's `detail`. They count the same people as the census counts and maps
 (a parish that is found in that year's boundaries, and not id 0). A parish is counted by county and name, not by id,
 because the 1851 and 1901 boundaries number their parishes differently. The 1921 census is assumed to have the same
-table layout as the others (`census.gb1921`, `gb1921_att`, boundaries of 1901): confirm this when it is loaded.
+table layout as the others (`census.gb1921`, `gb1921_att`, boundaries of 1901), confirmed by the full run.
 
 **A saved extract is trusted while the names it was made for are unchanged. It cannot notice that the
 database, or a neighbourhood table, has changed since.** After a new register load, or a new version of a
@@ -176,8 +173,8 @@ there are two connections (`config.py`'s `connections.register` / `connections.c
 cannot join across databases in one query, so this isn't just a config nicety, `db.py` genuinely
 opens two).
 
-1. Check the parish table name in `config.py`'s `"tre"` block (`spatial.conpar…`) - it is a guess
-   from the old scripts, assumed to be in the same database as `census.*`. The register
+1. The table names in `config.py`'s `"tre"` block are confirmed: the parish tables (`spatial.conpar1851`,
+   `spatial.conpar1901`, in the same database as `census.*`), the register
    (`registers_linked.lcr_consol2026`) and ONSPD (`registers_lookup.onspd_2026_feb`, `stdpcd`,
    `east1m`, `north1m`, `ctry25cd`) are confirmed - note the 2026 ONSPD renamed the usual
    `oseast1m`/`osnrth1m`/`ctry` to `east1m`/`north1m`/`ctry25cd`.
@@ -188,9 +185,10 @@ opens two).
 3. Set the connection variables for each database - fully separate, nothing shared between them
    (see `config.PG_ENV_SUFFIX`): `PGHOST_LCR`, `PGPORT_LCR`, `PGDATABASE_LCR`, `PGUSER_LCR` for the
    register (LCR = linked consumer register), and `PGHOST_ICEM`, `PGPORT_ICEM`, `PGDATABASE_ICEM`,
-   `PGUSER_ICEM` for the census (I-CeM) - e.g. source a small env file with these in it. Export
-   `PGPASSWORD_LCR` and `PGPASSWORD_ICEM` separately, then `export GBNAMES_PROFILE=tre`. Passwords
-   are never written into any file (note: pg8000 only reads `PGPASSWORD_*`, not `~/.pgpass`).
+   `PGUSER_ICEM` for the census (I-CeM), plus `PGPASSWORD_LCR` and `PGPASSWORD_ICEM`. All of them live in
+   the TRE's `.env` (not in git): `set -a; source .env; source run.settings; set +a`, then
+   `export GBNAMES_PROFILE=tre` (docs/how-to-build-the-dataset.md, section 1). Note: pg8000 only reads
+   `PGPASSWORD_*`, not `~/.pgpass`.
 4. `python3 -m pipeline.s1_counts` (add `--sources register` or `--sources census` to test one
    database before the other is ready - `preview.py` does this automatically, based on which
    sources its `--periods` need). If a table or column name is wrong, Postgres says which. The

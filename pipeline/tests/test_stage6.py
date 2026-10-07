@@ -835,11 +835,10 @@ class Stage6EndToEnd(unittest.TestCase):
             if fact == "eth":
                 codes["eth"].add(str(data["group"]))
         lookups = {"schema": 1, "eth": {c: {"name": c} for c in codes["eth"]}, "scales": {}}
-        for scheme in ("oac", "loac"):
+        for scheme in ("oac", "loac", "fpc"):    # validate_data.TWO_LEVEL_GROUP_SCHEMES
             lookups[scheme] = {"supergroups": {"x": {"name": "x", "colour": "#000"}},
                                "groups": {c: {"name": c, "colour": "#000", "supergroup": "x"} for c in codes[scheme]}}
-        for scheme in ("fpc", "gb2c"):
-            lookups[scheme] = {"groups": {c: {"name": c, "colour": "#000"} for c in codes[scheme]}}
+        lookups["gb2c"] = {"groups": {c: {"name": c, "colour": "#000"} for c in codes["gb2c"]}}
         for scale in ("imd", "ahah"):
             lookups["scales"][scale] = {"colours": ["#000"] * 10}
         return lookups

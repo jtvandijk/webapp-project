@@ -31,7 +31,7 @@ typed `python3 -m pipeline.s5_facts --names smith` uses the same sources as the 
 | 3 | Extracts | One query per period pulls where every listed name's bearers are; split into chunks by name | register, census | `chunks/<period>/<n>.csv`, `chunks/CHUNKS` | `qsub pipeline/hpc/stage3.sh` | about 46 min, both sources, the full name list (a quiet database) |
 | 4 | Maps | The map of every name and period, no database access; an array job, one task per chunk | steps 2 and 3 | `maps/chunk_<n>.jsonl`, `stats/chunk_<n>.csv` | `qsub -t 1-<GBNAMES_CHUNKS> pipeline/hpc/stage4.sh`, then `python3 -m pipeline.merge_stats` | about 12 min per chunk at the slowest, 200 chunks, both sources, full run |
 | 5 | Facts | Neighbourhood classifications, top neighbourhoods, ethnicity, forenames, and from the census historic forenames and parishes | step 1, register, census, the tables of step 0 | `facts/facts.csv`, `facts/report.txt` | `qsub pipeline/hpc/stage5.sh` | about 1h20, both sources, full run |
-| 6 | Assemble | Turn stage 4's maps and stage 5's facts into one JSON file per surname (`docs/data-contract.md`); the search index; `manifest.json`; the real Scotland mask; a standardised register bearer count (`counts_standardised`, 2026-09-29) | step 1 (counts.csv and register_population.csv), steps 4 and 5 | `release/names/<xx>/<name>.json` (counts and maps), `release/facts.csv` (all the facts, one row per name and fact), `release/index/<xx>.json`, `release/manifest.json`, `release/masks/scotland.json` | once: `python3 -m pipeline.s6_assemble --prepare`, then `qsub -t 1-<GBNAMES_CHUNKS> pipeline/hpc/stage6.sh`, then `python3 -m pipeline.merge_release` | done, has run on the real HPC output. `lookups.json` and *why* a period has no map (`mapNotes`) are deliberately not built yet (docs/pipeline.md) |
+| 6 | Assemble | Turn stage 4's maps and stage 5's facts into one JSON file per surname (`docs/data-contract.md`); the search index; `manifest.json`; the real Scotland mask; a standardised register bearer count (`counts_standardised`, 2026-09-29) | step 1 (counts.csv and register_population.csv), steps 4 and 5 | `release/names/<xx>/<name>.json` (counts and maps), `release/facts.csv` (all the facts, one row per name and fact), `release/index/<xx>.json`, `release/manifest.json`, `release/masks/scotland.json` | once: `python3 -m pipeline.s6_assemble --prepare`, then `qsub -t 1-<GBNAMES_CHUNKS> pipeline/hpc/stage6.sh`, then `python3 -m pipeline.merge_release` | done, has run on the real HPC output. `lookups.json` is made outside the TRE (section 11); *why* a period has no map (`mapNotes`) is not built (docs/pipeline.md) |
 
 "Register" and "census" are two different databases; a step only opens the ones `GBNAMES_SOURCES` (in `run.settings`) names -
 currently both.
@@ -371,5 +371,27 @@ python3 tools/validate_data.py work/release --skip-lookups
   assembled and taken out in batches of chunks - every chunk lists what it wrote in `work/release/index_parts/chunk_N.txt`, so a batch can be moved and deleted
   by that list (never by folder: two chunks can write into the same `names/sm/`).
 
-What comes out of the TRE, and what is done to it outside, is a separate step (`lookups.json`, the reasons a period has no map, the website build):
-see [pipeline.md](pipeline.md).
+What comes out of the TRE (after the output checks): `work/release/` without its `chunk_*.done` and `index_parts/`, i.e.
+`names/`, `index/`, `facts.csv`, `manifest.json`, `masks/`. What is done to it outside: section 11.
+
+## 11. After the TRE: from the export to the website
+
+On your own computer, in the project folder (no database, standard library only):
+
+```
+# 1. the export goes into data/ (git-ignored; never into site/data/, which is the small synthetic sample)
+python3 tools/build_lookups.py --out data/lookups.json        # names, colours, card text (edit the wording in this script)
+python3 tools/split_facts.py data/facts.csv --out-dir data/facts   # one facts file per name, what the website reads
+python3 tools/validate_data.py data                           # ends "OK: N names, ... 0 errors"
+```
+
+- `build_lookups.py` needs `raw-indicators/fpc/` (the FPC colours) and, for the population tick marks on the bars,
+  `work/population_shares.json` from `python3 tools/build_population_shares.py` (which reads `work/neighbourhood/`, made by
+  `tools/prep_neighbourhood.py`). Without that file it still runs, just without the tick marks. Only the card text
+  changed? Re-run this line and copy `data/lookups.json` to the server; nothing else.
+- Place names for the SmartCensus places card are a separate, public file in the repository, `site/lookups/places.json`
+  (`python3 tools/build_places_lookup.py`; its docstring lists the downloads). Rebuild it only when a new release uses
+  new area codes.
+- The release version (`release.version` in `data/manifest.json`; not shown on the page) is set by
+  `merge_release.py --version`: bump it for the next release.
+- Deploying the site and `data/` to a web server: [deployment.md](deployment.md).

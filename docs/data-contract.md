@@ -1,6 +1,6 @@
-# GBNames data contract (draft 1)
+# GBNames data contract (schema 1)
 
-This document says exactly what the data behind the new GBNames website looks like. It is the
+This document says exactly what the data behind the GBNames website looks like. It is the
 handshake between the two halves of the project:
 
 - **the pipeline** (runs in the TRE / on the HPC) *produces* these files;
@@ -8,21 +8,18 @@ handshake between the two halves of the project:
 
 If both sides keep to this document, they can be built at the same time and swapped freely.
 
-> **How the facts are served (September 2026; leaning decided 2026-09-26).** A surname's file describes its
-> facts below (`facts`), and the flat-file plan folds them into it. But **what leaves the TRE is one table,
-> `facts.csv`, not facts inside the 43,000 or so name files**: stage 6 writes each name's file as counts and maps only (plain
-> static files that never change when a classification does), and the facts as one long table, a row per
-> name and fact (`name,fact,data`, `data` being exactly the JSON that would sit under `facts.<fact>` in the
-> name file). A new classification is then new rows, not a rewrite of every name file. Whether the website
-> build folds the facts into the name files, or serves them from a database file (SQLite, or Parquet/Arrow),
-> is decided outside the TRE, once the database question is settled; `s6_assemble.py --facts-in-names` writes
-> them into the name files as well, if that shape is wanted.
+> **How the facts are served (settled).** What leaves the TRE is one table, `facts.csv` (a row per name and fact:
+> `name,fact,data`, `data` being exactly the JSON described under `facts` below), next to name files that hold counts
+> and maps only. A new classification is then new rows, not a rewrite of every name file. Outside the TRE,
+> `tools/split_facts.py` splits the table into one small file per name, `facts/<xx>/<name>.json` (the `facts` object
+> below, nothing else), and that is what the website reads. `facts.csv` itself is not served.
+> (`s6_assemble.py --facts-in-names` can still fold the facts into the name files, but the website does not use that shape.)
 
 ## The idea in one paragraph
 
-Everything about a surname is worked out **in advance** and saved in **one small file per surname**.
-When a visitor searches for "smith", the browser downloads `names/sm/smith.json` and draws the
-page from it. There is no server code and no query, so a viral day costs the same as a quiet one:
+Everything about a surname is worked out **in advance** and saved in **two small files per surname**: its
+counts and maps, and its facts. When a visitor searches for "smith", the browser downloads
+`names/sm/smith.json` and `facts/sm/smith.json` and draws the page from them. There is no server code and no query, so a viral day costs the same as a quiet one:
 the files are just handed out (and can be cached by a CDN). Words that are the same for every
 surname (what "OAC group 3b" is called, its description, its colour) live in one shared file
 instead of being repeated in 43,000 files.
@@ -35,8 +32,9 @@ data/
   lookups.json           shared words and colours (classification names and descriptions, page text)
   masks/scotland.json    extra outline shown on top of the map for some years
   index/<xx>.json        list of surnames per first-two-letters, used for search suggestions
-  names/<xx>/<name>.json ONE FILE PER SURNAME: counts and maps (and facts, if folded in: see above)
-  facts.csv              every fact of every published name, one row per name and fact
+  names/<xx>/<name>.json ONE FILE PER SURNAME: counts and maps
+  facts/<xx>/<name>.json the same surname's facts (made from facts.csv by tools/split_facts.py)
+  facts.csv              every fact of every published name, one row per name and fact (the TRE's output; not served)
 ```
 
 `<xx>` is the first two letters of the surname (`sm`), as in the current KDE folders. This keeps
@@ -71,7 +69,7 @@ An example (numbers made up, shape exactly as the validator expects; `maps` shor
                    "register": [ { "area": "E08000035", "name": "E02002331" } ] },
     "oac":  { "group": "3b", "distribution": { "3b": 0.62, "2a": 0.11, "6c": 0.07 } },
     "loac": { "group": "A1", "distribution": { "A1": 0.55, "B2": 0.2 } },
-    "fpc":  { "group": "4", "distribution": { "4": 0.4, "9": 0.15 } },
+    "fpc":  { "group": "A01", "distribution": { "A01": 0.4, "C07": 0.15 } },
     "gb2c": { "group": "BG4", "distribution": { "BG4": 0.21, "G2": 0.14 } },
     "imd":  { "mode": 4, "mean": 4.2, "sd": 2.4, "distribution": [0.02, 0.08, 0.11, 0.2, 0.18, 0.14, 0.11, 0.08, 0.05, 0.03] },
     "ahah": { "mode": 6, "distribution": [ ... 10 numbers ... ] },
@@ -91,10 +89,10 @@ Rules:
 | `maps` | One entry per map period, keyed by the period `id` from the manifest. A period is only present if the name has **at least the threshold** (100) bearers that year. A file with no map at all is not published. **Open (agreed 2026-09-23): a missing period should say why** ("no map because too few bearers that year" vs "no map because the concentration wasn't strong enough to show" vs other reasons) rather than the visitor just seeing that slider position is absent - `rules.Resolution.reason` already has this text internally in the pipeline for every omitted period, it just doesn't reach the published files yet. Needs a field (e.g. a `mapNotes` object alongside `maps`, keyed the same way) and website text for it - not yet designed or built. |
 | `copyOf` | Optional, on a map entry (a GeoJSON "foreign member" next to `type` and `features`): the period id whose map this one is. Present exactly when the pipeline copied another year's map instead of building one: a heavily Scottish name shows its 1901 map for 1911 and 1921 (`"1911": { "type": "FeatureCollection", "copyOf": "1901", ... }`), because Scotland is missing from those censuses. **Decided 2026-09-26: the website draws a period's mask (Scotland, blanked out) only on a map WITHOUT `copyOf`.** A built 1911 or 1921 map has no Scottish people in it, and without the mask a name like Smith looks as if it had vanished from Scotland; a copied map is 1901's, which has Scotland, so it gets no mask, and the page says it shows 1901. Written by `pipeline/s6_assemble.py`; `tools/validate_data.py` checks that the period named exists in the same file, has a map of its own and is not itself a copy. |
 | map shape | Standard GeoJSON, longitude/latitude (EPSG:4326), 3 decimal places (about 110 m north-south; `config.GEOJSON_DECIMALS`, chosen 2026-09-26: the outlines are simplified to 400 m anyway, and 3 instead of 4 is about 19% smaller gzipped), `Polygon` or `MultiPolygon`. Each feature has `properties.level` 1, 2 or 3 (1 = concentrated, 3 = most concentrated). The three levels are bands that do not overlap. |
-| `facts` | Inside a name file (if folded in) or as rows of `facts.csv` (`name,fact,data`; `data` is the object below, one row per key: `forenames`, `places`, `oac`, ...). Every entry is optional. **Missing means no data**; the page then says so. Lists are ordered most common first. `facts.csv` is sorted by name then fact, and only has facts for names that have a file: a name below the threshold has no facts either (`tools/validate_data.py` checks both). |
+| `facts` | In `facts/<xx>/<name>.json` (the website), made from the rows of `facts.csv` (`name,fact,data`; `data` is the object below, one row per key: `forenames`, `places`, `oac`, ...). Every entry is optional. **Missing means no data**; the page then says so. Lists are ordered most common first. `facts.csv` is sorted by name then fact, and only has facts for names that have a file: a name below the threshold has no facts either (`tools/validate_data.py` checks both). |
 | `forenames` | Lowercase, at most 10 per sex (`f`, `m`) per source. |
 | `places` | At most 10 rows per source, most frequent first. The page shows the first 5. `census` are parishes (`area` = registration county or district), `register` are neighbourhoods (`area` = local authority). |
-| `oac`, `loac`, `fpc`, `gb2c` | The most common **group** code (`"3b"`, `"A1"`, `"4"`, `"BG4"`). `distribution` = share of bearers in every group seen, keyed by group code (adding up to 1). The supergroup follows from the group, via `lookups.json` (`fpc` and `gb2c` have no supergroup concept). |
+| `oac`, `loac`, `fpc`, `gb2c` | The most common **group** code (`"3b"`, `"A1"`, `"A01"`, `"BG4"`). `distribution` = share of bearers in every group seen, keyed by group code (adding up to 1). The supergroup follows from the group, via `lookups.json` (for `fpc` the supergroups are its 5 clusters; `gb2c` is shown flat, without supergroups). |
 | `imd`, `ahah` | `mode` = most common decile (1 to 10; for `ahah`, 1 is healthiest). `distribution` = share of bearers in each decile, ten numbers adding up to 1. `imd` also has `mean` and `sd`: average and spread of the deprivation percentile (the "GBNames deprivation score") - `ahah` does not. |
 | `eth` | The most common Ethnicity Estimator census group (`"WBR"` = White British; see `config.ETH_GROUPS`), or `"unknown"` if no group had enough bearers - a real, published value, not a missing field. `distribution` = share per group. `countries`: the three most common underlying codes (group and country, e.g. `"WBR-EN"`), most common first. |
 | `synthetic` | Only in sample data: `true`. Real releases must not have it (see checks below). |
@@ -125,10 +123,15 @@ Everything that used to be typed into the code as a list of years now lives here
 
 - `cards`: titles and explanatory text for every box on the page (so text can be edited without touching code).
 - `oac`, `loac`: `supergroups` and `groups`, each with name, colour, description.
-- `fpc`, `gb2c`: name and colour per group (`fpc` also per cluster); the group-to-area lookup itself
+- `fpc`, `gb2c`: name and colour per group (`fpc` also its 5 clusters, as `supergroups`); the group-to-area lookup itself
   stays safeguarded for both, only the group names are ever public.
 - `eth`: name per Ethnicity Estimator group (`config.ETH_GROUPS`) and for `"unknown"`.
 - `scales`: colours (and text) for the 10-step decile bars (`imd`, `ahah`).
+
+Made outside the TRE by `tools/build_lookups.py`. Group entries can also carry `desc` (a description) and
+`populationShare` (that group's share of the population, from `tools/build_population_shares.py`, drawn as a tick
+mark on each bar). Area names for the `places` codes are a separate, public file served with the site code,
+`site/lookups/places.json` (`tools/build_places_lookup.py`).
 
 ## `index/<xx>.json`: search suggestions
 
@@ -141,13 +144,13 @@ names exist below the threshold.
 
 1. First visit: load `manifest.json` and `lookups.json` (small, identical for everybody, cached).
 2. Search: turn the typed name into the key (lowercase a to z), load `names/<xx>/<name>.json`.
-3. File found: draw the slider from the `periods` that the name has a map for, and the boxes from `facts`. For a period with a `mask` in the manifest, draw the mask on the map unless that map has `copyOf`.
+3. File found: load `facts/<xx>/<name>.json` too (a 404 there just means no facts), draw the slider from the `periods` that the name has a map for, and the boxes from the facts. For a period with a `mask` in the manifest, draw the mask on the map unless that map has `copyOf`.
 4. File not found (404): show one message: "We couldn't find a page for this surname. This means
    either we hold no records for it, or fewer than 100 people in our data share it - too few to show
    without risking anyone's privacy." (wording updated 2026-10-01; the rule it encodes - one message,
    never distinguishing the two cases - is unchanged, see "Choices I made" below.)
 
-One request per search. Today a search is about 22 database queries plus up to 9 map files one after the other.
+Two requests per search. The old site made about 22 database queries plus up to 9 map files one after the other.
 
 ## Checks that run before a release is accepted
 
@@ -174,25 +177,18 @@ index that did not match) and the validator caught every one.
 
 ## Sample data and size
 
-`python3 tools/build_sample_data.py` builds a working sample in `site/data/`. The map shapes are the
-real ones from the KDE files stored locally (smith, juszczyk and sion; the sion file is an identical copy of the juszczyk file). **Everything else in it is
-made up** (counts, forenames, places, classifications) and flagged `synthetic`.
+`python3 tools/build_sample_data.py` builds a working sample in `site/data/` (smith, macdonald and sion). The map
+shapes are two real periods per name, taken from the real release (`tools/sample_inputs/kde/`). **Everything else in
+it is made up** (counts, forenames, places, classifications) and flagged `synthetic`. It is for working on the site
+without the real release; the real site never reads it.
 
-Measured on that sample:
-
-| Surname | Map periods | File size | Compressed (what is sent over the network) |
-|---|---|---|---|
-| smith (a very large, widespread name) | 9 | 359 KB | about 102 KB |
-| juszczyk (a small name, one map) | 1 | 10 KB | about 3 KB |
-
-The total for a full release depends on how many name-years pass the threshold. We will know that
-after the counting step of the pipeline.
+The real release 1.0.0: 43,093 names, about 5.4 GB of name files (median about 100 KB; the largest, smith, about
+790 KB, or about 215 KB gzipped), about 84 MB of facts files. JSON compresses to roughly a quarter, so serve it gzipped.
 
 ## Choices I made that you may want to overrule
 
-1. **One file per surname**, not separate "facts" and "maps" files. One request, simplest to publish
-   and to output-check. Cost: someone who only wants the facts still downloads the maps.
-   (Easy to split later if it matters.)
+1. **Maps and facts in separate files per surname** (changed from one file: the facts leave the TRE as one table,
+   and a new classification should not mean rewriting every map file). Two requests per search.
 2. **Plain GeoJSON** for map shapes. Easy to inspect, and Leaflet or MapLibre read it directly.
    A more compact encoding could halve the size if needed.
 3. **Codes in the surname files, words in `lookups.json`.** Descriptions can be corrected without regenerating 43,000 files.
@@ -203,15 +199,14 @@ after the counting step of the pipeline.
 7. **Top 10 stored, 5 shown**, so the page can show more later without a new run.
 8. **Decile distributions** are new (the old database held them, the old page never showed them).
 
-## What the pipeline has to produce, and what still has to be decided
+## What the pipeline produces, compared with the old one
 
-How the old pipeline did each item (from the code in `data-prep/`), and what needs a decision
-before the long run starts.
+How the old pipeline did each item (from the code in `data-prep/`), and what was decided for the rebuild.
 
-| Item | How it was done before | Decided (2026-09-23) / still to decide |
+| Item | How it was done before | Decided |
 |---|---|---|
-| `counts` | Census: all residents per name per year (1911 without Scotland). Registers: people with `first_im <= year <= last_im`. | Which years; do register counts stay "adults (estimated)". |
-| `maps` | Kernel density on a 1 km grid, bandwidth 8 to 18 km depending on name size and spread, weighted by population, cut into 3 levels, outlines smoothed and clipped to the coast. | Decided: 15 periods and the method (see [pipeline.md](pipeline.md)); the threshold is 100 bearers, both sources. Open: how widespread names should look on real data; `LEVEL_MASS` (the level cut-offs) and `MIN_BLOB_SHARE` will end up varying per name rather than being one constant (see pipeline.md), which is why the settings actually used for a given name's map need recording somewhere - **agreed (2026-09-23): a separate, internal-only settings log written by Stage 4 (per name/period: resolved bandwidth, weighting power, level mode+shares, blob-share threshold, pipeline version), not part of these public files** - keeps this contract's payload lean and the PVC-style numbers out of anything a visitor's browser downloads, while still letting us answer "why does this map look like this" later. Not yet built. Also open: a missing period should say why on the website (see the `maps` row above) - the reason already exists internally, it just isn't published yet. |
+| `counts` | Census: all residents per name per year (1911 without Scotland). Registers: people with `first_im <= year <= last_im`. | Every year of both sources (census 1851-1921 without 1871; register 1997-2026). Register counts are adults, shown standardised (`counts_standardised`). |
+| `maps` | Kernel density on a 1 km grid, bandwidth 8 to 18 km depending on name size and spread, weighted by population, cut into 3 levels, outlines smoothed and clipped to the coast. | Decided: 15 periods and the method (see [pipeline.md](pipeline.md)); the threshold is 100 bearers, both sources; `LEVEL_MASS` varies per name. The settings actually used for each name's map (bandwidth, level shares, blob measures) are kept in stage 4's internal stats files (`work/stats/`), not in these public files. Not built: saying on the website why a period has no map (see the `maps` row above). |
 | `forenames` | Top 10 per sex. Census pooled over 1851 to 1911. Registers: no year filter, so pooled. | **Pooled** over all years (all census years; all register years), so a name with no 2026 records still has forenames. Historic and contemporary stay two separate lists. Gender for the registers from `registers_lookup.lookup_monica` (unchanged; may change). |
 | `places` | Top 10 parishes (1851 or 1901 boundaries); top 10 2011 MSOAs (at least 3 people). | MSOA 2021 (Scotland: intermediate zone) and district come from the postcode directory (`msoa21cd`, `lad25cd`); names are attached after the TRE, so they can change without a new run. **Contemporary list: reference year** (latest year with 100+ bearers), like the other contemporary neighbourhood facts. **Parishes: pooled over all census years as the old code did** (group by county and parish name, so a parish that the 1851 and 1901 boundaries number differently counts once, top 10, id 0 left out), but not its 1911 join mistake (it joined 1911 records to the 1901 table); 1921 uses the 1901 boundaries, to confirm once uploaded. |
 | `oac`, `loac` | Most common group among register addresses (2021 versions). | **UK OAC 2021/22** and **London OAC 2021** (London bearers only), most common group in the latest year with 100+ bearers. Prepared by `tools/prep_neighbourhood.py`. |

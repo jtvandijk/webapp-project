@@ -26,22 +26,24 @@ deployment.
 
 | Read this | For |
 |---|---|
-| [docs/data-contract.md](docs/data-contract.md) | The file format the rebuild produces, and that the future website reads: one JSON file per surname. |
-| [docs/pipeline.md](docs/pipeline.md) | The plan for turning individual-level records into that release: stages, decisions made, what is still open. |
+| [docs/data-contract.md](docs/data-contract.md) | The file format the pipeline produces and the website reads: per surname, one JSON file of counts and maps and one of facts. |
+| [docs/pipeline.md](docs/pipeline.md) | How individual-level records are turned into that release: the stages and the decisions behind them. |
 | [pipeline/README.md](pipeline/README.md) | How to run the pipeline - on fake data locally, or for real in the TRE. |
-| [docs/how-to-build-the-dataset.md](docs/how-to-build-the-dataset.md) | The steps in order, every setting and where it lives, how to preview a few names, how to follow a job. |
+| [docs/how-to-build-the-dataset.md](docs/how-to-build-the-dataset.md) | The steps in order, every setting and where it lives, how to preview a few names, how to follow a job, and what is done to the export outside the TRE. |
 | [docs/census-data-checks.md](docs/census-data-checks.md) | One-time: getting the census tables ready after a data load (the parish ids, the cleaned surname column), before the above. |
 | [docs/disclosure-control.md](docs/disclosure-control.md) | A plain summary of the disclosure controls in the release (minimum counts, thresholds, map rules), and what is still open. |
 | [docs/first-run-checks.md](docs/first-run-checks.md) | What to check on the first real run in the TRE, before anything is exported. |
+| [docs/deployment.md](docs/deployment.md) | Putting the website and the release on a web server: layout, what the server must do, caching, analytics. |
 
 ## Repository layout
 
 | Path | What it is |
 |---|---|
 | `pipeline/` | The code that turns censuses and consumer registers into the public release: counting, the map calculation, disclosure rules. Runs partly inside a TRE (Trusted Research Environment), since the source data is individual-level. |
-| `docs/` | The data format and the pipeline plan (above). |
-| `tools/` | A sample-data generator and a validator for the website's release format, and `prep_neighbourhood.py`, which turns the downloaded neighbourhood classifications into the lookup tables that go into the TRE. |
-| `site/` | The static website that reads the release format ([docs/data-contract.md](docs/data-contract.md)) - built and tested, prepared for deployment. |
+| `docs/` | The documents listed above. |
+| `tools/` | Everything outside the TRE: `prep_neighbourhood.py` (the downloaded neighbourhood classifications into the lookup tables that go into the TRE), the steps from the export to the website (`build_lookups.py`, `split_facts.py`, `build_places_lookup.py`, `build_population_shares.py`), the release validator (`validate_data.py`), and the synthetic sample (`build_sample_data.py`). |
+| `site/` | The static website that reads the release format ([docs/data-contract.md](docs/data-contract.md)). `site/data/` is a small synthetic sample for development, not the real release. |
+| `data/` | The real release, exported from the TRE (about 5.5 GB). **Not tracked in git.** Deployed next to the site: [docs/deployment.md](docs/deployment.md). |
 | `data-prep/` | The old, one-off pipeline code this rebuild replaced. No longer needed, and nothing reads it: keep it outside the project. If a copy is put back here it is **not tracked in git** (see `.gitignore`); it is several GB and includes working data extracts. |
 | `run.settings` | The choices that change from run to run (which database(s), how many names and chunks, which facts). Read by every stage; in git. |
 | `raw-indicators/` | The downloaded neighbourhood classifications (OAC, LOAC, AHAH, IMD, financial precarity, GB2C gambling), the input to `tools/prep_neighbourhood.py`. **Not tracked in git.** |
@@ -102,7 +104,7 @@ Ireland is not covered.
 
 **Deprivation is ranked within each country and then treated as comparable.** A Scottish neighbourhood at
 percentile 1 counts as the same as an English one at percentile 1. They are not strictly comparable (three
-different indices), but this is the agreed simple comparison. The "GBNames deprivation score" is the mean and
+different indices), but this is the agreed simple comparison. The "GBNames deprivation score" (on the site: the SmartCensus deprivation score) is the mean and
 spread of this percentile among a surname's bearers, and the modal deprivation decile is its most common decile.
 
 **Checking it.** [`tools/audit_neighbourhood.py`](tools/audit_neighbourhood.py) re-reads the downloads with

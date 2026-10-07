@@ -1,16 +1,14 @@
-# GBNames pipeline (draft 1, for review)
+# GBNames pipeline
 
 The plan for turning individual-level records (inside the TRE) into the release described in
 [data-contract.md](data-contract.md).
 
-**Status (2026-09-26).** Stages 1 to 5 are built and tested, both sources (register and census), and
-have all run for real on the HPC, including the Scotland rule and the settled real-data calibration
-(see "Decided so far" below). All five now have real, full-name-list timings (see
-how-to-build-the-dataset.md section 3): about 27 and 12 minutes for stages 1 and 2; stage 3 about 46
-minutes; stage 4 about 12 minutes per chunk at the slowest (200 chunks); stage 5 about 1h20.
-Stage 6 (`s6_assemble.py`, `merge_release.py`, `pipeline/hpc/stage6.sh`, `preview_web.py`) is built, tested
-and has run on the real stage 4/5 output, deliberately deferring `lookups.json` and `mapNotes` (see its row
-below). How to run it, step by step: the end of how-to-build-the-dataset.md.
+**Status (2026-10-07).** All six stages are built, tested and have run for real on the HPC, both sources (register
+and census), full name list: about 27 and 12 minutes for stages 1 and 2; stage 3 about 46 minutes; stage 4 about 12
+minutes per chunk at the slowest (200 chunks); stage 5 about 1h20; stage 6 minutes. The release (version 1.0.0,
+43,093 names) has been exported from the TRE, passed `tools/validate_data.py` including `lookups.json`, and is what
+the website serves. How to run it: [how-to-build-the-dataset.md](how-to-build-the-dataset.md), which also covers the
+steps outside the TRE. The one thing deliberately not built: publishing *why* a period has no map (`mapNotes`).
 
 ## Decided so far
 
@@ -163,9 +161,9 @@ address in year Y" when `first <= Y <= last`, so any single year is a simple que
 the parish boundaries / centroids), forename and surname. The census also records sex.
 
 **Reference files:** parish boundaries and centroids; the postcode lookup (postcode to coordinates,
-output area, LSOA, MSOA); the classification files (OAC, LOAC, IUC, IMD, AHAH, broadband); a
-forename-to-gender lookup for the registers; the ONOMAP surname file for the ethnicity estimate;
-the Great Britain outline; the 1 km grid.
+output area, LSOA, MSOA, district); the neighbourhood tables (OAC, LOAC, AHAH, deprivation, financial precarity,
+GB2C); a forename-to-gender lookup for the registers; the Ethnicity Estimator table; the Great Britain outline;
+the 1 km grid.
 
 Both sources answer the same question, "who (surname) was where (x, y) in period P", so one code
 path can serve both.
@@ -184,8 +182,8 @@ counts -> name list ---> point extracts -> MAPS (array job) --+
 | 2 | **Population surfaces** (`s2_surfaces.py`, done) | One density surface of *everybody* per map period (`POPULATION_BANDWIDTH_M`, now 15 km), used to make each name's map partly relative to the local population. One query per period. | 15 small jobs (one per map period). |
 | 3 | **Point extracts** (`s3_extracts.py`, done) | For each map period, one query pulls `(surname, x, y, count)` for every listed name at once, aggregated (spelling variants merged) and split into K chunk files by name (`names.chunk_of()`, a pure function of the name - no chunk assignment is written down anywhere for stage 4 to look up). One query per period, not one per name. | One query per period. |
 | 4 | **Maps** (the heavy step, `s4_maps.py` + `pipeline/hpc/stage4.sh`, done) | An SGE array job with K tasks. Task k reads chunk k of every period and loads the grid and surfaces **once** - no database access at all. For each name and period at or above the threshold: density, weight by population, cut into a per-name `LEVEL_MASS` (`kde.size_level_mass()`), make outlines, clip to the coast, simplify. Each task writes **two files** (one line per name-period each): a GeoJSON-carrying one for a "build" period (a "substitute" period only names which period to copy, resolved later, not duplicated here) and a stats one (bearers, bandwidth, resolved levels, concentration/second-blob measures, shape) kept separate from the GeoJSON so the website never downloads it. A `.done` marker per chunk makes re-submitting after a partial failure safe. | The long one - about 12 minutes per chunk at the slowest (200 chunks), measured on the full run. |
-| 5 | **Facts** (`s5_facts.py`, register side done) | For every name, in its reference year: the most common OAC, LOAC, AHAH and deprivation values, the deprivation score, the top neighbourhoods and the ethnicity estimate; forenames pooled over all years. One query per fact and reference year, saved to disk, then computed in Python, so changing a rule never needs the database again. Writes `facts.csv` (see "Stage 5 output" below). | About 1h20, measured on the full list. |
-| 6 | **Assemble and validate** (`s6_assemble.py` + `merge_release.py` + `pipeline/hpc/stage6.sh`, an array job like stage 4, no database) | Join 1, 4 and 5 into the per-name files (counts and maps) and, as one table `facts.csv`, the facts (not folded into the 43,000 or so name files, decided 2026-09-26; `--facts-in-names` if wanted); a standardised register bearer count (`counts_standardised`, decided 2026-09-29: register bearers rescaled to `config.STANDARD_BASE_YEAR`'s own tracked register population, from `work/register_population.csv` (stage 1, every register year, not only the ones with a map) - disclosure is always checked against the raw count, never this one); the search index; `manifest.json` straight from `config.py`; the real `masks/scotland.json` (reprojected from `pipeline/reference/scotland_outline.geojson`). Resolves each "substitute" period into a copy of its reference's geometry, with `copyOf` (data-contract.md). Run `tools/validate_data.py <release> --skip-lookups` (stdlib only, so in the TRE, before anything leaves it; `--skip-lookups` until `lookups.json` exists). **Deferred (2026-09-26, confirmed with the user): `lookups.json`** (classification names, colours, page text - human-authored, not derivable from the data) **and publishing *why* a period has no map** (`mapNotes`) - both still marked "not yet built" in data-contract.md; `preview_web.py` shows raw codes and a plain facts table until then. | Minutes; no database access, so it can run right after stages 4 and 5. |
+| 5 | **Facts** (`s5_facts.py`, done) | For every name, in its reference year: the most common OAC, LOAC, AHAH and deprivation values, the deprivation score, the top neighbourhoods and the ethnicity estimate; forenames pooled over all years. One query per fact and reference year, saved to disk, then computed in Python, so changing a rule never needs the database again. Writes `facts.csv` (see "Stage 5 output" below). | About 1h20, measured on the full list. |
+| 6 | **Assemble and validate** (`s6_assemble.py` + `merge_release.py` + `pipeline/hpc/stage6.sh`, an array job like stage 4, no database) | Join 1, 4 and 5 into the per-name files (counts and maps) and, as one table `facts.csv`, the facts (not folded into the 43,000 or so name files, decided 2026-09-26; `--facts-in-names` if wanted); a standardised register bearer count (`counts_standardised`, decided 2026-09-29: register bearers rescaled to `config.STANDARD_BASE_YEAR`'s own tracked register population, from `work/register_population.csv` (stage 1, every register year, not only the ones with a map) - disclosure is always checked against the raw count, never this one); the search index; `manifest.json` straight from `config.py`; the real `masks/scotland.json` (reprojected from `pipeline/reference/scotland_outline.geojson`). Resolves each "substitute" period into a copy of its reference's geometry, with `copyOf` (data-contract.md). Run `tools/validate_data.py <release>` (stdlib only, so in the TRE, before anything leaves it). `lookups.json` (classification names, colours, page text - written by people, not derived from the data) is made outside the TRE by `tools/build_lookups.py` and uploaded for that check. **Not built: publishing *why* a period has no map** (`mapNotes`, see data-contract.md). | Minutes; no database access, so it can run right after stages 4 and 5. |
 
 Stages 1 to 5 touch individual-level records, so they run in the TRE. Only the finished, checked
 release folder leaves it.
@@ -270,29 +268,27 @@ how-to-build-the-dataset.md section 3 for every stage's real `h_vmem`/`h_rt` fig
 
 ## Testing without the TRE
 
-I cannot see the data or run anything in the TRE, so:
+The code is written outside the TRE, without access to the data, so:
 
-- I write a small **fake-data generator** that produces a register and a census in exactly the
-  shapes above (fake people, postcodes, parishes). Every stage can then be run and checked on a laptop.
+- A **fake-data generator** (`pipeline/fake_data.py`) produces a register and a census in exactly the
+  shapes above (fake people, postcodes, parishes). Every stage can be run and checked on a laptop.
 - The same scripts run unchanged in the TRE. Their output is checked by `validate_data.py`.
 - Every stage writes its result to disk, so any stage can be re-run without redoing the ones before it.
-- For the map method: compare the new shapes with the ones already on the site for Smith,
-  Juszczyk and Sion, by eye and by overlap. That needs the source points, so it happens inside the TRE.
+- The map method was calibrated by eye on real names inside the TRE (`preview.py`), see "Decided so far".
 
-## To settle before the long run
+## Settled before the long run
 
-1. **The parish table name.** `spatial.conpar{boundaries}` in the `tre` block is a guess from the
-   old scripts; the register and ONSPD table names are confirmed.
+1. **The parish table name: settled.** `spatial.conpar1851` and `spatial.conpar1901`, as in the `tre` block.
 2. **Settled (2026-09-23): a reference year, not pooled.** Contemporary facts are worked out in each name's
    latest register year with 100+ bearers, so people who moved are not counted at every old address and a name
    with no 2026 records still has facts. Forenames are the exception and are pooled over all years.
 3. **Settled: address to neighbourhood.** The ONS Postcode Directory (`registers_lookup.onspd_2026_feb`) carries every
    code needed (`oa21cd`, `lsoa21cd`, `lsoa11cd`, `msoa21cd`, `lad25cd`; confirmed in the TRE copy). Checked
    against the public February 2026 directory on a laptop: 99.9% or more of live postcodes find a row in every table.
-4. **Settled: sex for register forenames.** `registers_lookup.lookup_monica` is identical to the old
-   `monica_gender` and is used for now (its columns are assumed to be `name` and `gender`; it may change).
+4. **Settled: sex for register forenames.** `registers_lookup.lookup_monica`, identical to the old
+   `monica_gender` (columns `name` and `gender`).
 5. **Surname keys: settled.** The rule is: remove accents, keep the letters a to z (`O'Brien` becomes `obrien`). For the census it is applied to `sname_clean_stand`, the old project's cleaned surname, in every year (the TRE's backup of the census does not have the column, so `tools/sql/make_sname_clean_stand.sh` makes it there, for every year).
-6. **Counts that are not published.** Counts below 10 (`COUNT_FLOOR`) are dropped. That number was my choice; is it the right floor?
+6. **Counts that are not published.** Counts below 10 (`COUNT_FLOOR`) are dropped, in either source.
 7. **Classification versions: settled** (see "Decided so far"), including the financial precarity classification
    and (added 2026-09-30) the GB2C gambling classification. Confirmed 2026-09-24 (FPC) and 2026-09-30 (GB2C): a
    per-surname most common group may be published, and so may the classification's names; only the lookup from

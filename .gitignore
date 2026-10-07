@@ -1,15 +1,13 @@
-#django
+#general
 *.log
 *.pot
 *.pyc
 *.docx
 __pycache__/
 misc/
-migrations/
+
+#a local folder of source files (the flier PDFs before they were made into site/fliers/); never commit it
 /static/**
-local_settings.py
-local_settings_server.py
-/gbnames/static/kde/**
 
 #misc
 .Rhistory

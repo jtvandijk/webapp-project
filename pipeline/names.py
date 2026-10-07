@@ -1,7 +1,7 @@
 """How a surname is turned into the key that names its file (smith.json) and its search entry.
 
 The same rule has to be used by the pipeline (here) and by the website's search box
-(site/js/data.js, to be written), otherwise a visitor could type a name that exists but is
+(site/js/data.js, surnameKey()), otherwise a visitor could type a name that exists but is
 looked up under a different key.
 
 The rule: remove accents, lower case, keep the letters a to z only.

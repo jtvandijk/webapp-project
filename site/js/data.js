@@ -1,6 +1,8 @@
 // Fetching and the surname key. surnameKey() must stay in lockstep with pipeline/names.py's
 // surname_key(): same input always has to resolve to the same file, on both sides.
-export const DATA_ROOT = "/data";
+// Relative, not "/data": the release sits in a data/ folder next to index.html, so the site works the
+// same at a domain root (gbnames.mappingdutchman.com) and under a sub-path (apps.geods.ac.uk/gbnames/).
+export const DATA_ROOT = "data";
 
 const PLACEHOLDERS = new Set(["", "xxxx", "nan", "null", "none", "unknown"]);
 
