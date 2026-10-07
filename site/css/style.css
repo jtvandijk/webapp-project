@@ -94,6 +94,17 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     gap: 0.5rem 1.5rem;
 }
 
+/* flex:1 1 0% + min-width:0, not the flex:1 1 auto a bare flex item defaults to - without this, a
+   long run of prose is grouped for line-wrapping by its own *unwrapped* max-content width (huge),
+   so it always claims the whole row before the browser even considers the LinkedIn link, pushing
+   it to its own line below regardless of how wide the screen is. This makes the credit text share
+   the row (wrapping its own text normally) and only drop LinkedIn below once both genuinely don't
+   fit side by side. */
+.footer-credit {
+    flex: 1 1 0%;
+    min-width: 0;
+}
+
 .footer-social-link {
     display: inline-flex;
     flex: none;
