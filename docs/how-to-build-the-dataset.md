@@ -227,7 +227,7 @@ The TRE has no git, so files go across one at a time. Only these are needed ther
 - the neighbourhood tables (`work/neighbourhood/nbhd_*.csv`) when they change.
 
 Not needed: `docs/`, most of `tools/` (they run on your laptop, the exception being `tools/sql/`, which runs in the
-TRE with `psql` - one-time, see [census-data-checks.md](census-data-checks.md)), `site/`, `gbnames/`, `data-prep/`, `raw-indicators/`.
+TRE with `psql` - one-time, see [census-data-checks.md](census-data-checks.md)), `site/`, `data-prep/`, `raw-indicators/`.
 After a change, the list of files that differ is `git diff --name-only <last commit you copied from> HEAD -- pipeline`.
 Replace files only when no job of yours is queued (a queued job starts with whatever is there).
 

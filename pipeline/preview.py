@@ -52,9 +52,7 @@ import time
 from pathlib import Path
 
 import numpy as np
-from pyproj import Transformer
-from shapely.geometry import shape
-from shapely.ops import transform, unary_union
+from shapely.ops import unary_union
 
 from . import config, db, fake_data, files, kde, rules, sql
 from .names import surname_key
@@ -171,15 +169,6 @@ def panel(bands, land_path, caption):
     return (f'<figure><svg viewBox="-5 0 675 1245" width="{PANEL}"><path d="{land_path}" fill="#eef1f4" '
             f'stroke="#b8c2cc" stroke-width="1.5" fill-rule="evenodd"/>{layers}</svg>'
             f"<figcaption>{caption}</figcaption></figure>")
-
-
-def old_bands(file):
-    """A map from the existing site (longitude/latitude GeoJSON) as three bands in metres."""
-    to_bng = Transformer.from_crs(4326, 27700, always_xy=True, allow_ballpark=True).transform
-    collection = json.loads(file.read_text())
-    return [unary_union([transform(to_bng, shape(f["geometry"])) for f in collection["features"]
-                         if f["properties"]["level"] == level] or [shape({"type": "Polygon", "coordinates": []})])
-            for level in (1, 2, 3)]
 
 
 def pick_examples():
@@ -349,14 +338,6 @@ def main():
         # not the database
         print(f"{key}: computed in {time.perf_counter() - started:.1f}s")
 
-    reference = ""
-    old = [(config.ROOT / "gbnames/static/kde/sm/smith" / f"smith_{y}.json", f"Smith {y}") for y in (1901, 2016)] \
-        + [(config.ROOT / "gbnames/static/kde/ju/juszczyk/juszczyk_2016.json", "Juszczyk 2016")]
-    panels = [panel(old_bands(f), land_path, label) for f, label in old if f.exists()]
-    if panels:
-        reference = ("<h2>For comparison: maps on the existing website <small>real data, old method</small></h2>"
-                     f"<div class='row'>{''.join(panels)}</div>")
-
     table = "".join(f"<tr><td>{k}</td><td>{v}</td><td>{p}</td><td>{n:,}</td><td>{h:.0f}</td><td>{a}</td><td>{ms:.0f}</td>"
                     f"<td>{ar}</td><td>{pts:,}</td><td>{kb:.0f}</td><td>{'' if c is None else f'{c:.2f}'}</td>"
                     f"<td>{'' if s is None else f'{s:.2f}'}</td></tr>"
@@ -375,7 +356,7 @@ td:first-child,th:first-child{{text-align:left}}</style>
    f"LEVEL_PEAK in config.py): <b>{'</b>; <b>'.join(variant_labels)}</b>."}
 Bandwidth {config.BANDWIDTH_MIN_M // 1000} to {config.BANDWIDTH_MAX_M // 1000} km, growing with the number of
 bearers. Database profile: <b>{config.PROFILE}</b>. Blue shades: level 1 (outer) to level 3 (highest).</p>
-{''.join(blocks)}{reference}
+{''.join(blocks)}
 <h2>Time and size</h2><p>Both exploratory, not used by make_map() - candidate measures of a name's own
 shape, to see what predicts how tight LEVEL_MASS should be for it, instead of (or alongside) its
 bearer count. <b>Concentration</b>: the "mass" cut-off value (0-1, share of the surface's own peak)
