@@ -156,7 +156,7 @@ def main():
     parser.add_argument("--out-dir", default=str(config.WORK / "release"))
     parser.add_argument("--reference", default=str(config.ROOT / "pipeline" / "reference" / "scotland_outline.geojson"))
     parser.add_argument("--chunks", type=int, default=config.RUN_CHUNKS, help="how many chunks to expect (default GBNAMES_CHUNKS in run.settings)")
-    parser.add_argument("--version", default="0.1.0-dev", help="release.version in manifest.json - a release-management choice, not derived from the data")
+    parser.add_argument("--version", default="1.0.0", help="release.version in manifest.json - a release-management choice, not derived from the data")
     parser.add_argument("--synthetic", action="store_true", help="flag this release as sample/made-up data (fake_data.py runs)")
     args = parser.parse_args()
     out_dir = Path(args.out_dir)
