@@ -86,8 +86,26 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     border-top: 1px solid #e2e2e2;
 }
 
+/* margin: 2rem 0 0 (no bottom margin) matches .site-footer's own margin-top: 2rem immediately
+   below it, so the gap above this row (from the last bit of body content) and the gap below it
+   (down to the footer's divider) read as the same size. */
 .follow-us {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 2rem 0 0;
     font-weight: 600;
+}
+
+.follow-us-logo-link {
+    display: inline-flex;
+    align-items: center;
+}
+
+.follow-us-divider {
+    color: #c0c0c0;
 }
 
 .footer-social-link {
