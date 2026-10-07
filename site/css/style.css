@@ -613,6 +613,17 @@ details[open] > summary .bar-chevron {
     color: #333;
 }
 
+/* Both the places card and the forenames card (site/js/profile.js) lay out their Historic
+   Census/SmartCensus columns as a Bootstrap .row of two .col-md-6 - below md these stack with no
+   vertical gap between them (Bootstrap's grid only gutters horizontally), so the second column's
+   heading sits flush under the first column's last line. 1rem matches .indicator-about-box's own
+   margin-bottom, the gap already used between a card's about text and its first heading. */
+@media (max-width: 767.98px) {
+    .row > .col-md-6 + .col-md-6 {
+        margin-top: 1rem;
+    }
+}
+
 /* Not true pills - MSOA/district names are often two long clauses ("District — Area"), which wrap
    badly in a circular pill. A softly-rounded, left-aligned row reads better at that length. */
 .places-list {
