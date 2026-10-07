@@ -7,7 +7,7 @@ neighbourhoods compare on deprivation, access to healthy services, financial cir
 The live site is at [apps.geods.ac.uk/gbnames](https://apps.geods.ac.uk/gbnames/), part of Smart
 Data Research UK's Geographic Data Service (GeoDS).
 
-## Status: rebuild in progress, on this branch (`dev`)
+## Status: rebuild complete, prepared for deployment
 
 The site as currently live (source in [`gbnames/`](gbnames/), a Django app backed by Postgres) is
 being replaced from scratch, for two reasons:
@@ -26,8 +26,10 @@ per-request computation - unaffected by the kind of load that took the old site 
 replaces it; nothing in the rebuild depends on it.
 
 **Where things stand.** The data pipeline (stages 1-6) has run for real on the HPC, both sources,
-all seven census years - see [docs/pipeline.md](docs/pipeline.md)'s Status. What is left is the
-public website itself (`site/`), under active development.
+all seven census years - see [docs/pipeline.md](docs/pipeline.md)'s Status. The public website
+(`site/`) is built and has been tested against the real release on a personal server; this
+repository is now being prepared for handover and deployment, replacing the live site above
+directly.
 
 ## Where to start reading
 
@@ -47,8 +49,8 @@ public website itself (`site/`), under active development.
 |---|---|
 | `pipeline/` | The code that turns censuses and consumer registers into the public release: counting, the map calculation, disclosure rules. Runs partly inside a TRE (Trusted Research Environment), since the source data is individual-level. |
 | `docs/` | The data format and the pipeline plan (above). |
-| `tools/` | A sample-data generator and a validator for the future website's release format, and `prep_neighbourhood.py`, which turns the downloaded neighbourhood classifications into the lookup tables that go into the TRE. |
-| `site/` | The static website that reads the release format ([docs/data-contract.md](docs/data-contract.md)) - under active development. |
+| `tools/` | A sample-data generator and a validator for the website's release format, and `prep_neighbourhood.py`, which turns the downloaded neighbourhood classifications into the lookup tables that go into the TRE. |
+| `site/` | The static website that reads the release format ([docs/data-contract.md](docs/data-contract.md)) - built and tested, prepared for deployment. |
 | `gbnames/` | The currently live Django app (source of apps.geods.ac.uk/gbnames). Being replaced. |
 | `data-prep/` | The old, one-off pipeline code this rebuild replaced. No longer needed, and nothing reads it: keep it outside the project. If a copy is put back here it is **not tracked in git** (see `.gitignore`); it is several GB and includes working data extracts. |
 | `run.settings` | The choices that change from run to run (which database(s), how many names and chunks, which facts). Read by every stage; in git. |
