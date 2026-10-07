@@ -36,11 +36,15 @@
       "title": "London Output Area Classification",
       "about": "A classification of London's neighbourhoods, arranged into Supergroups and Groups based upon 2021 Census of Population data. We show the Supergroup and Group in which your selected surname occurs most frequently."
     },
-    "iuc": {
-      "title": "Internet User Classification",
-      "about": "Describes the nature and extent of Internet usage by the residents of neighbourhoods across Great Britain."
+    "fpc": {
+      "title": "Financial Precarity Classification",
+      "about": "A classification of neighbourhoods by financial precarity, arranged into Supergroups and Groups. We show the Supergroup and Group in which your selected surname occurs most frequently."
     },
-    "eee": {
+    "gb2c": {
+      "title": "Gambling Behaviours in Britain",
+      "about": "A classification of neighbourhoods by the gambling behaviours most common among their estimated active gamblers. We show the Type most closely associated with your selected surname."
+    },
+    "eth": {
       "title": "Ethnicity Estimator",
       "subtitle": "Surname roots",
       "about": "Given and family names provide clues as to ethnicity. We show a rough estimate of the probable ethnicity of the surname that you entered."
@@ -52,10 +56,6 @@
     "ahah": {
       "title": "Access to Healthy Assets and Hazards",
       "about": "Neighbourhoods can be ranked from best to worst and we show the decile in which your selected surname occurs most frequently."
-    },
-    "bbs": {
-      "title": "Broadband speed",
-      "about": "The modal fixed broadband download speed available to bearers of your selected surname."
     }
   },
   "oac": {
@@ -367,82 +367,191 @@
       }
     }
   },
-  "iuc": {
-    "1": {
-      "name": "e-Cultural Creators",
-      "colour": "#ea4d78"
+  "fpc": {
+    "supergroups": {
+      "A": {
+        "name": "Emerging Financial Climbers",
+        "colour": "#8dd3c7"
+      },
+      "B": {
+        "name": "Suburban Financial Balancers",
+        "colour": "#ffffb3"
+      },
+      "C": {
+        "name": "Mature and Financially Secure",
+        "colour": "#bebada"
+      },
+      "D": {
+        "name": "Financially Precarious Families",
+        "colour": "#fb8072"
+      },
+      "E": {
+        "name": "Highly Vulnerable Families",
+        "colour": "#80b1d3"
+      }
     },
-    "2": {
-      "name": "e-Professionals",
-      "colour": "#f36d5a"
-    },
-    "3": {
-      "name": "e-Veterans",
-      "colour": "#e4a5d0"
-    },
-    "4": {
-      "name": "Youthful Urban Fringe",
-      "colour": "#ffd39b"
-    },
-    "5": {
-      "name": "e-Rational Utilitarians",
-      "colour": "#a5cfbc"
-    },
-    "6": {
-      "name": "e-Mainstream",
-      "colour": "#d2d1ab"
-    },
-    "7": {
-      "name": "Passive and Uncommitted Users",
-      "colour": "#79cdcd"
-    },
-    "8": {
-      "name": "Digital Seniors",
-      "colour": "#dd7cdc"
-    },
-    "9": {
-      "name": "Settled Offline Communities",
-      "colour": "#808fee"
-    },
-    "10": {
-      "name": "e-Withdrawn",
-      "colour": "#8470ff"
+    "groups": {
+      "A01": {
+        "name": "Student and Young City Strivers",
+        "supergroup": "A",
+        "colour": "#8dd3c7"
+      },
+      "A02": {
+        "name": "Wealthy Independent Workers and Professionals",
+        "supergroup": "A",
+        "colour": "#ffffb3"
+      },
+      "B03": {
+        "name": "Balanced Homeowning Families",
+        "supergroup": "B",
+        "colour": "#bebada"
+      },
+      "B04": {
+        "name": "Young Striving Families",
+        "supergroup": "B",
+        "colour": "#fb8072"
+      },
+      "B05": {
+        "name": "Senior Asset Owners",
+        "supergroup": "B",
+        "colour": "#80b1d3"
+      },
+      "C06": {
+        "name": "Secure Lone Pensioners",
+        "supergroup": "C",
+        "colour": "#fdb462"
+      },
+      "C07": {
+        "name": "Financially Leveraged Seniors",
+        "supergroup": "C",
+        "colour": "#b3de69"
+      },
+      "C08": {
+        "name": "Stable Intermediate Families",
+        "supergroup": "C",
+        "colour": "#fccde5"
+      },
+      "D09": {
+        "name": "Ageing Renters",
+        "supergroup": "D",
+        "colour": "#d9d9d9"
+      },
+      "D10": {
+        "name": "Vulnerable Lone-Parent Households",
+        "supergroup": "D",
+        "colour": "#bc80bd"
+      },
+      "E11": {
+        "name": "Overcrowded and Overburdened",
+        "supergroup": "E",
+        "colour": "#ccebc5"
+      },
+      "E12": {
+        "name": "Underprivileged dependent",
+        "supergroup": "E",
+        "colour": "#ffed6f"
+      },
+      "E13": {
+        "name": "Ageing Blue-collar households",
+        "supergroup": "E",
+        "colour": "#8dd3c7"
+      }
     }
   },
-  "eee": {
-    "1": {
+  "gb2c": {
+    "groups": {
+      "B1": {
+        "name": "Longstanding Habitual Veterans",
+        "colour": "#8dd3c7"
+      },
+      "B2": {
+        "name": "Well-Resourced Hobbyists",
+        "colour": "#ffffb3"
+      },
+      "BG1": {
+        "name": "Engaged New-Age Gamblers",
+        "colour": "#bebada"
+      },
+      "BG2": {
+        "name": "Newcomers with Sporadic and Moderate Patterns of Play",
+        "colour": "#fb8072"
+      },
+      "BG3": {
+        "name": "Event-Driven Speculative Players",
+        "colour": "#80b1d3"
+      },
+      "BG4": {
+        "name": "Mindful Entertainment Seekers",
+        "colour": "#fdb462"
+      },
+      "BG5": {
+        "name": "High-Frequency High-Stake Losers",
+        "colour": "#b3de69"
+      },
+      "BG6": {
+        "name": "Young Occasional Binge Players",
+        "colour": "#fccde5"
+      },
+      "G1": {
+        "name": "Episodic High Risk Takers",
+        "colour": "#d9d9d9"
+      },
+      "G2": {
+        "name": "Mindful Low-Rollers from Deprived Communities",
+        "colour": "#bc80bd"
+      },
+      "G3": {
+        "name": "High-Stakes Gamers from Deprived Communities",
+        "colour": "#ccebc5"
+      }
+    }
+  },
+  "eth": {
+    "WBR": {
       "name": "White - British",
       "colour": "#fccde5"
     },
-    "2": {
+    "WIR": {
       "name": "White - Irish",
       "colour": "#b3de69"
     },
-    "3": {
+    "WAO": {
       "name": "White - Other",
       "colour": "#fdb462"
     },
-    "4": {
+    "BAF": {
       "name": "Black - African",
       "colour": "#ffffb3"
     },
-    "5": {
-      "name": "Asian - Indian",
+    "BCA": {
+      "name": "Black - Caribbean",
       "colour": "#bebada"
     },
-    "6": {
-      "name": "Asian - Chinese",
+    "AIN": {
+      "name": "Asian - Indian",
       "colour": "#fb8072"
     },
-    "7": {
-      "name": "Asian - Other",
+    "APK": {
+      "name": "Asian - Pakistani",
       "colour": "#80b1d3"
     },
-    "8": {
-      "name": "Other Ethnic Group",
+    "ABD": {
+      "name": "Asian - Bangladeshi",
+      "colour": "#fdc086"
+    },
+    "ACN": {
+      "name": "Asian - Chinese",
       "colour": "#8dd3c7"
     },
-    "9": {
+    "AAO": {
+      "name": "Asian - Other",
+      "colour": "#ccebc5"
+    },
+    "OXX": {
+      "name": "Other ethnic group",
+      "colour": "#bc80bd"
+    },
+    "unknown": {
       "name": "Unknown",
       "colour": "#d9d9d9"
     }
@@ -461,7 +570,7 @@
         "#1a9850",
         "#006837"
       ],
-      "text": "Your selected surname occurs most frequently in decile {mode} of the Index of Multiple Deprivation. The first decile is the worst performing decile whereas the tenth decile is the best performing decile."
+      "text": "Your selected surname occurs most frequently in {decile} of the Index of Multiple Deprivation (IMD). The first decile is the most deprived and the tenth decile the least deprived."
     },
     "ahah": {
       "colours": [
@@ -476,34 +585,7 @@
         "#7397B6",
         "#4575B4"
       ],
-      "text": "Your selected surname occurs most frequently in decile {mode} of the Access to Healthy Assets and Hazards index. The first decile is the worst performing decile whereas the tenth decile is the best performing decile."
-    },
-    "bbs": {
-      "colours": [
-        "#276419",
-        "#4d9221",
-        "#7fbc41",
-        "#b8e186",
-        "#e6f5d0",
-        "#fde0ef",
-        "#f1b6da",
-        "#de77ae",
-        "#c51b7d",
-        "#8e0152"
-      ],
-      "labels": [
-        "Speed band 1 (placeholder label)",
-        "Speed band 2 (placeholder label)",
-        "Speed band 3 (placeholder label)",
-        "Speed band 4 (placeholder label)",
-        "Speed band 5 (placeholder label)",
-        "Speed band 6 (placeholder label)",
-        "Speed band 7 (placeholder label)",
-        "Speed band 8 (placeholder label)",
-        "Speed band 9 (placeholder label)",
-        "Speed band 10 (placeholder label)"
-      ],
-      "text": "Your selected surname falls in group {mode}, which suggests a modal fixed broadband download speed of {label}."
+      "text": "Your selected surname occurs most frequently in {decile} of the Access to Healthy Assets and Hazards index. The first decile is the healthiest and the tenth decile the least healthy."
     }
   }
 }

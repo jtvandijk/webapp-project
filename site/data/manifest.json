@@ -2,7 +2,7 @@
   "schema": 1,
   "release": {
     "version": "4.0.0-dev",
-    "date": "2026-09-21",
+    "date": "2026-10-07",
     "synthetic": true,
     "note": "Sample data: the map shapes are real, everything else is made up for development."
   },
@@ -58,21 +58,53 @@
       "year": 1911,
       "source": "census",
       "mask": "scotland",
-      "note": "The 1911 census data for Scotland are not available."
+      "note": "Census data for Scotland are not available for this year."
     },
     {
-      "id": "1998",
-      "year": 1998,
+      "id": "1921",
+      "year": 1921,
+      "source": "census",
+      "mask": "scotland",
+      "note": "Census data for Scotland are not available for this year."
+    },
+    {
+      "id": "1997",
+      "year": 1997,
       "source": "register"
     },
     {
-      "id": "2006",
-      "year": 2006,
+      "id": "2000",
+      "year": 2000,
       "source": "register"
     },
     {
-      "id": "2016",
-      "year": 2016,
+      "id": "2005",
+      "year": 2005,
+      "source": "register"
+    },
+    {
+      "id": "2010",
+      "year": 2010,
+      "source": "register"
+    },
+    {
+      "id": "2015",
+      "year": 2015,
+      "source": "register"
+    },
+    {
+      "id": "2020",
+      "year": 2020,
+      "source": "register"
+    },
+    {
+      "id": "2025",
+      "year": 2025,
+      "source": "register"
+    },
+    {
+      "id": "2026",
+      "year": 2026,
       "source": "register"
     }
   ],
@@ -151,7 +183,7 @@
     ]
   },
   "examples": [
-    "juszczyk",
+    "macdonald",
     "sion",
     "smith"
   ]

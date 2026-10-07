@@ -3,9 +3,10 @@
 
 What is real and what is made up
 --------------------------------
-REAL     the map shapes (read from the KDE files in gbnames/static/kde/), the Scotland
-         outline, and the OAC / LOAC 2021 names, colours and descriptions
-         (tools/sample_inputs/).
+REAL     the map shapes for smith/macdonald/sion (two periods each, trimmed from the real
+         release - tools/sample_inputs/kde/), the Scotland outline (tools/sample_inputs/
+         scotland_mask.json, also from the real release), and the OAC / LOAC 2021 names,
+         colours and descriptions (tools/sample_inputs/).
 MADE UP  every count, forename, place and classification result for a surname. They are
          generated from the surname itself, so the sample is identical on every run.
          Every file is flagged "synthetic": true so it can never be mistaken for real data.
@@ -26,9 +27,19 @@ import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-KDE_DIR = ROOT / "gbnames" / "static" / "kde"
 INPUTS = Path(__file__).resolve().parent / "sample_inputs"
+KDE_SAMPLE_DIR = INPUTS / "kde"
+SCOTLAND_MASK = INPUTS / "scotland_mask.json"
+GROUP_NAMES = ROOT / "pipeline" / "reference" / "group_names.json"
 OUT = ROOT / "site" / "data"
+
+# Invented, round-robin - FPC/GB2C's real colours come from git-ignored raw-indicators/ files
+# (see tools/build_lookups.py), which this standalone sample script deliberately does not depend
+# on. Group NAMES are public (published papers; see feedback-safeguarded-data-never-public), only
+# real area-to-group lookups are safeguarded - irrelevant here anyway, since every value below is
+# made up.
+SAMPLE_PALETTE = ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69",
+                  "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"]
 
 THRESHOLD = 100
 
@@ -36,7 +47,8 @@ THRESHOLD = 100
 # release description (manifest.json)
 # ---------------------------------------------------------------------------
 
-# One entry per map / slider position. To add a year (say 1921 or 2026) add a line here.
+# One entry per map / slider position - matches run.settings' GBNAMES_CENSUS_YEARS and
+# pipeline/config.py's MAP_YEARS["register"].
 PERIODS = [
     {"id": "1851", "year": 1851, "source": "census"},
     {"id": "1861", "year": 1861, "source": "census"},
@@ -44,14 +56,21 @@ PERIODS = [
     {"id": "1891", "year": 1891, "source": "census"},
     {"id": "1901", "year": 1901, "source": "census"},
     {"id": "1911", "year": 1911, "source": "census", "mask": "scotland",
-     "note": "The 1911 census data for Scotland are not available."},
-    {"id": "1998", "year": 1998, "source": "register"},
-    {"id": "2006", "year": 2006, "source": "register"},
-    {"id": "2016", "year": 2016, "source": "register"},
+     "note": "Census data for Scotland are not available for this year."},
+    {"id": "1921", "year": 1921, "source": "census", "mask": "scotland",
+     "note": "Census data for Scotland are not available for this year."},
+    {"id": "1997", "year": 1997, "source": "register"},
+    {"id": "2000", "year": 2000, "source": "register"},
+    {"id": "2005", "year": 2005, "source": "register"},
+    {"id": "2010", "year": 2010, "source": "register"},
+    {"id": "2015", "year": 2015, "source": "register"},
+    {"id": "2020", "year": 2020, "source": "register"},
+    {"id": "2025", "year": 2025, "source": "register"},
+    {"id": "2026", "year": 2026, "source": "register"},
 ]
 
-CENSUS_YEARS = [1851, 1861, 1881, 1891, 1901, 1911]
-REGISTER_YEARS = list(range(1997, 2017))
+CENSUS_YEARS = [1851, 1861, 1881, 1891, 1901, 1911, 1921]
+REGISTER_YEARS = list(range(1997, 2027))
 
 MANIFEST = {
     "schema": 1,
@@ -110,45 +129,36 @@ CARDS = {
             "about": "A classification of UK neighbourhoods, arranged into Supergroups and Groups based upon 2021/22 Census of Population data. We show the Supergroup and Group in which your selected surname occurs most frequently."},
     "loac": {"title": "London Output Area Classification",
              "about": "A classification of London's neighbourhoods, arranged into Supergroups and Groups based upon 2021 Census of Population data. We show the Supergroup and Group in which your selected surname occurs most frequently."},
-    "iuc": {"title": "Internet User Classification",
-            "about": "Describes the nature and extent of Internet usage by the residents of neighbourhoods across Great Britain."},
-    "eee": {"title": "Ethnicity Estimator", "subtitle": "Surname roots",
+    "fpc": {"title": "Financial Precarity Classification",
+            "about": "A classification of neighbourhoods by financial precarity, arranged into Supergroups and Groups. We show the Supergroup and Group in which your selected surname occurs most frequently."},
+    "gb2c": {"title": "Gambling Behaviours in Britain",
+             "about": "A classification of neighbourhoods by the gambling behaviours most common among their estimated active gamblers. We show the Type most closely associated with your selected surname."},
+    "eth": {"title": "Ethnicity Estimator", "subtitle": "Surname roots",
             "about": "Given and family names provide clues as to ethnicity. We show a rough estimate of the probable ethnicity of the surname that you entered."},
     "imd": {"title": "Index of Multiple Deprivation",
             "about": "Neighbourhoods can be ranked from best to worst and we show the decile in which your selected surname occurs most frequently."},
     "ahah": {"title": "Access to Healthy Assets and Hazards",
              "about": "Neighbourhoods can be ranked from best to worst and we show the decile in which your selected surname occurs most frequently."},
-    "bbs": {"title": "Broadband speed",
-            "about": "The modal fixed broadband download speed available to bearers of your selected surname."},
 }
 
 SCALES = {
+    # {decile} is replaced client-side with a colour pill (site/js/app.js's decilePill()) - must
+    # match that exact placeholder name, not the fact value's own "mode" field name.
     "imd": {"colours": ["#a50026", "#d73027", "#f46d43", "#fdae61", "#fee08b",
                         "#d9ef8b", "#a6d96a", "#66bd63", "#1a9850", "#006837"],
-            "text": "Your selected surname occurs most frequently in decile {mode} of the Index of Multiple Deprivation. The first decile is the worst performing decile whereas the tenth decile is the best performing decile."},
+            "text": "Your selected surname occurs most frequently in {decile} of the Index of Multiple Deprivation (IMD). The first decile is the most deprived and the tenth decile the least deprived."},
     "ahah": {"colours": ["#F46D43", "#F68A5B", "#F8A774", "#FAC48D", "#FCE1A6",
                          "#FFFFBF", "#D0DCBC", "#A2BAB9", "#7397B6", "#4575B4"],
-             "text": "Your selected surname occurs most frequently in decile {mode} of the Access to Healthy Assets and Hazards index. The first decile is the worst performing decile whereas the tenth decile is the best performing decile."},
-    "bbs": {"colours": ["#276419", "#4d9221", "#7fbc41", "#b8e186", "#e6f5d0",
-                        "#fde0ef", "#f1b6da", "#de77ae", "#c51b7d", "#8e0152"],
-            "labels": ["Speed band %d (placeholder label)" % i for i in range(1, 11)],
-            "text": "Your selected surname falls in group {mode}, which suggests a modal fixed broadband download speed of {label}."},
+             "text": "Your selected surname occurs most frequently in {decile} of the Access to Healthy Assets and Hazards index. The first decile is the healthiest and the tenth decile the least healthy."},
 }
 
-IUC = {  # names from the CDRC Internet User Classification; descriptions left out on purpose
-    1: ("e-Cultural Creators", "#ea4d78"), 2: ("e-Professionals", "#f36d5a"),
-    3: ("e-Veterans", "#e4a5d0"), 4: ("Youthful Urban Fringe", "#ffd39b"),
-    5: ("e-Rational Utilitarians", "#a5cfbc"), 6: ("e-Mainstream", "#d2d1ab"),
-    7: ("Passive and Uncommitted Users", "#79cdcd"), 8: ("Digital Seniors", "#dd7cdc"),
-    9: ("Settled Offline Communities", "#808fee"), 10: ("e-Withdrawn", "#8470ff"),
-}
-
-EEE = {
-    1: ("White - British", "#fccde5"), 2: ("White - Irish", "#b3de69"),
-    3: ("White - Other", "#fdb462"), 4: ("Black - African", "#ffffb3"),
-    5: ("Asian - Indian", "#bebada"), 6: ("Asian - Chinese", "#fb8072"),
-    7: ("Asian - Other", "#80b1d3"), 8: ("Other Ethnic Group", "#8dd3c7"),
-    9: ("Unknown", "#d9d9d9"),
+ETH = {
+    "WBR": ("White - British", "#fccde5"), "WIR": ("White - Irish", "#b3de69"),
+    "WAO": ("White - Other", "#fdb462"), "BAF": ("Black - African", "#ffffb3"),
+    "BCA": ("Black - Caribbean", "#bebada"), "AIN": ("Asian - Indian", "#fb8072"),
+    "APK": ("Asian - Pakistani", "#80b1d3"), "ABD": ("Asian - Bangladeshi", "#fdc086"),
+    "ACN": ("Asian - Chinese", "#8dd3c7"), "AAO": ("Asian - Other", "#ccebc5"),
+    "OXX": ("Other ethnic group", "#bc80bd"), "unknown": ("Unknown", "#d9d9d9"),
 }
 
 LOAC_COLOURS = {
@@ -194,6 +204,25 @@ def read_rows(filename):
         return list(csv.reader(f))
 
 
+def build_fpc():
+    """Two-level (supergroups + groups), names from the real group_names.json (public - see
+    SAMPLE_PALETTE's note above), colours invented."""
+    names = json.loads(GROUP_NAMES.read_text(encoding="utf-8"))["fpc"]
+    supergroups = {code: {"name": entry["name"], "colour": colour}
+                   for colour, (code, entry) in zip(SAMPLE_PALETTE, sorted(names["supergroups"].items()))}
+    groups = {code: {"name": entry["name"], "supergroup": entry["supergroup"], "colour": colour}
+              for colour, (code, entry) in zip(SAMPLE_PALETTE * 2, sorted(names["groups"].items()))}
+    return {"supergroups": supergroups, "groups": groups}
+
+
+def build_gb2c():
+    """Flat (groups only), same real-names/invented-colours approach as build_fpc()."""
+    names = json.loads(GROUP_NAMES.read_text(encoding="utf-8"))["gb2c"]
+    groups = {code: {"name": entry["name"], "colour": colour}
+              for colour, (code, entry) in zip(SAMPLE_PALETTE, sorted(names["groups"].items()))}
+    return {"groups": groups}
+
+
 def build_lookups():
     oac = {"supergroups": {}, "groups": {}}
     for kind, code, colour, name, desc in read_rows("oac21_descriptions.csv"):
@@ -218,24 +247,15 @@ def build_lookups():
         "cards": CARDS,
         "oac": oac,
         "loac": loac,
-        "iuc": {str(k): {"name": n, "colour": c} for k, (n, c) in IUC.items()},
-        "eee": {str(k): {"name": n, "colour": c} for k, (n, c) in EEE.items()},
+        "fpc": build_fpc(),
+        "gb2c": build_gb2c(),
+        "eth": {k: {"name": n, "colour": c} for k, (n, c) in ETH.items()},
         "scales": SCALES,
     }
 
 
 def rng_for(name):
     return random.Random(int(hashlib.sha256(name.encode()).hexdigest(), 16))
-
-
-def read_map(path):
-    fc = json.loads(path.read_text(encoding="utf-8"))
-    features = [
-        {"type": "Feature", "properties": {"level": int(f["properties"]["level"])},
-         "geometry": f["geometry"]}
-        for f in fc["features"] if f.get("geometry")
-    ]
-    return {"type": "FeatureCollection", "features": features}
 
 
 def decile_distribution(rng):
@@ -273,10 +293,24 @@ def synthetic_counts(rng, mapped_years):
     return counts
 
 
-def synthetic_facts(rng, oac_groups, loac_groups):
+def group_distribution(rng, codes, mode_code):
+    """Made-up share per group code (renderGroupCard/renderFlatGroupCard both need one, not just a
+    mode): mode_code's own weight is always drawn above every other code's, so it is genuinely the
+    largest share after normalising, consistent with it being reported as the mode."""
+    weights = {code: rng.uniform(0.2, 1.0) for code in codes}
+    weights[mode_code] = max(weights.values()) + rng.uniform(0.3, 0.8)
+    total = sum(weights.values())
+    return {code: round(w / total, 3) for code, w in weights.items()}
+
+
+def group_fact(rng, codes):
+    mode_code = rng.choice(codes)
+    return {"group": mode_code, "distribution": group_distribution(rng, codes, mode_code)}
+
+
+def synthetic_facts(rng, oac_groups, loac_groups, fpc_groups, gb2c_groups):
     imd_mode, imd_mean, imd_sd, imd_dist = decile_distribution(rng)
     ahah_mode, _, _, ahah_dist = decile_distribution(rng)
-    bbs_mode, _, _, bbs_dist = decile_distribution(rng)
     return {
         "forenames": {
             "census": {"f": rng.sample(FEMALE, 10), "m": rng.sample(MALE, 10)},
@@ -286,13 +320,13 @@ def synthetic_facts(rng, oac_groups, loac_groups):
             "census": [{"area": a, "name": n} for a, n in rng.sample(OLD_PLACES, 10)],
             "register": [{"area": a, "name": n} for a, n in rng.sample(NEW_PLACES, 10)],
         },
-        "oac": {"group": rng.choice(oac_groups)},
-        "loac": {"group": rng.choice(loac_groups)},
-        "iuc": {"group": rng.randint(1, 10)},
-        "eee": {"group": rng.randint(1, 9)},
+        "oac": group_fact(rng, oac_groups),
+        "loac": group_fact(rng, loac_groups),
+        "fpc": group_fact(rng, fpc_groups),
+        "gb2c": group_fact(rng, gb2c_groups),
+        "eth": {"group": rng.choice(list(ETH.keys()))},
         "imd": {"mode": imd_mode, "mean": imd_mean, "sd": imd_sd, "distribution": imd_dist},
         "ahah": {"mode": ahah_mode, "distribution": ahah_dist},
-        "bbs": {"mode": bbs_mode, "distribution": bbs_dist},
     }
 
 
@@ -307,25 +341,22 @@ def main():
     lookups = build_lookups()
     oac_groups = sorted(lookups["oac"]["groups"])
     loac_groups = sorted(lookups["loac"]["groups"])
+    fpc_groups = sorted(lookups["fpc"]["groups"])
+    gb2c_groups = sorted(lookups["gb2c"]["groups"])
     period_source = {p["id"]: p["source"] for p in PERIODS}
 
-    # Scotland outline, geometry only
-    scotland = json.loads((KDE_DIR / "sc" / "scotland" / "scotland_0.json").read_text(encoding="utf-8"))
-    mask = {"type": "FeatureCollection",
-            "features": [{"type": "Feature", "properties": {}, "geometry": f["geometry"]}
-                         for f in scotland["features"]]}
-    write_json(OUT / "masks" / "scotland.json", mask)
+    # Scotland outline, already in the right shape (a trimmed copy of the real release's own
+    # masks/scotland.json - see tools/sample_inputs/README.md)
+    write_json(OUT / "masks" / "scotland.json", json.loads(SCOTLAND_MASK.read_text(encoding="utf-8")))
 
-    # one bundle per surname that has KDE files locally
+    # one bundle per surname with a real sample map file (tools/sample_inputs/kde/<name>.json -
+    # a dict of period id -> FeatureCollection, already trimmed to the periods we ship)
     shards = {}
     sizes = {}
-    for name_dir in sorted(p for p in KDE_DIR.glob("*/*") if p.is_dir() and p.parent.name != "sc"):
-        name = name_dir.name
-        maps = {}
-        for period in PERIODS:
-            file = name_dir / f"{name}_{period['id']}.json"
-            if file.exists():
-                maps[period["id"]] = read_map(file)
+    for kde_file in sorted(KDE_SAMPLE_DIR.glob("*.json")):
+        name = kde_file.stem
+        by_period = json.loads(kde_file.read_text(encoding="utf-8"))
+        maps = {pid: fc for pid, fc in by_period.items() if pid in period_source}
         if not maps:
             continue
         rng = rng_for(name)
@@ -336,13 +367,18 @@ def main():
             "synthetic": True,
             "counts": synthetic_counts(rng, mapped_years),
             "maps": maps,
-            "facts": synthetic_facts(rng, oac_groups, loac_groups),
         }
         path = OUT / "names" / name[:2] / f"{name}.json"
         raw = write_json(path, bundle)
         gz = len(zlib.compress(path.read_bytes(), 6))
         sizes[name] = (raw, gz, len(maps))
         shards.setdefault(name[:2], []).append(name)
+
+        # facts are published separately (tools/split_facts.py does the same split on a real
+        # release) - site/js/data.js's fetchFacts() fetches this file independently, never looks
+        # for a "facts" key inside the names/ bundle.
+        write_json(OUT / "facts" / name[:2] / f"{name}.json",
+                   synthetic_facts(rng, oac_groups, loac_groups, fpc_groups, gb2c_groups))
 
     for prefix, names in shards.items():
         write_json(OUT / "index" / f"{prefix}.json", sorted(names))
