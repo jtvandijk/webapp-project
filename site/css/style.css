@@ -609,10 +609,6 @@ details[open] > summary .bar-chevron {
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
 }
 
-.bar-row-mode .bar-name {
-    font-weight: 700;
-}
-
 /* Index view of the group cards (site/js/indicators.js, INDEX_VIEW_ENABLED): every bar row carries
    both a share and an index value/bar, and one class on <html> decides which is shown. */
 html:not(.group-view-index) .index-only,
@@ -627,6 +623,7 @@ html:not(.group-view-index) .index-only,
 .view-toggle {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     font-size: 0.85rem;
 }
 
@@ -662,7 +659,7 @@ html:not(.group-view-index) .index-only,
     color: #fff;
 }
 
-.index-explainer {
+.view-explainer {
     margin: 0.6rem 0 0;
     font-size: 0.85rem;
     color: #555;

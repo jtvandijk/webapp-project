@@ -109,8 +109,7 @@ CARDS = {
                 "<a href=\"https://doi.org/10.1111/geoj.12550\" target=\"_blank\" rel=\"noopener\">Wyszomierski <em>et al.</em> (2023)</a> "
                 "and on the <a href=\"https://data.geods.ac.uk/dataset/output-area-classification-2021\" target=\"_blank\" rel=\"noopener\">GeoDS dataset page</a>. "
                 "We show the distribution of your selected family group across 2021/22 OAC Supergroups "
-                "and Groups, with links to the attributes of these neighbourhoods. The tick mark on "
-                "each bar shows that Supergroup or Group's actual share of the UK's population."},
+                "and Groups, with links to the attributes of these neighbourhoods."},
     "loac": {"title": "London's Geodemographic Structure: the London Output Area Classification",
              "about": "As the UK capital, some attributes of Greater London's distinctive neighbourhoods "
                  "are not described fully by nationwide geodemographic classifications. The London "
@@ -120,27 +119,22 @@ CARDS = {
                  "and on the <a href=\"https://data.geods.ac.uk/dataset/london-oac\" target=\"_blank\" rel=\"noopener\">GeoDS dataset page</a>) "
                  "but applies them only to Greater London. We show the distribution of your selected "
                  "family group across 2021 LOAC Supergroups and Groups, with links to the attributes of "
-                 "these neighbourhoods. The tick mark on each bar shows that Supergroup or Group's "
-                 "actual share of London's population."},
+                 "these neighbourhoods."},
     "fpc": {"title": "Britain's Cost of Living Crisis: the Financial Precarity Classification",
             "about": "Whether neighbourhoods are thriving or just surviving is measured by the "
                 "Financial Precarity Classification (FPC), described in "
                 "<a href=\"https://doi.org/10.1016/j.compenvurbsys.2026.102399\" target=\"_blank\" rel=\"noopener\">Zi and Singleton (2026)</a> "
                 "and on the <a href=\"https://data.geods.ac.uk/dataset/financial-precarity-classification\" target=\"_blank\" rel=\"noopener\">GeoDS dataset page</a>. "
-                "We show the Supergroup and Group in which your selected surname occurs most frequently. "
-                "The tick mark on each bar shows that Supergroup or Group's actual share of Great "
-                "Britain's population."},
+                "We show the distribution of your selected surname across FPC Supergroups and Groups."},
     "gb2c": {"title": "Gambling Behaviours in Britain",
              "about": "The Great Britain Gambling Behaviours Classification (GB2C) provides the first "
                  "national neighbourhood classification of gambling behaviours in Great Britain, based on "
                  "an estimated number of people with an online gambling account in each neighbourhood. We "
                  "assign each neighbourhood the Type most common among its estimated active gamblers - not "
-                 "a share of all residents - and highlight the Type most closely associated with your "
-                 "selected surname. See the "
+                 "a share of all residents - and show the distribution of your selected surname across "
+                 "these Types. See the "
                  "<a href=\"https://data.geods.ac.uk/dataset/great-britain-gambling-behaviours-classification-gb2c-lsoa-geography\" target=\"_blank\" rel=\"noopener\">GeoDS dataset page</a>; "
-                 "the accompanying paper is currently under review. The tick mark on each bar shows what "
-                 "share of Great Britain's population lives in a neighbourhood where this Type is the "
-                 "dominant active-gambler pattern."},
+                 "the accompanying paper is currently under review."},
     "eth": {"title": "Ethnicity Estimator", "subtitle": "Surname roots",
             "about": "Given and family names provide clues as to probable ethnicity. We show a rough "
                 "estimate of the most common census ethnic group among bearers of the surname you "

@@ -50,11 +50,30 @@ function indexOf(share, populationShare) {
     return populationShare ? 100 * share / populationShare : null;
 }
 
-// "Shares | Index" switch plus, in index view only, one line on how to read it. `population` names
-// the baseline in words ("the UK population", "London's population", ...).
-function viewToggle(population) {
+// The "Shares | Index" switch (right-aligned) and, under it, one line on how to read the view that is
+// showing - the shares line replaced the tick-mark sentence each card's own description used to carry
+// (user, 2026-10-08), so it is drawn even with INDEX_VIEW_ENABLED off (then without the switch).
+// `population` names the baseline in words ("the UK population", "London's population", ...);
+// `twoLevel` adds the note that Group bars are shares within the Supergroup shown.
+function viewControls(population, twoLevel) {
     const wrap = document.createElement("div");
     wrap.className = "view-toggle-row";
+    const shareExplainer = document.createElement("p");
+    shareExplainer.className = "indicator-text view-explainer share-only";
+    shareExplainer.textContent = "Shares: the percentage of this name's bearers living in each "
+        + (twoLevel ? "Supergroup's or Group's neighbourhoods (for Groups, within the Supergroup shown). "
+            : "group's neighbourhoods. ")
+        + `The black tick shows the same for ${population}: a bar reaching past its tick means the name is `
+        + "over-represented there.";
+    const indexExplainer = document.createElement("p");
+    indexExplainer.className = "indicator-text view-explainer index-only";
+    indexExplainer.textContent = `Index: how common each group is among bearers of this name, compared with ${population}. `
+        + "100 means as common, 200 twice as common, 50 half as common. Bars to the right of the centre line "
+        + "are over-represented, to the left under-represented (drawn from 25 to 400).";
+    if (!INDEX_VIEW_ENABLED) {
+        wrap.append(shareExplainer);
+        return wrap;
+    }
     const toggle = document.createElement("div");
     toggle.className = "view-toggle";
     toggle.setAttribute("role", "group");
@@ -69,12 +88,7 @@ function viewToggle(population) {
         btn.addEventListener("click", () => setGroupView(view));
         toggle.appendChild(btn);
     }
-    const explainer = document.createElement("p");
-    explainer.className = "indicator-text index-explainer index-only";
-    explainer.textContent = `Index: how common each group is among bearers of this name, compared with ${population}. `
-        + "100 means as common, 200 twice as common, 50 half as common. Bars to the right of the centre line "
-        + "are over-represented, to the left under-represented (drawn from 25 to 400).";
-    wrap.append(toggle, explainer);
+    wrap.append(toggle, shareExplainer, indexExplainer);
     return wrap;
 }
 
@@ -209,7 +223,6 @@ export function renderDecileCard({ title, about, colours, distribution, mode, sc
     distribution.forEach((share, i) => {
         const decile = i + 1;
         const row = barRow({ name: `Decile ${decile}`, colour: colours[i], share });
-        if (decile === mode) row.classList.add("bar-row-mode");
         list.appendChild(row);
     });
     body.appendChild(list);
@@ -241,7 +254,7 @@ function levelPill(text, caption) {
 
 export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics", flier, name, abbr, population }) {
     const { card, body } = cardShell({ title, about, clickHint, flier });
-    if (INDEX_VIEW_ENABLED && population) body.appendChild(viewToggle(population));
+    if (population) body.appendChild(viewControls(population, true));
 
     const supergroupTotals = {};
     for (const [code, share] of Object.entries(distribution)) {
@@ -250,10 +263,11 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
         supergroupTotals[sg] = (supergroupTotals[sg] || 0) + share;
     }
     // Two different "winners", which can legitimately disagree: the supergroup with the highest
-    // combined share across all its own groups (bolded in the list below, so bold always tracks the
-    // longest bar), versus the supergroup that happens to contain the single most common group
-    // (modeCode) - a name can be fairly spread across several groups in its leading supergroup while
-    // being heavily concentrated in just one group that sits elsewhere.
+    // combined share across all its own groups (the longest bar), versus the supergroup that happens
+    // to contain the single most common group (modeCode), whose groups are the ones listed below - a
+    // name can be fairly spread across several groups in its leading supergroup while being heavily
+    // concentrated in just one group that sits elsewhere. (No bar is bolded as "most common" any
+    // more - dropped 2026-10-08, it read as contradicting the index view.)
     const topSupergroup = Object.keys(supergroupTotals)
         .reduce((best, code) => (supergroupTotals[code] > (supergroupTotals[best] || -1) ? code : best), null);
     const modeSupergroup = groups[modeCode] && groups[modeCode].supergroup;
@@ -266,7 +280,6 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
         const row = barRow({ name: sg.name, colour: sg.colour, share: supergroupTotals[code] || 0,
             detailsText: sg.desc, populationShare: sg.populationShare,
             index: population ? indexOf(supergroupTotals[code] || 0, sg.populationShare) : undefined });
-        if (code === topSupergroup) row.classList.add("bar-row-mode");
         sgList.appendChild(row);
     }
     body.appendChild(sgList);
@@ -291,7 +304,6 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
             const row = barRow({ name: g.name, colour: g.colour, share: withinShare, detailsText: g.desc,
                 populationShare: withinPopulationShare,
                 index: population ? indexOf(distribution[code] || 0, g.populationShare) : undefined });
-            if (code === modeCode) row.classList.add("bar-row-mode");
             groupList.appendChild(row);
         }
         body.appendChild(groupList);
@@ -322,7 +334,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
 
 export function renderFlatGroupCard({ title, about, groups, distribution, modeCode, clickHint, flier, population }) {
     const { card, body } = cardShell({ title, about, clickHint, flier });
-    if (INDEX_VIEW_ENABLED && population) body.appendChild(viewToggle(population));
+    if (population) body.appendChild(viewControls(population, false));
     const list = document.createElement("div");
     list.className = "bar-list";
     for (const code of Object.keys(groups).sort()) {
@@ -330,7 +342,6 @@ export function renderFlatGroupCard({ title, about, groups, distribution, modeCo
         const row = barRow({ name: g.name, colour: g.colour, share: distribution[code] || 0, detailsText: g.desc,
             populationShare: g.populationShare,
             index: population ? indexOf(distribution[code] || 0, g.populationShare) : undefined });
-        if (code === modeCode) row.classList.add("bar-row-mode");
         list.appendChild(row);
     }
     body.appendChild(list);
