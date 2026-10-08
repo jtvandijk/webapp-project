@@ -246,6 +246,12 @@ function renderIndicators(facts) {
     // averages...") - everywhere else that mentions "your selected surname" stays plain text, per
     // the user's call that pills on every mention felt like too much (2026-10-06).
     const nameEscaped = escapeHtml(currentName.name);
+    // The register facts are worked out in the name's reference year: its latest register year with
+    // 100+ bearers (docs/pipeline.md). Its raw count turns a group's share into an estimated number
+    // of bearers, which the index view uses to decide which Group may lead its list.
+    const registerCounts = currentName.counts.register || {};
+    const referenceYear = Object.keys(registerCounts).filter(y => registerCounts[y] >= 100).sort().pop();
+    const referenceBearers = referenceYear ? registerCounts[referenceYear] : undefined;
     const namePill = `<span class="name-pill">${nameEscaped}</span>`;
 
     if (facts.imd) {
@@ -275,6 +281,7 @@ function renderIndicators(facts) {
             name: nameEscaped,
             abbr: "OAC",
             population: "the UK population",
+            bearers: referenceBearers,
         }));
     }
     if (facts.loac) {
@@ -290,6 +297,7 @@ function renderIndicators(facts) {
             name: nameEscaped,
             abbr: "LOAC",
             population: "London's population",
+            bearers: referenceBearers,
         }));
     }
     if (facts.gb2c) {
@@ -328,6 +336,7 @@ function renderIndicators(facts) {
             name: nameEscaped,
             abbr: "FPC",
             population: "Great Britain's population",
+            bearers: referenceBearers,
         }));
     }
 

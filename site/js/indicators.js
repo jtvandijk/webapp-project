@@ -26,6 +26,12 @@ const VIEW_STORAGE_KEY = "gbnames.groupView";
 // Drawn on a log2 scale centred on 100, so 50 and 200 sit the same distance either side; bars stop
 // at 25 and 400 (INDEX_SCALE_STEPS doublings) while the printed number is always the real one.
 const INDEX_SCALE_STEPS = 2;
+// A Group must hold an estimated INDEX_MIN_BEARERS of a name's bearers (its share x the name's register
+// count in its reference year) to lead the index view's Group list (renderGroupCard). A count, not a
+// share: 1% of Smith is thousands of people, 1% of a 150-bearer name is one or two. Not a display
+// filter - every bar still shows its true index. Without a known count, INDEX_MIN_SHARE is used instead.
+const INDEX_MIN_BEARERS = 10;   // ~11% of names (OAC) have their very top index resting on fewer
+const INDEX_MIN_SHARE = 0.02;
 
 let groupView = "share";
 try {
@@ -267,7 +273,7 @@ function calloutNote(viewClass, html) {
     return note;
 }
 
-export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics", flier, name, abbr, population }) {
+export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics", flier, name, abbr, population, bearers }) {
     const { card, body } = cardShell({ title, about, clickHint, flier });
     if (population) body.appendChild(viewControls(population, true));
 
@@ -299,13 +305,16 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
     }
     body.appendChild(sgList);
 
-    if (modeSupergroup != null) {
-        const supergroupShare = supergroupTotals[modeSupergroup] || 0;
-        const supergroupPopulationShare = supergroups[modeSupergroup].populationShare;
-        body.appendChild(levelPill(`${abbr} Group`, "sub-category"));
+    // The Groups of one Supergroup, as a level pill plus a bar list. `viewClass` ("share-only" or
+    // "index-only") ties both to one view; "" shows them in both.
+    const appendGroupList = (supergroupCode, viewClass) => {
+        const supergroupShare = supergroupTotals[supergroupCode] || 0;
+        const supergroupPopulationShare = supergroups[supergroupCode].populationShare;
+        const pill = levelPill(`${abbr} Group`, "sub-category");
         const groupList = document.createElement("div");
         groupList.className = "bar-list";
-        const codesInSupergroup = Object.keys(groups).filter(c => groups[c].supergroup === modeSupergroup).sort();
+        if (viewClass) { pill.classList.add(viewClass); groupList.classList.add(viewClass); }
+        const codesInSupergroup = Object.keys(groups).filter(c => groups[c].supergroup === supergroupCode).sort();
         for (const code of codesInSupergroup) {
             const g = groups[code];
             const withinShare = supergroupShare > 0 ? (distribution[code] || 0) / supergroupShare : 0;
@@ -321,7 +330,34 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
                 index: population ? indexOf(distribution[code] || 0, g.populationShare) : undefined });
             groupList.appendChild(row);
         }
-        body.appendChild(groupList);
+        body.append(pill, groupList);
+    };
+
+    // Index view mirrors the shares view (agreed with the user 2026-10-08): its Group list is the
+    // Supergroup holding the Group the name is MOST OVER-REPRESENTED in (highest index), just as the
+    // shares list is the Supergroup holding the most common Group. Only Groups with an estimated
+    // INDEX_MIN_BEARERS can lead, so a handful of people in a small Group (index 300+ from a few
+    // bearers) cannot decide the list - every bar still shows its true index. (For LOAC the share is of
+    // London bearers only, so the estimate runs high; in practice its top-index Group is never tiny.)
+    // When the two views lead with different Supergroups, each view gets its own list.
+    let topIndexCode = null, topIndex = -1;
+    if (population) {
+        const minLeadShare = bearers ? INDEX_MIN_BEARERS / bearers : INDEX_MIN_SHARE;
+        for (const minShare of [minLeadShare, 0]) {      // fall back to every Group if none qualifies
+            for (const [code, g] of Object.entries(groups)) {
+                const share = distribution[code] || 0;
+                const index = indexOf(share, g.populationShare);
+                if (share >= minShare && index != null && index > topIndex) { topIndex = index; topIndexCode = code; }
+            }
+            if (topIndexCode != null) break;
+        }
+    }
+    const indexListSupergroup = topIndexCode != null ? groups[topIndexCode].supergroup : null;
+
+    if (modeSupergroup != null) {
+        const separateIndexList = indexListSupergroup != null && indexListSupergroup !== modeSupergroup;
+        appendGroupList(modeSupergroup, separateIndexList ? "share-only" : "");
+        if (separateIndexList) appendGroupList(indexListSupergroup, "index-only");
     }
 
     // Placed below both bar lists (rather than between them) so the reader sees the full picture
@@ -329,7 +365,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
     // the two levels disagree.
     const sgPill = code => colourPill(supergroups[code].name, supergroups[code].colour);
     if (modeSupergroup != null && topSupergroup != null && modeSupergroup !== topSupergroup) {
-        body.appendChild(calloutNote("share-only",   // about shares, so not shown in index view
+        body.appendChild(calloutNote("share-only",
             `${sgPill(topSupergroup)} has the `
             + `highest combined share overall, but the single most common Group for <span class="name-pill">${name}</span> sits `
             + `in a different Supergroup, ${sgPill(modeSupergroup)}, `
@@ -337,25 +373,21 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
             + `Supergroup while being heavily concentrated in just one Group elsewhere.`));
     }
 
-    // Index view's counterpart (option D, agreed with the user 2026-10-08): the Group list is chosen by
-    // shares (the Supergroup holding the most common Group), so the Group with the HIGHEST INDEX is
-    // often not in it (e.g. smith's OAC 8a, index 151, sits in Legacy Communities while Baseline UK's
-    // Groups are listed). Say so, only when that happens. Listing all Groups was judged too long, and
-    // switching the list by view would lose the shares view's granularity.
-    if (population && modeSupergroup != null) {
-        let topIndexCode = null, topIndex = -1;
-        for (const [code, g] of Object.entries(groups)) {
-            const index = indexOf(distribution[code] || 0, g.populationShare);
-            if (index != null && index > topIndex) { topIndex = index; topIndexCode = code; }
-        }
-        const topIndexSupergroup = topIndexCode != null && groups[topIndexCode].supergroup;
-        if (topIndexSupergroup != null && topIndexSupergroup !== modeSupergroup && supergroups[topIndexSupergroup]) {
-            const g = groups[topIndexCode];
+    // The index view's mirror of the note above: the Supergroup with the highest index versus the one
+    // holding the highest-index Group.
+    if (indexListSupergroup != null) {
+        const topIndexSupergroup = Object.keys(supergroupTotals).reduce((best, code) => {
+            const index = indexOf(supergroupTotals[code], supergroups[code] && supergroups[code].populationShare);
+            return index != null && (best == null || index > best.index) ? { code, index } : best;
+        }, null);
+        if (topIndexSupergroup && topIndexSupergroup.code !== indexListSupergroup) {
             body.appendChild(calloutNote("index-only",
-                `The Groups listed are those in ${sgPill(modeSupergroup)}, the Supergroup containing the most `
-                + `common Group for <span class="name-pill">${name}</span>. Relative to the population, <span class="name-pill">${name}</span> `
-                + `is most over-represented in ${colourPill(g.name, g.colour)} (index ${Math.round(topIndex)}), which sits in `
-                + `${sgPill(topIndexSupergroup)}.`));
+                `${sgPill(topIndexSupergroup.code)} has the highest index overall, but the Group where `
+                + `<span class="name-pill">${name}</span> is most clearly over-represented, `
+                + `${colourPill(groups[topIndexCode].name, groups[topIndexCode].colour)} (index ${Math.round(topIndex)}), `
+                + `sits in a different Supergroup, ${sgPill(indexListSupergroup)}, shown above - a name can be `
+                + `moderately over-represented across several Groups in one Supergroup while being strongly `
+                + `over-represented in just one Group elsewhere.`));
         }
     }
     return card;
