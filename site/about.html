@@ -107,9 +107,12 @@
         <p>Rather than plotting every single address (which would risk identifying individuals), we
           use a technique called <strong>kernel density estimation (KDE)</strong>: it smooths out the
           locations of everyone who shares a name into a continuous surface, showing where the name is
-          more or less concentrated, the same way a heatmap works. The coloured contours enclose areas
-          where bearers of the name were most concentrated, measured as where this population-weighted
-          density is highest. See
+          more or less concentrated, the same way a heatmap works. If we simply mapped where people with
+          a surname live, almost every map would look the same: bright spots over London, Birmingham and
+          Manchester, because that is where most people live. So we adjust for population: each area is
+          judged partly by how many bearers it has and partly by how unusually common the name is there
+          compared with everyone else. The coloured contours enclose the areas where the name was most
+          concentrated on this adjusted surface. See
           <a href="https://www.spatialanalysisonline.com/HTML/index.html?density__kernels_and_occupancy.htm" target="_blank" rel="noopener">de Smith, Goodchild and Longley (2018)</a>
           and <a href="https://doi.org/10.1080/13658816.2011.591291" target="_blank" rel="noopener">Cheshire and Longley (2011)</a>
           for the technique itself, and
@@ -117,8 +120,8 @@
           for how we apply it here.</p>
         <p>Because some surnames have far more bearers than others, the shading is always relative
           to that name's own spread, not a fixed scale used for every name. The three bands each
-          enclose the smallest area holding a set share of that name's own total presence
-          nationwide, so a name with 150 bearers still gets a full set of three bands, just like a
+          enclose the smallest area holding a set share of that name's own (population-adjusted)
+          presence nationwide, so a name with 150 bearers still gets a full set of three bands, just like a
           name with 150,000 - what differs is how widely those bands are spread out, not whether
           they appear at all. Each time period's map is also worked out fresh from that year's own
           data, so an area moving in or out of the shading between years means the name became
