@@ -660,7 +660,7 @@ html:not(.group-view-index) .index-only,
 }
 
 .view-explainer {
-    margin: 0.6rem 0 0;
+    margin: 0 0 0.6rem;
     font-size: 0.85rem;
     color: #555;
 }

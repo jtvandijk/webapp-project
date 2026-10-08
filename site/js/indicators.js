@@ -50,8 +50,8 @@ function indexOf(share, populationShare) {
     return populationShare ? 100 * share / populationShare : null;
 }
 
-// The "Shares | Index" switch (right-aligned) and, under it, one line on how to read the view that is
-// showing - the shares line replaced the tick-mark sentence each card's own description used to carry
+// One line on how to read the view that is showing and, under it (directly above the bars), the
+// right-aligned "Shares | Index" switch. The shares line replaced the tick-mark sentence each card's own description used to carry
 // (user, 2026-10-08), so it is drawn even with INDEX_VIEW_ENABLED off (then without the switch).
 // `population` names the baseline in words ("the UK population", "London's population", ...);
 // `twoLevel` adds the note that Group bars are shares within the Supergroup shown.
@@ -88,7 +88,7 @@ function viewControls(population, twoLevel) {
         btn.addEventListener("click", () => setGroupView(view));
         toggle.appendChild(btn);
     }
-    wrap.append(toggle, shareExplainer, indexExplainer);
+    wrap.append(shareExplainer, indexExplainer, toggle);   // switch last: directly above the bars it controls
     return wrap;
 }
 
