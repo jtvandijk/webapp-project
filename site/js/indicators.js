@@ -252,6 +252,21 @@ function levelPill(text, caption) {
     return p;
 }
 
+// The light "i" note under a card's bars; `viewClass` ("share-only"/"index-only") ties it to one view.
+function calloutNote(viewClass, html) {
+    const note = document.createElement("div");
+    note.className = `callout-note mt-3 ${viewClass}`;
+    const icon = document.createElement("span");
+    icon.className = "callout-icon";
+    icon.textContent = "ⓘ";               // circled "i" - no emoji font dependency
+    icon.setAttribute("aria-hidden", "true");
+    const p = document.createElement("p");
+    p.className = "indicator-text";
+    p.innerHTML = html;
+    note.append(icon, p);
+    return note;
+}
+
 export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics", flier, name, abbr, population }) {
     const { card, body } = cardShell({ title, about, clickHint, flier });
     if (population) body.appendChild(viewControls(population, true));
@@ -312,22 +327,36 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
     // Placed below both bar lists (rather than between them) so the reader sees the full picture
     // first - which Supergroup leads overall, and which Groups it breaks into - before being told
     // the two levels disagree.
+    const sgPill = code => colourPill(supergroups[code].name, supergroups[code].colour);
     if (modeSupergroup != null && topSupergroup != null && modeSupergroup !== topSupergroup) {
-        const note = document.createElement("div");
-        note.className = "callout-note mt-3 share-only";   // about shares, so not shown in index view
-        const icon = document.createElement("span");
-        icon.className = "callout-icon";
-        icon.textContent = "ⓘ";               // circled "i" - no emoji font dependency
-        icon.setAttribute("aria-hidden", "true");
-        const p = document.createElement("p");
-        p.className = "indicator-text";
-        p.innerHTML = `${colourPill(supergroups[topSupergroup].name, supergroups[topSupergroup].colour)} has the `
+        body.appendChild(calloutNote("share-only",   // about shares, so not shown in index view
+            `${sgPill(topSupergroup)} has the `
             + `highest combined share overall, but the single most common Group for <span class="name-pill">${name}</span> sits `
-            + `in a different Supergroup, ${colourPill(supergroups[modeSupergroup].name, supergroups[modeSupergroup].colour)}, `
+            + `in a different Supergroup, ${sgPill(modeSupergroup)}, `
             + `shown above - a name can be spread fairly evenly across several Groups in its leading `
-            + `Supergroup while being heavily concentrated in just one Group elsewhere.`;
-        note.append(icon, p);
-        body.appendChild(note);
+            + `Supergroup while being heavily concentrated in just one Group elsewhere.`));
+    }
+
+    // Index view's counterpart (option D, agreed with the user 2026-10-08): the Group list is chosen by
+    // shares (the Supergroup holding the most common Group), so the Group with the HIGHEST INDEX is
+    // often not in it (e.g. smith's OAC 8a, index 151, sits in Legacy Communities while Baseline UK's
+    // Groups are listed). Say so, only when that happens. Listing all Groups was judged too long, and
+    // switching the list by view would lose the shares view's granularity.
+    if (population && modeSupergroup != null) {
+        let topIndexCode = null, topIndex = -1;
+        for (const [code, g] of Object.entries(groups)) {
+            const index = indexOf(distribution[code] || 0, g.populationShare);
+            if (index != null && index > topIndex) { topIndex = index; topIndexCode = code; }
+        }
+        const topIndexSupergroup = topIndexCode != null && groups[topIndexCode].supergroup;
+        if (topIndexSupergroup != null && topIndexSupergroup !== modeSupergroup && supergroups[topIndexSupergroup]) {
+            const g = groups[topIndexCode];
+            body.appendChild(calloutNote("index-only",
+                `The Groups listed are those in ${sgPill(modeSupergroup)}, the Supergroup containing the most `
+                + `common Group for <span class="name-pill">${name}</span>. Relative to the population, <span class="name-pill">${name}</span> `
+                + `is most over-represented in ${colourPill(g.name, g.colour)} (index ${Math.round(topIndex)}), which sits in `
+                + `${sgPill(topIndexSupergroup)}.`));
+        }
     }
     return card;
 }
