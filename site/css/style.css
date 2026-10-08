@@ -110,18 +110,28 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
    and, since the wordmark is a thin band within a much taller viewBox, too small to read even once
    recoloured - hence a separate icon-only crop plus this row's own real text instead.
    margin-right pulls the link closer to the divider than the row's own gap (kept full-size for the
-   divider-to-LinkedIn side). filter:none on hover overrides the generic a:hover{filter:
-   brightness(0.8)} rule above - not wanted here, per feedback. */
+   divider-to-LinkedIn side). */
 .follow-us-logo-link {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
     margin-right: -0.4rem;
-    color: #6c757d;
 }
 
-.follow-us-logo-link:hover {
+/* Both follow-us links are GeoDS navy (--navy, as the navbar) in every state: no hover colour,
+   underline or brightness change, no visited colour - "Follow us" reads as a link on its own
+   (user, 2026-10-08). Overrides the generic a/a:hover rules above and Bootstrap's hover underline;
+   the keyboard focus outline is left alone. */
+.follow-us-logo-link,
+.follow-us-logo-link:visited,
+.follow-us-logo-link:hover,
+.follow-us-logo-link:active,
+.footer-social-link,
+.footer-social-link:visited,
+.footer-social-link:hover,
+.footer-social-link:active {
     color: var(--navy);
+    text-decoration: none;
     filter: none;
 }
 
@@ -134,11 +144,6 @@ a:hover { color: var(--link-colour); filter: brightness(0.8); }
     align-items: center;
     gap: 0.35rem;
     white-space: nowrap;
-    color: #6c757d;
-}
-
-.footer-social-link:hover {
-    color: var(--navy);
 }
 
 .footer-social-icon {
