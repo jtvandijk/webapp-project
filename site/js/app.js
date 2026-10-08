@@ -274,6 +274,7 @@ function renderIndicators(facts) {
             flier: FLIERS.oac,
             name: nameEscaped,
             abbr: "OAC",
+            population: "the UK population",
         }));
     }
     if (facts.loac) {
@@ -288,6 +289,7 @@ function renderIndicators(facts) {
             flier: FLIERS.loac,
             name: nameEscaped,
             abbr: "LOAC",
+            population: "London's population",
         }));
     }
     if (facts.gb2c) {
@@ -299,6 +301,7 @@ function renderIndicators(facts) {
             modeCode: facts.gb2c.group,
             clickHint: "gambling behaviour characteristics",
             flier: FLIERS.gb2c,
+            population: "Great Britain's population",
         }));
     }
     if (facts.ahah) {
@@ -324,6 +327,7 @@ function renderIndicators(facts) {
             clickHint: "neighbourhood characteristics",
             name: nameEscaped,
             abbr: "FPC",
+            population: "Great Britain's population",
         }));
     }
 

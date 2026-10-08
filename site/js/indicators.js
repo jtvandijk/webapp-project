@@ -11,6 +11,86 @@ function pct(share) {
     return `${(share * 100).toFixed(1)}%`;
 }
 
+// ---- Index view (OAC/LOAC/FPC/GB2C only; agreed with the user 2026-10-08) -------------------------
+// A second way to read a group card: instead of each group's share of the name's bearers, its INDEX -
+// 100 x (name's share) / (population's share), the population share being the same one the share
+// view's tick marks use (lookups.json populationShare). 100 = as common among bearers as in the
+// population, 200 = twice as common, 50 = half. Shares stay the default; a "Shares | Index" switch on
+// each card flips every card at once (a class on <html>, so nothing is re-drawn) and the browser
+// remembers the choice. Every bar row carries both views; CSS shows one. IMD/AHAH are left out on
+// purpose: deciles are ~10% of areas each by construction, so their share chart already reads as an
+// index against a flat line. To retire the feature, set INDEX_VIEW_ENABLED = false: no switch is
+// drawn and every card stays on shares.
+const INDEX_VIEW_ENABLED = true;
+const VIEW_STORAGE_KEY = "gbnames.groupView";
+// Drawn on a log2 scale centred on 100, so 50 and 200 sit the same distance either side; bars stop
+// at 25 and 400 (INDEX_SCALE_STEPS doublings) while the printed number is always the real one.
+const INDEX_SCALE_STEPS = 2;
+
+let groupView = "share";
+try {
+    if (INDEX_VIEW_ENABLED && window.localStorage.getItem(VIEW_STORAGE_KEY) === "index") groupView = "index";
+} catch (e) { /* storage blocked (private mode etc.) - just start on shares */ }
+
+function applyGroupView() {
+    document.documentElement.classList.toggle("group-view-index", groupView === "index");
+    document.querySelectorAll(".view-toggle button").forEach(btn => {
+        btn.setAttribute("aria-pressed", String(btn.dataset.view === groupView));
+    });
+}
+applyGroupView();
+
+function setGroupView(view) {
+    groupView = view;
+    try { window.localStorage.setItem(VIEW_STORAGE_KEY, view); } catch (e) { /* not remembered, fine */ }
+    applyGroupView();
+}
+
+function indexOf(share, populationShare) {
+    return populationShare ? 100 * share / populationShare : null;
+}
+
+// "Shares | Index" switch plus, in index view only, one line on how to read it. `population` names
+// the baseline in words ("the UK population", "London's population", ...).
+function viewToggle(population) {
+    const wrap = document.createElement("div");
+    wrap.className = "view-toggle-row";
+    const toggle = document.createElement("div");
+    toggle.className = "view-toggle";
+    toggle.setAttribute("role", "group");
+    toggle.setAttribute("aria-label", "Show the groups as shares or as index values");
+    toggle.innerHTML = `<span class="view-toggle-label">Show as</span>`;
+    for (const [view, text] of [["share", "Shares"], ["index", "Index"]]) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.view = view;
+        btn.textContent = text;
+        btn.setAttribute("aria-pressed", String(view === groupView));
+        btn.addEventListener("click", () => setGroupView(view));
+        toggle.appendChild(btn);
+    }
+    const explainer = document.createElement("p");
+    explainer.className = "indicator-text index-explainer index-only";
+    explainer.textContent = `Index: how common each group is among bearers of this name, compared with ${population}. `
+        + "100 means as common, 200 twice as common, 50 half as common. Bars to the right of the centre line "
+        + "are over-represented, to the left under-represented (drawn from 25 to 400).";
+    wrap.append(toggle, explainer);
+    return wrap;
+}
+
+function indexTrack(index, colour) {
+    if (index == null) return `<span class="index-track index-only"><span class="index-axis"></span></span>`;
+    const steps = index <= 0 ? -INDEX_SCALE_STEPS
+        : Math.max(-INDEX_SCALE_STEPS, Math.min(INDEX_SCALE_STEPS, Math.log2(index / 100)));
+    const half = Math.abs(steps) / INDEX_SCALE_STEPS * 50;
+    const left = steps >= 0 ? 50 : 50 - half;
+    const title = index <= 0 ? "No bearers of this name in this group"
+        : `Index ${Math.round(index)}: ${(index / 100).toFixed(2)} times as common as in the population`;
+    return `<span class="index-track index-only" title="${title}">`
+        + `<span class="index-fill" style="left:${left}%;width:${half}%;background:${colour}"></span>`
+        + `<span class="index-axis"></span></span>`;
+}
+
 // Deciles/Supergroups/Groups span dark reds/greens through very light yellows (see IMD_COLOURS/
 // AHAH_COLOURS/OAC and friends in tools/build_lookups.py) - a solid-fill pill needs black text on
 // the light end and white on the dark end, not one fixed colour. Standard YIQ brightness formula.
@@ -30,9 +110,13 @@ export function colourPill(text, colour) {
 // populationShare (0-1), when given, draws a thin tick mark on the track at that position - what
 // share of the real population falls in this group, on the SAME share-space as `share` itself, so a
 // name's bar falling short of/past the tick means under-/over-represented there.
-export function barRow({ name, colour, share, valueText, detailsText, populationShare }) {
+// `index`, when given (a number, or null for "no population share known"), adds the index view's
+// value and bar next to the share ones; CSS shows one pair or the other (see INDEX_VIEW_ENABLED).
+export function barRow({ name, colour, share, valueText, detailsText, populationShare, index }) {
     const widthPct = pct(share);
     const text = valueText != null ? valueText : widthPct;
+    const withIndex = INDEX_VIEW_ENABLED && index !== undefined;
+    const shareOnly = withIndex ? " share-only" : "";
     const chevron = detailsText ? `<span class="bar-chevron" aria-hidden="true">&#9656;</span>` : "";
     const baseline = populationShare != null
         ? `<span class="bar-baseline" style="left:${pct(populationShare)}" title="${pct(populationShare)} of the population"></span>`
@@ -42,9 +126,11 @@ export function barRow({ name, colour, share, valueText, detailsText, population
             ${chevron}
             <span class="bar-swatch" style="background:${colour}"></span>
             <span class="bar-name">${name}</span>
-            <span class="bar-pct">${text}</span>
+            <span class="bar-pct${shareOnly}">${text}</span>
+            ${withIndex ? `<span class="bar-pct index-only">${index == null ? "–" : Math.round(index)}</span>` : ""}
         </span>
-        <span class="bar-track"><span class="bar-fill" style="width:${widthPct};background:${colour}"></span>${baseline}</span>`;
+        <span class="bar-track${shareOnly}"><span class="bar-fill" style="width:${widthPct};background:${colour}"></span>${baseline}</span>
+        ${withIndex ? indexTrack(index, colour) : ""}`;
 
     if (detailsText) {
         const details = document.createElement("details");
@@ -153,8 +239,9 @@ function levelPill(text, caption) {
     return p;
 }
 
-export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics", flier, name, abbr }) {
+export function renderGroupCard({ title, about, groups, supergroups, distribution, modeCode, clickHint = "neighbourhood characteristics", flier, name, abbr, population }) {
     const { card, body } = cardShell({ title, about, clickHint, flier });
+    if (INDEX_VIEW_ENABLED && population) body.appendChild(viewToggle(population));
 
     const supergroupTotals = {};
     for (const [code, share] of Object.entries(distribution)) {
@@ -177,7 +264,8 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
     for (const code of Object.keys(supergroups).sort()) {
         const sg = supergroups[code];
         const row = barRow({ name: sg.name, colour: sg.colour, share: supergroupTotals[code] || 0,
-            detailsText: sg.desc, populationShare: sg.populationShare });
+            detailsText: sg.desc, populationShare: sg.populationShare,
+            index: population ? indexOf(supergroupTotals[code] || 0, sg.populationShare) : undefined });
         if (code === topSupergroup) row.classList.add("bar-row-mode");
         sgList.appendChild(row);
     }
@@ -198,8 +286,11 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
             // the bar it sits behind.
             const withinPopulationShare = g.populationShare != null && supergroupPopulationShare
                 ? g.populationShare / supergroupPopulationShare : null;
+            // The index needs no within-supergroup re-normalising: a group's share of the name's bearers
+            // over its share of the population is the same number whichever level it is read at.
             const row = barRow({ name: g.name, colour: g.colour, share: withinShare, detailsText: g.desc,
-                populationShare: withinPopulationShare });
+                populationShare: withinPopulationShare,
+                index: population ? indexOf(distribution[code] || 0, g.populationShare) : undefined });
             if (code === modeCode) row.classList.add("bar-row-mode");
             groupList.appendChild(row);
         }
@@ -211,7 +302,7 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
     // the two levels disagree.
     if (modeSupergroup != null && topSupergroup != null && modeSupergroup !== topSupergroup) {
         const note = document.createElement("div");
-        note.className = "callout-note mt-3";
+        note.className = "callout-note mt-3 share-only";   // about shares, so not shown in index view
         const icon = document.createElement("span");
         icon.className = "callout-icon";
         icon.textContent = "ⓘ";               // circled "i" - no emoji font dependency
@@ -229,14 +320,16 @@ export function renderGroupCard({ title, about, groups, supergroups, distributio
     return card;
 }
 
-export function renderFlatGroupCard({ title, about, groups, distribution, modeCode, clickHint, flier }) {
+export function renderFlatGroupCard({ title, about, groups, distribution, modeCode, clickHint, flier, population }) {
     const { card, body } = cardShell({ title, about, clickHint, flier });
+    if (INDEX_VIEW_ENABLED && population) body.appendChild(viewToggle(population));
     const list = document.createElement("div");
     list.className = "bar-list";
     for (const code of Object.keys(groups).sort()) {
         const g = groups[code];
         const row = barRow({ name: g.name, colour: g.colour, share: distribution[code] || 0, detailsText: g.desc,
-            populationShare: g.populationShare });
+            populationShare: g.populationShare,
+            index: population ? indexOf(distribution[code] || 0, g.populationShare) : undefined });
         if (code === modeCode) row.classList.add("bar-row-mode");
         list.appendChild(row);
     }

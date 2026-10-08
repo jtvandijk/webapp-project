@@ -613,6 +613,87 @@ details[open] > summary .bar-chevron {
     font-weight: 700;
 }
 
+/* Index view of the group cards (site/js/indicators.js, INDEX_VIEW_ENABLED): every bar row carries
+   both a share and an index value/bar, and one class on <html> decides which is shown. */
+html:not(.group-view-index) .index-only,
+.group-view-index .share-only {
+    display: none !important;
+}
+
+.view-toggle-row {
+    margin-bottom: 1rem;
+}
+
+.view-toggle {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.view-toggle-label {
+    margin-right: 0.6rem;
+    font-weight: 600;
+    color: #8a8a8a;
+}
+
+.view-toggle button {
+    border: 1px solid var(--navy);
+    background: #fff;
+    color: var(--navy);
+    padding: 0.15rem 0.8rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.view-toggle button + button {
+    border-left: none;
+}
+
+.view-toggle button:first-of-type {
+    border-radius: 999px 0 0 999px;
+}
+
+.view-toggle button:last-of-type {
+    border-radius: 0 999px 999px 0;
+}
+
+.view-toggle button[aria-pressed="true"] {
+    background: var(--navy);
+    color: #fff;
+}
+
+.index-explainer {
+    margin: 0.6rem 0 0;
+    font-size: 0.85rem;
+    color: #555;
+}
+
+/* Diverging bar: centre line = index 100; over-represented groups grow to the right, under-represented
+   to the left, on a log scale (25 ... 100 ... 400 across the track). */
+.index-track {
+    display: block;
+    position: relative;
+    height: 0.5rem;
+    background: #eee;
+    border-radius: 999px;
+}
+
+.index-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+}
+
+.index-axis {
+    position: absolute;
+    left: 50%;
+    top: -3px;
+    bottom: -3px;
+    width: 2px;
+    transform: translateX(-50%);
+    background: #000;
+}
+
 .pen-portrait {
     margin: 0.5rem 0 0.25rem 1.4rem;
     padding: 0.6rem 0.8rem;
