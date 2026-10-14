@@ -45,16 +45,16 @@ POPULATION_SHARES = ROOT / "work" / "population_shares.json"
 # (2026-10-02) they aren't a meaningful supergroup the way FPC's are - just a naming prefix - so GB2C
 # stays flat (read_gb2c() below), one level only, despite having the same kind of source document.
 # FPC's source publishes no supergroup colour, but its official GROUP colours (fpc_label_colors.csv)
-# already come in one colour family per supergroup, so each supergroup takes the middle shade of its own
-# groups' family (user, 2026-10-14) - the way OAC's supergroup and group colours relate. Replaces our
-# first, independently chosen set (2026-10-01), which swapped B and C's hues and put E in red over brown
-# groups, so a supergroup bar did not match the groups under it.
+# come in one colour family per supergroup. Each supergroup uses the FIRST group colour of its own
+# family - the same supergroup colours a colleague uses on another GeoDS page, adopted for consistency
+# (user, 2026-10-14). Replaces our first, independently chosen set (2026-10-01), which swapped B and C's
+# hues and put E in red over brown groups, and a short-lived middle-shade set (same day).
 FPC_SUPERGROUP_COLOURS = {
-    "A": "#33C0D8",   # Emerging Financial Climbers: cyans (A01 #33C0D8, A02 #83D5E2)
-    "B": "#748F9B",   # Suburban Financial Balancers: blue-greys (B03 #B5C4D1, B04 #396A81, B05 #748F9B)
-    "C": "#58AD71",   # Mature and Financially Secure: greens (C06 #91C7A3, C07 #58AD71, C08 #23833D)
-    "D": "#FF910C",   # Financially Precarious Families: oranges (D09 #FEAD18, D10 #FF910C)
-    "E": "#B4854A",   # Highly Vulnerable Families: browns (E11 #D8B387, E12 #B4854A, E13 #776451)
+    "A": "#33C0D8",   # Emerging Financial Climbers: = A01 (family A01 #33C0D8, A02 #83D5E2)
+    "B": "#B5C4D1",   # Suburban Financial Balancers: = B03 (family B03 #B5C4D1, B04 #396A81, B05 #748F9B)
+    "C": "#91C7A3",   # Mature and Financially Secure: = C06 (family C06 #91C7A3, C07 #58AD71, C08 #23833D)
+    "D": "#FEAD18",   # Financially Precarious Families: = D09 (family D09 #FEAD18, D10 #FF910C)
+    "E": "#D8B387",   # Highly Vulnerable Families: = E11 (family E11 #D8B387, E12 #B4854A, E13 #776451)
 }
 
 # Corrections to the published FPC labels, confirmed by the user (E12 on 2026-09-24, E13 on 2026-09-27).
