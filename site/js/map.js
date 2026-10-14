@@ -2,7 +2,7 @@
 // Scotland mask. Replaces the legacy site's Leaflet.TimeDimension plugin (built for continuous,
 // animated time series) - here the "time" axis is just an index into a short, fixed, unevenly
 // spaced list of periods, so a plain slider plus "swap the layer's data" is all that's needed.
-import { DATA_ROOT } from "./data.js";
+import { dataUrl } from "./data.js?v=2026-10-14";
 
 // Every SmartCensus (register) year is marked out from Historic Census years in green, not just the
 // newest one - a clean break at the 1921/1997 boundary, same idea and same colour as the bearers
@@ -15,7 +15,7 @@ let scotlandMaskCache = null;
 
 async function loadScotlandMask(url) {
     if (!scotlandMaskCache) {
-        scotlandMaskCache = fetch(`${DATA_ROOT}/${url}`).then(res => res.json());
+        scotlandMaskCache = fetch(dataUrl(url)).then(res => res.json());
     }
     return scotlandMaskCache;
 }

@@ -13,14 +13,28 @@ export function surnameKey(raw) {
     return PLACEHOLDERS.has(key) ? "" : key;
 }
 
+// Caching. manifest.json, lookups.json and lookups/places.json are small and loaded once per visit, so
+// they are always re-checked with the server (cache: "no-cache": an unchanged file costs a 304), and a
+// corrected file shows at once whatever max-age the server sends. The per-name files (and the Scotland
+// mask) carry the release version (?v=, from the manifest): cached as long as the server allows, but a
+// new release is fetched fresh. The site's own CSS/JS carry their own ?v= (tools/bump_site_version.py).
+let releaseTag = "";
+
+export function dataUrl(path) {
+    return `${DATA_ROOT}/${path}${releaseTag}`;
+}
+
 export async function fetchManifest() {
-    const res = await fetch(`${DATA_ROOT}/manifest.json`);
+    const res = await fetch(`${DATA_ROOT}/manifest.json`, { cache: "no-cache" });
     if (!res.ok) throw new Error(`manifest.json: HTTP ${res.status}`);
-    return res.json();
+    const manifest = await res.json();
+    const version = manifest.release && manifest.release.version;
+    releaseTag = version ? `?v=${encodeURIComponent(version)}` : "";
+    return manifest;
 }
 
 export async function fetchLookups() {
-    const res = await fetch(`${DATA_ROOT}/lookups.json`);
+    const res = await fetch(`${DATA_ROOT}/lookups.json`, { cache: "no-cache" });
     if (!res.ok) throw new Error(`lookups.json: HTTP ${res.status}`);
     return res.json();
 }
@@ -29,14 +43,14 @@ export async function fetchLookups() {
 // build_places_lookup.py) - public ONS/NRS reference data, not part of the TRE export, so it's
 // tracked in the repo and served alongside the site's own code, not from DATA_ROOT.
 export async function fetchPlacesLookup() {
-    const res = await fetch("lookups/places.json");
+    const res = await fetch("lookups/places.json", { cache: "no-cache" });
     if (!res.ok) throw new Error(`lookups/places.json: HTTP ${res.status}`);
     return res.json();
 }
 
 // null means "no file for this name" (not found, or below the publish threshold) - not an error.
 export async function fetchName(key) {
-    const res = await fetch(`${DATA_ROOT}/names/${key.slice(0, 2)}/${key}.json`);
+    const res = await fetch(dataUrl(`names/${key.slice(0, 2)}/${key}.json`));
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`names/${key}.json: HTTP ${res.status}`);
     return res.json();
@@ -46,7 +60,7 @@ export async function fetchName(key) {
 // entirely (404) is expected for a name below the facts threshold even if it has a map, and for
 // any fact key a name simply has no data for (both are "nothing to show", not an error).
 export async function fetchFacts(key) {
-    const res = await fetch(`${DATA_ROOT}/facts/${key.slice(0, 2)}/${key}.json`);
+    const res = await fetch(dataUrl(`facts/${key.slice(0, 2)}/${key}.json`));
     if (res.status === 404) return {};
     if (!res.ok) throw new Error(`facts/${key}.json: HTTP ${res.status}`);
     return res.json();

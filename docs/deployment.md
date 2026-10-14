@@ -36,11 +36,12 @@ Every path in the site is relative, so the folder works at a domain root or unde
 
 - **gzip** for JSON, JavaScript and CSS. The map files are GeoJSON and shrink to about a quarter (the largest,
   `smith.json`, goes from about 790 KB to about 215 KB). nginx does not gzip JSON unless told to.
-- **Caching `data/`.** The files never change within a release, so they can be cached. They are not versioned by
-  file name, though: a later release (or a corrected `lookups.json`) replaces files at the same paths. A max-age of
-  a day to a week, with the default `ETag`/`Last-Modified` revalidation, is a reasonable balance. Avoid `immutable`
-  or very long lifetimes, unless it is fine for returning visitors to keep seeing old data for that long after an update. Keep the site's own
-  `js/` and `css/` on a short cache for the same reason.
+- **Caching.** The site handles updates itself, so any reasonable cache lifetime works (a week for `data/`, an
+  hour or more for the rest): its CSS and JavaScript are loaded as `css/style.css?v=<date>` etc. (a new version
+  means a new address); `manifest.json` and `lookups.json` are re-checked with the server on every visit (an
+  unchanged file costs a "304 not modified"); the per-name files carry the release version (`?v=1.0.0`).
+  `index.html` and `about.html` themselves should stay on a short cache (an hour, or `no-cache`), since they
+  hold the version tags.
 - **robots.txt.** `robots.txt` asks crawlers to stay out of `data/` (tens of thousands of JSON files, no value in
   search results). Crawlers only read it at the root of the host, so under `/gbnames/` the file in the folder is
   ignored. If you want the same effect, add `Disallow: /gbnames/data/` to `https://apps.geods.ac.uk/robots.txt`.
@@ -95,7 +96,7 @@ Everything else (Bootstrap, Leaflet, images, the GeoDS fliers) is in the folder.
 | What changed | What to replace |
 |---|---|
 | Card text, classification names or colours | `data/lookups.json` (made by `tools/build_lookups.py`) |
-| Page text, layout, code | the changed files in the site folder (`index.html`, `about.html`, `css/`, `js/`, ...) |
+| Page text, layout, code | first `python3 tools/bump_site_version.py` (new version tags), then `index.html`, `about.html`, `css/` and `js/` |
 | A new data release | the whole `data/` folder |
 
 How the release itself is built: [how-to-build-the-dataset.md](how-to-build-the-dataset.md), section 11 for the

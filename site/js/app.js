@@ -1,9 +1,9 @@
 // Wiring: search boxes, URL state, welcome/not-found/result panels, the period slider, the
 // indicator cards.
-import { surnameKey, fetchManifest, fetchLookups, fetchPlacesLookup, fetchName, fetchFacts, formatPeriod, bearersFor } from "./data.js";
-import { createMap } from "./map.js";
-import { renderDecileCard, renderGroupCard, renderFlatGroupCard, colourPill } from "./indicators.js";
-import { renderPlacesCard, renderForenamesCard, renderEthnicityCard, renderCountsCard } from "./profile.js";
+import { surnameKey, fetchManifest, fetchLookups, fetchPlacesLookup, fetchName, fetchFacts, formatPeriod, bearersFor } from "./data.js?v=2026-10-14";
+import { createMap } from "./map.js?v=2026-10-14";
+import { renderDecileCard, renderGroupCard, renderFlatGroupCard, colourPill } from "./indicators.js?v=2026-10-14";
+import { renderPlacesCard, renderForenamesCard, renderEthnicityCard, renderCountsCard } from "./profile.js?v=2026-10-14";
 
 const NOT_FOUND_MESSAGE = "We couldn't find a page for this surname. This means either we hold no "
     + "records for it, or fewer than 100 people share it in our data, too few to show without "

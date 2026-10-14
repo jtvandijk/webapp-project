@@ -1,7 +1,7 @@
 // "More about your name": places, forenames, ethnicity (modal value only) and the bearers-over-time
 // table - everything that isn't a neighbourhood classification (see indicators.js for those).
-import { formatPeriod, bearersFor } from "./data.js";
-import { cardShell, barRow } from "./indicators.js";
+import { formatPeriod, bearersFor } from "./data.js?v=2026-10-14";
+import { cardShell, barRow } from "./indicators.js?v=2026-10-14";
 
 export function renderPlacesCard({ places, placesLookup }) {
     const { card, body } = cardShell({
