@@ -44,14 +44,17 @@ POPULATION_SHARES = ROOT / "work" / "population_shares.json"
 # groups above. GB2C's BG/B/G prefixes looked like the same thing at first, but the user decided
 # (2026-10-02) they aren't a meaningful supergroup the way FPC's are - just a naming prefix - so GB2C
 # stays flat (read_gb2c() below), one level only, despite having the same kind of source document.
-# FPC's source doesn't publish a supergroup colour, so this is our own choice, same reasoning as
-# GB2C_COLOURS below: a muted family, distinct per supergroup's own character, not an ordered scale.
+# FPC's source publishes no supergroup colour, but its official GROUP colours (fpc_label_colors.csv)
+# already come in one colour family per supergroup, so each supergroup takes the middle shade of its own
+# groups' family (user, 2026-10-14) - the way OAC's supergroup and group colours relate. Replaces our
+# first, independently chosen set (2026-10-01), which swapped B and C's hues and put E in red over brown
+# groups, so a supergroup bar did not match the groups under it.
 FPC_SUPERGROUP_COLOURS = {
-    "A": "#2A9D8F",   # Emerging Financial Climbers: young, upwardly mobile - teal
-    "B": "#6A9F58",   # Suburban Financial Balancers: settled, stable - sage green
-    "C": "#3D5A80",   # Mature and Financially Secure: steady, secure - slate blue
-    "D": "#E09F3E",   # Financially Precarious Families: caution - amber
-    "E": "#9E2A2B",   # Highly Vulnerable Families: the most severe - deep red
+    "A": "#33C0D8",   # Emerging Financial Climbers: cyans (A01 #33C0D8, A02 #83D5E2)
+    "B": "#748F9B",   # Suburban Financial Balancers: blue-greys (B03 #B5C4D1, B04 #396A81, B05 #748F9B)
+    "C": "#58AD71",   # Mature and Financially Secure: greens (C06 #91C7A3, C07 #58AD71, C08 #23833D)
+    "D": "#FF910C",   # Financially Precarious Families: oranges (D09 #FEAD18, D10 #FF910C)
+    "E": "#B4854A",   # Highly Vulnerable Families: browns (E11 #D8B387, E12 #B4854A, E13 #776451)
 }
 
 # Corrections to the published FPC labels, confirmed by the user (E12 on 2026-09-24, E13 on 2026-09-27).
